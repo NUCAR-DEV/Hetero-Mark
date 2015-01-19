@@ -13,9 +13,11 @@ class clUtil
 	clUtil();
 
 	// OpenCL runtime
-	cl_context       context;
-	cl_device_id*    devices;
-	cl_command_queue commandQueue;
+	bool isInit;
+	cl_platform_id   platform;
+ 	cl_context       context;
+	cl_device_id     device;
+	cl_command_queue cmdQueue;
 
 public:
 	// Destructor
