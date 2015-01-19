@@ -38,6 +38,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif()
 
 ############################################################################
+
 # Find OpenCL include and libs
 find_path( OPENCL_INCLUDE_DIRS 
     NAMES OpenCL/cl.h CL/cl.h
@@ -58,12 +59,17 @@ endif( )
 
 ############################################################################
 
-set( COMPILER_FLAGS " " )
+set( COMPILER_FLAGS "-std=c++0x" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 
+# clUtil include and libs
+set( CLUTIL_INCLUDE_DIRS "../clUtil/" )
+set( CLUTIL_LIBRARY "-lclutil" )
+set( LINKER_FLAGS "${LINKER_FLAGS} -L../clUtil/")
+
 file(GLOB INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp" "${CMAKE_CURRENT_SOURCE_DIR}/*.h" )
-include_directories( ${OPENCL_INCLUDE_DIRS} )
+include_directories( ${OPENCL_INCLUDE_DIRS} ${CLUTIL_INCLUDE_DIRS} )
 
 add_executable( ${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES})
 
@@ -96,7 +102,7 @@ set_target_properties( ${BENCHMARK_NAME} PROPERTIES
                         COMPILE_FLAGS ${COMPILER_FLAGS}
                         LINK_FLAGS ${LINKER_FLAGS}
                      )
-target_link_libraries( ${BENCHMARK_NAME} ${OPENCL_LIBRARIES} ${ADDITIONAL_LIBRARIES} )
+target_link_libraries( ${BENCHMARK_NAME} ${OPENCL_LIBRARIES} ${ADDITIONAL_LIBRARIES} ${CLUTIL_LIBRARY})
 
 # Set output directory to bin
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BITNESS_SUFFIX}/${CMAKE_BUILD_TYPE})

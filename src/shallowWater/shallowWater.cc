@@ -1,3 +1,5 @@
+#include <clUtil.h>
+
 #include "shallowWater.h"
 
 namespace shallowWater
