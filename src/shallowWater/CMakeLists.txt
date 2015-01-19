@@ -42,13 +42,13 @@ endif()
 # Find OpenCL include and libs
 find_path( OPENCL_INCLUDE_DIRS 
     NAMES OpenCL/cl.h CL/cl.h
-    HINTS ../../../../include/ $ENV{AMDAPPSDKROOT}/include/
+    HINTS ../../include/ $ENV{AMDAPPSDKROOT}/include/
 )
 #mark_as_advanced(OPENCL_INCLUDE_DIRS)
 
 find_library( OPENCL_LIBRARIES
 	NAMES OpenCL
-	HINTS ../../../../lib/ $ENV{AMDAPPSDKROOT}/lib
+	HINTS ../../lib/ $ENV{AMDAPPSDKROOT}/lib
 	PATH_SUFFIXES ${PLATFORM}${BITNESS} ${BITNESS_SUFFIX}
 )
 #mark_as_advanced( OPENCL_LIBRARIES )
@@ -63,10 +63,8 @@ set( COMPILER_FLAGS "-std=c++0x" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 
-# clUtil include and libs
-set( CLUTIL_INCLUDE_DIRS "../clUtil/" )
-set( CLUTIL_LIBRARY "-lclutil" )
-set( LINKER_FLAGS "${LINKER_FLAGS} -L../clUtil/")
+# clUtil includes
+set( CLUTIL_INCLUDE_DIRS "../../include/clUtil" )
 
 file(GLOB INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp" "${CMAKE_CURRENT_SOURCE_DIR}/*.h" )
 include_directories( ${OPENCL_INCLUDE_DIRS} ${CLUTIL_INCLUDE_DIRS} )
