@@ -1,11 +1,14 @@
 #ifndef CL_UTIL_H
 #define CL_UTIL_H 
 
-#include <CL/cl.h>
 #include <memory>
+#include <CL/cl.h>
 
 namespace clHelper
 {
+
+
+
 
 enum SVMCapability
 {
@@ -51,6 +54,8 @@ public:
 	// Check SVM support level
 	bool const checkSVMCapability(enum SVMCapability cap);
 
+	// Print information of the platform, devices, etc.
+	void printfInfo();
 
 };
 

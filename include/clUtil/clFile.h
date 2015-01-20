@@ -36,6 +36,8 @@ public:
         // Getters
         const std::string& getSource() const { return sourceCode; }
 
+        const char *getSourceChar() const { return sourceCode.c_str(); }
+
         // Read file
         bool open(const char *fileName);
 
@@ -77,7 +79,7 @@ bool clFile::open(const char *fileName)
                 if (!str)
                 {
                     f.close();
-                    return  false;
+                    return false;
                 }
 
                 // Read file
