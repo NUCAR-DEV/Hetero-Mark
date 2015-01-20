@@ -1,19 +1,40 @@
+#include <iostream>
+
 #include <clUtil.h>
+#include <clFile.h>
 
 #include "shallowWater.h"
 
+using namespace clHelper;
+
+shallowWater::shallowWater()
+{
+
+}
+
+shallowWater::~shallowWater()
+{
+
+}
+
 int shallowWater::setupCL()
 {
-	int ret;
+	// Initialize OpenCL context/cmdQueue, etc.
+	clUtil *cl_util = clUtil::getInstance();
 
-	clUtil *clutil = clUtil::getInstance();
-	ret = clutil->clInit();
+	clFile *cl_file = clFile::getInstance();
 
-	return ret;
+	// Read kernel source code
+	cl_file->open("shallowWater_Kernels.cl");
+
+	return 0;
 }
 
 int main(int argc, char const *argv[])
 {
+	std::unique_ptr<shallowWater> sw(new shallowWater);
 	
+	sw->setupCL();
+
 	return 0;
 }
