@@ -12,6 +12,8 @@ shallowWater::shallowWater()
 {
 	// Initialize OpenCL context/cmdQueue
 	cl_util = clUtil::getInstance();
+	cl_util->displayPlatformInfo();
+	cl_util->displayDeviceInfo();
 
 	// Helper class to read kernel source code
 	cl_file = clFile::getInstance();

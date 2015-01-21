@@ -4,6 +4,8 @@
 #include <memory>
 #include <CL/cl.h>
 
+#include "clError.h"
+
 namespace clHelper
 {
 
@@ -35,6 +37,9 @@ private:
 	cl_device_id     device;
 	cl_command_queue cmdQueue;
 
+	int displayPlatformInfo(cl_platform_id platformId, 
+		cl_platform_info info);
+
 public:
 	// Destructor
 	~clUtil();
@@ -54,8 +59,12 @@ public:
 	// Check SVM support level
 	bool const checkSVMCapability(enum SVMCapability cap);
 
-	// Print information of the platform, devices, etc.
-	void printfInfo();
+	// Print information of the platform
+	int displayPlatformInfo();
+
+	int displayDeviceInfo();
+
+	int displayInfo();
 
 };
 
@@ -176,6 +185,67 @@ bool const clUtil::checkSVMCapability(enum SVMCapability svmCap)
 	return false;
 
 }
+
+int clUtil::displayPlatformInfo(cl_platform_id platformId, cl_platform_info info)
+{
+	cl_int err;
+	char platformInfo[1024];
+	err = clGetPlatformInfo(platformId, info, sizeof(platformInfo),
+		platformInfo, NULL);
+	CHECK_OPENCL_ERROR(err, "clGetPlatformInfo failed");
+	std::cout << "\t" << platformInfo << std::endl;
+}
+
+int clUtil::displayPlatformInfo()
+{
+	std::cout << "Platform info:" << std::endl;
+	displayPlatformInfo(platform, CL_PLATFORM_VENDOR);
+	displayPlatformInfo(platform, CL_PLATFORM_VERSION);
+	displayPlatformInfo(platform, CL_PLATFORM_PROFILE);
+	displayPlatformInfo(platform, CL_PLATFORM_NAME);
+	displayPlatformInfo(platform, CL_PLATFORM_EXTENSIONS);	
+}
+
+int clUtil::displayDeviceInfo()
+{
+	cl_int err;
+	
+	// Get number of devices available
+	cl_uint deviceCount = 0;
+	err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &deviceCount);
+	CHECK_OPENCL_ERROR(err, "clGetDeviceIDs failed");
+	cl_device_id* deviceIds = (cl_device_id *)malloc(sizeof(cl_device_id) * deviceCount);
+	
+	// Get device ids
+	err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, deviceCount, deviceIds, NULL);
+	CHECK_OPENCL_ERROR(err, "clGetDeviceIDs failed");
+	
+	// Print device index and device names
+	std::cout << "Devices info:" << std::endl;
+	for(cl_uint i = 0; i < deviceCount; ++i)
+	{
+		char deviceName[1024];
+		err = clGetDeviceInfo(deviceIds[i], CL_DEVICE_NAME, sizeof(deviceName),
+			deviceName, NULL);
+		CHECK_OPENCL_ERROR(err, "clGetDeviceInfo failed");
+		if (deviceIds[i] == device)
+		{
+			std::cout << "(*)\tDevice " << i << " = " << deviceName
+				<<", Device ID = "<<deviceIds[i] << std::endl;
+
+		}
+		else 
+		{
+			std::cout << "\tDevice " << i << " = " << deviceName
+				<<", Device ID = "<<deviceIds[i]<< std::endl;
+		}
+	}
+
+	free(deviceIds);
+
+	return 0;
+}
+
 
 } // namespace clHelper
 
