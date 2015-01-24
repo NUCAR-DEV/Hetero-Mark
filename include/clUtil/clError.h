@@ -3,11 +3,10 @@
 
 #include <CL/cl.h>
 
-#define CHECK_OPENCL_ERROR(actual, msg) \
+#define checkOpenCLErrors(actual, msg) \
     if(checkVal(actual, CL_SUCCESS, msg)) \
     { \
         std::cout << "Location : " << __FILE__ << ":" << __LINE__<< std::endl; \
-        return -1; \
     }
 
 static void error(std::string errorMsg)
@@ -144,10 +143,12 @@ static const char* getOCLErrorCodeStr(T input)
 		return "CL_INVALID_LINKER_OPTIONS";
 	case CL_INVALID_DEVICE_PARTITION_COUNT:
 		return "CL_INVALID_DEVICE_PARTITION_COUNT";
+#ifdef CL_VERSION_2_0
 	case CL_INVALID_PIPE_SIZE:
 		return "CL_INVALID_PIPE_SIZE";
 	case CL_INVALID_DEVICE_QUEUE:
 		return "CL_INVALID_DEVICE_QUEUE";
+#endif
 	default:
 		return "UNKOWN ERROR CODE";
 	}

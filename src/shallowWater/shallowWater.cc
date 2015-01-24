@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <clUtil.h>
+#include <clRuntime.h>
 #include <clFile.h>
 #include <clError.h>
 
@@ -11,13 +11,12 @@ using namespace clHelper;
 shallowWater::shallowWater()
 {
 	// Initialize OpenCL context/cmdQueue
-	cl_util = clUtil::getInstance();
-	cl_util->displayPlatformInfo();
-	cl_util->displayDeviceInfo();
+	cl_runtime = clRuntime::getInstance();
+	cl_runtime->displayPlatformInfo();
+	cl_runtime->displayDeviceInfo();
 
 	// Helper class to read kernel source code
 	cl_file = clFile::getInstance();
-
 }
 
 shallowWater::~shallowWater()
@@ -28,9 +27,6 @@ shallowWater::~shallowWater()
 int shallowWater::setupCL()
 {
 	cl_int err;
-
-	clFlush(cl_util->getCmdQueue());
-	clFinish(cl_util->getCmdQueue());
 
 	// Some cleanup
 	if( kernel )
@@ -50,20 +46,25 @@ int shallowWater::setupCL()
 	
 	// Create program
 	const char *source = cl_file->getSourceChar();
-	program = clCreateProgramWithSource(cl_util->getContext(), 1, 
+	program = clCreateProgramWithSource(cl_runtime->getContext(), 1, 
 		(const char**)&source, NULL, &err);
-	CHECK_OPENCL_ERROR(err, "ERROR: Failed to create Program with source...\n");
+	checkOpenCLErrors(err, "ERROR: Failed to create Program with source...\n");
 
 	// Create kernel with OpenCL 2.0 support
 	err = clBuildProgram(program, 0, NULL, "-cl-std=CL2.0", NULL, NULL);
-	CHECK_OPENCL_ERROR(err, "ERROR: Failed to build program...\n");
+	checkOpenCLErrors(err, "ERROR: Failed to build program...\n");
 
-	kernel = clCreateKernel(program, "ProcessTile", &err);
-	CHECK_OPENCL_ERROR(err, "ERROR: Failed to create kernel...\n");
+	kernel = clCreateKernel(program, "test", &err);
+	checkOpenCLErrors(err, "ERROR: Failed to create kernel...\n");
 
-	// std::cout << cl_file->getSource() << std::endl;
+	std::cout << "Creating kernel... done" << std::endl;
 
 	return 0;
+}
+
+int shallowWater::runCL()
+{
+
 }
 
 int main(int argc, char const *argv[])
@@ -71,6 +72,8 @@ int main(int argc, char const *argv[])
 	std::unique_ptr<shallowWater> sw(new shallowWater);
 	
 	sw->setupCL();
+
+	sw->runCL();
 
 	return 0;
 }

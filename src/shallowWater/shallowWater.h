@@ -7,7 +7,7 @@ using namespace clHelper;
 
 class shallowWater
 {
-	clUtil *cl_util;
+	clRuntime *cl_runtime;
 	clFile *cl_file;
 
 	cl_program program;

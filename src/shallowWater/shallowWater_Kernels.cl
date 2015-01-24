@@ -903,3 +903,43 @@ __kernel void ProcessTile( __global char*  m_SpeedCacheMatrix,
     }// End of next line of the tile
 }// End of ProcessTile
 
+
+
+
+struct info_t
+{
+    int gid_x;
+    int gid_y;
+    int gid_z;
+
+    int gsz_x;
+    int gsz_y;
+    int gsz_z;
+
+    int lid_x;
+    int lid_y;
+    int lid_z;
+
+    int lsz_x;
+    int lsz_y;
+    int lsz_z;
+};
+
+__kernel void test(__global struct info_t *info)
+{
+    int gid_x = get_global_id(0);
+    int gid_y = get_global_id(1);
+    int gid_z = get_global_id(2);
+
+    int gsz_x = get_global_size(0);
+    int gsz_y = get_global_size(1);
+    int gsz_z = get_global_size(2);
+
+    int lid_x = get_local_id(0);
+    int lid_y = get_local_id(1);
+    int lid_z = get_local_id(2);
+
+    int lsz_x = get_local_size(0);
+    int lsz_y = get_local_size(1);
+    int lsz_z = get_local_size(2);
+}
