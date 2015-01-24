@@ -82,10 +82,15 @@ cl_command_queue clCmdQueueRepo::add()
 
 	cl_int err;
 	cl_command_queue queue;
-	
+
+#ifndef CL_VERSION_2_0
 	queue = clCreateCommandQueue(context, device, 0, &err);
+	checkOpenCLErrors(err, "Failed at clCreateCommandQueue");
+#else
+	queue = clCreateCommandQueueWithProperties(context, device, 0, &err);
 	checkOpenCLErrors(err, "Failed at clCreateCommandQueueWithProperties");
 
+#endif
 	return queue;
 }
 
