@@ -55,19 +55,19 @@ __kernel void FWD_sum_ll(         const int T,
         barrier(CLK_LOCAL_MEM_FENCE);
 
         //reduction
-        // if (lid < 32) {
-        //         volatile float* smem = sm;
-        //         smem[lid] += smem[lid + 32];
-        //         smem[lid] += smem[lid + 16];
-        //         smem[lid] += smem[lid +  8];
-        //         smem[lid] += smem[lid +  4];
-        //         smem[lid] += smem[lid +  2];
-        //         smem[lid] += smem[lid +  1];
-        // }
+        if (lid < 32) {
+                __local float *smem = sm;
+                smem[lid] += smem[lid + 32];
+                smem[lid] += smem[lid + 16];
+                smem[lid] += smem[lid +  8];
+                smem[lid] += smem[lid +  4];
+                smem[lid] += smem[lid +  2];
+                smem[lid] += smem[lid +  1];
+        }
 
-        // if (lid == 0) {
-        //         ll_d[T] = sm[0];
-        // }
+        if (lid == 0) {
+                ll_d[T] = sm[0];
+        }
 }
 
 // Backward kernels

@@ -33,7 +33,33 @@ class HMM
 	cl_kernel kernel_EM_expectsigma_dev;
 	cl_kernel kernel_EM_update_expectsigma;	
 
+	static const int TILE = 16;
+	static const int SIZE = 4096;
 	int N;
+	int T = 64;	// number of (overlapping) windows 
+	int D = 64;	// number of features
+
+	int bytes_nn; 
+	int bytes_nt; 
+	int bytes_dt;  
+	int bytes_dd; 
+	int bytes_dn; 
+	int bytes_ddn; 
+	int bytes_t;
+	int bytes_d;  
+	int bytes_n;  
+	int dd;
+
+	int tileblks;
+	size_t bytes_tileblks;
+
+	float *a;          // state transition probability matrix
+	float *b;          // emission probability matrix
+	float *pi;         // prior probability
+	float *alpha;      // forward probability matrix
+	float *lll;        // log likelihood
+	float *blk_result; // intermediate blk results
+	float *observations;
 
 	void SetupCL();
 	void Param();

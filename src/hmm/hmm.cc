@@ -91,6 +91,25 @@ void HMM::SetupCL()
 
 void HMM::Param()
 {
+	if (!N)
+	{
+		bytes_nn  = sizeof(float) * N * N;
+		bytes_nt  = sizeof(float) * N * T;
+		bytes_n   = sizeof(float) * N;
+		bytes_dt  = sizeof(float) * D * T;
+		bytes_dd  = sizeof(float) * D * D;
+		bytes_dn  = sizeof(float) * D * N ;
+		bytes_ddn = sizeof(float) * D * D * N ;
+		bytes_t   = sizeof(float) * T;
+		bytes_d   = sizeof(float) * D;
+		bytes_n   = sizeof(float) * N;
+		dd = D * D;
+
+		tileblks = (N/TILE) * (N/TILE);// [N/16][N/16]
+		bytes_tileblks = sizeof(float) * tileblks;
+	}
+	else
+		std::cout << "Invalid N" << std::endl;
 
 }
 
