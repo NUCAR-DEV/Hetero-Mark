@@ -1,7 +1,5 @@
-#include <assert.h>
 #include <iostream>
 #include <clUtil.h>
-
 #include "hmm.h"
 
 HMM::HMM(int N)
@@ -165,13 +163,15 @@ void HMM::InitBuffers()
         // for em
         observations = (float *)clSVMAlloc(context, flags, bytes_dt, 0);
 
-        assert(a);
-        assert(b);
-        assert(pi);
-        assert(blk_result);
-        assert(lll);
-        assert(alpha);
-        assert(observations);
+        // Sanity check
+        if (!a || !b || !pi || !blk_result || !lll || !alpha || !observations)
+        {
+                printf(
+                        "Cannot allocate SVM memory with clSVMAlloc: "
+                        "it returns null pointer. "
+                        "You might be out of memory."
+                        );
+        }
 
         // Coarse grain SVM needs explicit map/unmap
         if (!svmFineGrainAvail)
