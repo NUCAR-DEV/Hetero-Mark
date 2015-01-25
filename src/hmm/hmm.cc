@@ -1,5 +1,5 @@
+#include <assert.h>
 #include <iostream>
-
 #include <clUtil.h>
 
 #include "hmm.h"
