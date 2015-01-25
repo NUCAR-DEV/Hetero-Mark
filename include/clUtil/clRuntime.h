@@ -43,7 +43,7 @@ private:
         int displayContextInfo(cl_context ctx, 
                 cl_context_info ctx_info);
 
-        void checkCL20();
+        void requireCL20();
 
 public:
         // Destructor
@@ -104,11 +104,25 @@ clRuntime::clRuntime()
         checkOpenCLErrors(err, "Failed at clGetDeviceIDs");
 
         // Check if support CL 2.0
-        // checkCL20();
-        
+        // requireCL20();
+        cl_context_properties cps[3] =
+                {
+                        CL_CONTEXT_PLATFORM,
+                        (cl_context_properties)platform,
+                        0
+                };
+
+        context = clCreateContextFromType(
+                                    cps,
+                                    CL_DEVICE_TYPE_GPU,
+                                    NULL,
+                                    NULL,
+                                    &err);
+        checkOpenCLErrors(err, "Failed at clCreateContextFromType");
+
         // Create a context
-        context = clCreateContext(0, 1, &device, NULL, NULL, &err);
-        checkOpenCLErrors(err, "Failed at clCreateContext");
+        // context = clCreateContext(0, 1, &device, NULL, NULL, &err);
+        // checkOpenCLErrors(err, "Failed at clCreateContext");
 
 }
 
@@ -130,7 +144,7 @@ clRuntime::~clRuntime()
 
 }
 
-void clRuntime::checkCL20()
+void clRuntime::requireCL20()
 {
         cl_int err;
         char decVer[256];
