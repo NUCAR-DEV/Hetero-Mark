@@ -104,12 +104,12 @@ __kernel void BK_scaling(         const int N,
 #endif
 
 // cache global memory
-__constant float ConstA[SIZE]; 
-__constant float ConstB[SIZE]; 
+// __constant float ConstA[SIZE]; 
+// __constant float ConstB[SIZE]; 
 
-__constant float gamma_state_sumC[SIZE];
-__constant float bufferT[64];
-__constant float expect_mu_state[64];
+// __constant float gamma_state_sumC[SIZE];
+// __constant float bufferT[64];
+// __constant float expect_mu_state[64];
 
 
 __kernel void EM_betaB_alphabeta(__global const float *beta, 
@@ -144,6 +144,8 @@ __kernel void EM_alphabeta_update_gamma(__global const float *alpha_beta,
 __kernel void EM_A_mul_alphabetaB(__global const float *A, 
                                   __global       float *A_alphabetaB,
                                   __global       float *blk_result,
+                                  __constant     float *ConstA,
+                                  __constant     float *ConstB,
                                            const int N) 
 {
 
@@ -345,6 +347,7 @@ __kernel void EM_gammastatesum(__global const float *gammaT,
 
 __kernel void EM_gammaobs(__global const float *observationsT, // D x T
                           __global       float *gamma_obs,
+                          __constant     float *bufferT,
                                    const int T)
 {
         uint gx = get_global_id(0);// col
@@ -360,6 +363,7 @@ __kernel void EM_gammaobs(__global const float *observationsT, // D x T
 __kernel void EM_expectmu(__global const float *gamma_obs, // D x T
                                    const int hs,
                           __global       float *expect_mu, // N x D
+                          __constant     float *gamma_state_sumC,
                                    const int T, 
                                    const uint current)
 {
@@ -410,6 +414,8 @@ __kernel void EM_expectsigma_dev(
                 __global const float *observations,        
                          const int hs,
                 __global       float *expect_sigma_sym,
+                __constant     float *gamma_state_sumC,
+                __constant     float *expect_mu_state,
                          const int D,
                          const int T)
 {

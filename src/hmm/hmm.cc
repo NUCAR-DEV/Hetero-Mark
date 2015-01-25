@@ -79,18 +79,18 @@ void HMM::InitKernels()
 	checkOpenCLErrors(err, "Failed to create Program with source...\n");
 
 	// Create program with OpenCL 2.0 support
-	err = clBuildProgram(program, 0, NULL, "-cl-std=CL2.0", NULL, NULL);
+	err = clBuildProgram(program, 0, NULL, "-I. -cl-std=CL2.0", NULL, NULL);
 	checkOpenCLErrors(err, "Failed to build program...\n");
 
 	// Program build info
-	// char buf[0x10000];
-	// clGetProgramBuildInfo( program,
-	// 			device,
-	// 			CL_PROGRAM_BUILD_LOG,
-	// 			0x10000,
-	// 			buf,
-	// 			NULL);
-	// printf("\n%s\n", buf);
+	char buf[0x10000];
+	clGetProgramBuildInfo( program,
+				device,
+				CL_PROGRAM_BUILD_LOG,
+				0x10000,
+				buf,
+				NULL);
+	printf("\n%s\n", buf);
 
 	// Create kernels
 	kernel_FWD_init_alpha = clCreateKernel(program, "FWD_init_alpha", &err);

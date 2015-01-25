@@ -10,8 +10,8 @@
 namespace clHelper
 {
 
-// OpenCL runtime contains objects don't change during execution
-// These objects are automatically freed at the end of execution
+// OpenCL runtime contains objects don't change much during execution
+// These objects are automatically freed in the destructor
 class clRuntime
 {
 
