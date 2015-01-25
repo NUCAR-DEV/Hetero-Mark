@@ -38,7 +38,7 @@ __kernel void FWD_calc_alpha(         const int N,
         }
 }
 
-
+// TODO: use OpenCL 2.0 workgroup function instead
 __kernel void FWD_sum_ll(         const int T,
                          __global float *ll_d)
 {

@@ -7,6 +7,7 @@
     if(checkVal(actual, CL_SUCCESS, msg)) \
     { \
         std::cout << "Location : " << __FILE__ << ":" << __LINE__<< std::endl; \
+        exit(-1); \
     }
 
 static void error(std::string errorMsg)

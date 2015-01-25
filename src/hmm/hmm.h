@@ -13,6 +13,8 @@ class HMM
 	cl_device_id device;
 	cl_context context;
 	cl_program program;
+	cl_command_queue cmdQueue_0;
+	cl_command_queue cmdQueue_1;
 
 	cl_kernel kernel_FWD_init_alpha;
 	cl_kernel kernel_FWD_scaling;
@@ -61,13 +63,21 @@ class HMM
 	float *blk_result; // intermediate blk results
 	float *observations;
 
-	void SetupCL();
-	void Param();
+	void Init();
+	void InitParam();
+	void InitCL();
+
+	void InitKernels();
+	void InitBuffers();
+
+	void CleanUp();
+	void CleanUpKernels();
+	void CleanUpBuffers();
+
 	void Forward();
 	void Backward();
 	void BaumWelch();
 
-	void Release();
 public:
 	HMM(int N);
 	~HMM();

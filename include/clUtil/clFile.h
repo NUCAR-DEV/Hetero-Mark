@@ -1,6 +1,7 @@
 #ifndef CL_FILE_H
 #define CL_FILE_H
 
+#include <memory>
 #include <fstream>
 #include <stdio.h>
 

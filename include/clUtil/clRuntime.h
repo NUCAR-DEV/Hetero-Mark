@@ -2,6 +2,7 @@
 #define CL_RUNTIME_H 
 
 #include <memory>
+#include <vector>
 #include <CL/cl.h>
 
 #include "clError.h"
@@ -19,6 +20,8 @@ private:
 	cl_platform_id   platform;
 	cl_device_id     device;
  	cl_context       context;
+ 	
+ 	std::vector<cl_command_queue> cmdQueueRepo;
 
 	// Instance of the singleton
 	static std::unique_ptr<clRuntime> instance;
@@ -45,6 +48,9 @@ public:
 	cl_device_id const getDevice() { return device; }
 
 	cl_context const getContext() { return context; }
+
+	// Get a command queue by index, create it if doesn't exist
+	cl_command_queue getCmdQueue(int index);
 
 	// Print information of the platform
 	int displayPlatformInfo();
@@ -87,6 +93,7 @@ clRuntime::clRuntime()
 	// Create a context
 	context = clCreateContext(0, 1, &device, NULL, NULL, &err);
 	checkOpenCLErrors(err, "Failed at clCreateContext");
+
 }
 
 clRuntime::~clRuntime()
@@ -97,6 +104,12 @@ clRuntime::~clRuntime()
 	{
 		err = clReleaseContext(context);
 		checkOpenCLErrors(err, "Failed at clReleaseContext");
+	}
+
+	for (auto &cmdQueue : cmdQueueRepo)
+	{
+		err = clReleaseCommandQueue(cmdQueue);
+		checkOpenCLErrors(err, "Failed at clReleaseCommandQueue");
 	}
 
 }
@@ -173,6 +186,20 @@ int clRuntime::displayAllInfo()
 {
 	displayPlatformInfo();
 	displayDeviceInfo();
+}
+
+cl_command_queue clRuntime::getCmdQueue(int index)
+{
+	cl_int err;
+
+	if (index < cmdQueueRepo.size())
+		return cmdQueueRepo[index];
+	else
+	{
+		cl_command_queue cmdQ = clCreateCommandQueueWithProperties(context, device, 0, &err);
+		checkOpenCLErrors(err, "Failed at clCreateCommandQueueWithProperties");
+		return cmdQ;
+	}
 }
 
 } // namespace clHelper

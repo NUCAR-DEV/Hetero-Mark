@@ -12,20 +12,63 @@ HMM::HMM(int N)
 HMM::~HMM()
 {
 	// Some cleanup
-	Release();
+	CleanUp();
 }
 
-void HMM::SetupCL()
+void HMM::Init()
+{
+	InitParam();
+	InitCL();
+	InitKernels();
+	InitBuffers();
+}
+
+void HMM::InitCL()
 {
 	// Init OCL context
 	runtime = clRuntime::getInstance();
+
+	// OpenCL objects get from clRuntime class release themselves automatically, 
+	// no need to clRelease them explicitly
 	device = runtime->getDevice();
 	context = runtime->getContext();
+
+	cmdQueue_0 = runtime->getCmdQueue(0);
+	cmdQueue_1 = runtime->getCmdQueue(1);
 
 	// Helper to read kernel file
 	file = clFile::getInstance();
 	file->open("hmm_Kernels.cl");
+}
 
+void HMM::InitParam()
+{
+	if (N)
+	{
+		bytes_nn       = sizeof(float) * N * N;
+		bytes_nt       = sizeof(float) * N * T;
+		bytes_n        = sizeof(float) * N;
+		bytes_dt       = sizeof(float) * D * T;
+		bytes_dd       = sizeof(float) * D * D;
+		bytes_dn       = sizeof(float) * D * N ;
+		bytes_ddn      = sizeof(float) * D * D * N ;
+		bytes_t        = sizeof(float) * T;
+		bytes_d        = sizeof(float) * D;
+		bytes_n        = sizeof(float) * N;
+		dd             = D * D;
+
+		tileblks       = (N/TILE) * (N/TILE);// [N/16][N/16]
+		bytes_tileblks = sizeof(float) * tileblks;
+	}
+	else
+	{
+		std::cout << "Invalid N" << std::endl;
+		exit(-1);
+	}
+}
+
+void HMM::InitKernels()
+{
 	cl_int err;
 	
 	// Create program
@@ -40,14 +83,14 @@ void HMM::SetupCL()
 	checkOpenCLErrors(err, "Failed to build program...\n");
 
 	// Program build info
-	char buf[0x10000];
-	clGetProgramBuildInfo( program,
-				device,
-				CL_PROGRAM_BUILD_LOG,
-				0x10000,
-				buf,
-				NULL);
-	printf("\n%s\n", buf);
+	// char buf[0x10000];
+	// clGetProgramBuildInfo( program,
+	// 			device,
+	// 			CL_PROGRAM_BUILD_LOG,
+	// 			0x10000,
+	// 			buf,
+	// 			NULL);
+	// printf("\n%s\n", buf);
 
 	// Create kernels
 	kernel_FWD_init_alpha = clCreateKernel(program, "FWD_init_alpha", &err);
@@ -89,28 +132,92 @@ void HMM::SetupCL()
 
 }
 
-void HMM::Param()
+
+void HMM::InitBuffers()
 {
-	if (!N)
-	{
-		bytes_nn  = sizeof(float) * N * N;
-		bytes_nt  = sizeof(float) * N * T;
-		bytes_n   = sizeof(float) * N;
-		bytes_dt  = sizeof(float) * D * T;
-		bytes_dd  = sizeof(float) * D * D;
-		bytes_dn  = sizeof(float) * D * N ;
-		bytes_ddn = sizeof(float) * D * D * N ;
-		bytes_t   = sizeof(float) * T;
-		bytes_d   = sizeof(float) * D;
-		bytes_n   = sizeof(float) * N;
-		dd = D * D;
 
-		tileblks = (N/TILE) * (N/TILE);// [N/16][N/16]
-		bytes_tileblks = sizeof(float) * tileblks;
-	}
-	else
-		std::cout << "Invalid N" << std::endl;
+	// CPU buffers
+	//-------------------------------------------------------------------------------------------//
+	// SVM coarse grain buffers 
+	//	a,b,pi,lll, blk_result
+	//-------------------------------------------------------------------------------------------//
 
+	int i, j;
+
+	// state transition probability matrix
+	// a = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
+	// if (a)
+	// 	for (i = 0; i < (N * N); i++)
+	// 		a[i] = 1.0f/(float)N;
+		
+
+	// // emission probability matrix 
+	// checkCudaErrors(cudaMallocHost((void **)&b, bytes_nt));
+	// for (i = 0; i < (N * T); i++) {
+	// 	b[i] = 1.0f/(float)T;
+	// }
+
+	// // prior probability
+	// checkCudaErrors(cudaMallocHost((void **)&pi, bytes_n));
+	// for (i = 0; i < N; i++) {
+	// 	pi[i] = 1.0f/(float)N;
+	// }
+
+	// // intermediate blk results from the device
+	// checkCudaErrors(cudaMallocHost((void **)&blk_result, bytes_tileblks));
+
+	// // log likelihood 
+	// checkCudaErrors(cudaMallocHost((void **)&lll, sizeof(float)));
+
+	// // forward probability matrix
+	// // hint: for checking purpose
+	// alpha = (float *)malloc(bytes_nt);  // T x N
+
+	// // for em
+	// checkCudaErrors(cudaMallocHost((void **)&observations, bytes_dt)); // T x D
+
+	// for(i = 0 ; i< T ; ++i) {
+	// 	for(j = 0 ; j< D ; ++j) {
+	// 		observations[i * D + j] = (float)i + 1.f;
+	// 	}
+	// }
+
+
+	// GPU buffers
+
+}
+
+void HMM::CleanUp()
+{
+	CleanUpKernels();
+	CleanUpBuffers();
+}
+
+void HMM::CleanUpBuffers()
+{
+
+}
+
+void HMM::CleanUpKernels()
+{
+	checkOpenCLErrors(clReleaseKernel(kernel_FWD_init_alpha), "Failed to release kernel kernel_FWD_init_alpha");
+	checkOpenCLErrors(clReleaseKernel(kernel_FWD_scaling), "Failed to release kernel kernel_FWD_scaling");
+	checkOpenCLErrors(clReleaseKernel(kernel_FWD_calc_alpha), "Failed to release kernel kernel_FWD_calc_alpha");
+	checkOpenCLErrors(clReleaseKernel(kernel_FWD_sum_ll), "Failed to release kernel kernel_FWD_sum_ll");
+	checkOpenCLErrors(clReleaseKernel(kernel_BK_update_beta), "Failed to release kernel kernel_BK_update_beta");
+	checkOpenCLErrors(clReleaseKernel(kernel_BK_scaling), "Failed to release kernel kernel_BK_scaling");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_betaB_alphabeta), "Failed to release kernel kernel_EM_betaB_alphabeta");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_alphabeta_update_gamma), "Failed to release kernel kernel_EM_alphabeta_update_gamma");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_A_mul_alphabetaB), "Failed to release kernel kernel_EM_A_mul_alphabetaB");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_update_xisum), "Failed to release kernel kernel_EM_update_xisum");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_alphabeta), "Failed to release kernel kernel_EM_alphabeta");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_expect_A), "Failed to release kernel kernel_EM_expect_A");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_transpose), "Failed to release kernel kernel_EM_transpose");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_gammastatesum), "Failed to release kernel kernel_EM_gammastatesum");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_gammaobs), "Failed to release kernel kernel_EM_gammaobs");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_expectmu), "Failed to release kernel kernel_EM_expectmu");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_expectsigma_dev), "Failed to release kernel kernel_EM_expectsigma_dev");
+	checkOpenCLErrors(clReleaseKernel(kernel_EM_update_expectsigma), "Failed to release kernel kernel_EM_update_expectsigma");	
 }
 
 void HMM::Forward()
@@ -128,22 +235,15 @@ void HMM::BaumWelch()
 
 }
 
-void HMM::Release()
-{
-
-}
-
 void HMM::Run()
 {
-
-	SetupCL();
 
 	//-------------------------------------------------------------------------------------------//
 	// HMM Parameters
 	//	a,b,pi,alpha
 	//-------------------------------------------------------------------------------------------//
 	printf("=>Initialize parameters.\n");
-	Param();
+	Init();
 
 	//-------------------------------------------------------------------------------------------//
 	// Forward Algorithm on GPU 
