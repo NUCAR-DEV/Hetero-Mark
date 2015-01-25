@@ -10,6 +10,14 @@
 namespace clHelper
 {
 
+enum clSVMLevel
+{
+        SVM_COARSE,
+        SVM_FINE,
+        SVM_SYSTEM,
+        SVM_ATOMIC
+};
+
 // OpenCL runtime contains objects don't change much during execution
 // These objects are automatically freed in the destructor
 class clRuntime
@@ -17,49 +25,52 @@ class clRuntime
 
 private:
 
-	cl_platform_id   platform;
-	cl_device_id     device;
- 	cl_context       context;
- 	
- 	std::vector<cl_command_queue> cmdQueueRepo;
+        cl_platform_id   platform;
+        cl_device_id     device;
+        cl_context       context;
 
-	// Instance of the singleton
-	static std::unique_ptr<clRuntime> instance;
+        std::vector<cl_command_queue> cmdQueueRepo;
 
-	// Private constructor for singleton
-	clRuntime();
+        // Instance of the singleton
+        static std::unique_ptr<clRuntime> instance;
 
-	int displayPlatformInfo(cl_platform_id plt_id, 
-		cl_platform_info plt_info);
+        // Private constructor for singleton
+        clRuntime();
 
-	int displayContextInfo(cl_context ctx, 
-		cl_context_info ctx_info);
+        int displayPlatformInfo(cl_platform_id plt_id, 
+                cl_platform_info plt_info);
+
+        int displayContextInfo(cl_context ctx, 
+                cl_context_info ctx_info);
 
 public:
-	// Destructor
-	~clRuntime();
+        // Destructor
+        ~clRuntime();
 
-	// Get singleton
-	static clRuntime *getInstance();
+        // Get singleton
+        static clRuntime *getInstance();
 
-	/// Getters
-	cl_platform_id const getPlatformID() { return platform; }
+        /// Getters
+        cl_platform_id const getPlatformID() { return platform; }
 
-	cl_device_id const getDevice() { return device; }
+        cl_device_id const getDevice() { return device; }
 
-	cl_context const getContext() { return context; }
+        cl_context const getContext() { return context; }
 
-	// Get a command queue by index, create it if doesn't exist
-	cl_command_queue getCmdQueue(int index);
+        // Get a command queue by index, create it if doesn't exist
+        cl_command_queue getCmdQueue(int index);
 
-	// Print information of the platform
-	int displayPlatformInfo();
+        // Device SVM support
+        bool isSVMavail(enum clSVMLevel level);
 
-	int displayDeviceInfo();
+        // Print information of the platform
+        int displayPlatformInfo();
 
-	int displayContextInfo();
+        int displayDeviceInfo();
 
-	int displayAllInfo();
+        int displayContextInfo();
+
+        int displayAllInfo();
 
 };
 
@@ -69,137 +80,172 @@ std::unique_ptr<clRuntime> clRuntime::instance;
 
 clRuntime *clRuntime::getInstance()
 {
-	// Instance already exists
-	if (instance.get())
-		return instance.get();
-	
-	// Create instance
-	instance.reset(new clRuntime());
-	return instance.get();
+        // Instance already exists
+        if (instance.get())
+                return instance.get();
+        
+        // Create instance
+        instance.reset(new clRuntime());
+        return instance.get();
 }
 
 clRuntime::clRuntime()
 {
-	cl_int err = 0;
-	
-	// Bind to platform
-	err = clGetPlatformIDs(1, &platform, NULL);
-	checkOpenCLErrors(err, "Failed at clGetPlatformIDs");
+        cl_int err = 0;
+        
+        // Bind to platform
+        err = clGetPlatformIDs(1, &platform, NULL);
+        checkOpenCLErrors(err, "Failed at clGetPlatformIDs");
 
-	// Get ID for the device
-	err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
-	checkOpenCLErrors(err, "Failed at clGetDeviceIDs");
+        // Get ID for the device
+        err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
+        checkOpenCLErrors(err, "Failed at clGetDeviceIDs");
 
-	// Create a context
-	context = clCreateContext(0, 1, &device, NULL, NULL, &err);
-	checkOpenCLErrors(err, "Failed at clCreateContext");
+        // Create a context
+        context = clCreateContext(0, 1, &device, NULL, NULL, &err);
+        checkOpenCLErrors(err, "Failed at clCreateContext");
 
 }
 
 clRuntime::~clRuntime()
 {
-	cl_int err = 0;
+        cl_int err = 0;
 
-	if (context)
-	{
-		err = clReleaseContext(context);
-		checkOpenCLErrors(err, "Failed at clReleaseContext");
-	}
+        if (context)
+        {
+                err = clReleaseContext(context);
+                checkOpenCLErrors(err, "Failed at clReleaseContext");
+        }
 
-	for (auto &cmdQueue : cmdQueueRepo)
-	{
-		err = clReleaseCommandQueue(cmdQueue);
-		checkOpenCLErrors(err, "Failed at clReleaseCommandQueue");
-	}
+        for (auto &cmdQueue : cmdQueueRepo)
+        {
+                err = clReleaseCommandQueue(cmdQueue);
+                checkOpenCLErrors(err, "Failed at clReleaseCommandQueue");
+        }
 
 }
 
 
 int clRuntime::displayPlatformInfo(cl_platform_id plt_id, cl_platform_info plt_info)
 {
-	cl_int err;
-	char platformInfo[1024];
-	err = clGetPlatformInfo(plt_id, plt_info, sizeof(platformInfo),
-		platformInfo, NULL);
-	checkOpenCLErrors(err, "clGetPlatformInfo failed");
-	std::cout << "\t" << platformInfo << std::endl;
+        cl_int err;
+        char platformInfo[1024];
+        err = clGetPlatformInfo(plt_id, plt_info, sizeof(platformInfo),
+                platformInfo, NULL);
+        checkOpenCLErrors(err, "clGetPlatformInfo failed");
+        std::cout << "\t" << platformInfo << std::endl;
 }
 
 int clRuntime::displayContextInfo(cl_context ctx, 
-	cl_context_info ctx_info)
+        cl_context_info ctx_info)
 {
-	// TODO
+        // TODO
 }
 
 int clRuntime::displayPlatformInfo()
 {
-	
-	std::cout << "Platform info:" << std::endl;
-	displayPlatformInfo(platform, CL_PLATFORM_VENDOR);
-	displayPlatformInfo(platform, CL_PLATFORM_VERSION);
-	displayPlatformInfo(platform, CL_PLATFORM_PROFILE);
-	displayPlatformInfo(platform, CL_PLATFORM_NAME);
-	displayPlatformInfo(platform, CL_PLATFORM_EXTENSIONS);	
+        
+        std::cout << "Platform info:" << std::endl;
+        displayPlatformInfo(platform, CL_PLATFORM_VENDOR);
+        displayPlatformInfo(platform, CL_PLATFORM_VERSION);
+        displayPlatformInfo(platform, CL_PLATFORM_PROFILE);
+        displayPlatformInfo(platform, CL_PLATFORM_NAME);
+        displayPlatformInfo(platform, CL_PLATFORM_EXTENSIONS);        
 }
 
 int clRuntime::displayDeviceInfo()
 {
-	cl_int err;
-	
-	// Get number of devices available
-	cl_uint deviceCount = 0;
-	err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &deviceCount);
-	checkOpenCLErrors(err, "Failed at clGetDeviceIDs");
-	
-	// Get device ids
-	cl_device_id* deviceIds = (cl_device_id *)malloc(sizeof(cl_device_id) * deviceCount);
-	err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, deviceCount, deviceIds, NULL);
-	checkOpenCLErrors(err, "Failed at clGetDeviceIDs");
-	
-	// Print device index and device names
-	std::cout << "Devices info:" << std::endl;
-	for(cl_uint i = 0; i < deviceCount; ++i)
-	{
-		char deviceName[1024];
-		err = clGetDeviceInfo(deviceIds[i], CL_DEVICE_NAME, sizeof(deviceName),
-			deviceName, NULL);
-		checkOpenCLErrors(err, "Failed at clGetDeviceInfo");
-		if (deviceIds[i] == device)
-		{
-			std::cout << "(*)\tDevice " << i << " = " << deviceName
-				<<", Device ID = "<<deviceIds[i] << std::endl;
+        cl_int err;
+        
+        // Get number of devices available
+        cl_uint deviceCount = 0;
+        err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &deviceCount);
+        checkOpenCLErrors(err, "Failed at clGetDeviceIDs");
+        
+        // Get device ids
+        cl_device_id* deviceIds = (cl_device_id *)malloc(sizeof(cl_device_id) * deviceCount);
+        err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, deviceCount, deviceIds, NULL);
+        checkOpenCLErrors(err, "Failed at clGetDeviceIDs");
+        
+        // Print device index and device names
+        std::cout << "Devices info:" << std::endl;
+        for(cl_uint i = 0; i < deviceCount; ++i)
+        {
+                char deviceName[1024];
+                err = clGetDeviceInfo(deviceIds[i], CL_DEVICE_NAME, sizeof(deviceName),
+                        deviceName, NULL);
+                checkOpenCLErrors(err, "Failed at clGetDeviceInfo");
+                if (deviceIds[i] == device)
+                {
+                        std::cout << "(*)\tDevice " << i << " = " << deviceName
+                                <<", Device ID = "<<deviceIds[i] << std::endl;
 
-		}
-		else 
-		{
-			std::cout << "\tDevice " << i << " = " << deviceName
-				<<", Device ID = "<<deviceIds[i]<< std::endl;
-		}
-	}
+                }
+                else 
+                {
+                        std::cout << "\tDevice " << i << " = " << deviceName
+                                <<", Device ID = "<<deviceIds[i]<< std::endl;
+                }
+        }
 
-	free(deviceIds);
+        free(deviceIds);
 
-	return 0;
+        return 0;
 }
 
 int clRuntime::displayAllInfo()
 {
-	displayPlatformInfo();
-	displayDeviceInfo();
+        displayPlatformInfo();
+        displayDeviceInfo();
 }
 
 cl_command_queue clRuntime::getCmdQueue(int index)
 {
-	cl_int err;
+        cl_int err;
 
-	if (index < cmdQueueRepo.size())
-		return cmdQueueRepo[index];
-	else
-	{
-		cl_command_queue cmdQ = clCreateCommandQueueWithProperties(context, device, 0, &err);
-		checkOpenCLErrors(err, "Failed at clCreateCommandQueueWithProperties");
-		return cmdQ;
-	}
+        if (index < cmdQueueRepo.size())
+                return cmdQueueRepo[index];
+        else
+        {
+                cl_command_queue cmdQ = clCreateCommandQueueWithProperties(context, device, 0, &err);
+                checkOpenCLErrors(err, "Failed at clCreateCommandQueueWithProperties");
+                return cmdQ;
+        }
+}
+
+bool clRuntime::isSVMavail(enum clSVMLevel level)
+{
+        cl_device_svm_capabilities caps;
+
+        cl_int err = clGetDeviceInfo(
+                device,
+                CL_DEVICE_SVM_CAPABILITIES,
+                sizeof(cl_device_svm_capabilities),
+                &caps,
+                0);
+        checkOpenCLErrors(err, "Failed to clGetDeviceInfo, SVM cap")
+
+        switch(level)
+        {
+
+        case SVM_COARSE:
+                return caps & CL_DEVICE_SVM_COARSE_GRAIN_BUFFER ? true : false;
+
+        case SVM_FINE:
+                return caps & CL_DEVICE_SVM_FINE_GRAIN_BUFFER ? true : false;
+
+        case SVM_SYSTEM:
+                return caps & CL_DEVICE_SVM_FINE_GRAIN_SYSTEM ? true : false;
+
+        case SVM_ATOMIC:
+                return caps & CL_DEVICE_SVM_ATOMICS ? true : false;
+
+        default:
+                return false;
+
+        }
+
+        return false;
 }
 
 } // namespace clHelper
