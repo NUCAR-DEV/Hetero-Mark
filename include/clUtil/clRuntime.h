@@ -43,6 +43,8 @@ private:
         int displayContextInfo(cl_context ctx, 
                 cl_context_info ctx_info);
 
+        void checkCL20();
+
 public:
         // Destructor
         ~clRuntime();
@@ -102,30 +104,8 @@ clRuntime::clRuntime()
         checkOpenCLErrors(err, "Failed at clGetDeviceIDs");
 
         // Check if support CL 2.0
-        char decVer[256];
-        char langVer[256];      
+        // checkCL20();
         
-        err = clGetDeviceInfo(device, CL_DEVICE_VERSION, sizeof(decVer), decVer, NULL);
-        checkOpenCLErrors(err, "Failed to clGetDeviceInfo: CL_DEVICE_VERSION")
-
-        err = clGetDeviceInfo(device, CL_DEVICE_OPENCL_C_VERSION, sizeof(langVer), langVer, NULL);
-        checkOpenCLErrors(err, "Failed to clGetDeviceInfo: CL_DEVICE_OPENCL_C_VERSION")
-
-        std::string dev_version(decVer);
-        std::string lang_version(langVer);
-        dev_version = dev_version.substr(std::string("OpenCL ").length()); 
-        dev_version = dev_version.substr(0, dev_version.find('.')); 
-
-        // The format of the version string is defined in the spec as 
-        // "OpenCL C <major>.<minor> <vendor-specific>" 
-        lang_version = lang_version.substr(std::string("OpenCL C ").length()); 
-        lang_version = lang_version.substr(0, lang_version.find('.')); 
-
-        if (!(stoi(dev_version) >= 2 && stoi(lang_version) >= 2)) {
-                printf("Device does not support OpenCL 2.0!\n \tCL_DEVICE_VERSION: %s, CL_DEVICE_OPENCL_C_VERSION, %s\n", decVer, langVer);
-                exit(-1);
-        }
-
         // Create a context
         context = clCreateContext(0, 1, &device, NULL, NULL, &err);
         checkOpenCLErrors(err, "Failed at clCreateContext");
@@ -150,6 +130,33 @@ clRuntime::~clRuntime()
 
 }
 
+void clRuntime::checkCL20()
+{
+        cl_int err;
+        char decVer[256];
+        char langVer[256];
+        
+        err = clGetDeviceInfo(device, CL_DEVICE_VERSION, sizeof(decVer), decVer, NULL);
+        checkOpenCLErrors(err, "Failed to clGetDeviceInfo: CL_DEVICE_VERSION")
+
+        err = clGetDeviceInfo(device, CL_DEVICE_OPENCL_C_VERSION, sizeof(langVer), langVer, NULL);
+        checkOpenCLErrors(err, "Failed to clGetDeviceInfo: CL_DEVICE_OPENCL_C_VERSION")
+
+        std::string dev_version(decVer);
+        std::string lang_version(langVer);
+        dev_version = dev_version.substr(std::string("OpenCL ").length()); 
+        dev_version = dev_version.substr(0, dev_version.find('.')); 
+
+        // The format of the version string is defined in the spec as 
+        // "OpenCL C <major>.<minor> <vendor-specific>" 
+        lang_version = lang_version.substr(std::string("OpenCL C ").length()); 
+        lang_version = lang_version.substr(0, lang_version.find('.')); 
+
+        if (!(stoi(dev_version) >= 2 && stoi(lang_version) >= 2)) {
+                printf("Device does not support OpenCL 2.0!\n \tCL_DEVICE_VERSION: %s, CL_DEVICE_OPENCL_C_VERSION, %s\n", decVer, langVer);
+                exit(-1);
+        }
+}
 
 int clRuntime::displayPlatformInfo(cl_platform_id plt_id, cl_platform_info plt_info)
 {
