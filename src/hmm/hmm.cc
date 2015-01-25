@@ -165,6 +165,14 @@ void HMM::InitBuffers()
         // for em
         observations = (float *)clSVMAlloc(context, flags, bytes_dt, 0);
 
+        assert(a);
+        assert(b);
+        assert(pi);
+        assert(blk_result);
+        assert(lll);
+        assert(alpha);
+        assert(observations);
+
         // Coarse grain SVM needs explicit map/unmap
         if (!svmFineGrainAvail)
         {
