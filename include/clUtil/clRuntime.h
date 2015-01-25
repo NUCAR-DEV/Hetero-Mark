@@ -93,7 +93,7 @@ clRuntime::clRuntime()
 {
         cl_int err = 0;
         
-        // Bind to platform
+        // Get platform
         err = clGetPlatformIDs(1, &platform, NULL);
         checkOpenCLErrors(err, "Failed at clGetPlatformIDs");
 
@@ -209,6 +209,7 @@ cl_command_queue clRuntime::getCmdQueue(int index)
         {
                 cl_command_queue cmdQ = clCreateCommandQueueWithProperties(context, device, 0, &err);
                 checkOpenCLErrors(err, "Failed at clCreateCommandQueueWithProperties");
+                cmdQueueRepo.push_back(cmdQ);
                 return cmdQ;
         }
 }

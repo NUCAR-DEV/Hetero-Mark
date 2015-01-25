@@ -7,15 +7,18 @@ using namespace clHelper;
 
 class HMM
 {
+	// Helper objects
 	clRuntime *runtime;
 	clFile *file;
 
+	// OpenCL resources, auto release 
 	cl_device_id device;
 	cl_context context;
 	cl_program program;
 	cl_command_queue cmdQueue_0;
 	cl_command_queue cmdQueue_1;
 
+	// User managed buffers, no auto release
 	cl_kernel kernel_FWD_init_alpha;
 	cl_kernel kernel_FWD_scaling;
 	cl_kernel kernel_FWD_calc_alpha;
