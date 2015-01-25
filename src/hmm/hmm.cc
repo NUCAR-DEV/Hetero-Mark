@@ -189,8 +189,8 @@ void HMM::InitBuffers()
                 err = clEnqueueSVMMap(cmdQueue_0,
                                       CL_TRUE,       // blocking map
                                       CL_MAP_WRITE,
-                                      a,
-                                      bytes_nn,
+                                      b,
+                                      bytes_nt,
                                       0, 0, 0
                                       );
                 checkOpenCLErrors(err, "Failed to clEnqueueSVMMap");
@@ -198,8 +198,8 @@ void HMM::InitBuffers()
                 err = clEnqueueSVMMap(cmdQueue_0,
                                       CL_TRUE,       // blocking map
                                       CL_MAP_WRITE,
-                                      a,
-                                      bytes_nn,
+                                      pi,
+                                      bytes_n,
                                       0, 0, 0
                                       );
                 checkOpenCLErrors(err, "Failed to clEnqueueSVMMap");
@@ -207,8 +207,8 @@ void HMM::InitBuffers()
                 err = clEnqueueSVMMap(cmdQueue_0,
                                       CL_TRUE,       // blocking map
                                       CL_MAP_WRITE,
-                                      a,
-                                      bytes_nn,
+                                      observations,
+                                      bytes_dt,
                                       0, 0, 0
                                       );
                 checkOpenCLErrors(err, "Failed to clEnqueueSVMMap");
