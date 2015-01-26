@@ -1,10 +1,10 @@
 // Forward kernels
-__kernel void FWD_init_alpha(__global const float *b_d,
-                             __global const float *pi_d,
-                                      const int N,
-                             __global float *alpha_d,
-                             __global float *ones_d,
-                             __global float *beta_d)
+kernel void FWD_init_alpha(global const float *b_d,
+                             global const float *pi_d,
+                             global const int N,
+                             global float *alpha_d,
+                             global float *ones_d,
+                             global float *beta_d)
 {
         unsigned int idx = get_global_id(0);
         if (idx < N) {
@@ -14,10 +14,10 @@ __kernel void FWD_init_alpha(__global const float *b_d,
 }
 
 
-__kernel void FWD_scaling(         const int N,
-                          __global const float *scale_factor,
+kernel void FWD_scaling(         const int N,
+                          global const float *scale_factor,
                                    const int t,
-                          __global float *alpha_d)
+                          global float *alpha_d)
 {
         unsigned int idx = get_global_id(0);
 
@@ -27,9 +27,9 @@ __kernel void FWD_scaling(         const int N,
 }
 
 
-__kernel void FWD_calc_alpha(         const int N,
-                             __global const float *b_d,
-                             __global float *alpha_d) 
+kernel void FWD_calc_alpha(         const int N,
+                             global const float *b_d,
+                             global float *alpha_d) 
 {
         unsigned int idx = get_global_id(0);
 
@@ -39,8 +39,8 @@ __kernel void FWD_calc_alpha(         const int N,
 }
 
 // TODO: use OpenCL 2.0 workgroup function instead
-__kernel void FWD_sum_ll(         const int T,
-                         __global float *ll_d)
+kernel void FWD_sum_ll(         const int T,
+                         global float *ll_d)
 {
         uint lid = get_local_id(0);
         uint gid = get_global_id(0);
@@ -71,10 +71,10 @@ __kernel void FWD_sum_ll(         const int T,
 }
 
 // Backward kernels
-__kernel void BK_update_beta(__global const float *beta_d,
-                             __global const float *B_d,
+kernel void BK_update_beta(global const float *beta_d,
+                             global const float *B_d,
                                       const int N,
-                             __global float *betaB_d)
+                             global float *betaB_d)
 {
         unsigned int idx = get_global_id(0);
         if (idx < N) {
@@ -83,9 +83,9 @@ __kernel void BK_update_beta(__global const float *beta_d,
 }
 
 
-__kernel void BK_scaling(         const int N,
-                         __global const float *ll_d,
-                         __global float *beta)
+kernel void BK_scaling(         const int N,
+                         global const float *ll_d,
+                         global float *beta)
 {
         unsigned int idx = get_global_id(0);
 
@@ -112,11 +112,11 @@ __kernel void BK_scaling(         const int N,
 // __constant float expect_mu_state[64];
 
 
-__kernel void EM_betaB_alphabeta(__global const float *beta, 
-                                 __global const float *B, 
-                                 __global       float *betaB,  
-                                 __global const float *alpha,
-                                 __global       float *alpha_beta,
+kernel void EM_betaB_alphabeta(global const float *beta, 
+                                 global const float *B, 
+                                 global       float *betaB,  
+                                 global const float *alpha,
+                                 global       float *alpha_beta,
                                           const int N,
                                           const int current, 
                                           const int previous)
@@ -129,9 +129,9 @@ __kernel void EM_betaB_alphabeta(__global const float *beta,
 }
 
 
-__kernel void EM_alphabeta_update_gamma(__global const float *alpha_beta, 
-                                        __global       float *gamma,
-                                        __global const float *ll_d, 
+kernel void EM_alphabeta_update_gamma(global const float *alpha_beta, 
+                                        global       float *gamma,
+                                        global const float *ll_d, 
                                                  const int N,
                                                  const uint current)
 {
@@ -141,9 +141,9 @@ __kernel void EM_alphabeta_update_gamma(__global const float *alpha_beta,
         }
 }
 
-__kernel void EM_A_mul_alphabetaB(__global const float *A, 
-                                  __global       float *A_alphabetaB,
-                                  __global       float *blk_result,
+kernel void EM_A_mul_alphabetaB(global const float *A, 
+                                  global       float *A_alphabetaB,
+                                  global       float *blk_result,
                                   __constant     float *ConstA,
                                   __constant     float *ConstB,
                                            const int N) 
@@ -189,8 +189,8 @@ __kernel void EM_A_mul_alphabetaB(__global const float *A,
 }
 
 
-__kernel void EM_update_xisum(__global const float *A_alphabetaB,
-                              __global       float *xi_sum,
+kernel void EM_update_xisum(global const float *A_alphabetaB,
+                              global       float *xi_sum,
                                        const float sum,
                                        const int N) 
 {
@@ -200,9 +200,9 @@ __kernel void EM_update_xisum(__global const float *A_alphabetaB,
         xi_sum[outID] += A_alphabetaB[outID] / sum;
 }
 
-__kernel void EM_alphabeta(__global const float *beta, 
-                           __global const float *alpha,
-                           __global       float *alpha_beta,
+kernel void EM_alphabeta(global const float *beta, 
+                           global const float *alpha,
+                           global       float *alpha_beta,
                                     const int N)
 {
         uint idx = get_global_id(0);
@@ -213,8 +213,8 @@ __kernel void EM_alphabeta(__global const float *beta,
 
 // expected_A     = mk_stochastic(xi_sum);
 // sum along each row and scale rowwise
-__kernel void EM_expect_A(__global const float *xi_sum,
-                          __global       float *expect_A,
+kernel void EM_expect_A(global const float *xi_sum,
+                          global       float *expect_A,
                                    const int N) 
 {
         uint gx = get_global_id(0);
@@ -266,8 +266,8 @@ __kernel void EM_expect_A(__global const float *xi_sum,
 
 }
 
-__kernel void EM_transpose(__global const float *A,
-                           __global       float *At,
+kernel void EM_transpose(global const float *A,
+                           global       float *At,
                                     const int height,
                                     const int width)
 {
@@ -301,8 +301,8 @@ __kernel void EM_transpose(__global const float *A,
 
 }
 
-__kernel void EM_gammastatesum(__global const float *gammaT,
-                               __global       float *gamma_state_sum,
+kernel void EM_gammastatesum(global const float *gammaT,
+                               global       float *gamma_state_sum,
                                         const int N,
                                         const int T)
 {
@@ -345,8 +345,8 @@ __kernel void EM_gammastatesum(__global const float *gammaT,
         }
 }
 
-__kernel void EM_gammaobs(__global const float *observationsT, // D x T
-                          __global       float *gamma_obs,
+kernel void EM_gammaobs(global const float *observationsT, // D x T
+                          global       float *gamma_obs,
                           __constant     float *bufferT,
                                    const int T)
 {
@@ -360,9 +360,9 @@ __kernel void EM_gammaobs(__global const float *observationsT, // D x T
 
 }
 
-__kernel void EM_expectmu(__global const float *gamma_obs, // D x T
+kernel void EM_expectmu(global const float *gamma_obs, // D x T
                                    const int hs,
-                          __global       float *expect_mu, // N x D
+                          global       float *expect_mu, // N x D
                           __constant     float *gamma_state_sumC,
                                    const int T, 
                                    const uint current)
@@ -409,11 +409,11 @@ __kernel void EM_expectmu(__global const float *gamma_obs, // D x T
 
 }
 
-__kernel void EM_expectsigma_dev(
-                __global const float *gamma_obs,
-                __global const float *observations,        
+kernel void EM_expectsigma_dev(
+                global const float *gamma_obs,
+                global const float *observations,        
                          const int hs,
-                __global       float *expect_sigma_sym,
+                global       float *expect_sigma_sym,
                 __constant     float *gamma_state_sumC,
                 __constant     float *expect_mu_state,
                          const int D,
@@ -466,9 +466,9 @@ __kernel void EM_expectsigma_dev(
         expect_sigma_sym[Row * D + Col] = sum / gamma_state_sumC[hs] - expect_mu_state[Row] * expect_mu_state[Col];
 }
 
-__kernel void EM_update_expectsigma(
-                __global       float *expect_sigma,        
-                __global const float *expect_sigma_sym,
+kernel void EM_update_expectsigma(
+                global       float *expect_sigma,        
+                global const float *expect_sigma_sym,
                          const int blk_rows,
                          const int width,
                          const uint start)
