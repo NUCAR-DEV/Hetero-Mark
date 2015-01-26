@@ -173,11 +173,8 @@ void HMM::InitBuffers()
         // Sanity check
         if (!a || !b || !pi || !blk_result || !lll || !alpha || !observations)
         {
-                printf(
-                        "Cannot allocate SVM memory with clSVMAlloc: "
-                        "it returns null pointer. "
-                        "You might be out of memory."
-                        );
+                printf("Cannot allocate SVM memory with clSVMAlloc\n");
+                exit(-1);
         }
 
         // Coarse grain SVM needs explicit map/unmap
