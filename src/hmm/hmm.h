@@ -114,6 +114,8 @@ class HMM
 	void CleanUpBuffers();
 
 	void Forward();
+	void Forward_init_alpha();
+
 	void Backward();
 	void BaumWelch();
 

@@ -388,10 +388,15 @@ void HMM::CleanUpKernels()
 
 void HMM::Forward()
 {
+        Forward_init_alpha();
+}
+
+void HMM::Forward_init_alpha()
+{
         cl_int err;
 
-        size_t globalSize_FWD_init_alpha = N;
-        size_t localSize_FWD_init_alpha  = N / BLOCKSIZE;
+        size_t globalSize = N;
+        size_t localSize = N / BLOCKSIZE;
 
         err = clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 0, b);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
@@ -410,12 +415,10 @@ void HMM::Forward()
                 cmdQueue_0,
                 kernel_FWD_init_alpha,
                 1,
-                0, &globalSize_FWD_init_alpha, &localSize_FWD_init_alpha,
+                0, &globalSize, &localSize,
                 0, 0, 0
         );
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
-
-
 
 }
 
