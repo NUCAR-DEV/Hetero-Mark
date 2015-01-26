@@ -275,6 +275,37 @@ void HMM::InitBuffers()
 
         // GPU buffers
 
+        // forward 
+        a_d                 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
+        b_d                 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
+        pi_d                = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
+        alpha_d             = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
+        ones_d              = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);      // for cublasdot
+        ll_d                = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(float)*(T + 1), 0);
+
+        // backward
+        beta_d              = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
+        betaB_d             = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
+
+        // EM
+        xi_sum_d            = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
+        alpha_beta_d        = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
+        gamma_d             = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
+        A_alphabetaB_d      = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
+        blk_result_d        = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_tileblks, 0);
+        gammaT_d            = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
+        gamma_state_sum_d   = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
+        gamma_obs_d         = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
+
+        expect_prior_d      = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
+        expect_A_d          = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
+        observations_d      = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
+        observationsT_d     = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
+
+        expect_mu_d         = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dn, 0);
+        expect_sigma_sym_d  = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dd, 0);
+        expect_sigma_d      = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_ddn, 0);
+
 }
 
 void HMM::CleanUp()
@@ -283,23 +314,56 @@ void HMM::CleanUp()
         CleanUpBuffers();
 }
 
+
+#define safeSVMFree(ctx, ptr) \
+        if(ptr) \
+          clSVMFree(ctx, ptr); 
 void HMM::CleanUpBuffers()
 {
-        if (a)
-                clSVMFree(context, a);
-        if (b)
-                clSVMFree(context, b);
-        if (pi)
-                clSVMFree(context, pi);
-        if (blk_result)
-                clSVMFree(context, blk_result);
-        if (lll)
-                clSVMFree(context, lll);
+        // CPU buffers
         if (alpha)
                 free(alpha);
-        if (observations)
-                clSVMFree(context, observations);
+        
+        safeSVMFree(context, a);
+        safeSVMFree(context, b);
+        safeSVMFree(context, pi);
+        safeSVMFree(context, blk_result);
+        safeSVMFree(context, observations);
+
+        // GPU buffers
+        // forward 
+        safeSVMFree(context, a_d);
+        safeSVMFree(context, b_d);
+        safeSVMFree(context, pi_d);
+        safeSVMFree(context, alpha_d);
+        safeSVMFree(context, ones_d);
+        safeSVMFree(context, ll_d);
+
+        // backward
+        safeSVMFree(context, beta_d);
+        safeSVMFree(context, betaB_d);
+
+        // EM
+        safeSVMFree(context, xi_sum_d);
+        safeSVMFree(context, alpha_beta_d);
+        safeSVMFree(context, gamma_d);
+        safeSVMFree(context, A_alphabetaB_d);
+        safeSVMFree(context, blk_result_d);
+        safeSVMFree(context, gammaT_d);
+        safeSVMFree(context, gamma_state_sum_d);
+        safeSVMFree(context, gamma_obs_d);
+
+        safeSVMFree(context, expect_prior_d);
+        safeSVMFree(context, expect_A_d);
+        safeSVMFree(context, observations_d);
+        safeSVMFree(context, observationsT_d);
+
+        safeSVMFree(context, expect_mu_d);
+        safeSVMFree(context, expect_sigma_sym_d);
+        safeSVMFree(context, expect_sigma_d);
+
 }
+#undef safeSVMFree
 
 void HMM::CleanUpKernels()
 {

@@ -19,7 +19,7 @@ class HMM
 	cl_command_queue cmdQueue_0;
 	cl_command_queue cmdQueue_1;
 
-	// User managed buffers, no auto release
+	// User managed kernels, no auto release
 	cl_kernel kernel_FWD_init_alpha;
 	cl_kernel kernel_FWD_scaling;
 	cl_kernel kernel_FWD_calc_alpha;
@@ -39,6 +39,7 @@ class HMM
 	cl_kernel kernel_EM_expectsigma_dev;
 	cl_kernel kernel_EM_update_expectsigma;	
 
+	// Parameters
 	static const int TILE = 16;
 	static const int SIZE = 4096;
 	int N;
@@ -59,6 +60,7 @@ class HMM
 	int tileblks;
 	size_t bytes_tileblks;
 
+	// SVM buffers, no auto release
 	float *a;          // state transition probability matrix
 	float *b;          // emission probability matrix
 	float *pi;         // prior probability
@@ -66,6 +68,37 @@ class HMM
 	float *lll;        // log likelihood
 	float *blk_result; // intermediate blk results
 	float *observations;
+
+	// forward
+	float *a_d;
+	float *b_d;
+	float *pi_d;
+	float *alpha_d;
+	float *ones_d;
+	float *ll_d;
+
+	// bk
+	float *beta_d;
+	float *betaB_d;
+
+	// em 
+	float *xi_sum_d;
+	float *alpha_beta_d;
+	float *gamma_d;
+	float *A_alphabetaB_d;
+	float *blk_result_d;
+	float *gammaT_d;
+	float *gamma_state_sum_d;
+	float *gamma_obs_d;
+	float *expect_mu_d;
+	float *expect_sigma_sym_d;
+	float *expect_sigma_d;
+
+	float *expect_prior_d;
+	float *expect_A_d;
+	float *observations_d;
+	float *observationsT_d;
+
 
 	void Init();
 	void InitParam();
