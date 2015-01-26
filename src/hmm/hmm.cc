@@ -31,22 +31,19 @@ void HMM::Init()
 void HMM::InitCL()
 {
         // Init OCL context
-        runtime = clRuntime::getInstance();
+        runtime    = clRuntime::getInstance();
 
         // OpenCL objects get from clRuntime class release themselves automatically, 
         // no need to clRelease them explicitly
-        platform = runtime->getPlatformID();
-        device = runtime->getDevice();
-        context = runtime->getContext();
-
-        runtime->displayAllInfo();
+        platform   = runtime->getPlatformID();
+        device     = runtime->getDevice();
+        context    = runtime->getContext();
 
         cmdQueue_0 = runtime->getCmdQueue(0);
         cmdQueue_1 = runtime->getCmdQueue(1);
 
         // Helper to read kernel file
-        file = clFile::getInstance();
-        file->open("hmm_Kernels.cl");
+        file       = clFile::getInstance();
 }
 
 void HMM::InitParam()
@@ -79,6 +76,8 @@ void HMM::InitKernels()
 {
         cl_int err;
         
+        file->open("hmm_Kernels.cl");
+
         // Create program
         const char *source = file->getSourceChar();
 
@@ -286,7 +285,20 @@ void HMM::CleanUp()
 
 void HMM::CleanUpBuffers()
 {
-
+        if (a)
+                clSVMFree(context, a);
+        if (b)
+                clSVMFree(context, b);
+        if (pi)
+                clSVMFree(context, pi);
+        if (blk_result)
+                clSVMFree(context, blk_result);
+        if (lll)
+                clSVMFree(context, lll);
+        if (alpha)
+                free(alpha);
+        if (observations)
+                clSVMFree(context, observations);
 }
 
 void HMM::CleanUpKernels()
