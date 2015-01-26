@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string.h>
 #include <clUtil.h>
 #include "hmm.h"
 
@@ -73,7 +74,7 @@ void HMM::InitKernels()
         const char *source = file->getSourceChar();
 
         program = clCreateProgramWithSource(context, 1, 
-                (const char**)&source, NULL, &err);
+                (const char **)&source, NULL, &err);
         checkOpenCLErrors(err, "Failed to create Program with source...\n");
 
         // Create program with OpenCL 2.0 support
@@ -142,6 +143,12 @@ void HMM::InitBuffers()
 
         cl_int err;
         int i, j;
+        bool svmCoarseGrainAvail = clRuntime::getInstance()->isSVMavail(SVM_COARSE);
+        if (!svmCoarseGrainAvail)
+        {
+                printf("SVM coarse grain support unavailable\n");
+                exit(-1);
+        }
         bool svmFineGrainAvail = clRuntime::getInstance()->isSVMavail(SVM_FINE);
 
         cl_svm_mem_flags flags = CL_MEM_READ_WRITE;
