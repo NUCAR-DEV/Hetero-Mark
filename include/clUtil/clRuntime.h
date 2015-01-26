@@ -105,24 +105,24 @@ clRuntime::clRuntime()
 
         // Check if support CL 2.0
         // requireCL20();
-        cl_context_properties cps[3] =
-                {
-                        CL_CONTEXT_PLATFORM,
-                        (cl_context_properties)platform,
-                        0
-                };
+        // cl_context_properties cps[3] =
+        //         {
+        //                 CL_CONTEXT_PLATFORM,
+        //                 (cl_context_properties)platform,
+        //                 0
+        //         };
 
-        context = clCreateContextFromType(
-                                    cps,
-                                    CL_DEVICE_TYPE_GPU,
-                                    NULL,
-                                    NULL,
-                                    &err);
-        checkOpenCLErrors(err, "Failed at clCreateContextFromType");
+        // context = clCreateContextFromType(
+        //                             cps,
+        //                             CL_DEVICE_TYPE_GPU,
+        //                             NULL,
+        //                             NULL,
+        //                             &err);
+        // checkOpenCLErrors(err, "Failed at clCreateContextFromType");
 
         // Create a context
-        // context = clCreateContext(0, 1, &device, NULL, NULL, &err);
-        // checkOpenCLErrors(err, "Failed at clCreateContext");
+        context = clCreateContext(0, 1, &device, NULL, NULL, &err);
+        checkOpenCLErrors(err, "Failed at clCreateContext");
 
 }
 
