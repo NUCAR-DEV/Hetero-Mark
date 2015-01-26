@@ -105,6 +105,7 @@ clRuntime::clRuntime()
 
         // Check if support CL 2.0
         // requireCL20();
+
         // cl_context_properties cps[3] =
         //         {
         //                 CL_CONTEXT_PLATFORM,

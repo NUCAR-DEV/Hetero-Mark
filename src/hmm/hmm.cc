@@ -33,6 +33,8 @@ void HMM::InitCL()
         device = runtime->getDevice();
         context = runtime->getContext();
 
+        runtime->displayAllInfo();
+
         cmdQueue_0 = runtime->getCmdQueue(0);
         cmdQueue_1 = runtime->getCmdQueue(1);
 
@@ -144,17 +146,23 @@ void HMM::InitBuffers()
 
         cl_int err;
         int i, j;
+
         bool svmCoarseGrainAvail = clRuntime::getInstance()->isSVMavail(SVM_COARSE);
+        bool svmFineGrainAvail = clRuntime::getInstance()->isSVMavail(SVM_FINE);
+        cl_svm_mem_flags flags = CL_MEM_READ_WRITE;
+
+        // Need at least coarse grain
         if (!svmCoarseGrainAvail)
         {
                 printf("SVM coarse grain support unavailable\n");
                 exit(-1);
         }
-        bool svmFineGrainAvail = clRuntime::getInstance()->isSVMavail(SVM_FINE);
 
-        cl_svm_mem_flags flags = CL_MEM_READ_WRITE;
-        if (svmFineGrainAvail);
-                flags |= CL_MEM_SVM_FINE_GRAIN_BUFFER;
+        // Fine grain
+        if (!svmFineGrainAvail)
+                printf("SVM fine grain support unavailable\n");
+        else
+                flags = CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER;
 
         // state transition probability matrix
         a            = (float *)clSVMAlloc(context, flags, bytes_nn, 0);
