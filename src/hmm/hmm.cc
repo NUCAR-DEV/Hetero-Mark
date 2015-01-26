@@ -166,6 +166,8 @@ void HMM::InitBuffers()
         if (!svmFineGrainAvail)
         {
                 printf("SVM fine grain support unavailable\n");
+                // Parameter N
+                paramN       = (int *)clSVMAlloc(context, CL_MEM_READ_ONLY, sizeof(int), 0);
                 // state transition probability matrix
                 a            = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
                 // emission probability matrix 
@@ -184,6 +186,8 @@ void HMM::InitBuffers()
         else
         {
                 printf("SVM fine grain support available\n");
+                // Parameter N
+                paramN       = (int *)clSVMAlloc(context, CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, sizeof(int), 0);
                 // state transition probability matrix
                 a            = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, bytes_nn, 0);
                 // emission probability matrix 
@@ -211,6 +215,15 @@ void HMM::InitBuffers()
         // Coarse grain SVM needs explicit map/unmap
         if (!svmFineGrainAvail)
         {
+                // Map paramN
+                err = clEnqueueSVMMap(cmdQueue_0,
+                                      CL_TRUE,       // blocking map
+                                      CL_MAP_WRITE,
+                                      paramN,
+                                      sizeof(int),
+                                      0, 0, 0
+                                      );
+                checkOpenCLErrors(err, "Failed to clEnqueueSVMMap");
                 // Map a
                 err = clEnqueueSVMMap(cmdQueue_0,
                                       CL_TRUE,       // blocking map
@@ -250,6 +263,8 @@ void HMM::InitBuffers()
 
         }
 
+        // Init content
+        *paramN = N;
         for (i = 0; i < (N * N); i++)
                 a[i] = 1.0f/(float)N;
         for (i = 0; i < (N * T); i++)
@@ -263,6 +278,8 @@ void HMM::InitBuffers()
         // Coarse grain needs explicit unmap
         if (!svmFineGrainAvail)
         {
+                err = clEnqueueSVMUnmap(cmdQueue_0, paramN, 0, 0, 0);
+                checkOpenCLErrors(err, "Failed to clEnqueueSVMUnmap");
                 err = clEnqueueSVMUnmap(cmdQueue_0, a, 0, 0, 0);
                 checkOpenCLErrors(err, "Failed to clEnqueueSVMUnmap");
                 err = clEnqueueSVMUnmap(cmdQueue_0, b, 0, 0, 0);
@@ -274,7 +291,6 @@ void HMM::InitBuffers()
         }
 
         // GPU buffers
-
         // forward 
         a_d                 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
         b_d                 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
@@ -323,7 +339,7 @@ void HMM::CleanUpBuffers()
         // CPU buffers
         if (alpha)
                 free(alpha);
-        
+        safeSVMFree(context, paramN);
         safeSVMFree(context, a);
         safeSVMFree(context, b);
         safeSVMFree(context, pi);
@@ -389,6 +405,16 @@ void HMM::CleanUpKernels()
 
 void HMM::Forward()
 {
+        cl_int err;
+
+        size_t globalSize = N;
+        size_t localSize = N / BLOCKSIZE;
+
+        err = clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 0, b);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+
+
+
 
 }
 

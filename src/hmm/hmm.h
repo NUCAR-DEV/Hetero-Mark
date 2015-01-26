@@ -42,6 +42,8 @@ class HMM
 	// Parameters
 	static const int TILE = 16;
 	static const int SIZE = 4096;
+	static const int BLOCKSIZE = 256;
+
 	int N;
 	int T = 64;	// number of (overlapping) windows 
 	int D = 64;	// number of features
@@ -61,6 +63,7 @@ class HMM
 	size_t bytes_tileblks;
 
 	// SVM buffers, no auto release
+	int *paramN;
 	float *a;          // state transition probability matrix
 	float *b;          // emission probability matrix
 	float *pi;         // prior probability
