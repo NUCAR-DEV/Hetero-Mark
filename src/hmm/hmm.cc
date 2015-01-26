@@ -149,7 +149,6 @@ void HMM::InitBuffers()
 
         bool svmCoarseGrainAvail = clRuntime::getInstance()->isSVMavail(SVM_COARSE);
         bool svmFineGrainAvail = clRuntime::getInstance()->isSVMavail(SVM_FINE);
-        cl_svm_mem_flags flags = CL_MEM_READ_WRITE;
 
         // Need at least coarse grain
         if (!svmCoarseGrainAvail)
@@ -158,26 +157,44 @@ void HMM::InitBuffers()
                 exit(-1);
         }
 
-        // Fine grain
+        // Alloc buffer
         if (!svmFineGrainAvail)
+        {
                 printf("SVM fine grain support unavailable\n");
+                // state transition probability matrix
+                a            = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
+                // emission probability matrix 
+                b            = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
+                // prior probability
+                pi           = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
+                // intermediate blk results from the device
+                blk_result   = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_tileblks, 0);
+                // log likelihood 
+                lll          = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(float), 0);
+                // forward probability matrix; hint: for checking purpose
+                alpha        = (float *)malloc(bytes_nt);  // T x N
+                // for em
+                observations = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
+        }
         else
-                flags = CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER;
+        {
+                printf("SVM fine grain support available\n");
+                // state transition probability matrix
+                a            = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, bytes_nn, 0);
+                // emission probability matrix 
+                b            = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, bytes_nt, 0);
+                // prior probability
+                pi           = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, bytes_n, 0);
+                // intermediate blk results from the device
+                blk_result   = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, bytes_tileblks, 0);
+                // log likelihood 
+                lll          = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, sizeof(float), 0);
+                // forward probability matrix; hint: for checking purpose
+                alpha        = (float *)malloc(bytes_nt);  // T x N
+                // for em
+                observations = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, bytes_dt, 0);               
+        }
 
-        // state transition probability matrix
-        a            = (float *)clSVMAlloc(context, flags, bytes_nn, 0);
-        // emission probability matrix 
-        b            = (float *)clSVMAlloc(context, flags, bytes_nt, 0);
-        // prior probability
-        pi           = (float *)clSVMAlloc(context, flags, bytes_n, 0);
-        // intermediate blk results from the device
-        blk_result   = (float *)clSVMAlloc(context, flags, bytes_tileblks, 0);
-        // log likelihood 
-        lll          = (float *)clSVMAlloc(context, flags, sizeof(float), 0);
-        // forward probability matrix; hint: for checking purpose
-        alpha        = (float *)malloc(bytes_nt);  // T x N
-        // for em
-        observations = (float *)clSVMAlloc(context, flags, bytes_dt, 0);
 
         // Sanity check
         if (!a || !b || !pi || !blk_result || !lll || !alpha || !observations)
@@ -238,6 +255,7 @@ void HMM::InitBuffers()
                 for(j = 0 ; j< D ; ++j)
                         observations[i * D + j] = (float)i + 1.f;
 
+        // Coarse grain needs explicit unmap
         if (!svmFineGrainAvail)
         {
                 err = clEnqueueSVMUnmap(cmdQueue_0, a, 0, 0, 0);
