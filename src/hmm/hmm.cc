@@ -407,12 +407,25 @@ void HMM::Forward()
 {
         cl_int err;
 
-        size_t globalSize = N;
-        size_t localSize = N / BLOCKSIZE;
+        size_t globalSize_FWD_init_alpha = N;
+        size_t localSize_FWD_init_alpha  = N / BLOCKSIZE;
 
-        err = clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 0, b);
+        err  = clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 0, b);
+        err |= clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 1, pi);
+        err |= clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 2, paramN);
+        err |= clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 3, alpha_d);
+        err |= clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 4, ones_d);
+        err |= clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 5, beta_d);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
+        err = clEnqueueNDRangeKernel(
+                cmdQueue_0,
+                kernel_FWD_init_alpha,
+                1,
+                0, &globalSize_FWD_init_alpha, &localSize_FWD_init_alpha,
+                0, 0, 0
+        );
+        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
 
 
 
