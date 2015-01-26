@@ -5,7 +5,13 @@
 
 HMM::HMM(int N)
 {
-        this->N = N;
+        if (N >= TILE)
+                this->N = N;
+        else
+        {
+                std::cout << "N < " << TILE << std::endl;
+                exit(-1);
+        }
 }
 
 HMM::~HMM()
