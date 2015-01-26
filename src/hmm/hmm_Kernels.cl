@@ -1,7 +1,7 @@
 // Forward kernels
 __kernel void FWD_init_alpha(__global const float *b_d,
                              __global const float *pi_d,
-                             __global const int N,
+                                      const int N,
                              __global float *alpha_d,
                              __global float *ones_d,
                              __global float *beta_d)

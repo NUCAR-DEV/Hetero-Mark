@@ -63,7 +63,6 @@ class HMM
 	size_t bytes_tileblks;
 
 	// SVM buffers, no auto release
-	int *paramN;
 	float *a;          // state transition probability matrix
 	float *b;          // emission probability matrix
 	float *pi;         // prior probability
