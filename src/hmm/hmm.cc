@@ -29,6 +29,7 @@ void HMM::InitCL()
 
         // OpenCL objects get from clRuntime class release themselves automatically, 
         // no need to clRelease them explicitly
+        platform = runtime->getPlatformID();
         device = runtime->getDevice();
         context = runtime->getContext();
 

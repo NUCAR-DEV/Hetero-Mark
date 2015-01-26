@@ -130,18 +130,23 @@ clRuntime::~clRuntime()
 {
         cl_int err = 0;
 
-        if (context)
-        {
-                err = clReleaseContext(context);
-                checkOpenCLErrors(err, "Failed at clReleaseContext");
-        }
-
         for (auto &cmdQueue : cmdQueueRepo)
         {
                 err = clReleaseCommandQueue(cmdQueue);
                 checkOpenCLErrors(err, "Failed at clReleaseCommandQueue");
         }
 
+        if (context)
+        {
+                err = clReleaseContext(context);
+                checkOpenCLErrors(err, "Failed at clReleaseContext");
+        }
+
+        if (device)
+        {
+                err = clReleaseDevice(device);
+                checkOpenCLErrors(err, "Failed at clReleaseDevice");
+        }
 }
 
 void clRuntime::requireCL20()
@@ -224,13 +229,12 @@ int clRuntime::displayDeviceInfo()
                 if (deviceIds[i] == device)
                 {
                         std::cout << "(*)\tDevice " << i << " = " << deviceName
-                                <<", Device ID = "<<deviceIds[i] << std::endl;
-
+                                <<", Device ID = "<< deviceIds[i] << std::endl;
                 }
                 else 
                 {
                         std::cout << "\tDevice " << i << " = " << deviceName
-                                <<", Device ID = "<<deviceIds[i]<< std::endl;
+                                <<", Device ID = "<< deviceIds[i]<< std::endl;
                 }
         }
 
