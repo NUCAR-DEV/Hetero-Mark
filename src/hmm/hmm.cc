@@ -437,6 +437,7 @@ void HMM::Forward_scaling()
 
         size_t globalSize = N;
         size_t localSize = N / BLOCKSIZE;
+        int zero = 0;
 
         err = clSetKernelArg(kernel_FWD_scaling, 0, sizeof(int), (void*)&N);
         checkOpenCLErrors(err, "Failed at clSetKernelArg");
@@ -444,7 +445,7 @@ void HMM::Forward_scaling()
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
         err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 2, ll_d);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
-        err = clSetKernelArg(kernel_FWD_scaling, 3, sizeof(int), &ZERO);
+        err = clSetKernelArg(kernel_FWD_scaling, 3, sizeof(int), &zero);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
         err = clEnqueueNDRangeKernel(
