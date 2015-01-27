@@ -15,10 +15,9 @@ __kernel void FWD_init_alpha(__global const float *b_d,
 
 
 __kernel void FWD_scaling(         const int    N,
-                          __global       float *alpha_d
+                          __global       float *alpha_d,
                           __global const float *scale_factor,
-                                   const int t,
-                          )
+                                   const int t)
 {
         unsigned int idx = get_global_id(0);
 

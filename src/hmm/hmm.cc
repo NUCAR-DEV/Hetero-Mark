@@ -444,7 +444,7 @@ void HMM::Forward_scaling()
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
         err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 2, ll_d);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
-        err = clSetKernelArg(kernel_FWD_scaling, 3, sizeof(int), 0);
+        err = clSetKernelArg(kernel_FWD_scaling, 3, sizeof(int), &ZERO);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
         err = clEnqueueNDRangeKernel(

@@ -43,6 +43,7 @@ class HMM
 	static const int TILE = 16;
 	static const int SIZE = 4096;
 	static const int BLOCKSIZE = 256;
+	static const int ZERO = 0;
 
 	int N;
 	int T = 64;	// number of (overlapping) windows 
