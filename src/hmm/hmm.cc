@@ -389,6 +389,10 @@ void HMM::CleanUpKernels()
 void HMM::Forward()
 {
         Forward_init_alpha();
+
+        Forward_sum_alpha();
+
+        Forward_scaling();
 }
 
 void HMM::Forward_init_alpha()
@@ -403,7 +407,7 @@ void HMM::Forward_init_alpha()
         err = clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 1, pi);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
         err = clSetKernelArg(kernel_FWD_init_alpha, 2, sizeof(int), (void *)&N);
-        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+        checkOpenCLErrors(err, "Failed at clSetKernelArg");
         err = clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 3, alpha_d);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
         err = clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 4, ones_d);
@@ -414,6 +418,38 @@ void HMM::Forward_init_alpha()
         err = clEnqueueNDRangeKernel(
                 cmdQueue_0,
                 kernel_FWD_init_alpha,
+                1,
+                0, &globalSize, &localSize,
+                0, 0, 0
+        );
+        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
+
+}
+
+void HMM::Forward_sum_alpha()
+{
+        // TODO 
+}
+
+void HMM::Forward_scaling()
+{
+        cl_int err;
+
+        size_t globalSize = N;
+        size_t localSize = N / BLOCKSIZE;
+
+        err = clSetKernelArg(kernel_FWD_scaling, 0, sizeof(int), (void*)&N);
+        checkOpenCLErrors(err, "Failed at clSetKernelArg");
+        err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 1, alpha);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+        err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 2, ll_d);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+        err = clSetKernelArg(kernel_FWD_scaling, 3, sizeof(int), 0);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+
+        err = clEnqueueNDRangeKernel(
+                cmdQueue_0,
+                kernel_FWD_scaling,
                 1,
                 0, &globalSize, &localSize,
                 0, 0, 0

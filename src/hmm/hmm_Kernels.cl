@@ -1,10 +1,10 @@
 // Forward kernels
 __kernel void FWD_init_alpha(__global const float *b_d,
                              __global const float *pi_d,
-                                      const int N,
-                             __global float *alpha_d,
-                             __global float *ones_d,
-                             __global float *beta_d)
+                                      const int    N,
+                             __global       float *alpha_d,
+                             __global       float *ones_d,
+                             __global       float *beta_d)
 {
         unsigned int idx = get_global_id(0);
         if (idx < N) {
@@ -14,10 +14,11 @@ __kernel void FWD_init_alpha(__global const float *b_d,
 }
 
 
-__kernel void FWD_scaling(         const int N,
+__kernel void FWD_scaling(         const int    N,
+                          __global       float *alpha_d
                           __global const float *scale_factor,
                                    const int t,
-                          __global float *alpha_d)
+                          )
 {
         unsigned int idx = get_global_id(0);
 

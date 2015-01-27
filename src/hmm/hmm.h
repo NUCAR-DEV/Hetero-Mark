@@ -115,6 +115,8 @@ class HMM
 
 	void Forward();
 	void Forward_init_alpha();
+	void Forward_sum_alpha();
+	void Forward_scaling();
 
 	void Backward();
 	void BaumWelch();
