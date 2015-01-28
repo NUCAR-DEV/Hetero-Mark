@@ -21,15 +21,19 @@ __kernel void FWD_scaling(         const int    N,
 {
         unsigned int idx = get_global_id(0);
 
+        // Should be broardcast to all workitems in a wavefront
+        // Therefore no bank conflict
+        __local float scale_factor_local = scale_factor[t];
+
         if (idx < N) {
-                alpha_d[idx] /= scale_factor[t];
+                alpha_d[idx] /= scale_factor_local;
         }
 }
 
 
 __kernel void FWD_calc_alpha(         const int N,
-                             __global const float *b_d,
-                             __global float *alpha_d) 
+                             __global       float *alpha_d.
+                             __global const float *b_d) 
 {
         unsigned int idx = get_global_id(0);
 

@@ -388,14 +388,57 @@ void HMM::CleanUpKernels()
 
 void HMM::Forward()
 {
-        Forward_init_alpha();
+        ForwardInitAlpha();
 
-        Forward_sum_alpha();
+        ForwardSumAlpha();
 
-        Forward_scaling();
+        ForwardScaling(N, &alpha_d[0], ll_d, 0);
+
+        int frm;
+        int current, previous;
+
+        for (frm = 1; frm < T; ++frm) 
+        {
+            current  = frm * N; 
+            previous = current - N;
+
+            // a' * alpha
+            // auto transposed due to the column major thing
+            // ret = cublasSgemv(handle1, CUBLAS_OP_N, 
+            //         N, N,
+            //         &alp, 
+            //         a_d, N, 
+            //         &alpha_d[previous], 1,
+            //         &bet, 
+            //         &alpha_d[current], 1);
+
+            // if (ret != CUBLAS_STATUS_SUCCESS) 
+            // {
+            //     fprintf (stderr, "ERROR: Sgemv execution error. This is line %d.\n", __LINE__);
+            //     exit(EXIT_FAILURE);
+            // }
+
+            // b * (a' * alpha) 
+            ForwardCalcAlpha(N, &alpha_d[current] , &b_d[current]);
+
+            // // the likelihood for current window
+            // ret = cublasSdot(handle, N, 
+            //         &alpha_d[current], 1, 
+            //         ones_d, 1, 
+            //         &ll_d[frm]);
+
+            // if (ret != CUBLAS_STATUS_SUCCESS) 
+            // {
+            //     fprintf (stderr, "ERROR: Sdot execution error. This is line %d.\n", __LINE__);
+            //     exit(EXIT_FAILURE);
+            // }
+
+            ForwardScaling(N, &alpha_d[current], ll_d, frm);
+        }
+
 }
 
-void HMM::Forward_init_alpha()
+void HMM::ForwardInitAlpha()
 {
         cl_int err;
 
@@ -426,12 +469,12 @@ void HMM::Forward_init_alpha()
 
 }
 
-void HMM::Forward_sum_alpha()
+void HMM::ForwardSumAlpha()
 {
         // TODO 
 }
 
-void HMM::Forward_scaling()
+void HMM::ForwardScaling(int numElements, float *data, float *scaleArray, int scaleArrayIndex)
 {
         cl_int err;
 
@@ -439,18 +482,43 @@ void HMM::Forward_scaling()
         size_t localSize = N / BLOCKSIZE;
         int zero = 0;
 
-        err = clSetKernelArg(kernel_FWD_scaling, 0, sizeof(int), (void*)&N);
+        err = clSetKernelArg(kernel_FWD_scaling, 0, sizeof(int), (void*)&numElements);
         checkOpenCLErrors(err, "Failed at clSetKernelArg");
-        err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 1, alpha);
+        err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 1, data);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
-        err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 2, ll_d);
+        err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 2, scaleArray);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
-        err = clSetKernelArg(kernel_FWD_scaling, 3, sizeof(int), &zero);
+        err = clSetKernelArg(kernel_FWD_scaling, 3, sizeof(int), &scaleArrayIndex);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
         err = clEnqueueNDRangeKernel(
                 cmdQueue_0,
                 kernel_FWD_scaling,
+                1,
+                0, &globalSize, &localSize,
+                0, 0, 0
+        );
+        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
+
+}
+
+void HMM::ForwardCalcAlpha(int numElements, float *dst, float *src)
+{
+        cl_int err;
+
+        size_t globalSize = N;
+        size_t localSize = N / BLOCKSIZE;
+
+        err = clSetKernelArg(kernel_FWD_calc_alpha, 0, sizeof(int), (void*)&numElements);
+        checkOpenCLErrors(err, "Failed at clSetKernelArg");
+        err = clSetKernelArgSVMPointer(kernel_FWD_calc_alpha, 1, dst);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+        err = clSetKernelArgSVMPointer(kernel_FWD_calc_alpha, 2, src);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+
+        err = clEnqueueNDRangeKernel(
+                cmdQueue_0,
+                kernel_FWD_calc_alpha,
                 1,
                 0, &globalSize, &localSize,
                 0, 0, 0

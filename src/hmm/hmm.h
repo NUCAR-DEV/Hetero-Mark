@@ -114,9 +114,10 @@ class HMM
 	void CleanUpBuffers();
 
 	void Forward();
-	void Forward_init_alpha();
-	void Forward_sum_alpha();
-	void Forward_scaling();
+	void ForwardInitAlpha();
+	void ForwardSumAlpha();
+	void ForwardScaling(int numElements, float *data, float *scaleArray, int scaleArrayIndex);
+	void ForwardCalcAlpha(int numElements, float *alpha, float *b);
 
 	void Backward();
 	void BaumWelch();
