@@ -72,10 +72,6 @@ class HMM
 	float *observations;
 
 	// forward
-	float *a_d;
-	float *b_d;
-	float *pi_d;
-	float *alpha_d;
 	float *ones_d;
 	float *ll_d;
 
@@ -88,7 +84,6 @@ class HMM
 	float *alpha_beta_d;
 	float *gamma_d;
 	float *A_alphabetaB_d;
-	float *blk_result_d;
 	float *gammaT_d;
 	float *gamma_state_sum_d;
 	float *gamma_obs_d;
@@ -98,7 +93,6 @@ class HMM
 
 	float *expect_prior_d;
 	float *expect_A_d;
-	float *observations_d;
 	float *observationsT_d;
 
 

@@ -276,10 +276,6 @@ void HMM::InitBuffers()
 
         // GPU buffers
         // forward 
-        a_d                 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
-        b_d                 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
-        pi_d                = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
-        alpha_d             = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
         ones_d              = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);      // for cublasdot
         ll_d                = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(float)*(T + 1), 0);
 
@@ -292,14 +288,12 @@ void HMM::InitBuffers()
         alpha_beta_d        = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
         gamma_d             = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
         A_alphabetaB_d      = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
-        blk_result_d        = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_tileblks, 0);
         gammaT_d            = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
         gamma_state_sum_d   = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
         gamma_obs_d         = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
 
         expect_prior_d      = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
         expect_A_d          = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
-        observations_d      = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
         observationsT_d     = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
 
         expect_mu_d         = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dn, 0);
@@ -331,10 +325,6 @@ void HMM::CleanUpBuffers()
 
         // GPU buffers
         // forward 
-        safeSVMFree(context, a_d);
-        safeSVMFree(context, b_d);
-        safeSVMFree(context, pi_d);
-        safeSVMFree(context, alpha_d);
         safeSVMFree(context, ones_d);
         safeSVMFree(context, ll_d);
 
@@ -347,14 +337,12 @@ void HMM::CleanUpBuffers()
         safeSVMFree(context, alpha_beta_d);
         safeSVMFree(context, gamma_d);
         safeSVMFree(context, A_alphabetaB_d);
-        safeSVMFree(context, blk_result_d);
         safeSVMFree(context, gammaT_d);
         safeSVMFree(context, gamma_state_sum_d);
         safeSVMFree(context, gamma_obs_d);
 
         safeSVMFree(context, expect_prior_d);
         safeSVMFree(context, expect_A_d);
-        safeSVMFree(context, observations_d);
         safeSVMFree(context, observationsT_d);
 
         safeSVMFree(context, expect_mu_d);
@@ -392,7 +380,7 @@ void HMM::Forward()
 
         ForwardSumAlpha();
 
-        ForwardScaling(N, &alpha_d[0], ll_d, 0);
+        ForwardScaling(N, &alpha[0], ll_d, 0);
 
         int frm;
         int current, previous;
@@ -408,9 +396,9 @@ void HMM::Forward()
             //         N, N,
             //         &alp, 
             //         a_d, N, 
-            //         &alpha_d[previous], 1,
+            //         &alpha[previous], 1,
             //         &bet, 
-            //         &alpha_d[current], 1);
+            //         &alpha[current], 1);
 
             // if (ret != CUBLAS_STATUS_SUCCESS) 
             // {
@@ -419,11 +407,11 @@ void HMM::Forward()
             // }
 
             // b * (a' * alpha) 
-            ForwardCalcAlpha(N, &alpha_d[current] , &b_d[current]);
+            ForwardCalcAlpha(N, &alpha[current] , &b[current]);
 
             // // the likelihood for current window
             // ret = cublasSdot(handle, N, 
-            //         &alpha_d[current], 1, 
+            //         &alpha[current], 1, 
             //         ones_d, 1, 
             //         &ll_d[frm]);
 
@@ -433,7 +421,7 @@ void HMM::Forward()
             //     exit(EXIT_FAILURE);
             // }
 
-            ForwardScaling(N, &alpha_d[current], ll_d, frm);
+            ForwardScaling(N, &alpha[current], ll_d, frm);
         }
 
 }
@@ -451,7 +439,7 @@ void HMM::ForwardInitAlpha()
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
         err = clSetKernelArg(kernel_FWD_init_alpha, 2, sizeof(int), (void *)&N);
         checkOpenCLErrors(err, "Failed at clSetKernelArg");
-        err = clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 3, alpha_d);
+        err = clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 3, alpha);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
         err = clSetKernelArgSVMPointer(kernel_FWD_init_alpha, 4, ones_d);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
