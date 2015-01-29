@@ -194,7 +194,7 @@ __kernel void EM_A_mul_alphabetaB(         const int    N,
 }
 
 
-__kernel void EM_update_xisum(         const int N,
+__kernel void EM_update_xisum(         const int   N,
                                        const float sum,
                               __global const float *A_alphabetaB,
                               __global       float *xi_sum) 
@@ -205,10 +205,10 @@ __kernel void EM_update_xisum(         const int N,
         xi_sum[outID] += A_alphabetaB[outID] / sum;
 }
 
-__kernel void EM_alphabeta(__global const float *beta, 
+__kernel void EM_alphabeta(         const int    N,
                            __global const float *alpha,
-                           __global       float *alpha_beta,
-                                    const int N)
+                           __global const float *beta, 
+                           __global       float *alpha_beta)
 {
         uint idx = get_global_id(0);
         if (idx < N) {
@@ -218,9 +218,9 @@ __kernel void EM_alphabeta(__global const float *beta,
 
 // expected_A     = mk_stochastic(xi_sum);
 // sum along each row and scale rowwise
-__kernel void EM_expect_A(__global const float *xi_sum,
-                          __global       float *expect_A,
-                                   const int N) 
+__kernel void EM_expect_A(         const int    N,
+                          __global const float *xi_sum,
+                          __global       float *expect_A) 
 {
         uint gx = get_global_id(0);
         uint gy = get_global_id(1);

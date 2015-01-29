@@ -127,8 +127,9 @@ class HMM
 	void EMAMulAlphaBetaB(int numElements, float *ASrc, float *AAlphaBetaBDst, 
 		float *blkResultDst, float *constA, float *constB);
 	void EMSumBlkresult(float *sum);
-
 	void EMUpdateXisum(int numElements, float sum, float *AAlphaBetaBSrc, float *xiSumDst);
+	void EMAlphaBeta(int numElements, float *alphaSrc, float *betaSrc, float *alphaBetaDst);
+	void EMExpectA(int numElements, float *xiSumSrc, float *expectADst);
 
 public:
 	HMM(int N);

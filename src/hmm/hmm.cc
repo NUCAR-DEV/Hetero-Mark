@@ -658,6 +658,43 @@ void HMM::BaumWelch()
 
     }
 
+    current = previous;
+
+    EMAlphaBeta(N, &alpha[current], &beta_d[current], alpha_beta_d);
+
+    // ret = cublasSdot(handle, N, alpha_beta_d, 1, ones_d, 1, &ll_d[0]);
+    // if (ret != CUBLAS_STATUS_SUCCESS) 
+    // {
+    //     fprintf (stderr, "ERROR: Sdot execution error. This is line %d.\n", __LINE__);
+    //     exit(EXIT_FAILURE);
+    // }
+
+    // EM_alphabeta_update_gamma <<< grid, block >>> (alpha_beta_d, gamma_d, ll_d, N, current);
+
+    // // expected_prior = gamma(:, 1);
+    // checkCudaErrors(cudaMemcpy(expect_prior_d, &gamma_d[0], bytes_n, cudaMemcpyDeviceToDevice));
+
+    // // expected_A     = mk_stochastic(xi_sum);
+    // EM_expect_A <<< grid_6, block_6 >>> (xi_sum_d, expect_A_d, N);
+
+    // // transpose gamma: from (T x N) to (N x T) 
+    // EM_transpose <<< grid_7, block_7 >>> (gamma_d, gammaT_d, T, N);
+
+    // // gamma_state_sum = sum(gamma, 2); 
+    // // T x N for gamma_d
+    // // sum row on gammaT_d(N x T)
+    // EM_gammastatesum <<< grid_8, block_8 >>> (gammaT_d, gamma_state_sum_d, N, T);
+
+    // // copy gamma_state_sum to constant memory (read-only)
+    // cudaMemcpyToSymbol(gamma_state_sumC, gamma_state_sum_d, bytes_n, 0, cudaMemcpyDeviceToDevice);
+
+    // // hint: while gpu is running, these "observations" operations can be concurrently run on CPU
+    // checkCudaErrors(cudaMemcpyAsync(observations_d, observations, 
+    //             bytes_dt, cudaMemcpyHostToDevice));
+
+    // EM_transpose<<< grid_9, block_9 >>> (observations_d, observationsT_d, T, D);
+
+
 
 }
 
@@ -812,6 +849,62 @@ void HMM::EMUpdateXisum(int numElements, float sum, float *AAlphaBetaBSrc, float
         err = clEnqueueNDRangeKernel(
                 cmdQueue_0,
                 kernel_EM_update_xisum,
+                2,
+                0, globalSize, localSize,
+                0, 0, 0
+        );
+        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");    
+}
+
+void HMM::EMAlphaBeta(int numElements, float *alphaSrc, float *betaSrc, float *alphaBetaDst)
+{
+        cl_int err;
+
+        size_t globalSize = N;
+        size_t localSize = N / BLOCKSIZE;
+
+        err = clSetKernelArg(kernel_EM_alphabeta, 0, sizeof(int), (void *)&numElements);
+        checkOpenCLErrors(err, "Failed at clSetKernelArg");
+        err = clSetKernelArgSVMPointer(kernel_EM_alphabeta, 1, alphaSrc);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+        err = clSetKernelArgSVMPointer(kernel_EM_alphabeta, 2, betaSrc);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+        err = clSetKernelArgSVMPointer(kernel_EM_alphabeta, 3, alphaBetaDst);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+
+        err = clEnqueueNDRangeKernel(
+                cmdQueue_0,
+                kernel_EM_alphabeta,
+                1,
+                0, &globalSize, &localSize,
+                0, 0, 0
+        );
+        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
+}
+
+void HMM::EMExpectA(int numElements, float *xiSumSrc, float *expectADst)
+{
+        cl_int err;
+
+        size_t globalSize[2];
+        size_t localSize[2];
+
+        globalSize[0] = N;
+        globalSize[1] = N / 16;
+
+        localSize[0] = N / 16;
+        localSize[1] = N / 16;
+
+        err = clSetKernelArg(kernel_EM_expect_A, 0, sizeof(int), (void *)&numElements);
+        checkOpenCLErrors(err, "Failed at clSetKernelArg");
+        err = clSetKernelArgSVMPointer(kernel_EM_expect_A, 1, xiSumSrc);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+        err = clSetKernelArgSVMPointer(kernel_EM_expect_A, 3, expectADst);
+        checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
+
+        err = clEnqueueNDRangeKernel(
+                cmdQueue_0,
+                kernel_EM_expect_A,
                 2,
                 0, globalSize, localSize,
                 0, 0, 0
