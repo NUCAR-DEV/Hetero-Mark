@@ -31,13 +31,13 @@ class HMM
 	cl_kernel kernel_EM_A_mul_alphabetaB;
 	cl_kernel kernel_EM_update_xisum;
 	cl_kernel kernel_EM_alphabeta;
-	cl_kernel kernel_EM_expect_A;
+	cl_kernel kernel_EM_expt_A;
 	cl_kernel kernel_EM_transpose;
 	cl_kernel kernel_EM_gammastatesum;
 	cl_kernel kernel_EM_gammaobs;
-	cl_kernel kernel_EM_expectmu;
-	cl_kernel kernel_EM_expectsigma_dev;
-	cl_kernel kernel_EM_update_expectsigma;	
+	cl_kernel kernel_EM_exptmu;
+	cl_kernel kernel_EM_exptsigma_dev;
+	cl_kernel kernel_EM_update_exptsigma;	
 
 	// Parameters
 	static const int TILE = 16;
@@ -57,15 +57,19 @@ class HMM
 	int bytes_t;
 	int bytes_d;  
 	int bytes_n;  
+	int bytes_const;
 	int dd;
 
 	int tileblks;
 	size_t bytes_tileblks;
 
+	int blk_rows;
+	int blknum;
+
 	// SVM buffers, no auto release
 	float *a;          // state transition probability matrix
 	float *b;          // emission probability matrix
-	float *pi;         // prior probability
+	float *prior;      // prior probability
 	float *alpha;      // forward probability matrix
 	float *lll;        // log likelihood
 	float *blk_result; // intermediate blk results
@@ -84,17 +88,26 @@ class HMM
 	float *alpha_beta_d;
 	float *gamma_d;
 	float *A_alphabetaB_d;
+	//float *blk_result_d;
 	float *gammaT_d;
 	float *gamma_state_sum_d;
-	float *gamma_obs_d;
-	float *expect_mu_d;
-	float *expect_sigma_sym_d;
-	float *expect_sigma_d;
+	float *gamma_obs_d; // D x T
 
-	float *expect_prior_d;
-	float *expect_A_d;
+	// expected values
+	float *expt_prior_d;
+	float *expt_A_d;
 	float *observationsT_d;
+	float *expt_mu_d; // N x D
+	float *expt_sigma_sym_d;
+	float *expt_sigma_d;
 
+	// constant memory
+	// hint: reuse constant buffer if possible
+	float *constA; 
+	float *constB;
+	float *gamma_state_sumC;
+	float *constT;
+	float *expect_mu_state;
 
 	void Init();
 	void InitParam();

@@ -117,6 +117,7 @@ __kernel void BK_scaling(         const int N,
 // __constant float expect_mu_state[64];
 
 
+// Compute beta * B and alpha * beta
 __kernel void EM_betaB_alphabeta(__global const float *beta, 
                                  __global const float *B, 
                                  __global       float *betaB,  
@@ -126,7 +127,7 @@ __kernel void EM_betaB_alphabeta(__global const float *beta,
                                           const int current, 
                                           const int previous)
 {
-        uint idx = get_global_id(0);
+        size_t idx = get_global_id(0);
         if (idx < N) {
                 betaB[idx]     = beta[previous + idx] * B[previous + idx];
                 alpha_beta[idx] = beta[current + idx] * alpha[current + idx];
@@ -134,18 +135,125 @@ __kernel void EM_betaB_alphabeta(__global const float *beta,
 }
 
 
+// Compute the summation of alpha * beta ( = alpha_beta)
+__kernel void EM_sum_alphabeta(__global const float *alpha_beta,
+                               __global const float *ll_d,
+                                        const int    N,
+							   __local        float *sm)
+{
+	size_t gid = get_global_id(0);	
+	size_t lid = get_local_id(0);	
+	size_t gls = get_global_size(0);
+	size_t bls = get_local_size(0);
+
+	float tidsum = 0.f;
+	for(int i=gid; i<N; i+=gls)
+	{
+		tidsum += alpha_beta[i];	
+	}
+
+	sm[tid] = tidsum;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// work group reduction
+	if(bls >= 512){if(lid < 256) {sm[lid] += sm[lid + 256];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >= 256){if(lid < 128) {sm[lid] += sm[lid + 128];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >= 128){if(lid <  64) {sm[lid] += sm[lid +  64];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=  64){if(lid <  32) {sm[lid] += sm[lid +  32];} barrier(CLK_LOCAL_MEM_FENCE);}
+
+	// wavefront size for AMD southern islands GPUs is 16
+	if(lid < 16)
+	{
+		if(bls >= 32) {sm[lid] += sm[lid + 16];}	
+		if(bls >= 16) {sm[lid] += sm[lid +  8];}	
+		if(bls >=  8) {sm[lid] += sm[lid +  4];}	
+		if(bls >=  4) {sm[lid] += sm[lid +  2];}	
+		if(bls >=  2) {sm[lid] += sm[lid +  1];}	
+	}
+
+	if(lid == 0){
+		ll_d[0] = sm[0];	
+	}
+}
+
+/*
+// Normalise the alpha_beta, and save to gamma
 __kernel void EM_alphabeta_update_gamma(__global const float *alpha_beta, 
                                         __global       float *gamma,
                                         __global const float *ll_d, 
                                                  const int N,
-                                                 const uint current)
+                                                 const int current)
 {
-        uint idx = get_global_id(0);
+        size_t idx = get_global_id(0);
         if (idx < N){
                 gamma[current + idx] = alpha_beta[idx] / ll_d[0];
         }
 }
+*/
 
+
+__kernel void EM_norm_alphabeta(__global const float *alpha_d,
+                                 __global const float *beta_d,
+                                 __global const float *alphabeta_d,
+								 __global const float *gamma_d,
+								 __local 		float *sm,
+								 const int current,
+								 const int N)
+{
+	size_t gid = get_global_id(0);	
+	size_t lid = get_local_id(0);	
+	size_t gls = get_global_size(0);
+	size_t bls = get_local_size(0);
+
+	float tidsum = 0.f;
+	float tmp;
+	for(int i=gid; i<N; i+=gls)
+	{
+		alphabeta_d[i] = tmp = alpha_d[current+i] * beta_d[current + i];	
+		tidsum += tmp; 
+	}
+
+	sm[tid] = tidsum;
+	
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// work group reduction
+	if(bls >= 512){if(lid < 256) {sm[lid] += sm[lid + 256];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >= 256){if(lid < 128) {sm[lid] += sm[lid + 128];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >= 128){if(lid <  64) {sm[lid] += sm[lid +  64];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=  64){if(lid <  32) {sm[lid] += sm[lid +  32];} barrier(CLK_LOCAL_MEM_FENCE);}
+
+	// wavefront size for AMD southern islands GPUs is 16
+	if(lid < 16)
+	{
+		if(bls >= 32) {sm[lid] += sm[lid + 16];}	
+		if(bls >= 16) {sm[lid] += sm[lid +  8];}	
+		if(bls >=  8) {sm[lid] += sm[lid +  4];}	
+		if(bls >=  4) {sm[lid] += sm[lid +  2];}	
+		if(bls >=  2) {sm[lid] += sm[lid +  1];}	
+	}
+
+	// sm[0] has the sum
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for(int i=gid; i<N; i+=gls)
+	{
+		gamma_d[current + i] = alphabeta_d[i] / sm[0];
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+// Compute A. * (alpha * betaB')  
 __kernel void EM_A_mul_alphabetaB(__global const float *A, 
                                   __global       float *A_alphabetaB,
                                   __global       float *blk_result,
@@ -153,12 +261,11 @@ __kernel void EM_A_mul_alphabetaB(__global const float *A,
                                   __constant     float *ConstB,
                                            const int N) 
 {
+        size_t lx = get_local_id(0); // col  
+        size_t ly = get_local_id(1); // row 
 
-        uint lx = get_local_id(0); // col  
-        uint ly = get_local_id(1); // row 
-
-        uint gx = get_group_id(0) * get_local_size(0) + lx;
-        uint gy = get_group_id(1) * get_local_size(1) + ly;
+        size_t gx = get_group_id(0) * get_local_size(0) + lx;
+        size_t gy = get_group_id(1) * get_local_size(1) + ly;
 
         float data;
 
@@ -199,12 +306,13 @@ __kernel void EM_update_xisum(__global const float *A_alphabetaB,
                                        const float sum,
                                        const int N) 
 {
-        uint gx = get_global_id(0);
-        uint gy = get_global_id(1);
-        uint outID = gy * N + gx;
+        size_t gx = get_global_id(0);
+        size_t gy = get_global_id(1);
+        size_t outID = gy * N + gx;
         xi_sum[outID] += A_alphabetaB[outID] / sum;
 }
 
+/*
 __kernel void EM_alphabeta(__global const float *beta, 
                            __global const float *alpha,
                            __global       float *alpha_beta,
@@ -215,16 +323,21 @@ __kernel void EM_alphabeta(__global const float *beta,
                 alpha_beta[idx] = beta[idx] * alpha[idx];
         }
 }
+*/
+
+
+
 
 // expected_A     = mk_stochastic(xi_sum);
 // sum along each row and scale rowwise
-__kernel void EM_expect_A(__global const float *xi_sum,
-                          __global       float *expect_A,
+__kernel void EM_expect_A(__global const float *xi_sum_d,
+                          __global       float *expt_A_d,
                                    const int N) 
 {
         uint gx = get_global_id(0);
-        uint gy = get_global_id(1);
         uint lx = get_local_id(0); // col  
+
+        uint gy = get_global_id(1);
         uint ly = get_local_id(1); // row 
 
         __local float lds[256];
@@ -271,6 +384,9 @@ __kernel void EM_expect_A(__global const float *xi_sum,
 
 }
 
+
+
+
 __kernel void EM_transpose(__global const float *A,
                            __global       float *At,
                                     const int height,
@@ -280,10 +396,10 @@ __kernel void EM_transpose(__global const float *A,
         __local float lds[272]; // (16 +1) x 16
 
         // read the matrix tile into shared memory
-        uint xIndex = get_group_id(0) * TILE + get_local_id(0);
-        uint yIndex = get_group_id(1) * TILE + get_local_id(1);
-        uint lidx = get_local_id(0); // col  
-        uint lidy = get_local_id(1); // row 
+        size_t  xIndex = get_group_id(0) * TILE + get_local_id(0);
+        size_t  yIndex = get_group_id(1) * TILE + get_local_id(1);
+        size_t  lidx = get_local_id(0); // col  
+        size_t  lidy = get_local_id(1); // row 
 
         if((xIndex < width) && (yIndex < height))
         {
@@ -350,6 +466,7 @@ __kernel void EM_gammastatesum(__global const float *gammaT,
         }
 }
 
+
 __kernel void EM_gammaobs(__global const float *observationsT, // D x T
                           __global       float *gamma_obs,
                           __constant     float *bufferT,
@@ -366,11 +483,11 @@ __kernel void EM_gammaobs(__global const float *observationsT, // D x T
 }
 
 __kernel void EM_expectmu(__global const float *gamma_obs, // D x T
-                                   const int hs,
                           __global       float *expect_mu, // N x D
                           __constant     float *gamma_state_sumC,
-                                   const int T, 
-                                   const uint current)
+                                   const int    hs,
+                                   const int    T, 
+                                   const       int current)
 {
         // D x T        
         // row-wise sum 
@@ -417,10 +534,10 @@ __kernel void EM_expectmu(__global const float *gamma_obs, // D x T
 __kernel void EM_expectsigma_dev(
                 __global const float *gamma_obs,
                 __global const float *observations,        
-                         const int hs,
                 __global       float *expect_sigma_sym,
                 __constant     float *gamma_state_sumC,
                 __constant     float *expect_mu_state,
+                         const int hs,
                          const int D,
                          const int T)
 {
