@@ -386,7 +386,7 @@ void HMM::InitBuffers()
                 err = clEnqueueSVMUnmap(cmdQueue_0, observations, 0, 0, 0);
                 checkOpenCLErrors(err, "Failed to clEnqueueSVMUnmap");
         }
-
+/*
         // GPU buffers
         // forward 
         ones_d              = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);      // for cublasdot
@@ -412,6 +412,7 @@ void HMM::InitBuffers()
         expect_mu_d         = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dn, 0);
         expect_sigma_sym_d  = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dd, 0);
         expect_sigma_d      = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_ddn, 0);
+	*/
 
 }
 
