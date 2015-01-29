@@ -119,13 +119,12 @@ __kernel void BK_scaling(         const int N,
 
 __kernel void EM_betaB_alphabeta(         const int N,
                                           const int current, 
-                                          const int previous
+                                          const int previous,
                                  __global const float *beta, 
                                  __global const float *B,
                                  __global const float *alpha,
                                  __global       float *betaB,                                 
-                                 __global       float *alpha_beta,
-)
+                                 __global       float *alpha_beta)
 {
         uint idx = get_global_id(0);
         if (idx < N) {
