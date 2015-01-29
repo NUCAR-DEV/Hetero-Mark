@@ -177,21 +177,6 @@ __kernel void EM_sum_alphabeta(__global const float *alpha_beta,
 	}
 }
 
-/*
-// Normalise the alpha_beta, and save to gamma
-__kernel void EM_alphabeta_update_gamma(__global const float *alpha_beta, 
-                                        __global       float *gamma,
-                                        __global const float *ll_d, 
-                                                 const int N,
-                                                 const int current)
-{
-        size_t idx = get_global_id(0);
-        if (idx < N){
-                gamma[current + idx] = alpha_beta[idx] / ll_d[0];
-        }
-}
-*/
-
 
 __kernel void EM_norm_alphabeta(__global const float *alpha_d,
                                  __global const float *beta_d,
@@ -245,21 +230,13 @@ __kernel void EM_norm_alphabeta(__global const float *alpha_d,
 
 
 
-
-
-
-
-
-
-
-
 // Compute A. * (alpha * betaB')  
 __kernel void EM_A_mul_alphabetaB(__global const float *A, 
                                   __global       float *A_alphabetaB,
                                   __global       float *blk_result,
                                   __constant     float *ConstA,
-                                  __constant     float *ConstB,
-                                           const int N) 
+                                  __constant     float *ConstB, 
+	                                       const int    N)
 {
         size_t lx = get_local_id(0); // col  
         size_t ly = get_local_id(1); // row 
@@ -301,10 +278,10 @@ __kernel void EM_A_mul_alphabetaB(__global const float *A,
 }
 
 
-__kernel void EM_update_xisum(__global const float *A_alphabetaB,
-                              __global       float *xi_sum,
+__kernel void EM_update_xisum(         const int   N,
                                        const float sum,
-                                       const int N) 
+                              __global const float *A_alphabetaB,
+                              __global       float *xi_sum) 
 {
         size_t gx = get_global_id(0);
         size_t gy = get_global_id(1);
@@ -312,24 +289,8 @@ __kernel void EM_update_xisum(__global const float *A_alphabetaB,
         xi_sum[outID] += A_alphabetaB[outID] / sum;
 }
 
-/*
-__kernel void EM_alphabeta(__global const float *beta, 
-                           __global const float *alpha,
-                           __global       float *alpha_beta,
-                                    const int N)
-{
-        uint idx = get_global_id(0);
-        if (idx < N) {
-                alpha_beta[idx] = beta[idx] * alpha[idx];
-        }
-}
-*/
 
 
-
-
-// expected_A     = mk_stochastic(xi_sum);
-// sum along each row and scale rowwise
 __kernel void EM_expect_A(__global const float *xi_sum_d,
                           __global       float *expt_A_d,
                                    const int N) 
