@@ -31,7 +31,7 @@ cl_int clMemSet(cl_command_queue cmdQ, void *ptr, int value, size_t count)
 
         return err;
 }
-	
-}
+
+} // namespace clHelper
 
 #endif

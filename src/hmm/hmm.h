@@ -130,6 +130,8 @@ class HMM
 	void EMUpdateXisum(int numElements, float sum, float *AAlphaBetaBSrc, float *xiSumDst);
 	void EMAlphaBeta(int numElements, float *alphaSrc, float *betaSrc, float *alphaBetaDst);
 	void EMExpectA(int numElements, float *xiSumSrc, float *expectADst);
+	void EMTranspose(float *ASrc, float *AtDst, int height, int width);
+	void EMGammaStateSum(float *src, float *dst, int height, int width);
 
 public:
 	HMM(int N);
