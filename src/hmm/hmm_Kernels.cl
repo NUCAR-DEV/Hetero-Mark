@@ -117,14 +117,15 @@ __kernel void BK_scaling(         const int N,
 // __constant float expect_mu_state[64];
 
 
-__kernel void EM_betaB_alphabeta(__global const float *beta, 
-                                 __global const float *B, 
-                                 __global       float *betaB,  
-                                 __global const float *alpha,
-                                 __global       float *alpha_beta,
-                                          const int N,
+__kernel void EM_betaB_alphabeta(         const int N,
                                           const int current, 
-                                          const int previous)
+                                          const int previous
+                                 __global const float *beta, 
+                                 __global const float *B,
+                                 __global const float *alpha,
+                                 __global       float *betaB,                                 
+                                 __global       float *alpha_beta,
+)
 {
         uint idx = get_global_id(0);
         if (idx < N) {

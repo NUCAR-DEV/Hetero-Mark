@@ -569,7 +569,6 @@ void HMM::BackwardUpdateBeta(int numElements, float *betaSrc, float *bSrc, float
 
         size_t globalSize = N;
         size_t localSize = N / BLOCKSIZE;
-        int zero = 0;
 
         err = clSetKernelArg(kernel_BK_update_beta, 0, sizeof(int), (void *)&numElements);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
@@ -596,7 +595,6 @@ void HMM::BackwardScaling(int numElements, float *llSrc, float *betaDst)
 
         size_t globalSize = N;
         size_t localSize = N / BLOCKSIZE;
-        int zero = 0;
 
         err = clSetKernelArg(kernel_BK_update_beta, 0, sizeof(int), (void *)&numElements);
         checkOpenCLErrors(err, "Failed at clSetKernelArg");
@@ -617,6 +615,65 @@ void HMM::BackwardScaling(int numElements, float *llSrc, float *betaDst)
 }
 
 void HMM::BaumWelch()
+{
+    // clear the data for xi_sum
+    clMemSet(cmdQueue_0, xi_sum_d, 0, bytes_nn);
+
+//     float sum;
+//     int window, i;
+//     int current, previous;
+//     uint start;
+
+//     for(window = 0; window < (T-1); ++window)
+//     {
+//         current = window * N;
+//         previous = current + N;
+
+//         // Calculate beta * B and alpha * beta
+//         EM_betaB_alphabeta <<< grid, block >>> (beta_d, b_d, betaB_d, alpha_d, alpha_beta_d, N, 
+//                                                 current, previous);
+
+//         ret = cublasSdot(handle, N,
+//                 alpha_beta_d, 1, 
+//                 ones_d, 1,
+//                 &ll_d[0]);
+
+//         if (ret != CUBLAS_STATUS_SUCCESS) 
+//         {
+//             fprintf (stderr, "ERROR: Sdot execution error. This is line %d.\n", __LINE__);
+//             exit(EXIT_FAILURE);
+//         }
+
+//         // Update gamma
+//         EM_alphabeta_update_gamma<<< grid, block >>> (alpha_beta_d, gamma_d, ll_d, N, current);
+
+//         // Copy data from global to constant mem
+//         cudaMemcpyToSymbol(ConstA, &alpha_d[current], bytes_n, 0, cudaMemcpyDeviceToDevice);
+//         cudaMemcpyToSymbol(ConstB, betaB_d,           bytes_n, 0, cudaMemcpyDeviceToDevice);
+
+//         // A .*  (alpha * betaB')
+//         EM_A_mul_alphabetaB <<< grid_3, block_3 >>> (a_d, A_alphabetaB_d, blk_result_d, N);
+
+//         checkCudaErrors(cudaMemcpyAsync(blk_result, blk_result_d, bytes_tileblks,
+//                         cudaMemcpyDeviceToHost));
+
+//         sum = 0.f;  
+// #pragma unroll
+//         for(i=0; i<tileblks; ++i)
+//         {
+//             sum += blk_result[i];
+//         }   
+
+//         // Normalise A_alphabetaB and add up to xi_sum 
+//         EM_update_xisum <<< grid_3, block_3 >>> (A_alphabetaB_d, xi_sum_d, sum, N);
+
+//     }
+
+
+}
+
+void HMM::EMBetaBAlphaBeta(int numElements, int curWindow, int preWindow, 
+        float *betaSrc, float *BSrc, float *alphaSrc, float *betaBDst, float *alphaBetaDst)
 {
 
 }
