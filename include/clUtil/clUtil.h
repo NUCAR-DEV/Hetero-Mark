@@ -10,7 +10,7 @@ namespace clHelper
 
 cl_int clMemSet(cl_command_queue cmdQ, void *ptr, int value, size_t count)
 {
-	cl_int err;
+        cl_int err;
 
         // Map
         err = clEnqueueSVMMap(cmdQ,

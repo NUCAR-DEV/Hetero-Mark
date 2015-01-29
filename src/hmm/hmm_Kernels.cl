@@ -134,11 +134,11 @@ __kernel void EM_betaB_alphabeta(         const int N,
 }
 
 
-__kernel void EM_alphabeta_update_gamma(__global const float *alpha_beta, 
-                                        __global       float *gamma,
+__kernel void EM_alphabeta_update_gamma(         const int N,
+                                                 const uint current,
+                                        __global const float *alpha_beta, 
                                         __global const float *ll_d, 
-                                                 const int N,
-                                                 const uint current)
+                                        __global       float *gamma)
 {
         uint idx = get_global_id(0);
         if (idx < N){
@@ -146,12 +146,12 @@ __kernel void EM_alphabeta_update_gamma(__global const float *alpha_beta,
         }
 }
 
-__kernel void EM_A_mul_alphabetaB(__global const float *A, 
+__kernel void EM_A_mul_alphabetaB(         const int    N,
+                                  __global const float *A, 
                                   __global       float *A_alphabetaB,
                                   __global       float *blk_result,
                                   __constant     float *ConstA,
-                                  __constant     float *ConstB,
-                                           const int N) 
+                                  __constant     float *ConstB) 
 {
 
         uint lx = get_local_id(0); // col  
@@ -194,10 +194,10 @@ __kernel void EM_A_mul_alphabetaB(__global const float *A,
 }
 
 
-__kernel void EM_update_xisum(__global const float *A_alphabetaB,
-                              __global       float *xi_sum,
+__kernel void EM_update_xisum(         const int N,
                                        const float sum,
-                                       const int N) 
+                              __global const float *A_alphabetaB,
+                              __global       float *xi_sum) 
 {
         uint gx = get_global_id(0);
         uint gy = get_global_id(1);

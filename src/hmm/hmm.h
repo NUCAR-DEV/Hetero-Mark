@@ -122,6 +122,13 @@ class HMM
 	void BaumWelch();
 	void EMBetaBAlphaBeta(int numElements, int curWindow, int preWindow, 
 		float *betaSrc, float *BSrc, float *alphaSrc, float *betaBDst, float *alphaBetaDst);
+	void EMAlphaBetaUpdateGamma(int numElements, int curWindow, float *alphaBetaSrc,
+		float *llSrc, float *gammaDst);
+	void EMAMulAlphaBetaB(int numElements, float *ASrc, float *AAlphaBetaBDst, 
+		float *blkResultDst, float *constA, float *constB);
+	void EMSumBlkresult(float *sum);
+
+	void EMUpdateXisum(int numElements, float sum, float *AAlphaBetaBSrc, float *xiSumDst);
 
 public:
 	HMM(int N);
