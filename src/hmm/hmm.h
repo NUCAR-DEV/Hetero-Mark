@@ -108,12 +108,14 @@ class HMM
 	void CleanUpBuffers();
 
 	void Forward();
-	void ForwardInitAlpha();
+	void ForwardInitAlpha(int numElements, float *bSrc, float *piSrc, float *alphaDst, float *onesDst, float *betaDst);
 	void ForwardSumAlpha();
-	void ForwardScaling(int numElements, float *data, float *scaleArray, int scaleArrayIndex);
+	void ForwardScaling(int numElements, float *scaleArraySrc, int scaleArrayIndexSrc, float *dataDst);
 	void ForwardCalcAlpha(int numElements, float *alpha, float *b);
 
 	void Backward();
+	void BackwardUpdateBeta(int numElements, float *betaSrc, float *bSrc, float *betaBDst);
+	void BackwardScaling(int numElements, float *llSrc, float *betaDst);
 	void BaumWelch();
 
 public:

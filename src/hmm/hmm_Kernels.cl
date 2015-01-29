@@ -1,7 +1,7 @@
 // Forward kernels
-__kernel void FWD_init_alpha(__global const float *b_d,
+__kernel void FWD_init_alpha(         const int    N,
+                             __global const float *b_d,
                              __global const float *pi_d,
-                                      const int    N,
                              __global       float *alpha_d,
                              __global       float *ones_d,
                              __global       float *beta_d)
@@ -15,9 +15,9 @@ __kernel void FWD_init_alpha(__global const float *b_d,
 
 
 __kernel void FWD_scaling(         const int    N,
-                          __global       float *alpha_d,
                           __global const float *scale_factor,
-                                   const int t)
+                                   const int t,
+                          __global       float *alpha_d)
 {
         unsigned int idx = get_global_id(0);
 
@@ -76,9 +76,9 @@ __kernel void FWD_sum_ll(         const int T,
 }
 
 // Backward kernels
-__kernel void BK_update_beta(__global const float *beta_d,
+__kernel void BK_update_beta(         const int N,
+                             __global const float *beta_d,
                              __global const float *B_d,
-                                      const int N,
                              __global float *betaB_d)
 {
         unsigned int idx = get_global_id(0);
