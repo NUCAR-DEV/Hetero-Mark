@@ -221,7 +221,12 @@ void HMM::InitBuffers()
                 A_alphabetaB = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
 
  		// Expected values
+ 		expt_prior = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
+ 		expt_A = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
+ 		observationsT = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
  		expt_mu = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dn, 0);
+ 		expt_sigma_sym = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dd, 0);
+ 		expt_mu = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_ddn, 0);
 
                 // constant memory buffers
                 constA            = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, bytes_const, 0);
@@ -319,10 +324,9 @@ void HMM::CleanUp()
 void HMM::CleanUpBuffers()
 {
         // CPU buffers
-        if (alpha)
-                free(alpha);
         safeSVMFree(context, a);
         safeSVMFree(context, b);
+        safeSVMFree(context, alpha);
         safeSVMFree(context, prior);
         safeSVMFree(context, blk_result);
         safeSVMFree(context, observations);
@@ -348,10 +352,15 @@ void HMM::CleanUpBuffers()
         safeSVMFree(context, expt_prior);
         safeSVMFree(context, expt_A);
         safeSVMFree(context, observationsT);
-
         safeSVMFree(context, expt_mu);
         safeSVMFree(context, expt_sigma_sym);
         safeSVMFree(context, expt_sigma);
+
+        safeSVMFree(context, constA);
+        safeSVMFree(context, constB);
+        safeSVMFree(context, gamma_state_sumC);
+        safeSVMFree(context, constT);
+        safeSVMFree(context, expt_mu_state);
 }
 #undef safeSVMFree
 
