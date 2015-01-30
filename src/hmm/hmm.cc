@@ -194,24 +194,21 @@ void HMM::InitBuffers()
                 printf("SVM fine grain support unavailable\n");
                 // state transition probability matrix
                 a = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
-
                 // emission probability matrix 
                 b = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
-
-                // prior probability
-                prior = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
-
-                // intermediate blk results from the device
-                blk_result = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_tileblks, 0);
-
-                // log likelihood 
-                lll = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(float), 0);
-
                 // forward probability matrix: TxN
                 alpha = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
-
+                // prior probability
+                prior = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
+                // log likelihood 
+                lll = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(float), 0);
+                // intermediate blk results from the device
+                blk_result = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_tileblks, 0);
                 // observed input 
                 observations = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
+
+                ones = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
+                ll = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(float) * (T + 1), 0);
 
                 // Backward parameters 
                 beta = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
@@ -222,8 +219,6 @@ void HMM::InitBuffers()
                 alpha_beta = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
                 gamma = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
                 A_alphabetaB = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
-                ones = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
-                ll = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(float) * (T + 1), 0);
 
  		// Expected values
  		expt_mu = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dn, 0);
