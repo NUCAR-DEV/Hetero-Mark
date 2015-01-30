@@ -794,8 +794,8 @@ void HMM::BaumWelch()
                 err     |= clSetKernelArg(kernel_EM_alphabeta_update_gamma, 4, sizeof(int), &current);
                 checkOpenCLErrors(err, "Failed to configure kernel arguments!");
 
-                size_t global_work_size[1] = {(size_t)N};
-                size_t local_work_size[1] = {(size_t)(ceil(N/(float)255))*256};
+                size_t global_work_size[1] = {(size_t)(ceil(N/(float)255))*256};
+                size_t local_work_size[1] = {(size_t)256};
 
                 err = clEnqueueNDRangeKernel(
                                 cmdQueue_0,
