@@ -8,30 +8,10 @@
 namespace clHelper
 {
 
-cl_int clMemSet(cl_command_queue cmdQ, void *ptr, int value, size_t count)
-{
-        cl_int err;
-
-        // Map
-        err = clEnqueueSVMMap(cmdQ,
-                              CL_TRUE,       // blocking map
-                              CL_MAP_WRITE,
-                              ptr,
-                              count,
-                              0, 0, 0
-                              );
-        checkOpenCLErrors(err, "Failed to clEnqueueSVMMap");
-
-        // Set
-        memset(ptr, value, count);
-
-        // Unmap
-        err = clEnqueueSVMUnmap(cmdQ, ptr, 0, 0, 0);
-        checkOpenCLErrors(err, "Failed to clEnqueueSVMUnmap");
-
-        return err;
-}
-
+#ifndef __NOT_IMPLEMENTED__
+#define __NOT_IMPLEMENTED__ printf("Error: not implemented. Func %s Line %d\n", __FUNCTION__, __LINE__); \
+  exit(-1);
+#endif
 } // namespace clHelper
 
 #endif

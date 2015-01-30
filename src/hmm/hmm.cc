@@ -218,16 +218,15 @@ void HMM::InitBuffers()
                 betaB = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
 
                 // EM parameters 
+                xi_sum = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
                 alpha_beta = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
                 gamma = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
-                ll = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(float) * (T + 1), 0);
-                    
-                // block results
-                blk_result = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_tileblks, 0);
-
                 A_alphabetaB = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
+                ones = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
+                ll = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(float) * (T + 1), 0);
 
-                xi_sum = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
+ 		// Expected values
+ 		expt_mu = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dn, 0);
 
                 // constant memory buffers
                 constA            = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, bytes_const, 0);
@@ -237,81 +236,7 @@ void HMM::InitBuffers()
                 expt_mu_state   = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, bytes_d, 0);
         }
         else
-        {
-                printf("SVM fine grain support available\n");
-
-                // state transition probability matrix
-                a = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               bytes_nn, 0);
-
-                // emission probability matrix 
-                b = (float *)clSVMAlloc(context,
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               bytes_nt, 0);
-
-                // prior probability
-                prior = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
-                                               bytes_n, 0);
-
-                // intermediate blk results from the device
-                blk_result = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               bytes_tileblks, 0);
-
-                // log likelihood 
-                lll = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               sizeof(float), 0);
-
-                // forward probability matrix
-                alpha = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               bytes_nt, 0);
-
-                // for em
-                observations = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               bytes_dt, 0);               
-
-                // Backward parameters 
-                beta = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               bytes_nt, 0);
-                betaB = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               bytes_n, 0);
-
-                // EM parameters 
-                alpha_beta = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               bytes_n, 0);
-                gamma = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               bytes_nt, 0);
-                ll = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               sizeof(float) * (T + 1), 0);
-                blk_result = (float *)clSVMAlloc(context, 
-                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-                                               bytes_tileblks, 0);
-
-                constA = (float *)clSVMAlloc(context, 
-                                                CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
-                                                bytes_const, 0);
-                constB = (float *)clSVMAlloc(context, 
-                                                CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
-                                                bytes_const, 0);
-
-                A_alphabetaB = (float *)clSVMAlloc(context, 
-                                                CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
-                                                bytes_nn, 0);
-
-                xi_sum = (float *)clSVMAlloc(context, 
-                                                CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
-                                                bytes_nn, 0);
-        }
+        	__NOT_IMPLEMENTED__
 
         // Sanity check
         if (!a || !b || !prior || !blk_result || !lll || !alpha || !observations)
