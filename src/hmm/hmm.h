@@ -27,9 +27,11 @@ class HMM
 	cl_kernel kernel_BK_update_beta;
 	cl_kernel kernel_BK_scaling;
 	cl_kernel kernel_EM_betaB_alphabeta;
+	cl_kernel kernel_EM_sum_alphabeta;
 	cl_kernel kernel_EM_alphabeta_update_gamma;
 	cl_kernel kernel_EM_A_mul_alphabetaB;
 	cl_kernel kernel_EM_update_xisum;
+	cl_kernel kernel_EM_norm_alphabeta;
 	cl_kernel kernel_EM_alphabeta;
 	cl_kernel kernel_EM_expt_A;
 	cl_kernel kernel_EM_transpose;
@@ -76,30 +78,30 @@ class HMM
 	float *observations;
 
 	// forward
-	float *ones_d;
-	float *ll_d;
+	float *ones;
+	float *ll;
 
 	// bk
-	float *beta_d;
-	float *betaB_d;
+	float *beta;
+	float *betaB;
 
 	// em 
-	float *xi_sum_d;
-	float *alpha_beta_d;
-	float *gamma_d;
-	float *A_alphabetaB_d;
+	float *xi_sum;
+	float *alpha_beta;
+	float *gamma;
+	float *A_alphabetaB;
 	//float *blk_result_d;
-	float *gammaT_d;
-	float *gamma_state_sum_d;
-	float *gamma_obs_d; // D x T
+	float *gammaT;
+	float *gamma_state_sum;
+	float *gamma_obs; // D x T
 
 	// expected values
-	float *expt_prior_d;
-	float *expt_A_d;
-	float *observationsT_d;
-	float *expt_mu_d; // N x D
-	float *expt_sigma_sym_d;
-	float *expt_sigma_d;
+	float *expt_prior;
+	float *expt_A;
+	float *observationsT;
+	float *expt_mu; // N x D
+	float *expt_sigma_sym;
+	float *expt_sigma;
 
 	// constant memory
 	// hint: reuse constant buffer if possible
@@ -107,7 +109,7 @@ class HMM
 	float *constB;
 	float *gamma_state_sumC;
 	float *constT;
-	float *expect_mu_state;
+	float *expt_mu_state;
 
 	void Init();
 	void InitParam();
@@ -124,27 +126,15 @@ class HMM
 	void ForwardInitAlpha(int numElements, float *bSrc, float *piSrc, 
 		float *alphaDst, float *onesDst, float *betaDst);
 	void ForwardSumAlpha();
-	void ForwardScaling(int numElements, float *scaleArraySrc, 
-		int scaleArrayIndexSrc, float *dataDst);
-	void ForwardCalcAlpha(int numElements, float *alpha, float *b);
+	void ForwardScaling(int numElements, float *scaleArraySrc, int scaleArrayIndexSrc, float *dataDst);
+	void ForwardCalcAlpha(int numElements, float *bSrc, float *alphaDst);
+	void ForwardSumLL(int numElements, float *llDst);
 
 	void Backward();
 	void BackwardUpdateBeta(int numElements, float *betaSrc, float *bSrc, float *betaBDst);
 	void BackwardScaling(int numElements, float *llSrc, float *betaDst);
 
 	void BaumWelch();
-	void EMBetaBAlphaBeta(int numElements, int curWindow, int preWindow, 
-		float *betaSrc, float *BSrc, float *alphaSrc, float *betaBDst, float *alphaBetaDst);
-	void EMAlphaBetaUpdateGamma(int numElements, int curWindow, float *alphaBetaSrc,
-		float *llSrc, float *gammaDst);
-	void EMAMulAlphaBetaB(int numElements, float *ASrc, float *AAlphaBetaBDst, 
-		float *blkResultDst, float *constA, float *constB);
-	void EMSumBlkresult(float *sum);
-	void EMUpdateXisum(int numElements, float sum, float *AAlphaBetaBSrc, float *xiSumDst);
-	void EMAlphaBeta(int numElements, float *alphaSrc, float *betaSrc, float *alphaBetaDst);
-	void EMExpectA(int numElements, float *xiSumSrc, float *expectADst);
-	void EMTranspose(float *ASrc, float *AtDst, int height, int width);
-	void EMGammaStateSum(float *src, float *dst, int height, int width);
 
 public:
 	HMM(int N);

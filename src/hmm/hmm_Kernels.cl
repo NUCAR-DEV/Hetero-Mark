@@ -1,3 +1,4 @@
+// Kernel parameter order : const parameters, __global const data, __global output data
 // Forward kernels
 __kernel void FWD_init_alpha(         const int    N,
                              __global const float *b_d,
@@ -16,25 +17,20 @@ __kernel void FWD_init_alpha(         const int    N,
 
 __kernel void FWD_scaling(         const int    N,
                           __global const float *scale_factor,
-                                   const int t,
+                                   const int    scale_factor_index,
                           __global       float *alpha_d)
 {
         unsigned int idx = get_global_id(0);
 
-        // Should be broardcast to all workitems in a wavefront
-        // Therefore no bank conflict
-        __local float scale_factor_local;
-                scale_factor_local = scale_factor[t];
-
         if (idx < N) {
-                alpha_d[idx] /= scale_factor_local;
+                alpha_d[idx] /= scale_factor[scale_factor_index];
         }
 }
 
 
 __kernel void FWD_calc_alpha(         const int N,
-                             __global       float *alpha_d,
-                             __global const float *b_d) 
+                             __global const float *b_d,
+                             __global       float *alpha_d) 
 {
         unsigned int idx = get_global_id(0);
 
@@ -44,8 +40,8 @@ __kernel void FWD_calc_alpha(         const int N,
 }
 
 // TODO: use OpenCL 2.0 workgroup function instead
-__kernel void FWD_sum_ll(         const int T,
-                         __global float *ll_d)
+__kernel void FWD_sum_ll(         const int    T,
+                         __global       float *ll_d)
 {
         uint lid = get_local_id(0);
         uint gid = get_global_id(0);
@@ -137,95 +133,95 @@ __kernel void EM_betaB_alphabeta(__global const float *beta,
 
 // Compute the summation of alpha * beta ( = alpha_beta)
 __kernel void EM_sum_alphabeta(__global const float *alpha_beta,
-                               __global const float *ll_d,
+                               __global       float *ll_d,
                                         const int    N,
-							   __local        float *sm)
+                               __local        float *sm)
 {
-	size_t gid = get_global_id(0);	
-	size_t lid = get_local_id(0);	
-	size_t gls = get_global_size(0);
-	size_t bls = get_local_size(0);
+    size_t gid = get_global_id(0);  
+    size_t lid = get_local_id(0);   
+    size_t gls = get_global_size(0);
+    size_t bls = get_local_size(0);
 
-	float tidsum = 0.f;
-	for(int i=gid; i<N; i+=gls)
-	{
-		tidsum += alpha_beta[i];	
-	}
+    float tidsum = 0.f;
+    for(int i=gid; i<N; i+=gls)
+    {
+        tidsum += alpha_beta[i];    
+    }
 
-	sm[tid] = tidsum;
+    sm[gid] = tidsum;
 
-	barrier(CLK_LOCAL_MEM_FENCE);
+    barrier(CLK_LOCAL_MEM_FENCE);
 
-	// work group reduction
-	if(bls >= 512){if(lid < 256) {sm[lid] += sm[lid + 256];} barrier(CLK_LOCAL_MEM_FENCE);}
-	if(bls >= 256){if(lid < 128) {sm[lid] += sm[lid + 128];} barrier(CLK_LOCAL_MEM_FENCE);}
-	if(bls >= 128){if(lid <  64) {sm[lid] += sm[lid +  64];} barrier(CLK_LOCAL_MEM_FENCE);}
-	if(bls >=  64){if(lid <  32) {sm[lid] += sm[lid +  32];} barrier(CLK_LOCAL_MEM_FENCE);}
+    // work group reduction
+    if(bls >= 512){if(lid < 256) {sm[lid] += sm[lid + 256];} barrier(CLK_LOCAL_MEM_FENCE);}
+    if(bls >= 256){if(lid < 128) {sm[lid] += sm[lid + 128];} barrier(CLK_LOCAL_MEM_FENCE);}
+    if(bls >= 128){if(lid <  64) {sm[lid] += sm[lid +  64];} barrier(CLK_LOCAL_MEM_FENCE);}
+    if(bls >=  64){if(lid <  32) {sm[lid] += sm[lid +  32];} barrier(CLK_LOCAL_MEM_FENCE);}
 
-	// wavefront size for AMD southern islands GPUs is 16
-	if(lid < 16)
-	{
-		if(bls >= 32) {sm[lid] += sm[lid + 16];}	
-		if(bls >= 16) {sm[lid] += sm[lid +  8];}	
-		if(bls >=  8) {sm[lid] += sm[lid +  4];}	
-		if(bls >=  4) {sm[lid] += sm[lid +  2];}	
-		if(bls >=  2) {sm[lid] += sm[lid +  1];}	
-	}
+    // wavefront size for AMD southern islands GPUs is 16
+    if(lid < 16)
+    {
+        if(bls >= 32) {sm[lid] += sm[lid + 16];}    
+        if(bls >= 16) {sm[lid] += sm[lid +  8];}    
+        if(bls >=  8) {sm[lid] += sm[lid +  4];}    
+        if(bls >=  4) {sm[lid] += sm[lid +  2];}    
+        if(bls >=  2) {sm[lid] += sm[lid +  1];}    
+    }
 
-	if(lid == 0){
-		ll_d[0] = sm[0];	
-	}
+    if(lid == 0){
+        ll_d[0] = sm[0];    
+    }
 }
 
 
 __kernel void EM_norm_alphabeta(__global const float *alpha_d,
-                                 __global const float *beta_d,
-                                 __global const float *alphabeta_d,
-								 __global const float *gamma_d,
-								 __local 		float *sm,
-								 const int current,
-								 const int N)
+                                __global const float *beta_d,
+                                __global       float *alphabeta_d,
+                                __global       float *gamma_d,
+                                __local        float *sm,
+                                const int current,
+                                const int N)
 {
-	size_t gid = get_global_id(0);	
-	size_t lid = get_local_id(0);	
-	size_t gls = get_global_size(0);
-	size_t bls = get_local_size(0);
+    size_t gid = get_global_id(0);  
+    size_t lid = get_local_id(0);   
+    size_t gls = get_global_size(0);
+    size_t bls = get_local_size(0);
 
-	float tidsum = 0.f;
-	float tmp;
-	for(int i=gid; i<N; i+=gls)
-	{
-		alphabeta_d[i] = tmp = alpha_d[current+i] * beta_d[current + i];	
-		tidsum += tmp; 
-	}
+    float tidsum = 0.f;
+    float tmp;
+    for(int i=gid; i<N; i+=gls)
+    {
+        alphabeta_d[i] = tmp = alpha_d[current+i] * beta_d[current + i];    
+        tidsum += tmp; 
+    }
 
-	sm[tid] = tidsum;
-	
-	barrier(CLK_LOCAL_MEM_FENCE);
+    sm[gid] = tidsum;
+    
+    barrier(CLK_LOCAL_MEM_FENCE);
 
-	// work group reduction
-	if(bls >= 512){if(lid < 256) {sm[lid] += sm[lid + 256];} barrier(CLK_LOCAL_MEM_FENCE);}
-	if(bls >= 256){if(lid < 128) {sm[lid] += sm[lid + 128];} barrier(CLK_LOCAL_MEM_FENCE);}
-	if(bls >= 128){if(lid <  64) {sm[lid] += sm[lid +  64];} barrier(CLK_LOCAL_MEM_FENCE);}
-	if(bls >=  64){if(lid <  32) {sm[lid] += sm[lid +  32];} barrier(CLK_LOCAL_MEM_FENCE);}
+    // work group reduction
+    if(bls >= 512){if(lid < 256) {sm[lid] += sm[lid + 256];} barrier(CLK_LOCAL_MEM_FENCE);}
+    if(bls >= 256){if(lid < 128) {sm[lid] += sm[lid + 128];} barrier(CLK_LOCAL_MEM_FENCE);}
+    if(bls >= 128){if(lid <  64) {sm[lid] += sm[lid +  64];} barrier(CLK_LOCAL_MEM_FENCE);}
+    if(bls >=  64){if(lid <  32) {sm[lid] += sm[lid +  32];} barrier(CLK_LOCAL_MEM_FENCE);}
 
-	// wavefront size for AMD southern islands GPUs is 16
-	if(lid < 16)
-	{
-		if(bls >= 32) {sm[lid] += sm[lid + 16];}	
-		if(bls >= 16) {sm[lid] += sm[lid +  8];}	
-		if(bls >=  8) {sm[lid] += sm[lid +  4];}	
-		if(bls >=  4) {sm[lid] += sm[lid +  2];}	
-		if(bls >=  2) {sm[lid] += sm[lid +  1];}	
-	}
+    // wavefront size for AMD southern islands GPUs is 16
+    if(lid < 16)
+    {
+        if(bls >= 32) {sm[lid] += sm[lid + 16];}    
+        if(bls >= 16) {sm[lid] += sm[lid +  8];}    
+        if(bls >=  8) {sm[lid] += sm[lid +  4];}    
+        if(bls >=  4) {sm[lid] += sm[lid +  2];}    
+        if(bls >=  2) {sm[lid] += sm[lid +  1];}    
+    }
 
-	// sm[0] has the sum
-	barrier(CLK_LOCAL_MEM_FENCE);
+    // sm[0] has the sum
+    barrier(CLK_LOCAL_MEM_FENCE);
 
-	for(int i=gid; i<N; i+=gls)
-	{
-		gamma_d[current + i] = alphabeta_d[i] / sm[0];
-	}
+    for(int i=gid; i<N; i+=gls)
+    {
+        gamma_d[current + i] = alphabeta_d[i] / sm[0];
+    }
 }
 
 
@@ -236,7 +232,7 @@ __kernel void EM_A_mul_alphabetaB(__global const float *A,
                                   __global       float *blk_result,
                                   __constant     float *ConstA,
                                   __constant     float *ConstB, 
-	                                       const int    N)
+                                           const int    N)
 {
         size_t lx = get_local_id(0); // col  
         size_t ly = get_local_id(1); // row 
@@ -310,14 +306,14 @@ __kernel void EM_expect_A(__global const float *xi_sum_d,
         size_t offset = gy * N;
 
         // load 1st time
-        data = xi_sum[offset + gx];
+        data = xi_sum_d[offset + gx];
         //printf("(%d,%d) \n", gy, gx);
 
         //#pragma unroll
         for(i = 1 ; i < m ; ++i){
                 //col = lx + 16 * i;  
                 col = gx + i * TILE;  
-                data += xi_sum[offset + col];
+                data += xi_sum_d[offset + col];
         }
 
         lds[ly*TILE + lx] = data;
@@ -340,7 +336,7 @@ __kernel void EM_expect_A(__global const float *xi_sum_d,
 
         for(i = 0 ; i < m ; ++i){
                 col = gx + i * TILE;  
-                expect_A[offset + col] = xi_sum[offset + col]/lds[ly * TILE];
+                expt_A_d[offset + col] = xi_sum_d[offset + col]/lds[ly * TILE];
         }
 
 }
