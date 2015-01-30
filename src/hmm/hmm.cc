@@ -219,6 +219,9 @@ void HMM::InitBuffers()
                 alpha_beta = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
                 gamma = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
                 A_alphabetaB = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
+                gammaT = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt);
+                gamma_state_sum = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n);
+                gamma_obs = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt);
 
  		// Expected values
  		expt_prior = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
