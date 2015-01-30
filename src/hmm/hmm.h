@@ -90,7 +90,6 @@ class HMM
 	float *alpha_beta;
 	float *gamma;
 	float *A_alphabetaB;
-	//float *blk_result_d;
 	float *gammaT;
 	float *gamma_state_sum;
 	float *gamma_obs; // D x T
