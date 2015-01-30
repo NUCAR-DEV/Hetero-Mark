@@ -821,8 +821,8 @@ void HMM::BaumWelch()
                 err  = clSetKernelArgSVMPointer(kernel_EM_A_mul_alphabetaB, 0, (void*)(a));
                 err     |= clSetKernelArgSVMPointer(kernel_EM_A_mul_alphabetaB, 1, (void*)(A_alphabetaB));
                 err     |= clSetKernelArgSVMPointer(kernel_EM_A_mul_alphabetaB, 2, (void*)(blk_result));
-                err     |= clSetKernelArg(kernel_EM_A_mul_alphabetaB, 3, bytes_const, constA);
-                err     |= clSetKernelArg(kernel_EM_A_mul_alphabetaB, 4, bytes_const, constB);
+                err     |= clSetKernelArgSVMPointer(kernel_EM_A_mul_alphabetaB, 3, (void*)constA);
+                err     |= clSetKernelArgSVMPointer(kernel_EM_A_mul_alphabetaB, 4, (void*)constB);
                 err     |= clSetKernelArg(kernel_EM_A_mul_alphabetaB, 5, sizeof(int), &N);
                 checkOpenCLErrors(err, "Failed to configure kernel arguments!");
 
