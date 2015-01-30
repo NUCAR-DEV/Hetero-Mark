@@ -67,8 +67,8 @@ void HMM::InitParam()
                 tileblks       = (N/TILE) * (N/TILE);// [N/16][N/16]
                 bytes_tileblks = sizeof(float) * tileblks;
 
-				blk_rows       = D/16;
-				blknum         = blk_rows * (blk_rows + 1) / 2; 
+                blk_rows       = D/16;
+                blknum         = blk_rows * (blk_rows + 1) / 2; 
         }
         else
         {
@@ -123,7 +123,7 @@ void HMM::InitKernels()
         kernel_BK_scaling = clCreateKernel(program, "BK_scaling", &err);
         checkOpenCLErrors(err, "Failed to create kernel BK_scaling")
 
-		// EM
+        // EM
         kernel_EM_betaB_alphabeta = clCreateKernel(program, "EM_betaB_alphabeta", &err);
         checkOpenCLErrors(err, "Failed to create kernel EM_betaB_alphabeta")
 
@@ -213,23 +213,23 @@ void HMM::InitBuffers()
                 // observed input 
                 observations = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
 
-				// Backward parameters 
+                // Backward parameters 
                 beta = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
                 betaB = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
 
-				// EM parameters 
+                // EM parameters 
                 alpha_beta = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
                 gamma = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nt, 0);
                 ll = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(float) * (T + 1), 0);
-					
-				// block results
+                    
+                // block results
                 blk_result = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_tileblks, 0);
 
                 A_alphabetaB = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
 
                 xi_sum = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
 
-				// constant memory buffers
+                // constant memory buffers
                 constA            = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, bytes_const, 0);
                 constB            = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, bytes_const, 0);
                 gamma_state_sumC  = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, bytes_const, 0);
@@ -242,75 +242,75 @@ void HMM::InitBuffers()
 
                 // state transition probability matrix
                 a = (float *)clSVMAlloc(context, 
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-							                   bytes_nn, 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               bytes_nn, 0);
 
                 // emission probability matrix 
                 b = (float *)clSVMAlloc(context,
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-										       bytes_nt, 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               bytes_nt, 0);
 
                 // prior probability
                 prior = (float *)clSVMAlloc(context, 
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
-										       bytes_n, 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
+                                               bytes_n, 0);
 
                 // intermediate blk results from the device
                 blk_result = (float *)clSVMAlloc(context, 
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-											   bytes_tileblks, 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               bytes_tileblks, 0);
 
                 // log likelihood 
                 lll = (float *)clSVMAlloc(context, 
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-										       sizeof(float), 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               sizeof(float), 0);
 
                 // forward probability matrix
                 alpha = (float *)clSVMAlloc(context, 
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-										       bytes_nt, 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               bytes_nt, 0);
 
                 // for em
                 observations = (float *)clSVMAlloc(context, 
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-											   bytes_dt, 0);               
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               bytes_dt, 0);               
 
-				// Backward parameters 
+                // Backward parameters 
                 beta = (float *)clSVMAlloc(context, 
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-											   bytes_nt, 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               bytes_nt, 0);
                 betaB = (float *)clSVMAlloc(context, 
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-											   bytes_n, 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               bytes_n, 0);
 
-				// EM parameters 
+                // EM parameters 
                 alpha_beta = (float *)clSVMAlloc(context, 
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-											   bytes_n, 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               bytes_n, 0);
                 gamma = (float *)clSVMAlloc(context, 
-				                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-											   bytes_nt, 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               bytes_nt, 0);
                 ll = (float *)clSVMAlloc(context, 
-						                       CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-						                       sizeof(float) * (T + 1), 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               sizeof(float) * (T + 1), 0);
                 blk_result = (float *)clSVMAlloc(context, 
-						                       CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
-				                               bytes_tileblks, 0);
+                                               CL_MEM_READ_WRITE | CL_DEVICE_SVM_FINE_GRAIN_BUFFER, 
+                                               bytes_tileblks, 0);
 
                 constA = (float *)clSVMAlloc(context, 
-						                        CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
-											    bytes_const, 0);
+                                                CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
+                                                bytes_const, 0);
                 constB = (float *)clSVMAlloc(context, 
-						                        CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
-											    bytes_const, 0);
+                                                CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
+                                                bytes_const, 0);
 
                 A_alphabetaB = (float *)clSVMAlloc(context, 
-						                        CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
-											    bytes_nn, 0);
+                                                CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
+                                                bytes_nn, 0);
 
                 xi_sum = (float *)clSVMAlloc(context, 
-						                        CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
-											    bytes_nn, 0);
+                                                CL_MEM_READ_ONLY | CL_DEVICE_SVM_FINE_GRAIN_BUFFER,
+                                                bytes_nn, 0);
         }
 
         // Sanity check
@@ -438,54 +438,54 @@ void HMM::CleanUpBuffers()
 void HMM::CleanUpKernels()
 {
         checkOpenCLErrors(clReleaseKernel(kernel_FWD_init_alpha),
-		                  "Failed to release kernel kernel_FWD_init_alpha");
+                          "Failed to release kernel kernel_FWD_init_alpha");
         checkOpenCLErrors(clReleaseKernel(kernel_FWD_scaling), 
-		                  "Failed to release kernel kernel_FWD_scaling");
+                          "Failed to release kernel kernel_FWD_scaling");
         checkOpenCLErrors(clReleaseKernel(kernel_FWD_calc_alpha), 
-		                  "Failed to release kernel kernel_FWD_calc_alpha");
+                          "Failed to release kernel kernel_FWD_calc_alpha");
         checkOpenCLErrors(clReleaseKernel(kernel_FWD_sum_ll), 
-		                  "Failed to release kernel kernel_FWD_sum_ll");
+                          "Failed to release kernel kernel_FWD_sum_ll");
 
         checkOpenCLErrors(clReleaseKernel(kernel_BK_update_beta), 
-		                  "Failed to release kernel kernel_BK_update_beta");
+                          "Failed to release kernel kernel_BK_update_beta");
         checkOpenCLErrors(clReleaseKernel(kernel_BK_scaling), 
-		                  "Failed to release kernel kernel_BK_scaling");
-		// EM
+                          "Failed to release kernel kernel_BK_scaling");
+        // EM
         checkOpenCLErrors(clReleaseKernel(kernel_EM_betaB_alphabeta), 
-		                  "Failed to release kernel kernel_EM_betaB_alphabeta");
+                          "Failed to release kernel kernel_EM_betaB_alphabeta");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_sum_alphabeta), 
-		                  "Failed to release kernel kernel_EM_sum_alphabeta");
+                          "Failed to release kernel kernel_EM_sum_alphabeta");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_alphabeta_update_gamma), 
-		                  "Failed to release kernel kernel_EM_alphabeta_update_gamma");
+                          "Failed to release kernel kernel_EM_alphabeta_update_gamma");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_A_mul_alphabetaB), 
-		                  "Failed to release kernel kernel_EM_A_mul_alphabetaB");
+                          "Failed to release kernel kernel_EM_A_mul_alphabetaB");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_update_xisum), 
-		                  "Failed to release kernel kernel_EM_update_xisum");
+                          "Failed to release kernel kernel_EM_update_xisum");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_expt_A), 
-		                  "Failed to release kernel kernel_EM_expt_A");
+                          "Failed to release kernel kernel_EM_expt_A");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_transpose), 
-		                  "Failed to release kernel kernel_EM_transpose");
+                          "Failed to release kernel kernel_EM_transpose");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_gammastatesum), 
-		                  "Failed to release kernel kernel_EM_gammastatesum");
+                          "Failed to release kernel kernel_EM_gammastatesum");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_gammaobs), 
-		                  "Failed to release kernel kernel_EM_gammaobs");
+                          "Failed to release kernel kernel_EM_gammaobs");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_exptmu), 
-		                  "Failed to release kernel kernel_EM_exptmu");
+                          "Failed to release kernel kernel_EM_exptmu");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_exptsigma_dev), 
-		                  "Failed to release kernel kernel_EM_exptsigma_dev");
+                          "Failed to release kernel kernel_EM_exptsigma_dev");
 
         checkOpenCLErrors(clReleaseKernel(kernel_EM_update_exptsigma), 
-		                  "Failed to release kernel kernel_EM_update_exptsigma");        
+                          "Failed to release kernel kernel_EM_update_exptsigma");        
 }
 
 void HMM::Forward()

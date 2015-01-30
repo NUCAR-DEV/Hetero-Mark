@@ -130,6 +130,17 @@ __kernel void EM_betaB_alphabeta(__global const float *beta,
         }
 }
 
+__kernel void EM_alphabeta_update_gamma(__global const float *alpha_beta, 
+                                        __global       float *gamma,
+                                        __global const float *ll_d, 
+                                                 const int    N, 
+                                                 const uint   current)
+{
+        uint idx = get_global_id(0);
+        if (idx < N){
+            gamma[current + idx] = alpha_beta[idx] / ll_d[0];
+        }
+}
 
 // Compute the summation of alpha * beta ( = alpha_beta)
 __kernel void EM_sum_alphabeta(__global const float *alpha_beta,
