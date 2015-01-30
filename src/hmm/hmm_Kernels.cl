@@ -285,10 +285,10 @@ __kernel void EM_A_mul_alphabetaB(__global const float *A,
 }
 
 
-__kernel void EM_update_xisum(         const int   N,
+__kernel void EM_update_xisum(__global const float *A_alphabetaB,
+                              __global       float *xi_sum,
                                        const float sum,
-                              __global const float *A_alphabetaB,
-                              __global       float *xi_sum) 
+                                       const int   N) 
 {
         size_t gx = get_global_id(0);
         size_t gy = get_global_id(1);
