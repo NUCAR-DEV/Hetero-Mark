@@ -587,9 +587,9 @@ void HMM::ForwardScaling(int numElements, float *scaleArraySrc, int scaleArrayIn
 
         err = clSetKernelArg(kernel_FWD_scaling, 0, sizeof(int), (void*)&numElements);
         checkOpenCLErrors(err, "Failed at clSetKernelArg");
-        err = clSetKernelArg(kernel_FWD_scaling, 1, sizeof(int), (void*)&scaleArrayIndexSrc);
+        err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 1, scaleArraySrc);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
-        err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 2, scaleArraySrc);
+        err = clSetKernelArg(kernel_FWD_scaling, 2, sizeof(int), (void*)&scaleArrayIndexSrc);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
         err = clSetKernelArgSVMPointer(kernel_FWD_scaling, 3, dataDst);
         checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
