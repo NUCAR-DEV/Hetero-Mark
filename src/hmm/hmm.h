@@ -11,6 +11,9 @@ class HMM
 	clRuntime *runtime;
 	clFile *file;
 
+	bool svmCoarseGrainAvail;
+	bool svmFineGrainAvail;
+
 	// OpenCL resources, auto release 
 	cl_platform_id platform;
 	cl_device_id device;
@@ -30,12 +33,16 @@ class HMM
 	cl_kernel kernel_BK_update_beta;
 	cl_kernel kernel_BK_norm_beta;
 	// EM
-/*
 	cl_kernel kernel_EM_betaB_alphabeta;
+	cl_kernel kernel_EM_update_gamma;
+	cl_kernel kernel_EM_alpha_betaB;
+	cl_kernel kernel_EM_pre_xisum;
+	cl_kernel kernel_EM_update_xisum;
+	cl_kernel kernel_EM_gamma;
+/*
 	cl_kernel kernel_EM_sum_alphabeta;
 	cl_kernel kernel_EM_alphabeta_update_gamma;
 	cl_kernel kernel_EM_A_mul_alphabetaB;
-	cl_kernel kernel_EM_update_xisum;
 	cl_kernel kernel_EM_norm_alphabeta;
 	cl_kernel kernel_EM_alphabeta;
 	cl_kernel kernel_EM_expt_A;
@@ -79,26 +86,29 @@ class HMM
 	float *b;          // emission probability matrix
 	float *alpha;      // forward probability matrix
 	float *prior;      // prior probability
-	float *blk_result; // intermediate blk results
 	float *observations;
 
 	// Forward
 	float *lll;        // log likelihood
 	float *aT;         // transpose of a
 
-	// bk
+	// Backward 
 	float *beta;
 	float *betaB;
+
+	// EM
+	float *xi_sum;        // N x N
+	float *alpha_beta;    // N
+	float *gamma;         // T x N
+	float *alpha_betaB;   // N x N
+	float *xi_sum_tmp;    // N x N
+	float *blk_result;    // intermediate blk results
 
 	// Constant
 	float *constMem;
 /*
 
 	// em 
-	float *xi_sum;
-	float *alpha_beta;
-	float *gamma;
-	float *A_alphabetaB;
 	float *gammaT;
 	float *gamma_state_sum;
 	float *gamma_obs; // D x T
@@ -119,18 +129,6 @@ class HMM
 	float *constT;
 	float *expt_mu_state;
 
-
-	// Forward 
-	void ForwardCalcAlpha(int numElements, float *bSrc, float *alphaDst);
-	void ForwardSumLL(int numElements, float *llDst);
-
-	// Backward
-	void Backward();
-	void BackwardUpdateBeta(int numElements, float *betaSrc, float *bSrc, float *betaBDst);
-	void BackwardScaling(int numElements, float *llSrc, float *betaDst);
-
-	// EM
-	void BaumWelch();
 */
 	//-------------------------------------------------------------------------------------------//
 	// Initialize functions
@@ -168,7 +166,13 @@ class HMM
 	//-------------------------------------------------------------------------------------------//
 	// EM functions
 	//-------------------------------------------------------------------------------------------//
-
+	void EM();
+	void EM_betaB_alphabeta(int curpos, int prepos);
+	void EM_update_gamma(int pos);
+	void EM_alpha_betaB(int pos);
+	void EM_pre_xisum();
+	void EM_update_xisum(float sumvalue);
+	void EM_gamma(int pos);
 
 
 
