@@ -1,75 +1,163 @@
-// Kernel parameter order : const parameters, __global const data, __global output data
+// Kernel parameter order : 
+//							const parameters, 
+//							__global const data, 
+//							__global output data
+
+//-----------------------------------------------------------------------------------------------//
 // Forward kernels
-__kernel void FWD_init_alpha(         const int    N,
-                             __global const float *b_d,
-                             __global const float *pi_d,
-                             __global       float *alpha_d,
-                             __global       float *ones_d,
-                             __global       float *beta_d)
+//-----------------------------------------------------------------------------------------------//
+__kernel void FWD_init_alpha(const int    N,
+                             __global float *b,
+                             __global float *prior,
+                             __global float *alpha,
+                             __global float *beta)
 {
-        unsigned int idx = get_global_id(0);
+        size_t idx = get_global_id(0);
         if (idx < N) {
-                alpha_d[idx] = pi_d[idx] * b_d[idx];
-                beta_d[idx] = ones_d[idx] = 1.0f; // for backward
+                alpha[idx] = prior[idx] * b[idx];
+                beta[idx] = 1.0f; // for backward
         }
+}
+ 
+
+
+__kernel void  FWD_norm_alpha(const int N,
+								const int startpos,
+								__local  float *sm,
+								__global float *alpha,
+								__global float *lll)
+
+{
+	size_t tid = get_local_id(0);	
+	size_t gid = get_global_id(0);	
+	size_t bls = get_local_size(0);
+	size_t gls = get_global_size(0);
+
+	float tidsum = 0.f;
+	int i;
+	for(i=gid; i<N; i+=gls)
+	{
+		tidsum += alpha[startpos + i];
+	}
+
+	sm[tid] = tidsum;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+
+	// sum the value from each thread using shared memory
+	if(bls >= 512){if(tid < 256) {sm[tid] += sm[tid + 256];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >= 256){if(tid < 128) {sm[tid] += sm[tid + 128];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >= 128){if(tid <  64) {sm[tid] += sm[tid +  64];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=  64){if(tid <  32) {sm[tid] += sm[tid +  32];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=  32){if(tid <  16) {sm[tid] += sm[tid +  16];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=  16){if(tid <   8) {sm[tid] += sm[tid +   8];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=   8){if(tid <   4) {sm[tid] += sm[tid +   4];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=   4){if(tid <   2) {sm[tid] += sm[tid +   2];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=   2){if(tid <   1) {sm[tid] += sm[tid +   1];} barrier(CLK_LOCAL_MEM_FENCE);}
+
+
+	// element-wise division
+	for(i=gid; i<N; i+=gls)
+	{
+		alpha[startpos + i] /= sm[0];
+	}
+
+	if(gid == 0)
+	{
+		lll[0] += log(sm[0]); 
+	}
+}
+
+__kernel void TransposeSym (const int N,
+                            __local float *sm,
+                            __global float *a,
+							__global float *aT)
+{
+	// x : col			y: row
+	size_t lx = get_local_id(0);
+	size_t ly = get_local_id(1);
+
+	//size_t gx = get_group_id(0) * 16 + lx; 
+	//size_t gy = get_group_id(1) * 16 + ly; 
+	size_t gx = get_global_id(0); 
+	size_t gy = get_global_id(1); 
+
+	//  width, height
+	if((gx < N)	&& (gy < N))
+	{
+		size_t index_in = gy * N + gx;
+		sm[ly * 17 + lx] = a[index_in];
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// transposed block index 
+	gx = get_group_id(1) * 16 + lx;
+	gy = get_group_id(0) * 16 + ly;
+
+	// height, width
+	if((gx < N)	&& (gy < N))
+	{
+		size_t index_out = gy * N + gx;	
+		aT[index_out] = sm[lx * 17 + ly];
+	}	
 }
 
 
-__kernel void FWD_scaling(         const int    N,
-                          __global const float *scale_factor,
-                                   const int    scale_factor_index,
-                          __global       float *alpha_d)
-{
-        unsigned int idx = get_global_id(0);
-
-        if (idx < N) {
-                alpha_d[idx] /= scale_factor[scale_factor_index];
-        }
-}
-
-
-__kernel void FWD_calc_alpha(         const int N,
-                             __global const float *b_d,
-                             __global       float *alpha_d) 
-{
-        unsigned int idx = get_global_id(0);
-
-        if (idx < N) {
-                alpha_d[idx] *= b_d[idx];
-        }
-}
 
 // TODO: use OpenCL 2.0 workgroup function instead
-__kernel void FWD_sum_ll(         const int    T,
-                         __global       float *ll_d)
+__kernel void FWD_update_alpha(const int N,
+                               const int current,
+								 __local float *sm,
+								 __constant float *constMem,
+								 __global float *aT,
+								 __global float *b,
+								 __global float *alpha)
 {
-        uint lid = get_local_id(0);
-        uint gid = get_global_id(0);
+	// col
+	size_t lx = get_local_id(0);
+	size_t gx = get_global_id(0); 
 
-        // T = 64
-        __local float sm[64];
+	// row
+	size_t ly = get_local_id(1);
+	size_t gy = get_global_id(1); 
 
-        if (gid < T){
-                sm[lid] = log10(ll_d[gid]);
-        }
+	// to iterate through columns
+	int iters = N / 16;
 
-        barrier(CLK_LOCAL_MEM_FENCE);
+	float data = 0.f;
 
-        //reduction
-        if (lid < 32) {
-                __local float *smem = sm;
-                smem[lid] += smem[lid + 32];
-                smem[lid] += smem[lid + 16];
-                smem[lid] += smem[lid +  8];
-                smem[lid] += smem[lid +  4];
-                smem[lid] += smem[lid +  2];
-                smem[lid] += smem[lid +  1];
-        }
+	int i;
+	for(i=0; i<iters; ++i)
+	{
+		int col = i * 16 + lx;
+		data += aT[gy * N + col] * constMem[col];	
+	}
 
-        if (lid == 0) {
-                ll_d[T] = sm[0];
-        }
+	sm[ly * 17 + lx] = data;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	if(gx == 0) // only first column exectues
+	{
+		int start = ly * 17;	
+
+		data =  sm[start]      + sm[start + 1]  + sm[start + 2]  + sm[start + 3]
+			+ sm[start + 4]  + sm[start + 5]  + sm[start + 6]  + sm[start + 7]
+			+ sm[start + 8]  + sm[start + 9]  + sm[start + 10] + sm[start + 11]
+			+ sm[start + 12] + sm[start + 13] + sm[start + 14] + sm[start + 15];
+
+
+		alpha[current + gy] = data * b[current + gy];
+	}
 }
+
+
+
+
+
+/*
 
 // Backward kernels
 __kernel void BK_update_beta(         const int N,
@@ -637,3 +725,5 @@ __kernel void EM_update_expectsigma(
         }
 
 }
+
+*/

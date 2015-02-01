@@ -17,13 +17,16 @@ class HMM
 	cl_context context;
 	cl_program program;
 	cl_command_queue cmdQueue_0;
-	cl_command_queue cmdQueue_1;
+	//cl_command_queue cmdQueue_1;
 
 	// User managed kernels, no auto release
+	// Forward
 	cl_kernel kernel_FWD_init_alpha;
-	cl_kernel kernel_FWD_scaling;
-	cl_kernel kernel_FWD_calc_alpha;
-	cl_kernel kernel_FWD_sum_ll;
+	cl_kernel kernel_FWD_norm_alpha;
+	cl_kernel kernel_TransposeSym;
+	cl_kernel kernel_FWD_update_alpha;
+/*
+	// Backward
 	cl_kernel kernel_BK_update_beta;
 	cl_kernel kernel_BK_scaling;
 	cl_kernel kernel_EM_betaB_alphabeta;
@@ -40,7 +43,7 @@ class HMM
 	cl_kernel kernel_EM_exptmu;
 	cl_kernel kernel_EM_exptsigma_dev;
 	cl_kernel kernel_EM_update_exptsigma;	
-
+*/
 	// Parameters
 	static const int TILE = 16;
 	static const int SIZE = 4096;
@@ -69,20 +72,24 @@ class HMM
 	int blknum;
 
 	// SVM buffers, no auto release
+	// Prepare
 	float *a;          // state transition probability matrix
 	float *b;          // emission probability matrix
-	float *prior;      // prior probability
 	float *alpha;      // forward probability matrix
-	float *lll;        // log likelihood
+	float *prior;      // prior probability
 	float *blk_result; // intermediate blk results
 	float *observations;
 
-	// forward
-	float *ones;
-	float *ll;
+	// Forward
+	float *lll;        // log likelihood
+	float *aT;         // transpose of a
 
 	// bk
 	float *beta;
+
+	// Constant
+	float *constMem;
+/*
 	float *betaB;
 
 	// em 
@@ -110,30 +117,47 @@ class HMM
 	float *constT;
 	float *expt_mu_state;
 
-	void Init();
-	void InitParam();
-	void InitCL();
 
-	void InitKernels();
-	void InitBuffers();
-
-	void CleanUp();
-	void CleanUpKernels();
-	void CleanUpBuffers();
-
-	void Forward();
-	void ForwardInitAlpha(int numElements, float *bSrc, float *piSrc, 
-		float *alphaDst, float *onesDst, float *betaDst);
-	void ForwardSumAlpha();
-	void ForwardScaling(int numElements, float *scaleArraySrc, int scaleArrayIndexSrc, float *dataDst);
+	// Forward 
 	void ForwardCalcAlpha(int numElements, float *bSrc, float *alphaDst);
 	void ForwardSumLL(int numElements, float *llDst);
 
+	// Backward
 	void Backward();
 	void BackwardUpdateBeta(int numElements, float *betaSrc, float *bSrc, float *betaBDst);
 	void BackwardScaling(int numElements, float *llSrc, float *betaDst);
 
+	// EM
 	void BaumWelch();
+*/
+	//-------------------------------------------------------------------------------------------//
+	// Initialize functions
+	//-------------------------------------------------------------------------------------------//
+	void Init();
+	void InitParam();
+	void InitCL();
+	void InitKernels();
+	void InitBuffers();
+
+	//-------------------------------------------------------------------------------------------//
+	// Clean functions
+	//-------------------------------------------------------------------------------------------//
+	void CleanUp();
+	void CleanUpKernels();
+	void CleanUpBuffers();
+
+	//-------------------------------------------------------------------------------------------//
+	// Forward functions
+	//-------------------------------------------------------------------------------------------//
+	void Forward();
+	void ForwardInitAlpha();
+	void ForwardNormAlpha(int startpos);
+	void TransposeSym(float *a, float *aT, int size);
+	void ForwardUpdateAlpha(int pos);
+
+	//-------------------------------------------------------------------------------------------//
+	// Backward functions
+	//-------------------------------------------------------------------------------------------//
 
 public:
 	HMM(int N);
