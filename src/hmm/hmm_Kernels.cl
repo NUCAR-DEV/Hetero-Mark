@@ -154,52 +154,113 @@ __kernel void FWD_update_alpha(const int N,
 }
 
 
+//-----------------------------------------------------------------------------------------------//
+// Backward kernels
+//-----------------------------------------------------------------------------------------------//
+__kernel void BK_BetaB(const int N,
+                       const int pos,
+                       __global const float *beta,
+                       __global const float *b,
+                       __global float *betaB)
+{
+        size_t idx = get_global_id(0);
+        if (idx < N) {
+                betaB[idx] = b[pos + idx] * beta[pos + idx];
+        }
+}
+
+
+__kernel void BK_update_beta(const int N,
+                             const int current,
+						     __local float *sm,
+							 __constant float *constMem,
+				             __global float *a,
+							 __global float *beta)
+{
+	// col
+	size_t lx = get_local_id(0);
+	size_t gx = get_global_id(0); 
+
+	// row
+	size_t ly = get_local_id(1);
+	size_t gy = get_global_id(1); 
+
+	// to iterate through columns
+	int iters = N / 16;
+
+	float data = 0.f;
+
+	int i;
+	for(i=0; i<iters; ++i)
+	{
+		int col = i * 16 + lx;
+		data += a[gy * N + col] * constMem[col];	
+	}
+
+	sm[ly * 17 + lx] = data;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	if(gx == 0) // only first column exectues
+	{
+		int start = ly * 17;	
+
+		data =  sm[start]      + sm[start + 1]  + sm[start + 2]  + sm[start + 3]
+			+ sm[start + 4]  + sm[start + 5]  + sm[start + 6]  + sm[start + 7]
+			+ sm[start + 8]  + sm[start + 9]  + sm[start + 10] + sm[start + 11]
+			+ sm[start + 12] + sm[start + 13] + sm[start + 14] + sm[start + 15];
+
+
+		beta[current + gy] = data;
+	}
+}
+
+
+__kernel void BK_norm_beta(const int N,
+						   const int current,
+						   __local  float *sm,
+						   __global float *beta)
+
+{
+	size_t tid = get_local_id(0);	
+	size_t gid = get_global_id(0);	
+	size_t bls = get_local_size(0);
+	size_t gls = get_global_size(0);
+
+	float tidsum = 0.f;
+	int i;
+	for(i=gid; i<N; i+=gls)
+	{
+		tidsum += beta[current + i];
+	}
+
+	sm[tid] = tidsum;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+
+	// sum the value from each thread using shared memory
+	if(bls >= 512){if(tid < 256) {sm[tid] += sm[tid + 256];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >= 256){if(tid < 128) {sm[tid] += sm[tid + 128];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >= 128){if(tid <  64) {sm[tid] += sm[tid +  64];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=  64){if(tid <  32) {sm[tid] += sm[tid +  32];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=  32){if(tid <  16) {sm[tid] += sm[tid +  16];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=  16){if(tid <   8) {sm[tid] += sm[tid +   8];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=   8){if(tid <   4) {sm[tid] += sm[tid +   4];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=   4){if(tid <   2) {sm[tid] += sm[tid +   2];} barrier(CLK_LOCAL_MEM_FENCE);}
+	if(bls >=   2){if(tid <   1) {sm[tid] += sm[tid +   1];} barrier(CLK_LOCAL_MEM_FENCE);}
+
+
+	// element-wise division
+	for(i=gid; i<N; i+=gls)
+	{
+		beta[current + i] /= sm[0];
+	}
+}
 
 
 
 /*
-
-// Backward kernels
-__kernel void BK_update_beta(         const int N,
-                             __global const float *beta_d,
-                             __global const float *B_d,
-                             __global float *betaB_d)
-{
-        unsigned int idx = get_global_id(0);
-        if (idx < N) {
-                betaB_d[idx] = B_d[idx] * beta_d[idx];
-        }
-}
-
-
-__kernel void BK_scaling(         const int N,
-                         __global const float *ll_d,
-                         __global float *beta)
-{
-        unsigned int idx = get_global_id(0);
-
-        if (idx < N) {
-                beta[idx] /= ll_d[0];
-        }
-}
-
-// BW kernels
-#ifndef TILE
-        #define TILE 16 // 2D Kernel Tiling
-#endif
-
-#ifndef SIZE 
-        #define SIZE 4096 
-#endif
-
-// cache global memory
-// __constant float ConstA[SIZE]; 
-// __constant float ConstB[SIZE]; 
-
-// __constant float gamma_state_sumC[SIZE];
-// __constant float bufferT[64];
-// __constant float expect_mu_state[64];
-
 
 // Compute beta * B and alpha * beta
 __kernel void EM_betaB_alphabeta(__global const float *beta, 

@@ -25,10 +25,12 @@ class HMM
 	cl_kernel kernel_FWD_norm_alpha;
 	cl_kernel kernel_TransposeSym;
 	cl_kernel kernel_FWD_update_alpha;
-/*
 	// Backward
+	cl_kernel kernel_BK_BetaB;
 	cl_kernel kernel_BK_update_beta;
-	cl_kernel kernel_BK_scaling;
+	cl_kernel kernel_BK_norm_beta;
+	// EM
+/*
 	cl_kernel kernel_EM_betaB_alphabeta;
 	cl_kernel kernel_EM_sum_alphabeta;
 	cl_kernel kernel_EM_alphabeta_update_gamma;
@@ -86,11 +88,11 @@ class HMM
 
 	// bk
 	float *beta;
+	float *betaB;
 
 	// Constant
 	float *constMem;
 /*
-	float *betaB;
 
 	// em 
 	float *xi_sum;
@@ -158,6 +160,18 @@ class HMM
 	//-------------------------------------------------------------------------------------------//
 	// Backward functions
 	//-------------------------------------------------------------------------------------------//
+	void Backward();
+	void BackwardBetaB(int pos);
+	void BackwardUpdateBeta(int pos);
+	void BackwardNormBeta(int pos);
+
+	//-------------------------------------------------------------------------------------------//
+	// EM functions
+	//-------------------------------------------------------------------------------------------//
+
+
+
+
 
 public:
 	HMM(int N);
