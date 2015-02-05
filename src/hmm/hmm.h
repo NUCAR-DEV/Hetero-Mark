@@ -22,6 +22,7 @@ class HMM
 	cl_command_queue cmdQueue_0;
 	//cl_command_queue cmdQueue_1;
 
+
 	// User managed kernels, no auto release
 	// Forward
 	cl_kernel kernel_FWD_init_alpha;
@@ -39,20 +40,15 @@ class HMM
 	cl_kernel kernel_EM_pre_xisum;
 	cl_kernel kernel_EM_update_xisum;
 	cl_kernel kernel_EM_gamma;
-/*
-	cl_kernel kernel_EM_sum_alphabeta;
-	cl_kernel kernel_EM_alphabeta_update_gamma;
-	cl_kernel kernel_EM_A_mul_alphabetaB;
-	cl_kernel kernel_EM_norm_alphabeta;
-	cl_kernel kernel_EM_alphabeta;
-	cl_kernel kernel_EM_expt_A;
-	cl_kernel kernel_EM_transpose;
-	cl_kernel kernel_EM_gammastatesum;
-	cl_kernel kernel_EM_gammaobs;
-	cl_kernel kernel_EM_exptmu;
-	cl_kernel kernel_EM_exptsigma_dev;
-	cl_kernel kernel_EM_update_exptsigma;	
-*/
+	cl_kernel kernel_EM_expectA;
+	cl_kernel kernel_EM_gamma_state_sum;
+	cl_kernel kernel_EM_gamma_obs;
+	cl_kernel kernel_EM_expect_mu;
+	cl_kernel kernel_EM_sigma_dev;
+	cl_kernel kernel_EM_expect_sigma;	
+
+
+
 	// Parameters
 	static const int TILE = 16;
 	static const int SIZE = 4096;
@@ -80,13 +76,14 @@ class HMM
 	int blk_rows;
 	int blknum;
 
+
 	// SVM buffers, no auto release
 	// Prepare
 	float *a;          // state transition probability matrix
 	float *b;          // emission probability matrix
 	float *alpha;      // forward probability matrix
 	float *prior;      // prior probability
-	float *observations;
+	float *observations; // D x T
 
 	// Forward
 	float *lll;        // log likelihood
@@ -104,32 +101,20 @@ class HMM
 	float *xi_sum_tmp;    // N x N
 	float *blk_result;    // intermediate blk results
 
+	float *expect_prior;  // N
+	float *expect_A;      // N xN
+	float *expect_mu;     // N x D
+	float *expect_sigma;  // N x D x D
+
+	float *gamma_state_sum; // N
+	float *gamma_obs;       // D x T
+	float *sigma_dev;       // D x D
+
 	// Constant
 	float *constMem;
-/*
 
-	// em 
-	float *gammaT;
-	float *gamma_state_sum;
-	float *gamma_obs; // D x T
 
-	// expected values
-	float *expt_prior;
-	float *expt_A;
-	float *observationsT;
-	float *expt_mu; // N x D
-	float *expt_sigma_sym;
-	float *expt_sigma;
 
-	// constant memory
-	// hint: reuse constant buffer if possible
-	float *constA; 
-	float *constB;
-	float *gamma_state_sumC;
-	float *constT;
-	float *expt_mu_state;
-
-*/
 	//-------------------------------------------------------------------------------------------//
 	// Initialize functions
 	//-------------------------------------------------------------------------------------------//
@@ -173,7 +158,12 @@ class HMM
 	void EM_pre_xisum();
 	void EM_update_xisum(float sumvalue);
 	void EM_gamma(int pos);
-
+	void EM_expectA();
+	void EM_gamma_state_sum();
+	void EM_gamma_obs();
+	void EM_expect_mu(int pos, int currentstate);
+	void EM_sigma_dev(int currentstate);
+	void EM_expect_sigma(size_t pos);
 
 
 

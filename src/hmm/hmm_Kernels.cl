@@ -401,6 +401,7 @@ __kernel void EM_update_xisum(const int N,
 	}
 }
 
+
 // TODO
 __kernel void EM_gamma(const int N,
                               const int current,
@@ -445,316 +446,222 @@ __kernel void EM_gamma(const int N,
 
 }
 
-/*
 
-
-
-__kernel void EM_norm_alphabeta(__global const float *alpha_d,
-                                __global const float *beta_d,
-                                __global       float *alphabeta_d,
-                                __global       float *gamma_d,
-                                __local        float *sm,
-                                const int current,
-                                const int N)
+__kernel void EM_expectA(const int N,
+                          __local float *sm,
+                          __global const float *xi_sum,
+                          __global       float *expect_A)
 {
+	size_t gx = get_global_id(0);
+	size_t lx = get_local_id(0); // col  
 
-    // work group reduction
-    if(bls >= 512){if(lid < 256) {sm[lid] += sm[lid + 256];} barrier(CLK_LOCAL_MEM_FENCE);}
-    if(bls >= 256){if(lid < 128) {sm[lid] += sm[lid + 128];} barrier(CLK_LOCAL_MEM_FENCE);}
-    if(bls >= 128){if(lid <  64) {sm[lid] += sm[lid +  64];} barrier(CLK_LOCAL_MEM_FENCE);}
-    if(bls >=  64){if(lid <  32) {sm[lid] += sm[lid +  32];} barrier(CLK_LOCAL_MEM_FENCE);}
+	size_t gy = get_global_id(1);
+	size_t ly = get_local_id(1); // row 
 
-    // wavefront size for AMD southern islands GPUs is 16
-    if(lid < 16)
-    {
-        if(bls >= 32) {sm[lid] += sm[lid + 16];}    
-        if(bls >= 16) {sm[lid] += sm[lid +  8];}    
-        if(bls >=  8) {sm[lid] += sm[lid +  4];}    
-        if(bls >=  4) {sm[lid] += sm[lid +  2];}    
-        if(bls >=  2) {sm[lid] += sm[lid +  1];}    
-    }
+	float data = 0.f;
 
-    // sm[0] has the sum
-    barrier(CLK_LOCAL_MEM_FENCE);
+	int start = ly * 17;
+	size_t offset = gy * N;
 
-    for(int i=gid; i<N; i+=gls)
-    {
-        gamma_d[current + i] = alphabeta_d[i] / sm[0];
-    }
-}
+	int i;
+	for(i = gx; i < N; i += 16)
+	{
+		data += xi_sum[offset + i];
+	}
 
+	sm[start + lx] = data;
 
+	barrier(CLK_LOCAL_MEM_FENCE);
 
+	// sum across rows
+	if(gx == 0) // only 16 threads are alive now 
+	{
+		data =  sm[start]      + sm[start + 1]  + sm[start + 2]  + sm[start + 3] 
+			+ sm[start + 4]  + sm[start + 5]  + sm[start + 6]  + sm[start + 7] 
+			+ sm[start + 8]  + sm[start + 9]  + sm[start + 10] + sm[start + 11] 
+			+ sm[start + 12] + sm[start + 13] + sm[start + 14] + sm[start + 15]; 
 
+		if (data == 0.f) data = 1.f; 
 
+		// same the row sum at the 1st col of sm
+		sm[start] = data;
+	}
 
+	barrier(CLK_LOCAL_MEM_FENCE);
 
-__kernel void EM_expect_A(__global const float *xi_sum_d,
-                          __global       float *expt_A_d,
-                                   const int N) 
-{
-        uint gx = get_global_id(0);
-        uint lx = get_local_id(0); // col  
-
-        uint gy = get_global_id(1);
-        uint ly = get_local_id(1); // row 
-
-        __local float lds[256];
-
-        size_t m =  get_num_groups(0); // number of iterations, equal to the column groups, because A is square 
-
-        int i, col;
-        float data;
-        size_t offset = gy * N;
-
-        // load 1st time
-        data = xi_sum_d[offset + gx];
-        //printf("(%d,%d) \n", gy, gx);
-
-        //#pragma unroll
-        for(i = 1 ; i < m ; ++i){
-                //col = lx + 16 * i;  
-                col = gx + i * TILE;  
-                data += xi_sum_d[offset + col];
-        }
-
-        lds[ly*TILE + lx] = data;
-
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        // sum across rows
-        if( gx == 0) // only 16 threads are alive now 
-        {
-                int start = ly * TILE;
-                data =  lds[start]      + lds[start + 1]  + lds[start + 2]  + lds[start + 3] 
-                        + lds[start + 4]  + lds[start + 5]  + lds[start + 6]  + lds[start + 7] 
-                        + lds[start + 8]  + lds[start + 9]  + lds[start + 10] + lds[start + 11] 
-                        + lds[start + 12] + lds[start + 13] + lds[start + 14] + lds[start + 15]; 
-                if (data == 0.f) data = 1.f; 
-                lds[start] = data;
-        }
-
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        for(i = 0 ; i < m ; ++i){
-                col = gx + i * TILE;  
-                expt_A_d[offset + col] = xi_sum_d[offset + col]/lds[ly * TILE];
-        }
+	for(i = gx; i < N; i += 16)
+	{
+		expect_A[offset + i] = xi_sum[offset + i] / sm[start];
+	}
 
 }
 
 
-
-
-__kernel void EM_transpose(__global const float *A,
-                           __global       float *At,
-                                    const int height,
-                                    const int width)
+__kernel void EM_gamma_state_sum(const int N,
+                                 const int T,
+								 __local float *sm,
+							   __global const float *gamma,
+                               __global       float *gamma_state_sum)
 {
+	// gamma :   T x N       
 
-        __local float lds[272]; // (16 +1) x 16
+	size_t gx = get_global_id(0); // col
+	size_t gy = get_global_id(1); // row
 
-        // read the matrix tile into shared memory
-        size_t  xIndex = get_group_id(0) * TILE + get_local_id(0);
-        size_t  yIndex = get_group_id(1) * TILE + get_local_id(1);
-        size_t  lidx = get_local_id(0); // col  
-        size_t  lidy = get_local_id(1); // row 
+	size_t lx = get_local_id(0); // col  
+	size_t ly = get_local_id(1); // row 
 
-        if((xIndex < width) && (yIndex < height))
-        {
-                size_t index_in = yIndex * width + xIndex;
-                lds[lidy * (TILE + 1) + lidx] = A[index_in];
-        }
+	float data = 0.f;
+	// sum along column 
+	int i;
+	for(i = gy; i < T; i += 16)
+	{
+		data += gamma[i * N + gx];
+	}
 
-        barrier(CLK_LOCAL_MEM_FENCE);
+	// transpose in sm
+	sm[lx * 17 + ly] = data;
 
-        // write the transposed matrix tile to global memory
-        xIndex = get_group_id(1) * TILE + get_local_id(0);
-        yIndex = get_group_id(0) * TILE + get_local_id(1);
+	barrier(CLK_LOCAL_MEM_FENCE);
 
+	if(gy == 0) // only 16 threads are alive now 
+	{
+		int start = lx * 17;
+		data =  sm[start]      + sm[start + 1]  + sm[start + 2]  + sm[start + 3] 
+			+ sm[start + 4]  + sm[start + 5]  + sm[start + 6]  + sm[start + 7] 
+			+ sm[start + 8]  + sm[start + 9]  + sm[start + 10] + sm[start + 11] 
+			+ sm[start + 12] + sm[start + 13] + sm[start + 14] + sm[start + 15]; 
 
-        if((xIndex < height) && (yIndex < width))
-        {
-                size_t index_out = yIndex * height + xIndex;
-                At[index_out] = lds[lidx * (TILE + 1) + lidy];
-        }
+		if (data == 0.f) data = 1.f; 
 
-}
-
-__kernel void EM_gammastatesum(__global const float *gammaT,
-                               __global       float *gamma_state_sum,
-                                        const int N,
-                                        const int T)
-{
-        // gammaT :  N x T        
-        __local float lds[272]; // 16 x 17 
-
-        uint gx = get_global_id(0);
-        uint gy = get_global_id(1);
-        uint lx = get_local_id(0); // col  
-        uint ly = get_local_id(1); // row 
-
-        size_t m = T / TILE; 
-
-        int i, col;
-        float data;
-        size_t offset = gy * T;
-
-        // load 1st time
-        data = gammaT[offset + gx];
-
-        //#pragma unroll
-        for(i = 1 ; i < m ; ++i){
-                //col = lx + 16 * i;  
-                col = i * TILE + gx;  
-                data += gammaT[offset + col];
-        }
-
-        lds[ly*(TILE+1) + lx]= data;
-
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        if( gx == 0) // only 16 threads are alive now 
-        {
-                int start = ly * (TILE+1);
-                data =  lds[start]      + lds[start + 1]  + lds[start + 2]  + lds[start + 3] 
-                        + lds[start + 4]  + lds[start + 5]  + lds[start + 6]  + lds[start + 7] 
-                        + lds[start + 8]  + lds[start + 9]  + lds[start + 10] + lds[start + 11] 
-                        + lds[start + 12] + lds[start + 13] + lds[start + 14] + lds[start + 15]; 
-                gamma_state_sum[gy] = data;
-        }
+		gamma_state_sum[gx] = data;
+	}
 }
 
 
-__kernel void EM_gammaobs(__global const float *observationsT, // D x T
-                          __global       float *gamma_obs,
-                          __constant     float *bufferT,
-                                   const int T)
+__kernel void EM_gamma_obs(const int D,
+                           const int T,
+						   __constant float *constMem,
+                           __global const float *observations, // D x T
+                           __global       float *gamma_obs)
 {
-        uint gx = get_global_id(0);// col
-        uint gy = get_global_id(1);
+        size_t gx = get_global_id(0); // col: T
+        size_t gy = get_global_id(1); // row: D
 
-        uint id = gy * T + gx;
+        size_t id = gy * T + gx;
 
-        // gamma_obs[gy][gx] = observationsT[gy][gx] * bufferT[gx];
-        gamma_obs[id] = observationsT[id] * bufferT[gx];
+		if(gx < T && gy < D)
+			gamma_obs[id] = observations[id] * constMem[gx];
+}
+
+
+
+__kernel void EM_expect_mu(const int D,
+                           const int T,
+						   const int offset,
+						   const int hs,
+						   __local float *sm,
+                           __global const float *gamma_obs, // D x T
+                           __global const float *gamma_state_sum,
+                           __global       float *expect_mu) // N x D
+{
+	// row-wise sum on gamma_obs (D x T) 
+
+	size_t  gx = get_global_id(0); // col
+	size_t  gy = get_global_id(1); // row
+
+	size_t  lx = get_local_id(0); // col  
+	size_t  ly = get_local_id(1); // row 
+
+	size_t stride = gy * T;
+
+	float data = 0.f;
+
+	int i;
+	for(i = gx; i < T; i+=16)
+	{
+		data += gamma_obs[stride + i];	
+	}
+
+	sm[ly * 17 + lx]= data;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	if(gx == 0) // only 16 threads are alive now 
+	{
+		int start = ly * 17;
+		data =  sm[start]      + sm[start + 1]  + sm[start + 2]  + sm[start + 3] 
+			+ sm[start + 4]  + sm[start + 5]  + sm[start + 6]  + sm[start + 7] 
+			+ sm[start + 8]  + sm[start + 9]  + sm[start + 10] + sm[start + 11] 
+			+ sm[start + 12] + sm[start + 13] + sm[start + 14] + sm[start + 15]; 
+
+		if(gy < D)
+			expect_mu[offset + gy] = data / gamma_state_sum[hs];
+	}
 
 }
 
-__kernel void EM_expectmu(__global const float *gamma_obs, // D x T
-                          __global       float *expect_mu, // N x D
-                          __constant     float *gamma_state_sumC,
-                                   const int    hs,
-                                   const int    T, 
-                                   const       int current)
+
+__kernel void EM_sigma_dev(const int D,
+                           const int T,
+						   const int hs,
+						   __constant float *constMem,
+                           __global const float *gamma_obs,
+                           __global const float *observations,        
+                           __global const float *gamma_state_sum,        
+                           __global       float *sigma_dev)
 {
-        // D x T        
-        // row-wise sum 
-        __local float lds[272]; // 16 x 16 
+        // C = A x B'
+        // C , sigma_dev  DxD 
+        // A , gamma_obs  DxT
+        // B , observations DxT
 
-        uint gx = get_global_id(0);
-        uint gy = get_global_id(1);
-        uint lx = get_local_id(0); // col  
-        uint ly = get_local_id(1); // row 
+        __local float lds_a[72]; // gamma_obs 
+        __local float lds_b[72]; // observations 
 
-        int m = T / TILE;  // devide column T into m TILE-trunks
+        int lx = get_local_id(0); // col  
+        int ly = get_local_id(1); // row 
 
-        int i, col;
-        float data;
+        size_t gx = get_global_id(0); // col  
+        size_t gy = get_global_id(1); // row 
 
-        uint offset = gy * T;
+        float sum = 0.f; // output sum for (gy, gx) 
 
-        // load 1st time
-        data = gamma_obs[offset + gx];
-
-        //#pragma unroll
-        for(i = 1 ; i < m ; ++i){
-                //col = lx + 16 * i;  
-                col = i * TILE + gx;  
-                data += gamma_obs[offset + col];
-        }
-
-        lds[ly*(TILE+1) + lx]= data;
-
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        if( gx == 0) // only 16 threads are alive now 
-        {
-                int start = ly * (TILE+1);
-                data =  lds[start]      + lds[start + 1]  + lds[start + 2]  + lds[start + 3] 
-                        + lds[start + 4]  + lds[start + 5]  + lds[start + 6]  + lds[start + 7] 
-                        + lds[start + 8]  + lds[start + 9]  + lds[start + 10] + lds[start + 11] 
-                        + lds[start + 12] + lds[start + 13] + lds[start + 14] + lds[start + 15]; 
-                expect_mu[current + gy] = data / gamma_state_sumC[hs];
-        }
-
-}
-
-__kernel void EM_expectsigma_dev(
-                __global const float *gamma_obs,
-                __global const float *observations,        
-                __global       float *expect_sigma_sym,
-                __constant     float *gamma_state_sumC,
-                __constant     float *expect_mu_state,
-                         const int hs,
-                         const int D,
-                         const int T)
-{
-        // C = A x B
-        // C , expect_sigma_sym 
-        // A , gamma_obs 
-        // B , observations
-
-        // (DxT) (TxD) will produce DxD 
-        __local float lds_a[72]; // 8 x 9 
-        __local float lds_b[72]; // 
-
-        uint lx = get_local_id(0); // col  
-        uint ly = get_local_id(1); // row 
-
-        int bx = get_group_id(0);
-        int by = get_group_id(1);
-
-        int nx = T / 8;
-        int Col =  bx * 8 + lx; // global col index for output
-        int Row =  by * 8 + ly; // global row index for output
-
-        float sum = 0.f;        
+		int iter = T/8; // T is multiple of 8
         int m;
+		for(m=0; m<iter; ++m)
+		{
+			// each iteration, load 8 x 8 
+			lds_a[ly * 9 + lx] = gamma_obs[gy * T + (lx + m * 8)];
+			lds_b[ly * 9 + lx] = observations[gx * T + (ly + m * 8)];
 
-        for ( m = 0; m < nx ; ++m)
-        {
-                lds_a[ly * 9 + lx] = gamma_obs[Row * T + m * 8 + lx];        
-                lds_b[ly * 9 + lx] = observations[(m * 8 + ly) * D + Col];        
+			barrier(CLK_LOCAL_MEM_FENCE);
 
-                barrier(CLK_LOCAL_MEM_FENCE);
-
-                // matrix mul on LDS
-                // a x b
-                int kk;
+			// matrix mul on LDS
+			// a x b
+			int kk;
 #pragma unroll
-                for ( kk = 0; kk < 8; ++kk) 
-                {
-                        sum += lds_a[ly * 9 + kk] * lds_b[kk * 9 + lx];
-                }
+			for (kk = 0; kk < 8; ++kk) 
+			{
+				sum += lds_a[ly * 9 + kk] * lds_b[lx * 9 + kk];
+			}
 
-                barrier(CLK_LOCAL_MEM_FENCE);
-
-        }
+			barrier(CLK_LOCAL_MEM_FENCE);
+		}
 
         // sum is the mm result of gamma_obs * obs_t
         // sum * gamma_state_sum(s) - expect_mu(s) * expect_mu(s)'
-        expect_sigma_sym[Row * D + Col] = sum / gamma_state_sumC[hs] - expect_mu_state[Row] * expect_mu_state[Col];
+        sigma_dev[gy * D + gx] = sum / gamma_state_sum[hs] - constMem[gy] * constMem[gx];
 }
 
-__kernel void EM_update_expectsigma(
-                __global       float *expect_sigma,        
-                __global const float *expect_sigma_sym,
-                         const int blk_rows,
-                         const int width,
-                         const uint start)
+
+__kernel void EM_expect_sigma(const int blk_rows,
+                            const int width,
+                            const size_t start,
+                            __global const float *sigma_dev,
+                            __global       float *expect_sigma)
 {
-        //__local int2 blkid;
+
         volatile __local int2 blkid;
         // find the subdiagnoal blocks
         // for example,
@@ -774,7 +681,6 @@ __kernel void EM_update_expectsigma(
 
         int bn = get_group_id(1); 
 
-        //int2 blkid;
 
         if(lid_x == 0 && lid_y == 0)
         {
@@ -801,14 +707,15 @@ __kernel void EM_update_expectsigma(
 
         // find the corresponding global thread index
         size_t gx, gy, gid;
-        gx = blkid.x * TILE + lid_x;  // global column index
-        gy = blkid.y * TILE + lid_y;
+        gx = blkid.x * 16 + lid_x;  // global column index
+        gy = blkid.y * 16 + lid_y;
         gid = gy * width + gx;
+
 
         size_t gid_sym = gx * width + gy;
 
-        float a = expect_sigma_sym[gid];
-        float b = expect_sigma_sym[gid_sym];
+        float a = sigma_dev[gid];
+        float b = sigma_dev[gid_sym];
 
         if(gx == gy)
         {
@@ -828,5 +735,3 @@ __kernel void EM_update_expectsigma(
         }
 
 }
-
-*/
