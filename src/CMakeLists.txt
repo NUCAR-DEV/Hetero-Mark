@@ -1,5 +1,5 @@
 set( FOLDER_NAME src )
-set( SUBDIRECTORIES shallowWater hmm)
+set( SUBDIRECTORIES aes shallowWater hmm)
 
 ############################################################################
 
