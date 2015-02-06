@@ -1,6 +1,6 @@
-set( BENCHMARK_NAME aes )
-set( SOURCE_FILES aes.c )
-set( EXTRA_FILES aes_Kernels.cl )
+set( BENCHMARK_NAME fir )
+set( SOURCE_FILES fir.c )
+set( EXTRA_FILES fir_Kernels.cl )
 
 ############################################################################
 
