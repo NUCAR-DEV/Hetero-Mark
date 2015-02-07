@@ -1,0 +1,12 @@
+To run the code:
+./aes12 h in.txt keyfile.txt out.txt
+./aes20 h in.txt keyfile.txt out.txt
+
+# aes12 is the executable for OpenCL 1.2
+# aes20 is the executable for OpenCL 2.0
+# in.txt contains the input plain text
+# out.txt contains the output encrypted text
+# keyfile.txt contains the keyfile for AES-256
+# 'h' is to indicate the code that the input is in hex. Use 'a' for ascii.
+
+
