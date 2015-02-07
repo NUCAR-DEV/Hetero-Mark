@@ -1,11 +1,4 @@
-// Advanced Encryption Standard using OpenCL 2.0
-//
-// NUCAR: Northeastern University Architecture Group
-//
-//OpenCL 2.0 AES256 Kernal Code
-//Application auto-inserts expanded key and headers into source code above
-
-
+//System auto-inserts expanded key and headers into source code above !! do not append above without consulting host code!
 
 __constant uchar s[256] = {
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -24,14 +17,20 @@ __constant uchar s[256] = {
     0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
     0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
     0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
-}; //The s-box is always constant, so it is included in the source
+};
 
-__kernel void sb_st(__local uchar* in) //Performs an S-box substitution on an entire state
+__kernel void sb(__local uchar* in)
 {
-    for (int i = 0; i < 16; i++) { in[i] = s[in[i]]; }
+    for (int i = 0; i < 32; i++) { in[i] = s[in[i]]; }
 }
 
-__kernel void mc(__local uchar* arr) //The mix-columns operation, performs a mathematical transformation on the state (logic defined in specification)
+__kernel void sb_st(__local uchar* in)
+{
+    for (int i = 0; i < 16; i++) { in[i] = s[in[i]]; }
+    
+}
+
+__kernel void mc(__local uchar* arr)
 {
     for (int i = 0; i < 4; i++)
     {
@@ -53,7 +52,7 @@ __kernel void mc(__local uchar* arr) //The mix-columns operation, performs a mat
     
 }
 
-__kernel void sr(__local uchar* arr) //Shifts the data in each row in the state by an increasing index
+__kernel void sr(__local uchar* arr)
 {
     uchar out[16];
     //On per-row basis (+1 shift X each row)
@@ -84,14 +83,14 @@ __kernel void sr(__local uchar* arr) //Shifts the data in each row in the state 
     }
 }
 
-__kernel void ark(__local uchar* state, int strD) //Add round key: XORs words from the expanded key to the state
+__kernel void ark(__local uchar* state, int strD)
 {
     union {
         uint word;
         uchar bytes[4];
     } kb[4] __attribute__ ((aligned));
     
-    kb[0].word = eK[strD]; //eK is added to the source code, that is why it is not defined in this file
+    kb[0].word = eK[strD];
     kb[1].word = eK[strD+1];
     kb[2].word = eK[strD+2];
     kb[3].word = eK[strD+3];
@@ -105,13 +104,18 @@ __kernel void ark(__local uchar* state, int strD) //Add round key: XORs words fr
     }
 }
 
-__kernel void CLRunner(__global uchar* in) //Note: uchar is equal to uint32_t and uint is equal to uint8_t from the host code, OpenCL does not define these types
+__kernel void CLRunnerntrl(__global uchar *in)
 {
     __local uchar state[16];
-    int localid = (int)get_global_id(0); //Data is shifted by 16 * ID of worker
-    for (int i = 0; i < 16; i++) { state[i] = in[(localid*16)+i]; }
-	
-    ark(state, 0); //The code from here to the end (order and number of loops) are defined by the specification explicitly
+    for (int i = 0; i < 16; i++) { state[i] = in[i]; }
+    
+    for (int h = 0; h < 60; h++) { printf("\nD:%i : %x", h, eK[h]); }
+    for (int p = 0; p < 16; p=p+4) { printf("\n[ %x %x %x %x ]", state[p], state[p+1], state[p+2], state[p+3]); }
+    
+    ark(state, 0);
+    
+    printf("\nFirst ARK:");
+    for (int p = 0; p < 16; p=p+4) { printf("\n[ %x %x %x %x ]", state[p], state[p+1], state[p+2], state[p+3]); }
     
     for (int i = 1; i < 14; i++)
     {
@@ -119,12 +123,12 @@ __kernel void CLRunner(__global uchar* in) //Note: uchar is equal to uint32_t an
         sr(state);
         mc(state);
         ark(state, i*Nb);
+        printf("\nRound:%i", i);
+        for (int p = 0; p < 16; p=p+4) { printf("\n[ %x %x %x %x ]", state[p], state[p+1], state[p+2], state[p+3]); }
     }
     
     sb_st(state);
     sr(state);
     ark(state, Nr*Nb);
-	
-    for (int i = 0; i < 16; i++) { in[(localid*16)+i] = state[i]; }
+    for (int i = 0; i < 16; i++) { in[i] = state[i]; }
 }
-

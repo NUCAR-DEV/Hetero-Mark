@@ -1,8 +1,10 @@
 //
-// main.c
-// Advanced Encryption Standard using OpenCL 2.0
+//  main.c
+//  CasAES_CL
 //
-// NUCAR: Northeastern University Architecture Group
+//  Created by Carter McCardwell on 12/7/14.
+//  Copyright (c) 2014 Casdidicus. All rights reserved.
+//
 
 #define __NO_STD_VECTOR
 #define CL_USE_DEPRECATED_OPENCL_2_0_APIS
@@ -148,7 +150,7 @@ void K_Exp(uint8_t* pk) //The key expansion routine: Takes the 256-bit private k
 
 int main(int argc, const char * argv[])
 {
-    printf("CasAES_CL2 Hyperthreaded AES-256 Encryption for OpenCL 2.0 processors - compiled 12/8/2014 Rev. 2\nCarter McCardwell, Northeastern University NUCAR - http://coe.neu.edu/~cmccardw - mccardwell.net\n\nPlease Wait...\n");
+  //    printf("CasAES_CL2 Hyperthreaded AES-256 Encryption for OpenCL 2.0 processors - compiled 12/8/2014 Rev. 2\nCarter McCardwell, Northeastern University NUCAR - http://coe.neu.edu/~cmccardw - mccardwell.net\n\nPlease Wait...\n");
     
     clock_t c_start, c_stop;
     c_start = clock(); //Create a clock to benchmark the time taken for execution
