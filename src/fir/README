@@ -1,0 +1,2 @@
+# To run the code
+./auto_exec.sh <numBlocks> <numData>
