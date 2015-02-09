@@ -1,6 +1,6 @@
-set( BENCHMARK_NAME hmm )
-set( SOURCE_FILES hmm.cc )
-set( EXTRA_FILES hmm_Kernels.cl )
+set( BENCHMARK_NAME hmm_cl12 )
+set( SOURCE_FILES hmm_cl12.cc )
+set( EXTRA_FILES hmm_cl12_Kernels.cl )
 
 ############################################################################
 
@@ -49,7 +49,7 @@ mark_as_advanced(OPENCL_INCLUDE_DIRS)
 
 find_library( OPENCL_LIBRARIES
 	NAMES OpenCL
-	HINTS ../../lib/ $ENV{AMDAPPSDKROOT}/lib
+  HINTS ../../lib/ $ENV{AMDAPPSDKROOT}/lib
 	PATH_SUFFIXES ${PLATFORM}${BITNESS} ${BITNESS_SUFFIX}
 )
 mark_as_advanced( OPENCL_LIBRARIES )
