@@ -1,6 +1,7 @@
 #ifndef CL_ERROR_H
 #define CL_ERROR_H
 
+#include <iostream>
 #include <CL/cl.h>
 
 #define checkOpenCLErrors(actual, msg) \
