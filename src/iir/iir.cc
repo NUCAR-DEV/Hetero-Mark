@@ -15,7 +15,8 @@ IIR::IIR()
 
 IIR::~IIR()
 {
-
+	FreeKernel();
+	FreeBuffer();
 }
 
 void IIR::InitKernel()
