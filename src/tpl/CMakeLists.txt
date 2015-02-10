@@ -1,6 +1,6 @@
-set( BENCHMARK_NAME aes )
-set( SOURCE_FILES aes.cc )
-set( EXTRA_FILES aes_Kernels.cl in.txt keyfile.txt)
+set( BENCHMARK_NAME tpl )
+set( SOURCE_FILES tpl.cc )
+set( EXTRA_FILES tpl_Kernels.cl )
 
 ############################################################################
 
