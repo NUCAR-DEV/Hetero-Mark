@@ -53,14 +53,17 @@ public:
         static clRuntime *getInstance();
 
         /// Getters
-        cl_platform_id const getPlatformID() { return platform; }
+        cl_platform_id getPlatformID() const { return platform; }
 
-        cl_device_id const getDevice() { return device; }
+        cl_device_id getDevice() const { return device; }
 
-        cl_context const getContext() { return context; }
+        cl_context getContext() const { return context; }
 
         // Get a command queue by index, create it if doesn't exist
         cl_command_queue getCmdQueue(int index);
+
+        // Get number of compute units of current device
+        cl_uint getNumComputeUnit() const;
 
         // Device SVM support
         bool isSVMavail(enum clSVMLevel level);
@@ -280,7 +283,7 @@ bool clRuntime::isSVMavail(enum clSVMLevel level)
                 sizeof(cl_device_svm_capabilities),
                 &caps,
                 0);
-        checkOpenCLErrors(err, "Failed to clGetDeviceInfo, SVM cap")
+        checkOpenCLErrors(err, "Failed at clGetDeviceInfo: CL_DEVICE_SVM_CAPABILITIES");
 
         switch(level)
         {
@@ -303,6 +306,17 @@ bool clRuntime::isSVMavail(enum clSVMLevel level)
         }
 #endif
         return false;
+}
+
+cl_uint clRuntime::getNumComputeUnit() const
+{
+    cl_int err;
+    cl_uint numComputeUnit;
+
+    err = clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &numComputeUnit, NULL);
+    checkOpenCLErrors(err, "Failed at clGetDeviceInfo: CL_DEVICE_MAX_COMPUTE_UNITS");
+
+    return numComputeUnit;
 }
 
 } // namespace clHelper
