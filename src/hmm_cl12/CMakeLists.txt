@@ -43,7 +43,7 @@ endif()
 # Find OpenCL include and libs
 find_path( OPENCL_INCLUDE_DIRS 
     NAMES OpenCL/cl.h CL/cl.h
-    HINTS $ENV{AMDAPPSDKROOT}/include
+    HINTS ../../include $ENV{AMDAPPSDKROOT}/include
 )
 mark_as_advanced(OPENCL_INCLUDE_DIRS)
 
