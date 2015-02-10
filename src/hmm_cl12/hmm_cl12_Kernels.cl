@@ -657,7 +657,7 @@ __kernel void EM_sigma_dev(const int D,
 
 __kernel void EM_expect_sigma(const int blk_rows,
                             const int width,
-                            const size_t start,
+                            const int start,
                             __global const float *sigma_dev,
                             __global       float *expect_sigma)
 {

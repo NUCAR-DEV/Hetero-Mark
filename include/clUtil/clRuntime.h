@@ -258,7 +258,11 @@ cl_command_queue clRuntime::getCmdQueue(int index)
                 return cmdQueueRepo[index];
         else
         {
+#ifdef CL_VERSION_2_0
                 cl_command_queue cmdQ = clCreateCommandQueueWithProperties(context, device, 0, &err);
+#else
+                cl_command_queue cmdQ = clCreateCommandQueue(context, device, 0, &err);
+#endif
                 checkOpenCLErrors(err, "Failed at clCreateCommandQueueWithProperties");
                 cmdQueueRepo.push_back(cmdQ);
                 return cmdQ;
@@ -267,6 +271,7 @@ cl_command_queue clRuntime::getCmdQueue(int index)
 
 bool clRuntime::isSVMavail(enum clSVMLevel level)
 {
+#ifdef CL_VERSION_2_0
         cl_device_svm_capabilities caps;
 
         cl_int err = clGetDeviceInfo(
@@ -296,7 +301,7 @@ bool clRuntime::isSVMavail(enum clSVMLevel level)
                 return false;
 
         }
-
+#endif
         return false;
 }
 
