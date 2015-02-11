@@ -1,5 +1,5 @@
 set( FOLDER_NAME src )
-set( SUBDIRECTORIES aes fir hmm hmm_cl12)
+set( SUBDIRECTORIES aes aes_cl12 fir hmm hmm_cl12)
 
 ############################################################################
 
