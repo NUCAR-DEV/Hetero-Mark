@@ -193,7 +193,7 @@ int main(int argc, const char * argv[])
     }
     append_str = stradd(append_str, "};\n");
     
-    cl_code = fopen("kernel_ocl20.cl", "r");
+    cl_code = fopen("aes_Kernels.cl", "r");
     if (cl_code == NULL) { printf("\nerror: clfile\n"); return(1); }
     char *source_str = (char *)malloc(MAX_SOURCE_SIZE);
     fread(source_str, 1, MAX_SOURCE_SIZE, cl_code);
