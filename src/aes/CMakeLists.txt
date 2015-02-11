@@ -1,5 +1,5 @@
 set( BENCHMARK_NAME aes )
-set( SOURCE_FILES aes.cc )
+set( SOURCE_FILES aes.c )
 set( EXTRA_FILES aes_Kernels.cl in.txt keyfile.txt)
 
 ############################################################################
@@ -60,7 +60,7 @@ endif( )
 
 ############################################################################
 
-set( COMPILER_FLAGS "-std=c++11" )
+set( COMPILER_FLAGS "-std=c99" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 
