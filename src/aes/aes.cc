@@ -131,7 +131,8 @@ void AES::InitBuffer()
                                         CL_MEM_READ_WRITE, 
                                         sizeof(uint8_t)*16*MAXIMUM_MEMORY_ALLOCATION, 
                                         0);
-
+        std::cout << "Running with " << MAXIMUM_MEMORY_ALLOCATION
+                  << "compute units";
 
 }
 
@@ -269,146 +270,112 @@ void AES::Run(int argc, char const *argv[])
         InitKernel();
         InitBuffer();
 
-        int ch    = 0; // The buffer for the data read in using ASCII/binary mode
-        int spawn = 0; // The number of compute units that will be enqueued per cycle
-        int end   = 1; // Changed to 0 when the end of the file is reached, terminates the infinite loop
+        int ch = 0; //The buffer for the data read in using ASCII/binary mode
+        int spawn = 0; //The number of compute units that will be enqueued per cycle
+        int end = 1; //Changed to 0 when the end of the file is reached, terminates the infinite loop
         while (end)
         {
-                // Map memory location in GPU <Coarse SVM>
-                err = clEnqueueSVMMap(cmdQueue, 
-                                      CL_TRUE, 
-                                      CL_MAP_WRITE, 
-                                      svm_ptr, 
-                                      sizeof(uint8_t)*16*MAXIMUM_MEMORY_ALLOCATION, 
-                                      0, 0, 0);
-                checkOpenCLErrors(err, "Failed at clEnqueueSVMMap");
-
-                spawn = 0; // Each cycle reset the spawn to zero
-                for (int i = 0; i < MAXIMUM_MEMORY_ALLOCATION; i++)
+            //Map memory location in GPU <Coarse SVN>
+            err = clEnqueueSVMMap (cmdQueue, CL_TRUE, CL_MAP_WRITE, svm_ptr, sizeof(uint8_t)*16*MAXIMUM_MEMORY_ALLOCATION, 0, 0, 0);
+            if (err != CL_SUCCESS) { printf("enqueuesvmmap"); }
+            spawn = 0; //Each cycle reset the spawn to zero
+            for (int i = 0; i < MAXIMUM_MEMORY_ALLOCATION; i++)
+            {
+                spawn++; //Since another state is being filled, another comptute unit will be required
+                for (int ix = 0; ix < 16; ix++)
                 {
-                    spawn++; // Since another state is being filled, another comptute unit will be required
-                    for (int ix = 0; ix < 16; ix++)
+                    if (hexMode == 1) //If hex mode
                     {
-                        if (hexMode == 1) // If hex mode
+                        if (fscanf(infile, "%x", &svm_ptr[(i*16)+ix]) != EOF) { ; } //Reads in hex
+                        else
                         {
-                            if (fscanf(infile, "%x", &svm_ptr[(i*16)+ix]) != EOF) { ; } //Reads in hex
-                            else
-                            {
-                                // If the end of the file is reached, fill the rest of the state with 0x00
-                                if (ix > 0) 
-                                        for (int ixx = ix; ixx < 16; ixx++) 
-                                                svm_ptr[(i*16)+ixx] = 0x00;
-                                else // If the end of the file is reached before even partially filling a state, do not process it.
-                                        spawn--;
-                                
-                                i = MAXIMUM_MEMORY_ALLOCATION + 1; //Break middle loop
-                                end = 0; //Break infinite loop
-                                
-                                break;
-                            }
+                            if (ix > 0) { for (int ixx = ix; ixx < 16; ixx++) { svm_ptr[(i*16)+ixx] = 0x00; } } //If the end of the file is reached, fill the rest of the state with 0x00
+                            else { spawn--; } //If the end of the file is reached before even partially filling a state, do not process it.
+                            i = MAXIMUM_MEMORY_ALLOCATION + 1; //Break middle loop
+                            end = 0; //Break infinite loop
+                            break;
                         }
-                        else // If ASCII-binary mode
+                    }
+                    else //If ASCII-binary mode
+                    {
+                        ch = getc(infile);
+                        if (ch != EOF) { svm_ptr[(i*16)+ix] = ch; }
+                        else
                         {
-                            ch = getc(infile);
-                            if (ch != EOF) { svm_ptr[(i*16)+ix] = ch; }
-                            else
-                            {
-                                if (ix > 0) 
-                                        for (int ixx = ix; ixx < 16; ixx++) 
-                                                svm_ptr[(i*16)+ixx] = 0x00;
-                                else 
-                                        spawn--;
-
-                                i = MAXIMUM_MEMORY_ALLOCATION + 1;
-                                end = 0;
-                                
-                                break;
-                            }
+                            if (ix > 0) { for (int ixx = ix; ixx < 16; ixx++) { svm_ptr[(i*16)+ixx] = 0x00; } }
+                            else { spawn--; }
+                            i = MAXIMUM_MEMORY_ALLOCATION + 1;
+                            end = 0;
+                            break;
                         }
                     }
                 }
-                
-                // Arrange data correctly, the AES algoritm requres the state to be 
-                // orientated in a specific way (explained in the specification)
-                for (int i = 0; i < spawn; i++)
+            }
+            //Arrange data correctly, the AES algoritm requres the state to be orientated in a specific way (explained in the specification)
+            for (int i = 0; i < spawn; i++)
+            {
+                uint8_t temp[16];
+                memcpy(&temp[0], &svm_ptr[(i*16)+0], sizeof(uint8_t));
+                memcpy(&temp[4], &svm_ptr[(i*16)+1], sizeof(uint8_t));
+                memcpy(&temp[8], &svm_ptr[(i*16)+2], sizeof(uint8_t));
+                memcpy(&temp[12], &svm_ptr[(i*16)+3], sizeof(uint8_t));
+                memcpy(&temp[1], &svm_ptr[(i*16)+4], sizeof(uint8_t));
+                memcpy(&temp[5], &svm_ptr[(i*16)+5], sizeof(uint8_t));
+                memcpy(&temp[9], &svm_ptr[(i*16)+6], sizeof(uint8_t));
+                memcpy(&temp[13], &svm_ptr[(i*16)+7], sizeof(uint8_t));
+                memcpy(&temp[2], &svm_ptr[(i*16)+8], sizeof(uint8_t));
+                memcpy(&temp[6], &svm_ptr[(i*16)+9], sizeof(uint8_t));
+                memcpy(&temp[10], &svm_ptr[(i*16)+10], sizeof(uint8_t));
+                memcpy(&temp[14], &svm_ptr[(i*16)+11], sizeof(uint8_t));
+                memcpy(&temp[3], &svm_ptr[(i*16)+12], sizeof(uint8_t));
+                memcpy(&temp[7], &svm_ptr[(i*16)+13], sizeof(uint8_t));
+                memcpy(&temp[11], &svm_ptr[(i*16)+14], sizeof(uint8_t));
+                memcpy(&temp[15], &svm_ptr[(i*16)+15], sizeof(uint8_t));
+                for (int c = 0; c < 16; c++) { memcpy(&svm_ptr[(i*16)+c], &temp[c], sizeof(uint8_t)); }
+            }
+
+            //All data loaded
+
+            cl_kernel aesKernal = clCreateKernel(program, "CLRunner", &err);
+            if (err != CL_SUCCESS) { printf("createkernal = %i", err); exit(1); }
+
+            cl_event unmap;
+            err = clEnqueueSVMUnmap(cmdQueue, svm_ptr, 0, 0, &unmap); //Unmap the state memory before launching kernel
+            clWaitForEvents(1, &unmap);
+            if (err != CL_SUCCESS) { printf("enqueuesvmunmap"); exit(1);}
+
+            err = clSetKernelArgSVMPointer(aesKernal, 0, (void *)svm_ptr); //Specific function for SVM data
+            if (err != CL_SUCCESS) { printf("setkernalsvmargs = %i", err); exit(1); }
+                    
+            const size_t local_ws = NULL; //For now, let the runtime decide on the local
+            const size_t global_ws = spawn; //One WU per state in this round
+            err = clEnqueueNDRangeKernel(cmdQueue, aesKernal, 1, 0, &global_ws, 0, 0, 0, 0); //Start the kernel
+            if (err != CL_SUCCESS) { printf("enqueue = %i", err); fflush(NULL);  exit(1);}
+
+            //Write processed data back to out
+            err = clEnqueueSVMMap (cmdQueue, CL_TRUE, CL_MAP_READ, svm_ptr, sizeof(uint8_t)*16*MAXIMUM_MEMORY_ALLOCATION, 0, 0, 0); //Map the memory for reading
+            if (err != CL_SUCCESS) { printf("enqueuesvmmap2"); }
+
+            for (int i = 0; i < spawn; i++)
+            {
+                for (int ix = 0; ix < 4; ix++) //Writes the processed data to the outfile, rearranging it back into a linear format
                 {
-                    uint8_t temp[16];
-                    memcpy(&temp[0],  &svm_ptr[(i*16)+0],  sizeof(uint8_t));
-                    memcpy(&temp[4],  &svm_ptr[(i*16)+1],  sizeof(uint8_t));
-                    memcpy(&temp[8],  &svm_ptr[(i*16)+2],  sizeof(uint8_t));
-                    memcpy(&temp[12], &svm_ptr[(i*16)+3],  sizeof(uint8_t));
-                    memcpy(&temp[1],  &svm_ptr[(i*16)+4],  sizeof(uint8_t));
-                    memcpy(&temp[5],  &svm_ptr[(i*16)+5],  sizeof(uint8_t));
-                    memcpy(&temp[9],  &svm_ptr[(i*16)+6],  sizeof(uint8_t));
-                    memcpy(&temp[13], &svm_ptr[(i*16)+7],  sizeof(uint8_t));
-                    memcpy(&temp[2],  &svm_ptr[(i*16)+8],  sizeof(uint8_t));
-                    memcpy(&temp[6],  &svm_ptr[(i*16)+9],  sizeof(uint8_t));
-                    memcpy(&temp[10], &svm_ptr[(i*16)+10], sizeof(uint8_t));
-                    memcpy(&temp[14], &svm_ptr[(i*16)+11], sizeof(uint8_t));
-                    memcpy(&temp[3],  &svm_ptr[(i*16)+12], sizeof(uint8_t));
-                    memcpy(&temp[7],  &svm_ptr[(i*16)+13], sizeof(uint8_t));
-                    memcpy(&temp[11], &svm_ptr[(i*16)+14], sizeof(uint8_t));
-                    memcpy(&temp[15], &svm_ptr[(i*16)+15], sizeof(uint8_t));
-
-                    for (int c = 0; c < 16; c++)
-                        memcpy(&svm_ptr[(i*16)+c], &temp[c], sizeof(uint8_t));
+                    char hex[3];
+                    sprintf(hex, "%x", &svm_ptr[(i*16)+ix]);
+                    for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
+                    sprintf(hex, "%x", &svm_ptr[(i*16)+ix+4]);
+                    for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
+                    sprintf(hex, "%x", &svm_ptr[(i*16)+ix+8]);
+                    for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
+                    sprintf(hex, "%x", &svm_ptr[(i*16)+ix+12]);
+                    for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
                 }
-        
-                //All data loaded, unmap the state memory before launching kernel
-                cl_event unmap;
-                err = clEnqueueSVMUnmap(cmdQueue, svm_ptr, 0, 0, &unmap); 
-                clWaitForEvents(1, &unmap);
-                checkOpenCLErrors(err, "Failed to unmap SVM");
+            }
+            err = clEnqueueSVMUnmap(cmdQueue, svm_ptr, 0, 0, 0); //Release the SVM buffer before the next cycle
+            if (err != CL_SUCCESS) { printf("enqueuesvmunmap"); }
+        }
 
-                const size_t local_ws = NULL; // For now, let the runtime decide on the local
-                const size_t global_ws = spawn; // One WU per state in this round
-                
-                err = clSetKernelArgSVMPointer(kernel, 0, (void *)svm_ptr); // Specific function for SVM data
-                checkOpenCLErrors(err, "Failed to set kernel SVM arg ");
-                
-                // Start the kernel
-                err = clEnqueueNDRangeKernel(cmdQueue, 
-                                             kernel, 
-                                             1, 
-                                             0, 
-                                             &global_ws, 
-                                             0, 
-                                             0, 0, 0);
-                checkOpenCLErrors(err, "Failed to execute kernel");
-                
-                // Write processed data back to out
-                err = clEnqueueSVMMap(cmdQueue, 
-                                      CL_TRUE, 
-                                      CL_MAP_READ, 
-                                      svm_ptr, 
-                                      sizeof(uint8_t)*16*MAXIMUM_MEMORY_ALLOCATION, 
-                                      0, 0, 0); 
-                checkOpenCLErrors(err, "Failed to map SVM ptr");
-                
-                // Writes the processed data to the outfile, rearranging it back into a linear format
-                for (int i = 0; i < spawn; i++)
-                {
-                    for (int ix = 0; ix < 4; ix++)
-                    {
-                        char hex[3];
-                        sprintf(hex, "%x", &svm_ptr[(i*16)+ix]);
-                        for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-                        sprintf(hex, "%x", &svm_ptr[(i*16)+ix+4]);
-                        for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-                        sprintf(hex, "%x", &svm_ptr[(i*16)+ix+8]);
-                        for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-                        sprintf(hex, "%x", &svm_ptr[(i*16)+ix+12]);
-                        for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-                    }
-                }
-
-                // Release the SVM buffer before the next cycle
-                err = clEnqueueSVMUnmap(cmdQueue, svm_ptr, 0, 0, 0);
-                checkOpenCLErrors(err, "Failed at unmap SVM ptr");
-
-        } // While
-
-
+	fflush(outfile);
 }
 
 int main(int argc, char const *argv[])
