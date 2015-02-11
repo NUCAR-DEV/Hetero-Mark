@@ -63,7 +63,7 @@ int main(int argc , char** argv) {
 	char *source_str;
 	size_t source_size;
 
-	fp = fopen("FIR.cl", "r");
+	fp = fopen("fir_Kernels.cl", "r");
 	if (!fp) {
 		fprintf(stderr, "Failed to load kernel.\n");
 		exit(1);
