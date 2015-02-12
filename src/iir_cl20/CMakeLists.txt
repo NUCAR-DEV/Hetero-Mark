@@ -1,4 +1,4 @@
-set( BENCHMARK_NAME parIIR )
+set( BENCHMARK_NAME parIIR_20 )
 set( SOURCE_FILES parIIR.cc )
 set( EXTRA_FILES kernel.cl )
 
