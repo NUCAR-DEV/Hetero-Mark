@@ -297,6 +297,8 @@ int main(int argc, char *argv[])
         double end = time_stamp();
 
         printf("Total time = %f ms\n", end - start);
+        
+        DumpProfilingInfo();
 
 	return 0;
 }
