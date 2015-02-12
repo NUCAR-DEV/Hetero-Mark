@@ -62,22 +62,13 @@ void clProfiler::getExecTime(std::string name)
         if (name != "")
         {
                 if(profilingData.find(name) != profilingData.end())
-                        std::cout << name[0] << name[1] << name[2] 
-                                  << name[3] << name[4] << name[5] 
-                                  << name[6] << name[7] << name[8] 
-                                  << name[9] 
-                                  << " = " << profilingData[name] 
+                        std::cout << name << " = " << profilingData[name] 
                                   << "ms" << std::endl;
         }
         else
         {
                 for(auto elem : profilingData)
-                        std::cout << elem.first[0] << elem.first[1]
-                                  << elem.first[2] << elem.first[3]
-                                  << elem.first[4] << elem.first[5]
-                                  << elem.first[6] << elem.first[7]
-                                  << elem.first[8] << elem.first[9]
-                                  << " = " << elem.second
+                        std::cout << elem.first << " = " << elem.second
                                   << "ms" << std::endl;
         }
 }
@@ -169,7 +160,7 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
 
         clProfiler *prof = clProfiler::getInstance();
         prof->addExecTime(kernelName, execTimeMs);
-        prof->getExecTime(kernelName);
+        // prof->getExecTime(kernelName);
 
         // printf
         // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
