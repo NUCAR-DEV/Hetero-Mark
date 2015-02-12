@@ -68,13 +68,14 @@ void clProfiler::getExecTime(std::string name)
         else
         {
                 double totalTime = 0.0f;
+                std::cout << "Kernel Profiler info" << std::endl;
                 for(auto elem : profilingData)
                 {
-                        std::cout << elem.first << " = " << elem.second
-                                  << " ms" << std::endl;
+                        std::cout << "\t" << elem.first << " = " 
+                                  << elem.second << " ms" << std::endl;
                         totalTime += elem.second;
                 }
-                std::cout << "Total time = " << totalTime << std::endl;
+                std::cout << "Kernel total time = " << totalTime << " ms" << std::endl;
 
         }
 }

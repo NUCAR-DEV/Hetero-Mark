@@ -1469,9 +1469,13 @@ int main(int argc, char const *argv[])
 	// Smart pointer, auto cleanup in destructor
 	std::unique_ptr<HMM> hmm(new HMM(N));
 
+        double start = time_stamp();
 	hmm->Run();
+        double end = time_stamp();
 
-    DumpProfilingInfo();
+        printf("Total time = %f ms\n", end - start);
+
+        DumpProfilingInfo();
 
 	return 0;
 }
