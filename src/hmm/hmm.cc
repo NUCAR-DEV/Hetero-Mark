@@ -9,7 +9,7 @@
 #define ENABLE_PROFILE 1
 
 #if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clProfileNDRangeKernel
+#define clEnqueueNDRangeKernel clTimeNDRangeKernel
 #endif
 
 using namespace std;
