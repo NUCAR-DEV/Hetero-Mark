@@ -63,13 +63,19 @@ void clProfiler::getExecTime(std::string name)
         {
                 if(profilingData.find(name) != profilingData.end())
                         std::cout << name << " = " << profilingData[name] 
-                                  << "ms" << std::endl;
+                                  << " ms" << std::endl;
         }
         else
         {
+                double totalTime = 0.0f;
                 for(auto elem : profilingData)
+                {
                         std::cout << elem.first << " = " << elem.second
-                                  << "ms" << std::endl;
+                                  << " ms" << std::endl;
+                        totalTime += elem.second;
+                }
+                std::cout << "Total time = " << totalTime << std::endl;
+
         }
 }
 
