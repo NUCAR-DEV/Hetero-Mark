@@ -4,6 +4,7 @@
 #include "clError.h"
 #include "clFile.h"
 #include "clRuntime.h"
+#include "clProfiler.h"
 
 namespace clHelper
 {
