@@ -125,7 +125,7 @@ cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
 
         // printf
-        printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
+        // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
 
         return enqueueErr;
 }
@@ -163,9 +163,16 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
         prof->getExecTime(kernelName);
 
         // printf
-        printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
+        // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
 
         return enqueueErr;
+}
+
+void DumpProfilingInfo()
+{
+        clProfiler *prf = clProfiler::getInstance();
+
+        prf->getExecTime();
 }
 
 }

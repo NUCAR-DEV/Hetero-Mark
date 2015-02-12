@@ -1471,6 +1471,8 @@ int main(int argc, char const *argv[])
 
 	hmm->Run();
 
+    DumpProfilingInfo();
+
 	return 0;
 }
 
