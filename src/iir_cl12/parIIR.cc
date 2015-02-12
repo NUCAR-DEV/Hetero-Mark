@@ -6,6 +6,13 @@
 
 #include "parIIR.h"
 
+#define ENABLE_PROFILE 1
+
+#if ENABLE_PROFILE
+#define clEnqueueNDRangeKernel clTimeNDRangeKernel
+#endif
+
+
 void cpu_pariir(float *x, float *y, float *ns, float *dsec, float c, int len);
 
 ParIIR::ParIIR(int len)
@@ -289,7 +296,11 @@ int main(int argc, char *argv[])
 	// opencl 1.2
 	std::unique_ptr<ParIIR> parIIR(new ParIIR(len));
 
+	double start = time_stamp();
 	parIIR->Run();
+        double end = time_stamp();
+
+        printf("Total time = %f ms\n", end - start);
 
 	return 0;
 }
