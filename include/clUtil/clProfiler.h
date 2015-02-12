@@ -19,6 +19,9 @@ class clProfiler
         // Contains profiling data
         std::map<std::string, double> profilingData;
 
+        // String length
+        size_t strLen;
+
 public:
 
         ~clProfiler();
@@ -31,6 +34,9 @@ public:
 
         // Add profiling info
         void addExecTime(std::string name, double execTime);
+
+        // Set max string length
+        void setStringLen(size_t strLen) { this->strLen = strLen; }
 };
 
 // Singleton instance
@@ -48,6 +54,8 @@ clProfiler *clProfiler::getInstance()
 }
 
 clProfiler::clProfiler()
+     :
+     strLen(16)
 {
 
 }
@@ -68,24 +76,26 @@ void clProfiler::getExecTime(std::string name)
         else
         {
                 double totalTime = 0.0f;
-                std::cout << "Kernel Profiler info" << std::endl;
+                std::cout << "Profiler info" << std::endl;
                 for(auto elem : profilingData)
                 {
                         std::cout << "\t" << elem.first << " = " 
                                   << elem.second << " ms" << std::endl;
                         totalTime += elem.second;
                 }
-                std::cout << "Kernel total time = " << totalTime << " ms" << std::endl;
+                std::cout << "Total time = " << totalTime << " ms" << std::endl;
 
         }
 }
 
 void clProfiler::addExecTime(std::string name, double execTime)
 {
-        if(profilingData.find(name) != profilingData.end())
-                profilingData[name] += execTime;
+        std::string sampleName = name;
+        sampleName.resize(strLen, ' ');
+        if(profilingData.find(sampleName) != profilingData.end())
+                profilingData[sampleName] += execTime;
         else
-                profilingData[name] = execTime;
+                profilingData[sampleName] = execTime;
 }
 
 double time_stamp()
@@ -131,6 +141,9 @@ cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
         char kernelName[1024];
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
 
+        clProfiler *prof = clProfiler::getInstance();
+        prof->addExecTime(kernelName, execTimeMs);
+        
         // printf
         // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
 
@@ -167,7 +180,6 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
 
         clProfiler *prof = clProfiler::getInstance();
         prof->addExecTime(kernelName, execTimeMs);
-        // prof->getExecTime(kernelName);
 
         // printf
         // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
