@@ -60,7 +60,7 @@ public:
         cl_context getContext() const { return context; }
 
         // Get a command queue by index, create it if doesn't exist
-        cl_command_queue getCmdQueue(int index);
+        cl_command_queue getCmdQueue(int index, cl_command_queue_properties properties = 0);
 
         // Get number of compute units of current device
         cl_uint getNumComputeUnit() const;
@@ -253,7 +253,7 @@ int clRuntime::displayAllInfo()
         displayDeviceInfo();
 }
 
-cl_command_queue clRuntime::getCmdQueue(int index)
+cl_command_queue clRuntime::getCmdQueue(int index, cl_command_queue_properties properties)
 {
         cl_int err;
 
@@ -262,7 +262,19 @@ cl_command_queue clRuntime::getCmdQueue(int index)
         else
         {
 #ifdef CL_VERSION_2_0
-                cl_command_queue cmdQ = clCreateCommandQueueWithProperties(context, device, 0, &err);
+                std::vector<cl_queue_properties> queue_properties;
+
+                if(properties)
+                {
+                    queue_properties.push_back(CL_QUEUE_PROPERTIES);
+                    queue_properties.push_back(cl_queue_properties(properties));
+                    queue_properties.push_back(cl_queue_properties(0));
+                }
+
+                const cl_queue_properties *queue_properties_ptr =
+                    queue_properties.empty() ? 0 : &queue_properties[0];
+
+                cl_command_queue cmdQ = clCreateCommandQueueWithProperties(context, device, queue_properties_ptr, &err);
 #else
                 cl_command_queue cmdQ = clCreateCommandQueue(context, device, 0, &err);
 #endif
