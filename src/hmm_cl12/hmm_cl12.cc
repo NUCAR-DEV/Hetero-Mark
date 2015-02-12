@@ -8,6 +8,13 @@
 
 using namespace std;
 
+#define ENABLE_PROFILE 1
+
+#if ENABLE_PROFILE
+#define clEnqueueNDRangeKernel clTimeNDRangeKernel
+#endif
+
+
 HMM::HMM(int N)
 {
         if (N >= TILE)
@@ -1447,6 +1454,8 @@ int main(int argc, char const *argv[])
     std::unique_ptr<HMM> hmm(new HMM(N));
 
     hmm->Run();
+
+    DumpProfilingInfo();
 
     return 0;
 }
