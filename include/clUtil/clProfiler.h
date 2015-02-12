@@ -92,10 +92,7 @@ void clProfiler::addExecTime(std::string name, double execTime)
 {
         std::string sampleName = name;
         sampleName.resize(strLen, ' ');
-        if(profilingData.find(sampleName) != profilingData.end())
-                profilingData[sampleName] += execTime;
-        else
-                profilingData[sampleName] = execTime;
+        profilingData[sampleName] += execTime;
 }
 
 double time_stamp()
