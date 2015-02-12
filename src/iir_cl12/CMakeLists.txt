@@ -1,6 +1,6 @@
-set( BENCHMARK_NAME iir )
-set( SOURCE_FILES iir.cc )
-set( EXTRA_FILES iir_Kernels.cl )
+set( BENCHMARK_NAME parIIR )
+set( SOURCE_FILES parIIR.cc )
+set( EXTRA_FILES kernel.cl )
 
 ############################################################################
 
