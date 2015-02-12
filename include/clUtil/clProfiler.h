@@ -29,6 +29,9 @@ public:
         // Get singleton
         static clProfiler *getInstance();
 
+        // Get number of record
+        int getNumRecord() const { return profilingData.size(); };
+
         // Dump kernel profiling time
         void getExecTime(std::string name = "");
 
@@ -188,7 +191,8 @@ void DumpProfilingInfo()
 {
         clProfiler *prf = clProfiler::getInstance();
 
-        prf->getExecTime();
+        if (prf->getNumRecord())
+            prf->getExecTime();
 }
 
 }
