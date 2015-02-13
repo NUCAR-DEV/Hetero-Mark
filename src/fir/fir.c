@@ -214,13 +214,13 @@ int main(int argc , char** argv) {
 
 			CHECK_STATUS( ret,"Error: Range kernel. (clCreateKernel)\n");
 			ret = clWaitForEvents(1, &event);
-			ret = clWaitForEvents(1, &event);
 
         cl_ulong start = 0, end = 0;
         clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
         clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
-        execTimeMs += (cl_double)(end - start)*(cl_double)(1e-06); 
-		 
+        double time = (cl_double)((end - start)/1e-06); 
+        execTimeMs += time;
+        printf("%lu %lu = %lu\n", end, start, end - start);
 		count ++;
 	}
 	printf("\nKernel exec time: %f\n", execTimeMs);
