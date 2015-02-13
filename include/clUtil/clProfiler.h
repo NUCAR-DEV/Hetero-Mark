@@ -88,7 +88,7 @@ void clProfiler::getExecTime(std::string name)
                                   << elem.second << " ms" << std::endl;
                         totalTime += elem.second;
                 }
-                std::cout << "Total time = " << totalTime << " ms" << std::endl;
+                std::cout << "Profiler total time = " << totalTime << " ms" << std::endl;
 
         }
 }
