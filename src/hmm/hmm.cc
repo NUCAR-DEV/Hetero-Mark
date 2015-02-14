@@ -1473,7 +1473,7 @@ int main(int argc, char const *argv[])
 	hmm->Run();
         double end = time_stamp();
 
-        printf("Total time = %f ms\n", end - start);
+        printf("Total time = %f s\n", end - start);
 
         DumpProfilingInfo();
 
