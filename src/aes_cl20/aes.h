@@ -33,7 +33,7 @@ class AES
 
         // Files
         FILE *infile;
-        std::ifstream keyfile;
+        FILE *keyfile;
         FILE *outfile;
 
         uint8_t key[32];

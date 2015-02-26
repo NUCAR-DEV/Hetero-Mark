@@ -56,7 +56,7 @@ int AES::InitFiles(int argc, char const *argv[])
         
         // The third argument is the keyfile, it must be in hex 
         // and broken into two charactor parts (eg. AA BB CC ...)
-        keyfile.open(argv[3], std::fstream::in);
+        keyfile = fopen(argv[3], "rb");
         if (!keyfile)
         { 
                 printf("error_key\n"); 
@@ -138,7 +138,7 @@ void AES::InitBuffer()
 void AES::FreeFiles()
 {
         fclose(infile);
-        keyfile.close();
+        fclose(keyfile);
         fclose(outfile);
 }
 
@@ -253,7 +253,8 @@ void AES::KeyExpansion(uint8_t *pk)
 void AES::InitKeys()
 {
         // Read the private key in
-        keyfile.read((char *)key, sizeof(uint8_t) * 32);
+        for (int i = 0; i < 32; i++)
+                fscanf(keyfile, "%x", &key[i]); 
 
         // Expand key
         KeyExpansion(key);
