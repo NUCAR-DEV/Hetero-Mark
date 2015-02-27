@@ -65,7 +65,9 @@ clProfiler::clProfiler()
 
 clProfiler::~clProfiler()
 {
-
+        // Profiling info at the end of program execution
+        if (getNumRecord())
+            getExecTime();
 }
 
 void clProfiler::getExecTime(std::string name)
@@ -187,14 +189,6 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
         // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
 
         return enqueueErr;
-}
-
-void DumpProfilingInfo()
-{
-        clProfiler *prf = clProfiler::getInstance();
-
-        if (prf->getNumRecord())
-            prf->getExecTime();
 }
 
 }

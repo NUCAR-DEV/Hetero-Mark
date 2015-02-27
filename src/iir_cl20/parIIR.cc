@@ -298,8 +298,6 @@ int main(int argc, char *argv[])
 
         printf("Total time = %f ms\n", end - start);
         
-        DumpProfilingInfo();
-
 	return 0;
 }
 

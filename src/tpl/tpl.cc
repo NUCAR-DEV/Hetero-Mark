@@ -2,6 +2,12 @@
 
 #include <memory>
 
+#define ENABLE_PROFILE 1
+
+#if ENABLE_PROFILE
+#define clEnqueueNDRangeKernel clTimeNDRangeKernel
+#endif
+
 TPL::TPL()
 {
         runtime  = clRuntime::getInstance();

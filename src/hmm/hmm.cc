@@ -1475,8 +1475,6 @@ int main(int argc, char const *argv[])
 
         printf("Total time = %f s\n", end - start);
 
-        DumpProfilingInfo();
-
         return 0;
 }
 
