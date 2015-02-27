@@ -16,7 +16,7 @@ class clProfilerMeta
         std::string name;
         double totalTime;
 
-        std::vector<std::unique_ptr<std::pair<cl_ulong, cl_ulong>>> timeTable;
+        std::vector<std::unique_ptr<std::pair<double, double>>> timeTable;
 
 public:
         clProfilerMeta(std::string nm);
@@ -28,7 +28,7 @@ public:
         const double getTotalTime() const { return totalTime; }
 
         /// Record a profiling information
-        void insert(cl_ulong st, cl_ulong ed);
+        void insert(double st, double ed);
 
         /// Operator \c << invoking the function Dump on an output stream
         friend std::ostream &operator<<(std::ostream &os,
@@ -53,15 +53,15 @@ clProfilerMeta::~clProfilerMeta()
 
 }
 
-void clProfilerMeta::insert(cl_ulong st, cl_ulong ed)
+void clProfilerMeta::insert(double st, double ed)
 {
-        timeTable.emplace_back(new std::pair<cl_ulong, cl_ulong>(st, ed));
-        totalTime += (ed - st)/1e6;
+        timeTable.emplace_back(new std::pair<double, double>(st, ed));
+        totalTime += (ed - st);
 }
 
 void clProfilerMeta::Dump(std::ostream &os) const
 {
-        os << name << " : " << totalTime << " ms" << std::endl;
+        os << "\t" << name << " : " << totalTime << " ms" << std::endl;
 
         // Only dump detailed data when size is not too large
         if (timeTable.size() <= 10)
@@ -70,8 +70,8 @@ void clProfilerMeta::Dump(std::ostream &os) const
                 {
                         cl_ulong st = elem.get()->first;
                         cl_ulong ed = elem.get()->second;
-                        double lt = (ed - st)/1e6;
-                        os << "\t" << st << " " << ed << " " << lt << std::endl;
+                        double lt = ed - st;
+                        os << "\t\t" << st << " " << ed << " " << lt << std::endl;
                 }                
         }
 }
@@ -175,6 +175,7 @@ void clProfiler::addExecTime(std::string name, double st, double ed)
         std::string sampleName = name;
         sampleName.resize(strLen, ' ');
 
+        //std::cout << st << " " << ed << std::endl;
         // Check if already in the list
         for(auto &elem : profilingData)
         {
@@ -186,7 +187,7 @@ void clProfiler::addExecTime(std::string name, double st, double ed)
         }
 
         // Create if not in the list
-        profilingData.emplace_back(new clProfilerMeta(name));
+        profilingData.emplace_back(new clProfilerMeta(sampleName));
         profilingData.back()->insert(st, ed);
 
 }
@@ -235,7 +236,7 @@ cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
 
         clProfiler *prof = clProfiler::getInstance();
-        prof->addExecTime(kernelName, start, end);
+        // prof->addExecTime(kernelName, start/1e6, end/1e6);
         
         // printf
         // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
@@ -270,7 +271,7 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
         // Get kernel name
         char kernelName[1024];
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
-
+        
         clProfiler *prof = clProfiler::getInstance();
         prof->addExecTime(kernelName, start, end);
 
