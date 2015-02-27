@@ -61,13 +61,18 @@ void clProfilerMeta::insert(cl_ulong st, cl_ulong ed)
 
 void clProfilerMeta::Dump(std::ostream &os) const
 {
-        os << name << " : " << totalTime/1e6 << " ms" << std::endl;
-        for(auto &elem : timeTable)
+        os << name << " : " << totalTime << " ms" << std::endl;
+
+        // Only dump detailed data when size is not too large
+        if (timeTable.size() <= 10)
         {
-                cl_ulong st = elem.get()->first;
-                cl_ulong ed = elem.get()->second;
-                double lt = (ed - st)/1e6;
-                os << "\t" << st << " " << ed << " " << lt << std::endl;
+                for(auto &elem : timeTable)
+                {
+                        cl_ulong st = elem.get()->first;
+                        cl_ulong ed = elem.get()->second;
+                        double lt = (ed - st)/1e6;
+                        os << "\t" << st << " " << ed << " " << lt << std::endl;
+                }                
         }
 }
 
