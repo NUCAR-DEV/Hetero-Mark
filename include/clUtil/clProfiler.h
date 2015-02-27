@@ -4,9 +4,72 @@
 #include <sys/time.h>
 #include <map>
 #include <memory>
+#include <utility>
+#include <ostream>
+#include <string>
 
 namespace clHelper
 {
+
+class clProfilerMeta
+{
+        std::string name;
+        double totalTime;
+
+        std::vector<std::unique_ptr<std::pair<cl_ulong, cl_ulong>>> timeTable;
+
+public:
+        clProfilerMeta(std::string nm);
+        ~clProfilerMeta();
+
+        /// Getters
+        const std::string getName() const { return name; }
+
+        const double getTotalTime() const { return totalTime; }
+
+        /// Record a profiling information
+        void insert(cl_ulong st, cl_ulong ed);
+
+        /// Operator \c << invoking the function Dump on an output stream
+        friend std::ostream &operator<<(std::ostream &os,
+                const clProfilerMeta &clProfMeta)
+        {
+                clProfMeta.Dump(os);
+                return os;
+        }
+        
+        void Dump(std::ostream &os) const;
+};
+
+clProfilerMeta::clProfilerMeta(std::string nm)
+        :name(nm),
+         totalTime(0.0f)
+{
+
+}
+
+clProfilerMeta::~clProfilerMeta()
+{
+
+}
+
+void clProfilerMeta::insert(cl_ulong st, cl_ulong ed)
+{
+        timeTable.emplace_back(new std::pair<cl_ulong, cl_ulong>(st, ed));
+        totalTime += (ed - st)/1e6;
+}
+
+void clProfilerMeta::Dump(std::ostream &os) const
+{
+        os << name << " : " << totalTime/1e6 << " ms" << std::endl;
+        for(auto &elem : timeTable)
+        {
+                cl_ulong st = elem.get()->first;
+                cl_ulong ed = elem.get()->second;
+                double lt = (ed - st)/1e6;
+                os << "\t" << st << " " << ed << " " << lt << std::endl;
+        }
+}
 
 class clProfiler
 {
@@ -17,7 +80,7 @@ class clProfiler
         clProfiler();
 
         // Contains profiling data
-        std::map<std::string, double> profilingData;
+        std::vector<std::unique_ptr<clProfilerMeta>> profilingData;
 
         // String length
         size_t strLen;
@@ -36,7 +99,7 @@ public:
         void getExecTime(std::string name = "");
 
         // Add profiling info
-        void addExecTime(std::string name, double execTime);
+        void addExecTime(std::string name, double st, double ed);
 
         // Set max string length
         void setStringLen(size_t strLen) { this->strLen = strLen; }
@@ -76,30 +139,51 @@ void clProfiler::getExecTime(std::string name)
         {
                 std::string sampleName = name;
                 sampleName.resize(strLen, ' ');
-                if(profilingData.find(sampleName) != profilingData.end())
-                        std::cout << sampleName << " = " << profilingData[sampleName] 
-                                  << " ms" << std::endl;
+                for(auto &meta : profilingData)
+                {
+                        if (meta->getName() == sampleName)
+                        {
+                                std::cout << *meta;
+                        }
+                }
+
+                // if(profilingData.find(sampleName) != profilingData.end())
+                //         std::cout << sampleName << " = " << profilingData[sampleName] 
+                //                   << " ms" << std::endl;
         }
         else
         {
                 double totalTime = 0.0f;
                 std::cout << "Profiler info" << std::endl;
-                for(auto elem : profilingData)
+                for(auto &meta : profilingData)
                 {
-                        std::cout << "\t" << elem.first << " = " 
-                                  << elem.second << " ms" << std::endl;
-                        totalTime += elem.second;
+                        std::cout << *meta;
+                        totalTime += meta->getTotalTime();
                 }
                 std::cout << "Profiler total time = " << totalTime << " ms" << std::endl;
 
         }
 }
 
-void clProfiler::addExecTime(std::string name, double execTime)
+void clProfiler::addExecTime(std::string name, double st, double ed)
 {
         std::string sampleName = name;
         sampleName.resize(strLen, ' ');
-        profilingData[sampleName] += execTime;
+
+        // Check if already in the list
+        for(auto &elem : profilingData)
+        {
+                if (elem->getName() == sampleName)
+                {
+                        elem->insert(st, ed);
+                        return;
+                }
+        }
+
+        // Create if not in the list
+        profilingData.emplace_back(new clProfilerMeta(name));
+        profilingData.back()->insert(st, ed);
+
 }
 
 double time_stamp()
@@ -146,7 +230,7 @@ cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
 
         clProfiler *prof = clProfiler::getInstance();
-        prof->addExecTime(kernelName, execTimeMs);
+        prof->addExecTime(kernelName, start, end);
         
         // printf
         // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
@@ -183,7 +267,7 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
 
         clProfiler *prof = clProfiler::getInstance();
-        prof->addExecTime(kernelName, execTimeMs);
+        prof->addExecTime(kernelName, start, end);
 
         // printf
         // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
