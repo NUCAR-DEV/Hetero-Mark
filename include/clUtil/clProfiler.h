@@ -4,9 +4,10 @@
 #include <sys/time.h>
 #include <map>
 #include <memory>
-#include <utility>
-#include <ostream>
+#include <iomanip>
+#include <iostream>
 #include <string>
+#include <utility>
 
 namespace clHelper
 {
@@ -15,6 +16,8 @@ class clProfilerMeta
 {
         std::string name;
         double totalTime;
+
+        int limit;
 
         std::vector<std::unique_ptr<std::pair<double, double>>> timeTable;
 
@@ -43,7 +46,8 @@ public:
 
 clProfilerMeta::clProfilerMeta(std::string nm)
         :name(nm),
-         totalTime(0.0f)
+         totalTime(0.0f),
+         limit(10)
 {
 
 }
@@ -64,16 +68,26 @@ void clProfilerMeta::Dump(std::ostream &os) const
         os << "\t" << name << " : " << totalTime << " ms" << std::endl;
 
         // Only dump detailed data when size is not too large
-        if (timeTable.size() <= 10)
+        int count = 0;
+        for(auto &elem : timeTable)
         {
-                for(auto &elem : timeTable)
+                double st = elem.get()->first;
+                double ed = elem.get()->second;
+                double lt = ed - st;
+                os << "\t\t" << std::setprecision(32) << st << " " << 
+                  std::setprecision(32) << ed << ": " << std::setprecision(20) << 
+                  lt << " ms, (#" << count << ")" << std::endl;
+                
+                count++;
+                if(count > limit) 
                 {
-                        cl_ulong st = elem.get()->first;
-                        cl_ulong ed = elem.get()->second;
-                        double lt = ed - st;
-                        os << "\t\t" << st << " " << ed << " " << lt << std::endl;
-                }                
-        }
+                       os << "\t\t......" << timeTable.size() - count 
+                         << " more, " << timeTable.size() << " records in total\n";
+                       break;
+                } 
+
+
+        }                
 }
 
 class clProfiler
@@ -151,22 +165,19 @@ void clProfiler::getExecTime(std::string name)
                                 std::cout << *meta;
                         }
                 }
-
-                // if(profilingData.find(sampleName) != profilingData.end())
-                //         std::cout << sampleName << " = " << profilingData[sampleName] 
-                //                   << " ms" << std::endl;
         }
         else
         {
                 double totalTime = 0.0f;
-                std::cout << "Profiler info" << std::endl;
+                std::cout << "Kernel Profiler info" << std::endl;
                 for(auto &meta : profilingData)
                 {
                         std::cout << *meta;
                         totalTime += meta->getTotalTime();
                 }
-                std::cout << "Profiler total time = " << totalTime << " ms" << std::endl;
-
+                std::cout << "Profiler total time = " << std::setprecision(8) 
+                  << totalTime*1e-6 << " s/ " 
+                  << totalTime << " ms" <<std::endl;
         }
 }
 
@@ -175,7 +186,6 @@ void clProfiler::addExecTime(std::string name, double st, double ed)
         std::string sampleName = name;
         sampleName.resize(strLen, ' ');
 
-        //std::cout << st << " " << ed << std::endl;
         // Check if already in the list
         for(auto &elem : profilingData)
         {
@@ -192,14 +202,23 @@ void clProfiler::addExecTime(std::string name, double st, double ed)
 
 }
 
+double time_stamp_ms()
+{
+        struct timeval t;
+        if(gettimeofday(&t, 0) != 0)
+          exit(-1);
+        return t.tv_sec*1e6 + t.tv_usec;
+}
+
 double time_stamp()
 {
         struct timeval t;
         if(gettimeofday(&t, 0) != 0)
           exit(-1);
-        return t.tv_sec + t.tv_usec/1e6;
+        return t.tv_sec + t.tv_usec*1e-6;
 }
 
+// Enqueue and profile a kernel
 // Enqueue and profile a kernel
 cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
                               cl_kernel        kernel,
@@ -260,10 +279,10 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
         clFinish(cmdQ);
         
         // Enqueue kernel
-        double start = time_stamp();
+        double start = time_stamp_ms();
         enqueueErr = clEnqueueNDRangeKernel(cmdQ, kernel, wd, glbOs, glbSz, locSz, 0, NULL, NULL);
         clFinish(cmdQ);
-        double end = time_stamp();
+        double end = time_stamp_ms();
         checkOpenCLErrors(enqueueErr, "Failed to profile on kernel");
 
         double execTimeMs = (double)(end - start); 
