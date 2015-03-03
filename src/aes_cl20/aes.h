@@ -29,7 +29,7 @@ class AES
         // can be launched on the GPU, 1 is a failsafe if the API does not 
         // return an approprate value
         int MAXIMUM_MEMORY_ALLOCATION;
-        int hexMode;
+        bool hexMode;
 
         // Files
         FILE *infile;

@@ -1,9 +1,16 @@
 #include "aes.h"
 
 #include <memory>
-#include <fstream>
 #include <sstream>
 #include <string.h>
+#include <inttypes.h>
+
+#define ENABLE_PROFILE 1
+
+#if ENABLE_PROFILE
+#define clEnqueueNDRangeKernel clTimeNDRangeKernel
+#endif
+
 
 AES::AES()
 {
@@ -37,9 +44,9 @@ int AES::InitFiles(int argc, char const *argv[])
 
         // The first argument is the hexMode
         if (strcmp(argv[1], "h") == 0)
-                hexMode = 1;
+                hexMode = true;
         else if (strcmp(argv[1], "a") == 0)
-                hexMode = 0;
+                hexMode = false;
         else
         { 
                 printf("error: first argument must be \'a\' for ASCII interpretation or \'h\' for hex interpretation\n"); 
@@ -98,7 +105,8 @@ void AES::InitKernel()
         append_str << file->getSource();
 
         // Create program
-        const char *source = append_str.str().c_str();
+        std::string s = append_str.str();
+        const char *source = s.c_str();
         program = clCreateProgramWithSource(context, 1, 
                 (const char **)&source, NULL, &err);
         if (err != CL_SUCCESS)
@@ -110,7 +118,7 @@ void AES::InitKernel()
                                   0x10000,
                                   buf,
                                   NULL);
-            printf("\n%s\n", buf);
+            printf("Build info:\n%s\n", buf);
             exit(-1);
         }
 
@@ -124,14 +132,13 @@ void AES::InitKernel()
 
 void AES::InitBuffer()
 {
-        cl_int err;
-
         MAXIMUM_MEMORY_ALLOCATION = runtime->getNumComputeUnit();
         svm_ptr = (uint8_t *)clSVMAlloc(context, 
                                         CL_MEM_READ_WRITE, 
-                                        sizeof(uint8_t)*16*MAXIMUM_MEMORY_ALLOCATION, 
+                                        sizeof(uint8_t) * 16 * MAXIMUM_MEMORY_ALLOCATION, 
                                         0);
-
+        if (!svm_ptr)
+                std::cout << "Failed to clSVMAlloc svm_ptr" << std::endl;
 
 }
 
@@ -254,10 +261,11 @@ void AES::InitKeys()
 {
         // Read the private key in
         for (int i = 0; i < 32; i++)
-                fscanf(keyfile, "%x", &key[i]); 
-
+                fscanf(keyfile, "%x", (int *)&key[i]); 
+        
         // Expand key
         KeyExpansion(key);
+
 }
 
 void AES::Run(int argc, char const *argv[])
@@ -269,17 +277,19 @@ void AES::Run(int argc, char const *argv[])
         InitKernel();
         InitBuffer();
 
+
         int ch    = 0; // The buffer for the data read in using ASCII/binary mode
         int spawn = 0; // The number of compute units that will be enqueued per cycle
         int end   = 1; // Changed to 0 when the end of the file is reached, terminates the infinite loop
         while (end)
         {
+
                 // Map memory location in GPU <Coarse SVM>
                 err = clEnqueueSVMMap(cmdQueue, 
                                       CL_TRUE, 
                                       CL_MAP_WRITE, 
                                       svm_ptr, 
-                                      sizeof(uint8_t)*16*MAXIMUM_MEMORY_ALLOCATION, 
+                                      sizeof(uint8_t) * 16 * MAXIMUM_MEMORY_ALLOCATION, 
                                       0, 0, 0);
                 checkOpenCLErrors(err, "Failed at clEnqueueSVMMap");
 
@@ -289,9 +299,9 @@ void AES::Run(int argc, char const *argv[])
                     spawn++; // Since another state is being filled, another comptute unit will be required
                     for (int ix = 0; ix < 16; ix++)
                     {
-                        if (hexMode == 1) // If hex mode
+                        if (hexMode) // If hex mode
                         {
-                            if (fscanf(infile, "%x", &svm_ptr[(i*16)+ix]) != EOF) { ; } //Reads in hex
+                            if (fscanf(infile, "%x", (unsigned int *)&svm_ptr[(i*16)+ix]) != EOF) { ; } //Reads in hex
                             else
                             {
                                 // If the end of the file is reached, fill the rest of the state with 0x00
@@ -360,7 +370,7 @@ void AES::Run(int argc, char const *argv[])
                 clWaitForEvents(1, &unmap);
                 checkOpenCLErrors(err, "Failed to unmap SVM");
 
-                const size_t local_ws = NULL; // For now, let the runtime decide on the local
+                const size_t local_ws = 0; // For now, let the runtime decide on the local
                 const size_t global_ws = spawn; // One WU per state in this round
                 
                 err = clSetKernelArgSVMPointer(kernel, 0, (void *)svm_ptr); // Specific function for SVM data
@@ -408,7 +418,7 @@ void AES::Run(int argc, char const *argv[])
 
         } // While
 
-
+        fflush(outfile);
 }
 
 int main(int argc, char const *argv[])
