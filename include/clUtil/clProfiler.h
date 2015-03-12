@@ -74,9 +74,9 @@ void clProfilerMeta::Dump(std::ostream &os) const
                 double st = elem.get()->first;
                 double ed = elem.get()->second;
                 double lt = ed - st;
-                os << "\t\t" << std::setprecision(32) << st << " " << 
+                os << "\t\t" << std::setprecision(32) << st << " - " << 
                   std::setprecision(32) << ed << ": " << std::setprecision(20) << 
-                  lt << " ms, (#" << count << ")" << std::endl;
+                  lt << " ms, #" << count << std::endl;
                 
                 count++;
                 if(count > limit) 
@@ -175,7 +175,7 @@ void clProfiler::getExecTime(std::string name)
                         std::cout << *meta;
                         totalTime += meta->getTotalTime();
                 }
-                std::cout << "Profiler total time = " << std::setprecision(8) 
+                std::cout << "Kernel total time = " << std::setprecision(8) 
                   << totalTime*1e-6 << " s/ " 
                   << totalTime << " ms" <<std::endl;
         }
@@ -219,7 +219,6 @@ double time_stamp()
 }
 
 // Enqueue and profile a kernel
-// Enqueue and profile a kernel
 cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
                               cl_kernel        kernel,
                               cl_uint          wd,
@@ -233,11 +232,6 @@ cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
         cl_int   err;
         cl_int   enqueueErr;
         cl_event perfEvent;
-        cl_command_queue_properties cmdQProp;
-
-        // Enable profiling of command queue
-        // err = clSetCommandQueueProperty(cmdQ, CL_QUEUE_PROFILING_ENABLE, true, NULL);
-        // checkOpenCLErrors(err, "Failed to enable profiling on command queue");
 
         // Enqueue kernel
         enqueueErr = clEnqueueNDRangeKernel(cmdQ, kernel, wd, glbOs, glbSz, locSz, 0, NULL, &perfEvent);
@@ -248,18 +242,15 @@ cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
         cl_ulong start = 0, end = 0;
         clGetEventProfilingInfo(perfEvent, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
         clGetEventProfilingInfo(perfEvent, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
-        cl_double execTimeMs = (cl_double)(end - start)*(cl_double)(1e-06); 
 
         // Get kernel name
         char kernelName[1024];
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
+        checkOpenCLErrors(err, "Failed to get kernel name");
 
         clProfiler *prof = clProfiler::getInstance();
-        // prof->addExecTime(kernelName, start/1e6, end/1e6);
+        prof->addExecTime(kernelName, (double)start, (double)end);
         
-        // printf
-        // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
-
         return enqueueErr;
 }
 
@@ -285,17 +276,13 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
         double end = time_stamp_ms();
         checkOpenCLErrors(enqueueErr, "Failed to profile on kernel");
 
-        double execTimeMs = (double)(end - start); 
-
         // Get kernel name
         char kernelName[1024];
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
+        checkOpenCLErrors(err, "Failed to get kernel name");
         
         clProfiler *prof = clProfiler::getInstance();
         prof->addExecTime(kernelName, start, end);
-
-        // printf
-        // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
 
         return enqueueErr;
 }

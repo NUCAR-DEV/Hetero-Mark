@@ -1,9 +1,15 @@
 #ifndef CL_ERROR_H
 #define CL_ERROR_H
 
+#include <string>
 #include <iostream>
 #include <CL/cl.h>
 
+#define checkOpenCLSVMBuffer(buffer) \
+    if (!(buffer)) \
+    	std::cout << "Location : " << __FILE__ << ":" <<__LINE__ << " invalid SVM buffer" << std::endl;\
+    exit(-1); 
+    
 #define checkOpenCLErrors(actual, msg) \
     if(checkVal(actual, CL_SUCCESS, msg)) \
     { \
@@ -16,10 +22,10 @@ static void error(std::string errorMsg)
     std::cout << "Error: "<< errorMsg << std::endl;
 }
 
-static const char* getOCLErrorCodeStr(std::string input)
-{
-    return "unknown error code";
-}
+// static const char* getOCLErrorCodeStr(std::string input)
+// {
+//     return "unknown error code";
+// }
 
 template<typename T>
 static const char* getOCLErrorCodeStr(T input)
