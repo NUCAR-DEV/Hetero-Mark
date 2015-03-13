@@ -5,12 +5,6 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define ENABLE_PROFILE 1
-
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clTimeNDRangeKernel
-#endif
-
 void advance_spinner()
 {
     static char bars[] = { '/', '-', '\\', '|' };

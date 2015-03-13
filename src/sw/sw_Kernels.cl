@@ -180,5 +180,4 @@ __kernel void sw_time_smooth(         const unsigned M,
         u_curr[y * M_LEN + x] = u[y * M_LEN] + alpha * (u_next[y * M_LEN + x] - 2. * u[y * M_LEN + x] + u_curr[y * M_LEN + x]);
         v_curr[y * M_LEN + x] = v[y * M_LEN] + alpha * (v_next[y * M_LEN + x] - 2. * v[y * M_LEN + x] + v_curr[y * M_LEN + x]);        
         p_curr[y * M_LEN + x] = p[y * M_LEN] + alpha * (p_next[y * M_LEN + x] - 2. * p[y * M_LEN + x] + p_curr[y * M_LEN + x]);
-
 }

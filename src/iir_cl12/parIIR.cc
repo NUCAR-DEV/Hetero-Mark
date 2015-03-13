@@ -6,13 +6,6 @@
 
 #include "parIIR.h"
 
-#define ENABLE_PROFILE 1
-
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clTimeNDRangeKernel
-#endif
-
-
 void cpu_pariir(float *x, float *y, float *ns, float *dsec, float c, int len);
 
 ParIIR::ParIIR(int len)

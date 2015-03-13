@@ -6,12 +6,6 @@
 
 #include <iostream>
 
-#define ENABLE_PROFILE 1
-
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clTimeNDRangeKernel
-#endif
-
 using namespace std;
 
 HMM::HMM(int N)
