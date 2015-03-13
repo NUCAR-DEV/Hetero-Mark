@@ -20,6 +20,7 @@ class ShallowWater
         cl_kernel        kernel_sw_init_velocities;
         cl_kernel        kernel_sw_compute0;
         cl_kernel        kernel_sw_periodic_update0;
+        cl_kernel        kernel_sw_compute1;
 
         // Size
         unsigned M;

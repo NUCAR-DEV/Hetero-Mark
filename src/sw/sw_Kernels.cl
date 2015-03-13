@@ -95,3 +95,36 @@ __kernel void sw_periodic_update0(         const unsigned M,
         h[M*M_LEN + N] = h[0];
 }
 
+__kernel void sw_compute1(
+                                   const double tdts8,
+                                   const double tdtsdx,
+                                   const double tdtsdy,
+                                   const unsigned M_LEN,
+                          __global const double *cu, 
+                          __global const double *cv, 
+                          __global const double *z, 
+                          __global const double *h,
+                          __global const double *u_curr, 
+                          __global const double *v_curr, 
+                          __global const double *p_curr, 
+                          __global       double *u_next, 
+                          __global       double *v_next, 
+                          __global       double *p_next)
+{
+        int x = get_global_id(0);
+        int y = get_global_id(1);
+
+        u_next[(y+1) * M_LEN + x] = u_curr[(y+1) * M_LEN + x] + tdts8 * (z[(y+1) * M_LEN + x + 1] +
+                                z[(y+1) * M_LEN + x]) * (cv[(y+1) * M_LEN + x + 1] +
+                                cv[y * M_LEN + x + 1] + cv[y * M_LEN + x] + cv[(y+1) * M_LEN + x]) -
+                                tdtsdx * (h[(y+1) * M_LEN + x] - h[y* M_LEN + x]);
+        
+        v_next[y * M_LEN + x + 1] = v_curr[y * M_LEN + x + 1] - tdts8 * (z[(y+1) * M_LEN + x + 1] +
+                        z[y * M_LEN + x + 1]) * (cu[(y+1) * M_LEN + x + 1] +
+                        cu[y * M_LEN + x + 1] + cu[y * M_LEN + x] + cu[y * M_LEN + x + 1]) -
+                        tdtsdy * (h[y * M_LEN + x + 1] - h[y * M_LEN + x]);
+
+        p_next[y * M_LEN + x] = p_curr[y * M_LEN + x] - tdtsdx * (cu[(y + 1) * M_LEN + x] - cu[y * M_LEN + x]) -
+                        tdtsdy * (cv[y * M_LEN + x + 1] - cv[y * M_LEN + x]);
+ 
+}

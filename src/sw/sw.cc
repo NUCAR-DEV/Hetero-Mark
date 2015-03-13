@@ -101,6 +101,9 @@ void ShallowWater::InitKernel()
 
         kernel_sw_periodic_update0 = clCreateKernel(program, "sw_periodic_update0", &err);
         checkOpenCLErrors(err, "Failed to create sw_periodic_update0");
+
+        kernel_sw_compute1 = clCreateKernel(program, "sw_compute1", &err);
+        checkOpenCLErrors(err, "Failed to create sw_compute1");
 }
 
 void ShallowWater::InitBuffer()
@@ -271,7 +274,36 @@ void ShallowWater::Compute1()
         tdtsdx = tdt / dx;
         tdtsdy = tdt / dy;
 
+        cl_int err;
 
+        const size_t globalSize[2] = {M_LEN, N_LEN};
+        const size_t localSize[2] = {16, 16};
+
+        err  = clSetKernelArg(kernel_sw_compute1, 0, sizeof(double), (void *)&tdts8);
+        err |= clSetKernelArg(kernel_sw_compute1, 1, sizeof(double), (void *)&tdtsdx);
+        err |= clSetKernelArg(kernel_sw_compute1, 2, sizeof(double), (void *)&tdtsdy);
+        err |= clSetKernelArg(kernel_sw_compute1, 3, sizeof(unsigned), (void *)&M_LEN);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute1, 4, (void *)cu);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute1, 5, (void *)cv);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute1, 6, (void *)z);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute1, 7, (void *)h);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute1, 8, (void *)u_curr);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute1, 9, (void *)v_curr);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute1, 10, (void *)p_curr);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute1, 11, (void *)u_next);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute1, 12, (void *)v_next);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute1, 13, (void *)p_next);
+
+        err = clEnqueueNDRangeKernel(cmdQueue, 
+                                    kernel_sw_compute1, 
+                                    2, 
+                                    NULL, 
+                                    globalSize, 
+                                    localSize, 
+                                    0, NULL, NULL);
+        checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel kernel_sw_compute1");
+        
+        advance_spinner();     
 
 }
 
