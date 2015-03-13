@@ -99,18 +99,22 @@ void ShallowWater::InitKernel()
         kernel_sw_compute0 = clCreateKernel(program, "sw_compute0", &err);
         checkOpenCLErrors(err, "Failed to create sw_compute0");
 
-        kernel_sw_periodic_update0 = clCreateKernel(program, "sw_periodic_update0", &err);
+        kernel_sw_update0 = clCreateKernel(program, "sw_update0", &err);
         checkOpenCLErrors(err, "Failed to create sw_periodic_update0");
 
         kernel_sw_compute1 = clCreateKernel(program, "sw_compute1", &err);
         checkOpenCLErrors(err, "Failed to create sw_compute1");
+
+        kernel_sw_update1 = clCreateKernel(program, "sw_update1", &err);
+        checkOpenCLErrors(err, "Failed to create sw_periodic_update1");
+
+        kernel_sw_time_smooth = clCreateKernel(program, "sw_time_smooth", &err);
+        checkOpenCLErrors(err, "Failed to create sw_time_smooth");
 }
 
 void ShallowWater::InitBuffer()
 {
         size_t sizeInBytes = sizeof(double) * M_LEN * N_LEN;
-
-
 
         // Fine grain buffers
         u_curr = (double *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeInBytes, 0);
@@ -119,6 +123,9 @@ void ShallowWater::InitBuffer()
         v_next = (double *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeInBytes, 0);
         p_curr = (double *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeInBytes, 0);
         p_next = (double *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeInBytes, 0);
+        u      = (double *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeInBytes, 0);
+        v      = (double *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeInBytes, 0);
+        p      = (double *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeInBytes, 0);
         cu     = (double *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeInBytes, 0);
         cv     = (double *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeInBytes, 0);
         z      = (double *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeInBytes, 0);
@@ -139,6 +146,9 @@ void ShallowWater::FreeBuffer()
        clSVMFree(context, v_next);
        clSVMFree(context, p_curr);
        clSVMFree(context, p_next);
+       clSVMFree(context, u);
+       clSVMFree(context, v);
+       clSVMFree(context, p);
        clSVMFree(context, cu);
        clSVMFree(context, cv);
        clSVMFree(context, z);
@@ -150,6 +160,18 @@ void ShallowWater::Init()
 {
         InitPsiP();
         InitVelocities();
+
+        // FIXME: Boundary conditions
+
+        cl_int err;
+
+        size_t sizeInBytes = sizeof(double) * M_LEN * N_LEN;
+        err  = clEnqueueSVMMemcpy(cmdQueue, CL_FALSE, u_curr, u, sizeInBytes, 0, NULL, NULL);
+        err |= clEnqueueSVMMemcpy(cmdQueue, CL_FALSE, v_curr, v, sizeInBytes, 0, NULL, NULL);
+        err |= clEnqueueSVMMemcpy(cmdQueue, CL_FALSE, p_curr, p, sizeInBytes, 0, NULL, NULL);
+        checkOpenCLErrors(err, "Failed to clEnqueueSVMMemcpy");
+
+        clFinish(cmdQueue);
 }
 
 void ShallowWater::InitPsiP()
@@ -162,7 +184,7 @@ void ShallowWater::InitPsiP()
         err |= clSetKernelArg(kernel_sw_init_psi_p, 3, sizeof(double), (void *)&pcf);
         err |= clSetKernelArg(kernel_sw_init_psi_p, 4, sizeof(unsigned), (void *)&M_LEN);
         err |= clSetKernelArg(kernel_sw_init_psi_p, 5, sizeof(unsigned), (void *)&M_LEN);
-        err |= clSetKernelArgSVMPointer(kernel_sw_init_psi_p, 6, (void *)p_curr);
+        err |= clSetKernelArgSVMPointer(kernel_sw_init_psi_p, 6, (void *)p);
         err |= clSetKernelArgSVMPointer(kernel_sw_init_psi_p, 7, (void *)psi);
         checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_init_psi_p");
 
@@ -193,8 +215,8 @@ void ShallowWater::InitVelocities()
         err |= clSetKernelArg(kernel_sw_init_velocities, 2, sizeof(unsigned), (void *)&M);
         err |= clSetKernelArg(kernel_sw_init_velocities, 3, sizeof(unsigned), (void *)&N);
         err |= clSetKernelArgSVMPointer(kernel_sw_init_velocities, 4, (void *)psi);
-        err |= clSetKernelArgSVMPointer(kernel_sw_init_velocities, 5, (void *)u_curr);
-        err |= clSetKernelArgSVMPointer(kernel_sw_init_velocities, 6, (void *)v_curr);
+        err |= clSetKernelArgSVMPointer(kernel_sw_init_velocities, 5, (void *)u);
+        err |= clSetKernelArgSVMPointer(kernel_sw_init_velocities, 6, (void *)v);
         checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_init_velocities");
 
         err = clEnqueueNDRangeKernel(cmdQueue, 
@@ -219,9 +241,9 @@ void ShallowWater::Compute0()
         err  = clSetKernelArg(kernel_sw_compute0, 0, sizeof(double), (void *)&fsdx);
         err |= clSetKernelArg(kernel_sw_compute0, 1, sizeof(double), (void *)&fsdy);
         err |= clSetKernelArg(kernel_sw_compute0, 2, sizeof(unsigned), (void *)&M_LEN);
-        err |= clSetKernelArgSVMPointer(kernel_sw_compute0, 3, (void *)u_curr);
-        err |= clSetKernelArgSVMPointer(kernel_sw_compute0, 4, (void *)v_curr);
-        err |= clSetKernelArgSVMPointer(kernel_sw_compute0, 5, (void *)p_curr);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute0, 3, (void *)u);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute0, 4, (void *)v);
+        err |= clSetKernelArgSVMPointer(kernel_sw_compute0, 5, (void *)p);
         err |= clSetKernelArgSVMPointer(kernel_sw_compute0, 6, (void *)cu);
         err |= clSetKernelArgSVMPointer(kernel_sw_compute0, 7, (void *)cv);
         err |= clSetKernelArgSVMPointer(kernel_sw_compute0, 8, (void *)z);
@@ -247,23 +269,23 @@ void ShallowWater::PeriodicUpdate0()
         const size_t globalSize[2] = {M, N};
         const size_t localSize[2] = {16, 16};
 
-        err  = clSetKernelArg(kernel_sw_periodic_update0, 0, sizeof(unsigned), (void *)&M);
-        err |= clSetKernelArg(kernel_sw_periodic_update0, 1, sizeof(unsigned), (void *)&N);
-        err |= clSetKernelArg(kernel_sw_periodic_update0, 2, sizeof(unsigned), (void *)&M_LEN);
-        err |= clSetKernelArgSVMPointer(kernel_sw_periodic_update0, 3, (void *)cu);
-        err |= clSetKernelArgSVMPointer(kernel_sw_periodic_update0, 4, (void *)cv);
-        err |= clSetKernelArgSVMPointer(kernel_sw_periodic_update0, 5, (void *)z);
-        err |= clSetKernelArgSVMPointer(kernel_sw_periodic_update0, 6, (void *)h);
-        checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_periodic_update0");
+        err  = clSetKernelArg(kernel_sw_update0, 0, sizeof(unsigned), (void *)&M);
+        err |= clSetKernelArg(kernel_sw_update0, 1, sizeof(unsigned), (void *)&N);
+        err |= clSetKernelArg(kernel_sw_update0, 2, sizeof(unsigned), (void *)&M_LEN);
+        err |= clSetKernelArgSVMPointer(kernel_sw_update0, 3, (void *)cu);
+        err |= clSetKernelArgSVMPointer(kernel_sw_update0, 4, (void *)cv);
+        err |= clSetKernelArgSVMPointer(kernel_sw_update0, 5, (void *)z);
+        err |= clSetKernelArgSVMPointer(kernel_sw_update0, 6, (void *)h);
+        checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_update0");
 
         err = clEnqueueNDRangeKernel(cmdQueue, 
-                                    kernel_sw_periodic_update0, 
+                                    kernel_sw_update0, 
                                     2, 
                                     NULL, 
                                     globalSize, 
                                     localSize, 
                                     0, NULL, NULL);
-        checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel kernel_sw_periodic_update0");
+        checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel kernel_sw_update0");
         
         advance_spinner();
 }
@@ -309,12 +331,84 @@ void ShallowWater::Compute1()
 
 void ShallowWater::PeriodicUpdate1()
 {
+        cl_int err;
 
+        const size_t globalSize[2] = {M, N};
+        const size_t localSize[2] = {16, 16};
+
+        err  = clSetKernelArg(kernel_sw_update1, 0, sizeof(unsigned), (void *)&M);
+        err |= clSetKernelArg(kernel_sw_update1, 1, sizeof(unsigned), (void *)&N);
+        err |= clSetKernelArg(kernel_sw_update1, 2, sizeof(unsigned), (void *)&M_LEN);
+        err |= clSetKernelArgSVMPointer(kernel_sw_update1, 3, (void *)u_next);
+        err |= clSetKernelArgSVMPointer(kernel_sw_update1, 4, (void *)v_next);
+        err |= clSetKernelArgSVMPointer(kernel_sw_update1, 5, (void *)p_next);
+        checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_update1");
+
+        err = clEnqueueNDRangeKernel(cmdQueue, 
+                                    kernel_sw_update1, 
+                                    2, 
+                                    NULL, 
+                                    globalSize, 
+                                    localSize, 
+                                    0, NULL, NULL);
+        checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel kernel_sw_update1");
+        
+        advance_spinner();       
 }
 
-void ShallowWater::TimeSmooth()
+void ShallowWater::TimeSmooth(int ncycle)
 {
+        if (ncycle > 1)
+        {
+                cl_int err;
 
+                const size_t globalSize[2] = {M_LEN, N_LEN};
+                const size_t localSize[2] = {16, 16};
+
+                err  = clSetKernelArg(kernel_sw_time_smooth, 0, sizeof(unsigned), (void *)&M);
+                err |= clSetKernelArg(kernel_sw_time_smooth, 1, sizeof(unsigned), (void *)&N);
+                err |= clSetKernelArg(kernel_sw_time_smooth, 2, sizeof(unsigned), (void *)&M_LEN);
+                err |= clSetKernelArg(kernel_sw_time_smooth, 3, sizeof(double), (void *)&alpha);
+                err |= clSetKernelArgSVMPointer(kernel_sw_time_smooth, 4, (void *)u);
+                err |= clSetKernelArgSVMPointer(kernel_sw_time_smooth, 5, (void *)v);
+                err |= clSetKernelArgSVMPointer(kernel_sw_time_smooth, 6, (void *)p);
+                err |= clSetKernelArgSVMPointer(kernel_sw_time_smooth, 7, (void *)u_curr);
+                err |= clSetKernelArgSVMPointer(kernel_sw_time_smooth, 8, (void *)v_curr);
+                err |= clSetKernelArgSVMPointer(kernel_sw_time_smooth, 9, (void *)p_curr);
+                err |= clSetKernelArgSVMPointer(kernel_sw_time_smooth, 10, (void *)u_next);
+                err |= clSetKernelArgSVMPointer(kernel_sw_time_smooth, 11, (void *)v_next);
+                err |= clSetKernelArgSVMPointer(kernel_sw_time_smooth, 12, (void *)p_next);
+                checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_time_smooth");
+
+                err = clEnqueueNDRangeKernel(cmdQueue, 
+                                            kernel_sw_time_smooth, 
+                                            2, 
+                                            NULL, 
+                                            globalSize, 
+                                            localSize, 
+                                            0, NULL, NULL);
+                checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel kernel_sw_time_smooth");
+                
+                advance_spinner();                
+        }
+        else
+        {
+                cl_int err;
+
+                tdt += tdt;
+                size_t sizeInBytes = sizeof(double) * M_LEN * N_LEN;
+
+                err  = clEnqueueSVMMemcpy(cmdQueue, CL_FALSE, u_curr, u, sizeInBytes, 0, NULL, NULL);
+                err |= clEnqueueSVMMemcpy(cmdQueue, CL_FALSE, v_curr, v, sizeInBytes, 0, NULL, NULL);
+                err |= clEnqueueSVMMemcpy(cmdQueue, CL_FALSE, p_curr, p, sizeInBytes, 0, NULL, NULL);
+                err |= clEnqueueSVMMemcpy(cmdQueue, CL_FALSE, u, u_next, sizeInBytes, 0, NULL, NULL);
+                err |= clEnqueueSVMMemcpy(cmdQueue, CL_FALSE, v, v_next, sizeInBytes, 0, NULL, NULL);
+                err |= clEnqueueSVMMemcpy(cmdQueue, CL_FALSE, p, p_next, sizeInBytes, 0, NULL, NULL);
+                checkOpenCLErrors(err, "Failed to clEnqueueSVMMemcpy");
+
+                clFinish(cmdQueue);
+
+        }
 }
 
 void ShallowWater::Run()
@@ -329,7 +423,7 @@ void ShallowWater::Run()
                 PeriodicUpdate0();
                 Compute1();
                 PeriodicUpdate1();
-                TimeSmooth();
+                TimeSmooth(i);
         }
 
         std::cout << std::endl;

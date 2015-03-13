@@ -10,7 +10,7 @@ __kernel void sw_init_psi_p(         const double a,
         int x = get_global_id(0);
         int y = get_global_id(1);
 
-        if(x <= M_LEN && y <= N_LEN)
+        if(x < N_LEN && y < M_LEN)
         {
                 psi[y * M_LEN + x] = a * sin((x + .5) * di) * sin((y + .5) * dj);
                 p[y * M_LEN + x] = pcf * (cos(2. * (x) * di) + cos(2. * (y) * dj)) + 50000.;
@@ -28,7 +28,7 @@ __kernel void sw_init_velocities(         const double dx,
         int x = get_global_id(0);
         int y = get_global_id(1);
 
-        if(x <= M && y <= N)
+        if(x < N && y < M)
         {
                 u[(y+1) * M + x] = -(psi[(y + 1) * M + x + 1] - psi[(y + 1) * M + x]) / dy;
                 v[y * M + x + 1] =  (psi[(y + 1) * M + x + 1] - psi[y * M + x + 1]) / dx;
@@ -61,13 +61,13 @@ __kernel void sw_compute0(        const double fsdx,
                                             + v[y*M_LEN+x] * v[y*M_LEN+x]);         
 }
 
-__kernel void sw_periodic_update0(         const unsigned M,
-                                           const unsigned N,
-                                           const unsigned M_LEN,
-                                  __global       double *cu,
-                                  __global       double *cv,
-                                  __global       double *z,
-                                  __global       double *h)
+__kernel void sw_update0(         const unsigned M,
+                                  const unsigned N,
+                                  const unsigned M_LEN,
+                         __global       double *cu,
+                         __global       double *cv,
+                         __global       double *z,
+                         __global       double *h)
 {
         
         int x = get_global_id(0);
@@ -127,4 +127,58 @@ __kernel void sw_compute1(
         p_next[y * M_LEN + x] = p_curr[y * M_LEN + x] - tdtsdx * (cu[(y + 1) * M_LEN + x] - cu[y * M_LEN + x]) -
                         tdtsdy * (cv[y * M_LEN + x + 1] - cv[y * M_LEN + x]);
  
+}
+
+__kernel void sw_update1(         const unsigned M,
+                                  const unsigned N,
+                                  const unsigned M_LEN,
+                         __global       double *u_next,
+                         __global       double *v_next,
+                         __global       double *p_next)
+{
+        
+        int x = get_global_id(0);
+        int y = get_global_id(1);
+
+        if(x < N)
+        {
+                u_next[x] = u_next[M*M_LEN + x];
+                v_next[M*M_LEN + x + 1] = v_next[x + 1];
+                p_next[M*M_LEN + x] = p_next[x];
+        }
+
+        if(y < M)
+        {
+                u_next[(y + 1)*M_LEN + N] = u_next[(y + 1)*M_LEN];
+                v_next[y*M_LEN] = v_next[y*M_LEN + N];
+                p_next[y*M_LEN + N] = p_next[y*M_LEN];
+        }
+
+        u_next[N] = u_next[M*M_LEN];
+        v_next[M*M_LEN] = v_next[N];
+        p_next[M*M_LEN + N] = p_next[0];
+
+}
+
+__kernel void sw_time_smooth(         const unsigned M,
+                                      const unsigned N,
+                                      const unsigned M_LEN,
+                                      const double   alpha,
+                             __global       double  *u,
+                             __global       double  *v,
+                             __global       double  *p,
+                             __global       double  *u_curr,
+                             __global       double  *v_curr,
+                             __global       double  *p_curr,
+                             __global       double  *u_next,
+                             __global       double  *v_next,
+                             __global       double  *p_next)
+{
+        int x = get_global_id(0);
+        int y = get_global_id(1);
+
+        u_curr[y * M_LEN + x] = u[y * M_LEN] + alpha * (u_next[y * M_LEN + x] - 2. * u[y * M_LEN + x] + u_curr[y * M_LEN + x]);
+        v_curr[y * M_LEN + x] = v[y * M_LEN] + alpha * (v_next[y * M_LEN + x] - 2. * v[y * M_LEN + x] + v_curr[y * M_LEN + x]);        
+        p_curr[y * M_LEN + x] = p[y * M_LEN] + alpha * (p_next[y * M_LEN + x] - 2. * p[y * M_LEN + x] + p_curr[y * M_LEN + x]);
+
 }

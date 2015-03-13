@@ -19,8 +19,10 @@ class ShallowWater
         cl_kernel        kernel_sw_init_psi_p;
         cl_kernel        kernel_sw_init_velocities;
         cl_kernel        kernel_sw_compute0;
-        cl_kernel        kernel_sw_periodic_update0;
+        cl_kernel        kernel_sw_update0;
         cl_kernel        kernel_sw_compute1;
+        cl_kernel        kernel_sw_update1;
+        cl_kernel        kernel_sw_time_smooth;
 
         // Size
         unsigned M;
@@ -38,6 +40,7 @@ class ShallowWater
         double *u_curr, *u_next;
         double *v_curr, *v_next;
         double *p_curr, *p_next;
+        double *u, *v, *p;
         double *cu, *cv;
         double *z, *h, *psi;
 
@@ -55,7 +58,7 @@ class ShallowWater
         void PeriodicUpdate0();
         void Compute1();
         void PeriodicUpdate1();
-        void TimeSmooth();
+        void TimeSmooth(int ncycle);
 
 public:
         ShallowWater(unsigned _M = 2048, unsigned _N = 2048);
