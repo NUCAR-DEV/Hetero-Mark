@@ -269,7 +269,10 @@ void HMM::InitBuffers()
 
         }
         else
-                __NOT_IMPLEMENTED__
+        {
+                printf("Not implemented\n");
+                exit(-1);
+        }
 
         // Sanity check
         if (!a || !b || !alpha || !prior || !blk_result || !observations || !lll)
