@@ -201,9 +201,9 @@ void HMM::InitBuffers()
         }
 
         // Alloc buffer
-        if (!svmFineGrainAvail)
-        {
-                printf("SVM fine grain support unavailable\n");
+        //if (!svmFineGrainAvail)
+        //{
+        //        printf("SVM fine grain support unavailable\n");
 
                                 //-------------------------------------------------------------------------------//
                                 // Prepare
@@ -261,12 +261,12 @@ void HMM::InitBuffers()
                 gamma_state_sum = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
                 gamma_obs       = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dt, 0);
 
-        }
-        else
-        {
-                printf("Not implemented\n");
-                exit(-1);
-        }
+        //}
+        //else
+        //{
+        //        printf("Not implemented\n");
+        //        exit(-1);
+        //}
 
         // Sanity check
         if (!a || !b || !alpha || !prior || !blk_result || !observations || !lll)
@@ -279,8 +279,8 @@ void HMM::InitBuffers()
                 // Inistilize Input Data
                 //---------------------------------------------------------------------------------------//
         // Coarse grain SVM needs explicit map/unmap
-        if (!svmFineGrainAvail)
-        {
+        //if (!svmFineGrainAvail)
+        //{
                // Map a
                 err = clEnqueueSVMMap(cmdQueue_0,
                                       CL_TRUE,       // blocking map
@@ -322,7 +322,7 @@ void HMM::InitBuffers()
                 checkOpenCLErrors(err, "Failed to clEnqueueSVMMap");
 
 
-        }
+        //}
 
         // Init content
         for (i = 0; i < (N * N); i++)
@@ -341,8 +341,8 @@ void HMM::InitBuffers()
 
 
         // Coarse grain needs explicit unmap
-        if (!svmFineGrainAvail)
-        {
+        //if (!svmFineGrainAvail)
+        //{
                 err = clEnqueueSVMUnmap(cmdQueue_0, a, 0, 0, 0);
                 checkOpenCLErrors(err, "Failed to clEnqueueSVMUnmap");
 
@@ -355,7 +355,7 @@ void HMM::InitBuffers()
                 err = clEnqueueSVMUnmap(cmdQueue_0, observations, 0, 0, 0);
                 checkOpenCLErrors(err, "Failed to clEnqueueSVMUnmap");
 
-        }
+        //}
 }
 
 void HMM::CleanUp()
