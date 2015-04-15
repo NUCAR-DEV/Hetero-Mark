@@ -8,13 +8,6 @@
 
 using namespace std;
 
-#define ENABLE_PROFILE 1
-
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clTimeNDRangeKernel
-#endif
-
-
 HMM::HMM(int N)
 {
         if (N >= TILE)
@@ -1458,8 +1451,6 @@ int main(int argc, char const *argv[])
     double end = time_stamp();
 
     printf("Total time = %f s\n", end - start);
-
-    DumpProfilingInfo();
 
     return 0;
 }

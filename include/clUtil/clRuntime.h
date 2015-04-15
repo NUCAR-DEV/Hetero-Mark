@@ -60,7 +60,7 @@ public:
         cl_context getContext() const { return context; }
 
         // Get a command queue by index, create it if doesn't exist
-        cl_command_queue getCmdQueue(int index, cl_command_queue_properties properties = 0);
+        cl_command_queue getCmdQueue(unsigned index, cl_command_queue_properties properties = 0);
 
         // Get number of compute units of current device
         cl_uint getNumComputeUnit() const;
@@ -151,6 +151,7 @@ clRuntime::~clRuntime()
                 err = clReleaseDevice(device);
                 checkOpenCLErrors(err, "Failed at clReleaseDevice");
         }
+        // printf("~clRuntime\n");
 }
 
 void clRuntime::requireCL20()
@@ -189,12 +190,15 @@ int clRuntime::displayPlatformInfo(cl_platform_id plt_id, cl_platform_info plt_i
                 platformInfo, NULL);
         checkOpenCLErrors(err, "clGetPlatformInfo failed");
         std::cout << "\t" << platformInfo << std::endl;
+
+        return 0;
 }
 
 int clRuntime::displayContextInfo(cl_context ctx, 
         cl_context_info ctx_info)
 {
         // TODO
+        return 0;
 }
 
 int clRuntime::displayPlatformInfo()
@@ -205,7 +209,9 @@ int clRuntime::displayPlatformInfo()
         displayPlatformInfo(platform, CL_PLATFORM_VERSION);
         displayPlatformInfo(platform, CL_PLATFORM_PROFILE);
         displayPlatformInfo(platform, CL_PLATFORM_NAME);
-        displayPlatformInfo(platform, CL_PLATFORM_EXTENSIONS);        
+        displayPlatformInfo(platform, CL_PLATFORM_EXTENSIONS);
+
+        return 0;
 }
 
 int clRuntime::displayDeviceInfo()
@@ -251,9 +257,11 @@ int clRuntime::displayAllInfo()
 {
         displayPlatformInfo();
         displayDeviceInfo();
+
+        return 0;
 }
 
-cl_command_queue clRuntime::getCmdQueue(int index, cl_command_queue_properties properties)
+cl_command_queue clRuntime::getCmdQueue(unsigned index, cl_command_queue_properties properties)
 {
         cl_int err;
 

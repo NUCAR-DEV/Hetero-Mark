@@ -9,9 +9,16 @@
 namespace clHelper
 {
 
-#ifndef __NOT_IMPLEMENTED__
-#define __NOT_IMPLEMENTED__ printf("Error: not implemented. Func %s Line %d\n", __FUNCTION__, __LINE__);
+#ifndef clSVMFreeSafe
+#define clSVMFreeSafe(ctx, ptr) if(ptr) clSVMFree(ctx, ptr)
 #endif
+
+#define ENABLE_PROFILE 1 
+
+#if ENABLE_PROFILE
+#define clEnqueueNDRangeKernel clTimeNDRangeKernel
+#endif
+
 } // namespace clHelper
 
 #endif
