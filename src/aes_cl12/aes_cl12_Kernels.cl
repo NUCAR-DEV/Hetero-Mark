@@ -19,15 +19,14 @@ __constant uchar s[256] = {
     0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
 };
 
-__kernel void sb(__local uchar* in)
-{
-    for (int i = 0; i < 32; i++) { in[i] = s[in[i]]; }
-}
-
 __kernel void sb_st(__local uchar* in)
 {
-    for (int i = 0; i < 16; i++) { in[i] = s[in[i]]; }
-    
+    in[0] = s[in[0]];in[1] = s[in[1]];in[2] = s[in[2]];
+    in[3] = s[in[3]];in[4] = s[in[4]];in[5] = s[in[5]];
+    in[6] = s[in[6]];in[7] = s[in[7]];in[8] = s[in[8]];
+    in[9] = s[in[9]];in[10] = s[in[10]];in[11] = s[in[11]];
+    in[12] = s[in[12]];in[13] = s[in[13]];in[14] = s[in[14]];
+    in[15] = s[in[15]];
 }
 
 __kernel void mc(__local uchar* arr)
@@ -49,38 +48,40 @@ __kernel void mc(__local uchar* arr)
         arr[(8+i)] = b[2] ^ a[1] ^ a[0] ^ b[3] ^ a[3];
         arr[(12+i)] = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0];
     }
-    
+
 }
 
-__kernel void sr(__local uchar* arr)
+__kernel void sr(__local uchar* in)
 {
-    uchar out[16];
+    uchar state[16];
     //On per-row basis (+1 shift X each row)
     //Row 1
-    out[0] = arr[0];
-    out[1] = arr[1];
-    out[2] = arr[2];
-    out[3] = arr[3];
+    state[0] = in[0];
+    state[1] = in[1];
+    state[2] = in[2];
+    state[3] = in[3];
     //Row 2
-    out[4] = arr[5];
-    out[5] = arr[6];
-    out[6] = arr[7];
-    out[7] = arr[4];
+    state[4] = in[5];
+    state[5] = in[6];
+    state[6] = in[7];
+    state[7] = in[4];
     //Row 3
-    out[8] = arr[10];
-    out[9] = arr[11];
-    out[10] = arr[8];
-    out[11] = arr[9];
+    state[8] = in[10];
+    state[9] = in[11];
+    state[10] = in[8];
+    state[11] = in[9];
     //Row 4
-    out[12] = arr[15];
-    out[13] = arr[12];
-    out[14] = arr[13];
-    out[15] = arr[14];
-    
-    for (int i = 0; i < 16; i++)
-    {
-        arr[i] = out[i];
-    }
+    state[12] = in[15];
+    state[13] = in[12];
+    state[14] = in[13];
+    state[15] = in[14];
+
+    in[0] = state[0];in[1] = state[1];in[2] = state[2];
+    in[3] = state[3];in[4] = state[4];in[5] = state[5];
+    in[6] = state[6];in[7] = state[7];in[8] = state[8];
+    in[9] = state[9];in[10] = state[10];in[11] = state[11];
+    in[12] = state[12];in[13] = state[13];in[14] = state[14];
+    in[15] = state[15];
 }
 
 __kernel void ark(__local uchar* state, int strD)
@@ -89,46 +90,66 @@ __kernel void ark(__local uchar* state, int strD)
         uint word;
         uchar bytes[4];
     } kb[4] __attribute__ ((aligned));
-    
+
     kb[0].word = eK[strD];
     kb[1].word = eK[strD+1];
     kb[2].word = eK[strD+2];
     kb[3].word = eK[strD+3];
-    
-    for (int i = 0; i < 4; i++)
-    {
-        state[i] = state[i] ^ kb[i].bytes[3];
-        state[i+4] = state[i+4] ^ kb[i].bytes[2];
-        state[i+8] = state[i+8] ^ kb[i].bytes[1];
-        state[i+12] = state[i+12] ^ kb[i].bytes[0];
-    }
+
+    state[0] = state[0] ^ kb[0].bytes[3];
+    state[4] = state[4] ^ kb[0].bytes[2];
+    state[8] = state[8] ^ kb[0].bytes[1];
+    state[12] = state[12] ^ kb[0].bytes[0];
+
+    state[1] = state[1] ^ kb[1].bytes[3];
+    state[5] = state[5] ^ kb[1].bytes[2];
+    state[9] = state[9] ^ kb[1].bytes[1];
+    state[13] = state[13] ^ kb[1].bytes[0];
+
+    state[2] = state[2] ^ kb[2].bytes[3];
+    state[6] = state[6] ^ kb[2].bytes[2];
+    state[10] = state[10] ^ kb[2].bytes[1];
+    state[14] = state[14] ^ kb[2].bytes[0];
+
+    state[3] = state[3] ^ kb[3].bytes[3];
+    state[7] = state[7] ^ kb[3].bytes[2];
+    state[11] = state[11] ^ kb[3].bytes[1];
+    state[15] = state[15] ^ kb[3].bytes[0];
 }
 
 __kernel void CLRunnerntrl(__global uchar *in)
 {
     __local uchar state[16];
-    for (int i = 0; i < 16; i++) { state[i] = in[i]; }
-    
-    for (int h = 0; h < 60; h++) { printf("\nD:%i : %x", h, eK[h]); }
-    for (int p = 0; p < 16; p=p+4) { printf("\n[ %x %x %x %x ]", state[p], state[p+1], state[p+2], state[p+3]); }
-    
+
+    state[0] = in[0];state[1] = in[1];state[2] = in[2];
+    state[3] = in[3];state[4] = in[4];state[5] = in[5];
+    state[6] = in[6];state[7] = in[7];state[8] = in[8];
+    state[9] = in[9];state[10] = in[10];state[11] = in[11];
+    state[12] = in[12];state[13] = in[13];state[14] = in[14];
+    state[15] = in[15];
+
     ark(state, 0);
-    
-    printf("\nFirst ARK:");
-    for (int p = 0; p < 16; p=p+4) { printf("\n[ %x %x %x %x ]", state[p], state[p+1], state[p+2], state[p+3]); }
-    
-    for (int i = 1; i < 14; i++)
-    {
-        sb_st(state);
-        sr(state);
-        mc(state);
-        ark(state, i*Nb);
-        printf("\nRound:%i", i);
-        for (int p = 0; p < 16; p=p+4) { printf("\n[ %x %x %x %x ]", state[p], state[p+1], state[p+2], state[p+3]); }
-    }
-    
-    sb_st(state);
-    sr(state);
-    ark(state, Nr*Nb);
-    for (int i = 0; i < 16; i++) { in[i] = state[i]; }
+
+    sb_st(state);sr(state);mc(state);ark(state, 4);
+    sb_st(state);sr(state);mc(state);ark(state, 8);
+    sb_st(state);sr(state);mc(state);ark(state, 12);
+    sb_st(state);sr(state);mc(state);ark(state, 16);
+    sb_st(state);sr(state);mc(state);ark(state, 20);
+    sb_st(state);sr(state);mc(state);ark(state, 24);
+    sb_st(state);sr(state);mc(state);ark(state, 28);
+    sb_st(state);sr(state);mc(state);ark(state, 32);
+    sb_st(state);sr(state);mc(state);ark(state, 36);
+    sb_st(state);sr(state);mc(state);ark(state, 40);
+    sb_st(state);sr(state);mc(state);ark(state, 44);
+    sb_st(state);sr(state);mc(state);ark(state, 48);
+    sb_st(state);sr(state);mc(state);ark(state, 52);
+
+    sb_st(state);sr(state);ark(state, Nr*Nb);
+
+    in[0] = state[0];in[1] = state[1];in[2] = state[2];
+    in[3] = state[3];in[4] = state[4];in[5] = state[5];
+    in[6] = state[6];in[7] = state[7];in[8] = state[8];
+    in[9] = state[9];in[10] = state[10];in[11] = state[11];
+    in[12] = state[12];in[13] = state[13];in[14] = state[14];
+    in[15] = state[15];
 }
