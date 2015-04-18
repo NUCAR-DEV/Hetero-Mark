@@ -70,7 +70,7 @@ public:
 	/**
 	 * Set group segment size
 	 */
-	void setGlobalSegmentSize(uint32_t size) { group_segment_size = size; }
+	void setGroupSegmentSize(uint32_t size) { group_segment_size = size; }
 
 	/**
 	 * Set name
@@ -81,6 +81,11 @@ public:
 	 * Set helper
 	 */
 	void setHelper(HsaHelper *helper) { this->helper = helper; }
+
+	/**
+	 * Set arguments
+	 */
+	void setArguments(void *args) { this->arguments = args; }
 };
 
 #endif

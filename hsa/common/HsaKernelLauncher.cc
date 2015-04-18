@@ -100,8 +100,8 @@ void HsaKernelLauncher::LaunchKernel()
 	dispatch_packet->workgroup_size_y = (uint16_t)group_size[1];
 	dispatch_packet->workgroup_size_z = (uint16_t)group_size[2];
 	dispatch_packet->grid_size_x = global_size[0];
-	dispatch_packet->grid_size_y = global_size[0];
-	dispatch_packet->grid_size_z = global_size[0];
+	dispatch_packet->grid_size_y = global_size[1];
+	dispatch_packet->grid_size_z = global_size[2];
 	dispatch_packet->completion_signal = signal;
 	dispatch_packet->kernel_object = kernel_object;
 	dispatch_packet->kernarg_address = (void*) kernarg_address;
@@ -112,7 +112,7 @@ void HsaKernelLauncher::LaunchKernel()
 			__ATOMIC_RELEASE);
 
 	// Increment the write index and ring the doorbell to dispatch the kernel
-	hsa_queue_store_write_index_relaxed(helper->getQueue(), index+1);
+	hsa_queue_store_write_index_relaxed(helper->getQueue(), index + 1);
 	hsa_signal_store_relaxed(helper->getQueue()->doorbell_signal, index);
 	helper->CheckError(err, "Dispatching kernel");
 
