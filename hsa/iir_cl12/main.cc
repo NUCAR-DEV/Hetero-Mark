@@ -3,5 +3,6 @@
 int main() 
 {
 	IirFilter iir = IirFilter();
+	iir.Init();
 	iir.Run();
 }

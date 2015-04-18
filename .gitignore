@@ -35,3 +35,10 @@ cmake_install.cmake
 
 #ctags
 .tags*
+
+# vim tmp files
+*.swp
+
+# hsa file
+*.hsail
+*.brig
