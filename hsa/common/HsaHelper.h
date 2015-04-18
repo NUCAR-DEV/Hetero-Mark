@@ -59,6 +59,11 @@ public:
 	void LoadProgram(const char *file);
 
 	/**
+	 * Register memory
+	 */
+	void RegisterMemory(void *pointer, size_t size);
+
+	/**
 	 * Getters
 	 */
 	hsa_agent_t getGpu() const { return gpu; }

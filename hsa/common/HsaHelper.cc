@@ -175,3 +175,11 @@ void HsaHelper::CreateExecutable(hsa_code_object_t code_object)
 	err = hsa_executable_freeze(executable, "");
 	CheckError(err, "Freeze the executable");
 }
+
+
+void HsaHelper::RegisterMemory(void *pointer, size_t size)
+{
+	hsa_status_t err;
+	err = hsa_memory_register(pointer, size);
+	CheckError(err, "Register HSA memory");
+}

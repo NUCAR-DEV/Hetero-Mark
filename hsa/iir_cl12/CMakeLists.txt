@@ -16,8 +16,8 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_GLAGS} -std=c++0x")
 
 link_directories(${HSA_RUNTIME_PATH}/lib)
 
-add_executable(IIR main.cc IirFilter.cc)
+add_executable(IIR12 main.cc IirFilter.cc)
 include_directories(${HSA_RUNTIME_PATH}/include)
-target_link_libraries(IIR HsaHelper hsa-runtime64)
+target_link_libraries(IIR12 HsaHelper hsa-runtime64)
 
 
