@@ -42,15 +42,19 @@ void IirFilter::InitParam()
 
 	// Input and output argument
 	in = (float *)malloc(sizeof(float) * len);
+	helper.RegisterMemory(in, sizeof(float) * len);
 	out = (float *)malloc(sizeof(float) * len * channels);
+	helper.RegisterMemory(out, sizeof(float) * len *channels);
 	for (int i = 0; i < len; i++)
 	{
-		in[i] = i;
+		in[i] = (float)i;
 	}
 
 	// Filter parameters
 	nsec = (float *)malloc(sizeof(float) * rows * 2);
+	helper.RegisterMemory(nsec, sizeof(float) * rows * 2);
 	dsec = (float *)malloc(sizeof(float) * rows * 2);
+	helper.RegisterMemory(dsec, sizeof(float) * rows * 2);
 	for (int i = 0; i < rows; i++)
 	{
 		nsec[2 * i] = 0.00002f;
@@ -66,14 +70,13 @@ void IirFilter::InitParam()
 	args.dsec = dsec;
 	args.len = len;
 	args.c = c;
-	args.sm = 0;
+	args.sm = (void *)(4 * sizeof(float));
 
 	// Set to kernel launcher
 	kernel_launcher.setArguments(&args);
 	kernel_launcher.setGroupSize(rows, 1, 1);
 	kernel_launcher.setGlobalSize(channels * rows, 1, 1);
-	kernel_launcher.setGroupSegmentSize(512 * sizeof(float));
-
+	kernel_launcher.setGroupSegmentSize(1024 * sizeof(float));
 }
 
 
@@ -127,7 +130,11 @@ void IirFilter::Verify()
 				printf("Failed! Expect %f but was %f\n", 
 						cpu_y[i], out[i + start]);
 				success = 0;
-				break;
+			}
+			else 
+			{
+				printf("Succeed! Expect %f and was %f\n",
+						cpu_y[i], out[i+start]);
 			}
 		}
 	}
