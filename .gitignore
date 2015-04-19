@@ -35,3 +35,6 @@ cmake_install.cmake
 
 #ctags
 .tags*
+
+#editor tmp
+*.swp
