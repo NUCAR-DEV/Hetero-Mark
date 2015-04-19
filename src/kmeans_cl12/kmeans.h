@@ -37,6 +37,10 @@
 /*POSSIBILITY OF SUCH DAMAGE.                                                 */
 /******************************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef _H_FUZZY_KMEANS
 #define _H_FUZZY_KMEANS
 
@@ -56,3 +60,8 @@ int	kmeansOCL(float **feature, int nfeatures, int npoints, int nclusters, int *m
 float** kmeans_clustering(float **feature, int nfeatures, int npoints, int nclusters, float threshold, int *membership); 
 
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+

@@ -5,12 +5,9 @@
 #include <iostream>
 #include <string>
 
-//include "kmeans.h"
-
-// add 
 extern "C"
 {
-#include "read_input.h"
+#include "kmeans.h"
 }
 
 #ifdef WIN
