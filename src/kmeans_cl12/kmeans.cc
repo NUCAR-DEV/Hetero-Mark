@@ -86,7 +86,8 @@ static int initialize(int use_gpu)
 	if( result != CL_SUCCESS ) { printf("ERROR: clGetContextInfo() failed\n"); return -1; }
 
 	// create command queue for the first device
-	cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
+	//cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
+	cmd_queue = clCreateCommandQueueWithProperties( context, device_list[0], 0, NULL );
 	if( !cmd_queue ) { printf("ERROR: clCreateCommandQueue() failed\n"); return -1; }
 
 	return 0;
@@ -132,7 +133,7 @@ int allocate(int n_points, int n_features, int n_clusters, float **feature)
 	if(!source) { printf("ERROR: calloc(%d) failed\n", sourcesize); return -1; }
 
 	// read the kernel core source
-	char * tempchar = "./kmeans.cl";
+	const char * tempchar = "./kmeans.cl";
 	FILE * fp = fopen(tempchar, "rb"); 
 	if(!fp) { printf("ERROR: unable to open '%s'\n", tempchar); return -1; }
 	fread(source + strlen(source), sourcesize, 1, fp);
@@ -157,8 +158,8 @@ int allocate(int n_points, int n_features, int n_clusters, float **feature)
 	}
 	if(err != CL_SUCCESS) { printf("ERROR: clBuildProgram() => %d\n", err); return -1; }
 	
-	char * kernel_kmeans_c  = "kmeans_kernel_c";
-	char * kernel_swap  = "kmeans_swap";	
+	const char * kernel_kmeans_c  = "kmeans_kernel_c";
+	const char * kernel_swap  = "kmeans_swap";	
 		
 	kernel_s = clCreateKernel(prog, kernel_kmeans_c, &err);  
 	if(err != CL_SUCCESS) { printf("ERROR: clCreateKernel() 0 => %d\n", err); return -1; }
@@ -185,7 +186,7 @@ int allocate(int n_points, int n_features, int n_clusters, float **feature)
 	clSetKernelArg(kernel2, 2, sizeof(cl_int), (void*) &n_points);
 	clSetKernelArg(kernel2, 3, sizeof(cl_int), (void*) &n_features);
 	
-	size_t global_work[3] = { n_points, 1, 1 };
+	size_t global_work[3] = { (size_t)n_points, 1, 1 };
 	/// Ke Wang adjustable local group size 2013/08/07 10:37:33
 	size_t local_work_size= BLOCK_SIZE; // work group size is defined by RD_WG_SIZE_0 or RD_WG_SIZE_0_0 2014/06/10 17:00:51
 	if(global_work[0]%local_work_size !=0)
@@ -230,7 +231,7 @@ int	kmeansOCL(float **feature,    /* in: [npoints][nfeatures] */
 	int i, j, k;
 	cl_int err = 0;
 	
-	size_t global_work[3] = { n_points, 1, 1 }; 
+	size_t global_work[3] = { (size_t)n_points, 1, 1 }; 
 
 	/// Ke Wang adjustable local group size 2013/08/07 10:37:33
 	size_t local_work_size=BLOCK_SIZE2; // work group size is defined by RD_WG_SIZE_1 or RD_WG_SIZE_1_0 2014/06/10 17:00:41
