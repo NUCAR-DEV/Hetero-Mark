@@ -175,9 +175,14 @@ int setup(int argc, char **argv) {
             exit(1);
         }
         ret = read(infile, &npoints,   sizeof(int));
-
+		if (ret == -1)
+			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
+					__FILE__, __LINE__);
 
         ret = read(infile, &nfeatures, sizeof(int));        
+		if (ret == -1)
+			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
+					__FILE__, __LINE__);
 
         /* allocate space for features[][] and read attributes of all objects */
         buf         = (float*) malloc(npoints*nfeatures*sizeof(float));
@@ -187,6 +192,9 @@ int setup(int argc, char **argv) {
             features[i] = features[i-1] + nfeatures;
 
         read(infile, buf, npoints*nfeatures*sizeof(float));
+		if (ret == -1)
+			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
+					__FILE__, __LINE__);
 
         close(infile);
     }
