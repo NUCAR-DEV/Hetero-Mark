@@ -191,7 +191,7 @@ int setup(int argc, char **argv) {
         for (i=1; i<npoints; i++)
             features[i] = features[i-1] + nfeatures;
 
-        read(infile, buf, npoints*nfeatures*sizeof(float));
+        ret = read(infile, buf, npoints*nfeatures*sizeof(float));
 		if (ret == -1)
 			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
 					__FILE__, __LINE__);

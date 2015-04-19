@@ -4,7 +4,14 @@
 #include <math.h>
 #include <iostream>
 #include <string>
-#include "kmeans.h"
+
+//include "kmeans.h"
+
+// add 
+extern "C"
+{
+#include "read_input.h"
+}
 
 #ifdef WIN
 	#include <windows.h>
