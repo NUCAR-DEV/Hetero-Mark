@@ -86,8 +86,13 @@ static int initialize(int use_gpu)
 	if( result != CL_SUCCESS ) { printf("ERROR: clGetContextInfo() failed\n"); return -1; }
 
 	// create command queue for the first device
-	//cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
+#ifdef CL_VERSION_2_0
 	cmd_queue = clCreateCommandQueueWithProperties( context, device_list[0], 0, NULL );
+#else
+	cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
+#endif
+
+
 	if( !cmd_queue ) { printf("ERROR: clCreateCommandQueue() failed\n"); return -1; }
 
 	return 0;
@@ -136,7 +141,10 @@ int allocate(int n_points, int n_features, int n_clusters, float **feature)
 	const char * tempchar = "./kmeans.cl";
 	FILE * fp = fopen(tempchar, "rb"); 
 	if(!fp) { printf("ERROR: unable to open '%s'\n", tempchar); return -1; }
-	fread(source + strlen(source), sourcesize, 1, fp);
+	size_t retv = fread(source + strlen(source), sourcesize, 1, fp);
+	if(!retv)
+  		fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__, __LINE__);
+
 	fclose(fp);
 		
 	// OpenCL initialization
