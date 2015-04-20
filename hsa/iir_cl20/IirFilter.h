@@ -11,7 +11,6 @@
  */
 class IirFilter : public Benchmark 
 {
-
 	// Dataset
 	uint32_t len = 1024;
 	uint32_t channels;
@@ -67,6 +66,11 @@ public:
 	 * Verify
 	 */
 	void Verify() override;
+
+	/**
+	 * Summarize
+	 */
+	void Summarize() override;
 
 	/**
 	 * Set data length

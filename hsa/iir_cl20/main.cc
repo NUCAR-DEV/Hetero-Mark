@@ -66,4 +66,5 @@ int main(int argc, char **argv)
 		iir.Verify();
 
 	// Summarize
+	iir.Summarize();
 }

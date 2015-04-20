@@ -5,6 +5,8 @@
 #include "hsa.h"
 #include "hsa_ext_finalize.h"
 
+#include "TimeKeeper.h"
+
 #include "KernelLauncher.h"
 
 class HsaHelper;
@@ -15,6 +17,8 @@ class HsaHelper;
 class HsaKernelLauncher : public KernelLauncher
 {
 protected:
+	// Timer
+	TimeKeeper *timer;
 
 	// Hsa Helper
 	HsaHelper *helper;
@@ -48,6 +52,14 @@ protected:
 	void PrepareArgument();
 
 public:
+
+	/**
+	 * Constructor
+	 */
+	HsaKernelLauncher() 
+	{
+		timer = TimeKeeper::getInstance();
+	}
 
 	/**
 	 * Init the hsa kernel launcher

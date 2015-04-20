@@ -27,6 +27,7 @@ hsa_status_t HsaKernelLauncher::FindKernargMemoryRegion(hsa_region_t region,
 
 void HsaKernelLauncher::Init()
 {
+	timer->BeginTimer();
 	hsa_status_t err;
 
 	// Retrieve symbol
@@ -44,11 +45,13 @@ void HsaKernelLauncher::Init()
 			HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_KERNARG_SEGMENT_SIZE,
 			&kernarg_segment_size);
 	helper->CheckError(err, "Get kernel argument segment size");
+	timer->EndTimer({"HSA runtime", "CPU"});
 }
 
 
 void HsaKernelLauncher::PrepareArgument()
 {
+	timer->BeginTimer();
 	hsa_status_t err;
 
 	// Find a memory region that supports kernel arguments
@@ -66,6 +69,7 @@ void HsaKernelLauncher::PrepareArgument()
 			&kernarg_address);
 	helper->CheckError(err, "Allocate memory buffer");
 	memcpy(kernarg_address, arguments, kernarg_segment_size);
+	timer->EndTimer({"memory", "CPU", "HSA runtime", "HSA memory"});
 
 }
 
@@ -77,6 +81,7 @@ void HsaKernelLauncher::LaunchKernel()
 	// Prepare argument
 	PrepareArgument();
 
+	timer->BeginTimer();
 	// Create a signal to wait for dispatch to finish
 	hsa_signal_t signal;
 	err = hsa_signal_create(1, 0, NULL, &signal);
@@ -107,6 +112,9 @@ void HsaKernelLauncher::LaunchKernel()
 	dispatch_packet->kernarg_address = (void*) kernarg_address;
 	dispatch_packet->private_segment_size = private_segment_size;
 	dispatch_packet->group_segment_size = group_segment_size;
+	timer->EndTimer({"CPU", "HSA runtime"});
+	
+	timer->BeginTimer();
 	__atomic_store_n((uint8_t*)(&dispatch_packet->header), 
 			(uint8_t)HSA_PACKET_TYPE_KERNEL_DISPATCH, 
 			__ATOMIC_RELEASE);
@@ -120,5 +128,6 @@ void HsaKernelLauncher::LaunchKernel()
 	hsa_signal_value_t value = hsa_signal_wait_acquire(signal, 
 			HSA_SIGNAL_CONDITION_LT, 1, UINT64_MAX, 
 			HSA_WAIT_STATE_BLOCKED);
+	timer->EndTimer({"GPU"});
 
 }

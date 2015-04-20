@@ -36,6 +36,8 @@ hsa_status_t HsaHelper::FindGpuDevice(hsa_agent_t agent, void *data)
 
 void HsaHelper::Init() 
 {
+	timer->BeginTimer();
+
 	// Init hsa runtime
 	hsa_status_t err = hsa_init();
 	CheckError(err, "Init HSA runtime");
@@ -49,6 +51,8 @@ void HsaHelper::Init()
 	// Get the isa of the gpu
 	err = hsa_agent_get_info(gpu, HSA_AGENT_INFO_ISA, &isa);
 	CheckError(err, "Get GPU ISA");
+
+	timer->EndTimer({"HSA runtime", "CPU"});
 }
 
 
@@ -86,6 +90,7 @@ hsa_queue_t *HsaHelper::CreateQueue()
 
 void HsaHelper::LoadProgram(const char *file)
 {
+	timer->BeginTimer();
 	hsa_status_t err;
 
 	// Load module
@@ -114,6 +119,7 @@ void HsaHelper::LoadProgram(const char *file)
 	
 	// CreateExecutable
 	CreateExecutable(code_object);
+	timer->EndTimer({"HSA runtime", "CPU", "Compile"});
 }
 
 
@@ -180,7 +186,9 @@ void HsaHelper::CreateExecutable(hsa_code_object_t code_object)
 
 void HsaHelper::RegisterMemory(void *pointer, size_t size)
 {
+	timer->BeginTimer();
 	hsa_status_t err;
 	err = hsa_memory_register(pointer, size);
 	CheckError(err, "Register HSA memory");
+	timer->EndTimer({"HSA runtime", "memory", "HSA memory"});
 }

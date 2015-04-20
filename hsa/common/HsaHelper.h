@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "TimeKeeper.h"
+
 #include "hsa.h"
 #include "hsa_ext_finalize.h"
 
@@ -12,6 +14,9 @@
  */
 class HsaHelper 
 {
+	// Timer
+	TimeKeeper *timer;
+
 	// The gpu that all the following task will be dispatched on
 	hsa_agent_t gpu;
 
@@ -47,6 +52,15 @@ class HsaHelper
 	void CreateExecutable(hsa_code_object_t code_object);
 
 public:
+
+	/**
+	 * Constructor
+	 */
+	HsaHelper() 
+	{
+		timer = TimeKeeper::getInstance();
+	}
+
 	/**
 	 * Check error
 	 */

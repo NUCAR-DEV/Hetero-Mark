@@ -6,6 +6,7 @@
 #include "IirFilter.h"
 
 IirFilter::IirFilter() :
+	Benchmark(),
 	kernel_launcher()
 {
 }
@@ -40,20 +41,31 @@ void IirFilter::InitParam()
 	rows = 256;
 
 	// Input and output argument
+	timer->BeginTimer();
 	in = (float *)malloc(sizeof(float) * len);
-		helper->RegisterMemory(in, sizeof(float) * len);
 	out = (float *)malloc(sizeof(float) * len * channels);
+	timer->EndTimer({"CPU", "memory", "malloc"});
+	
+	// Register in out for HSA
+	helper->RegisterMemory(in, sizeof(float) * len);
 	helper->RegisterMemory(out, sizeof(float) * len *channels);
+
+	// Init Input
+	timer->BeginTimer();
 	for (int i = 0; i < len; i++)
 	{
 		in[i] = (float)i;
 	}
+	timer->EndTimer({"CPU"});
 
 	// Filter parameters
+	timer->BeginTimer();
 	nsec = (float *)malloc(sizeof(float) * rows * 2);
-	helper->RegisterMemory(nsec, sizeof(float) * rows * 2);
 	dsec = (float *)malloc(sizeof(float) * rows * 2);
+	timer->EndTimer({"CPU","memory", "malloc"});
+	helper->RegisterMemory(nsec, sizeof(float) * rows * 2);
 	helper->RegisterMemory(dsec, sizeof(float) * rows * 2);
+	timer->BeginTimer();
 	for (int i = 0; i < rows; i++)
 	{
 		nsec[2 * i] = 0.00002f;
@@ -61,8 +73,10 @@ void IirFilter::InitParam()
 		dsec[2 * i] = 0.00005f;
 		dsec[2 * i + 1] = 0.00005f;
 	}
+	timer->EndTimer({"CPU"});
 
 	// Write args	
+	timer->BeginTimer();
 	args.x = in;
 	args.y = out;
 	args.nsec = nsec;
@@ -70,6 +84,7 @@ void IirFilter::InitParam()
 	args.len = len;
 	args.c = c;
 	args.sm = (void *)(4 * sizeof(float));
+	timer->EndTimer({"CPU"});
 
 	// Set to kernel launcher
 	kernel_launcher.setArguments(&args);
@@ -140,6 +155,13 @@ void IirFilter::Verify()
 
 	if(success)
 		printf("Passed!\n");
+}
+
+
+void IirFilter::Summarize()
+{
+	printf("IIR Filter benchmark: \n\n");
+	timer->Summarize();
 }
 
 
