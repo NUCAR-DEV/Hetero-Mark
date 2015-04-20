@@ -18,6 +18,10 @@ class HsaHelper
 	// Isa of the gpu
 	hsa_isa_t isa;
 
+	// Determines if in verification mode. If in verification mode, 
+	// print out success information
+	bool is_verification_mode;
+
 	// Queue
 	hsa_queue_t *queue;
 
@@ -62,6 +66,14 @@ public:
 	 * Register memory
 	 */
 	void RegisterMemory(void *pointer, size_t size);
+
+	/**
+	 * Setters
+	 */
+	void setVerificationMode(bool verification_mode) 
+	{ 
+		is_verification_mode = verification_mode;
+	}
 
 	/**
 	 * Getters

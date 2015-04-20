@@ -6,7 +6,6 @@
 #include "IirFilter.h"
 
 IirFilter::IirFilter() :
-	helper(),
 	kernel_launcher()
 {
 }
@@ -15,13 +14,13 @@ IirFilter::IirFilter() :
 void IirFilter::Init() 
 {
 	// Init helper
-	helper.Init();
+	helper->Init();
 
 	// Load kernels
-	helper.LoadProgram("kernel.brig");
+	helper->LoadProgram("kernel.brig");
 
 	// Setup kernel launcher
-	kernel_launcher.setHelper(&helper);
+	kernel_launcher.setHelper(helper);
 	kernel_launcher.setName("&__OpenCL_ParIIR_kernel");
 	kernel_launcher.Init();
 
@@ -42,9 +41,9 @@ void IirFilter::InitParam()
 
 	// Input and output argument
 	in = (float *)malloc(sizeof(float) * len);
-	helper.RegisterMemory(in, sizeof(float) * len);
+	helper->RegisterMemory(in, sizeof(float) * len);
 	out = (float *)malloc(sizeof(float) * len * channels);
-	helper.RegisterMemory(out, sizeof(float) * len *channels);
+	helper->RegisterMemory(out, sizeof(float) * len *channels);
 	for (int i = 0; i < len; i++)
 	{
 		in[i] = (float)i;
@@ -52,9 +51,9 @@ void IirFilter::InitParam()
 
 	// Filter parameters
 	nsec = (float *)malloc(sizeof(float) * rows * 2);
-	helper.RegisterMemory(nsec, sizeof(float) * rows * 2);
+	helper->RegisterMemory(nsec, sizeof(float) * rows * 2);
 	dsec = (float *)malloc(sizeof(float) * rows * 2);
-	helper.RegisterMemory(dsec, sizeof(float) * rows * 2);
+	helper->RegisterMemory(dsec, sizeof(float) * rows * 2);
 	for (int i = 0; i < rows; i++)
 	{
 		nsec[2 * i] = 0.00002f;

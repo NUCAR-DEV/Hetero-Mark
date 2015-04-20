@@ -6,7 +6,6 @@
 #include "FirFilter.h"
 
 FirFilter::FirFilter() :
-	helper(),
 	kernel_launcher()
 {
 }
@@ -15,13 +14,13 @@ FirFilter::FirFilter() :
 void FirFilter::Init() 
 {
 	// Init helper
-	helper.Init();
+	helper->Init();
 
 	// Load kernels
-	helper.LoadProgram("kernel.brig");
+	helper->LoadProgram("kernel.brig");
 
 	// Setup kernel launcher
-	kernel_launcher.setHelper(&helper);
+	kernel_launcher.setHelper(helper);
 	kernel_launcher.setName("&__OpenCL_FIR_kernel");
 	kernel_launcher.Init();
 
@@ -37,9 +36,9 @@ void FirFilter::InitParam()
 
 	// Input and output argument
 	in = (float *)malloc(sizeof(float) * len);
-	helper.RegisterMemory(in, sizeof(float) * len);
+	helper->RegisterMemory(in, sizeof(float) * len);
 	out = (float *)malloc(sizeof(float) * len);
-	helper.RegisterMemory(out, sizeof(float) * len);
+	helper->RegisterMemory(out, sizeof(float) * len);
 	for (int i = 0; i < len; i++)
 	{
 		in[i] = (float)i;
@@ -48,7 +47,7 @@ void FirFilter::InitParam()
 	// Filter parameters
 	numTap = 4;
 	coeff = (float *)malloc(sizeof(float) * numTap);
-	helper.RegisterMemory(coeff, sizeof(float) * numTap);
+	helper->RegisterMemory(coeff, sizeof(float) * numTap);
 	for (int i = 0; i < numTap; i++)
 	{
 		coeff[i] = i;

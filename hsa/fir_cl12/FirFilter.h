@@ -19,10 +19,6 @@ class FirFilter : public Benchmark
 	float *out;
 	uint32_t numTap;
 	
-	
-	// Hsa helper
-	HsaHelper helper;
-
 	// Kernel Launcher
 	HsaKernelLauncher kernel_launcher;
 

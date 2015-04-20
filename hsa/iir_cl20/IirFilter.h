@@ -22,10 +22,6 @@ class IirFilter : public Benchmark
 	float *in;
 	float *out;
 	
-	
-	// Hsa helper
-	HsaHelper helper;
-
 	// Kernel Launcher
 	HsaKernelLauncher kernel_launcher;
 

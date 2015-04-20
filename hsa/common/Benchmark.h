@@ -7,6 +7,10 @@
  */
 class Benchmark 
 {
+protected:
+
+	// Runtime helper
+	HsaHelper *helper;
 
 public:
 	/**
@@ -23,6 +27,11 @@ public:
 	 * Verify the execution result
 	 */
 	virtual void Verify() = 0;
+
+	/**
+	 * Inject helper
+	 */
+	void setHelper(HsaHelper *helper) { this->helper = helper; }
 
 };
 

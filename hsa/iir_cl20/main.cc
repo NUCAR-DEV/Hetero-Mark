@@ -16,7 +16,7 @@ void DumpHelpInfo()
 int main(int argc, char **argv) 
 {
 	uint32_t len = 1024;
-	bool isVerificationMode = false;
+	bool is_verification_mode = false;
 
 	// Parse argument
 	for (int i = 1; i < argc; i++)
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 		else if (strcmp("-v", argv[i]) == 0 ||
 			strcmp("--verify", argv[i]) == 0)
 		{
-			isVerificationMode = true;
+			is_verification_mode = true;
 		}
 		else
 		{
@@ -64,11 +64,14 @@ int main(int argc, char **argv)
 		}
 	}
 		
+	HsaHelper helper = HsaHelper();
+	helper.setVerificationMode(is_verification_mode);
 
 	IirFilter iir = IirFilter();
+	iir.setHelper(&helper);
 	iir.setDataLength(len);
 	iir.Init();
 	iir.Run();
-	if (isVerificationMode)
+	if (is_verification_mode)
 		iir.Verify();
 }

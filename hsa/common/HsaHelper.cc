@@ -13,7 +13,8 @@ void HsaHelper::CheckError(hsa_status_t err, const char *information)
 	}
 	else
 	{
-		printf("Succeed: %s\n", information);
+		if (is_verification_mode)
+			printf("Succeed: %s\n", information);
 	}
 }
 
