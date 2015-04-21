@@ -6,6 +6,9 @@
 #include "../common/Benchmark.h"
 
 #include "FwdInitAlphaHsaLauncher.h"
+#include "FwdNormAlphaHsaLauncher.h"
+#include "TransposeSymHsaLauncher.h"
+#include "FwdUpdateAlphaHsaLauncher.h"
 
 class KernelLauncher;
 
@@ -84,6 +87,9 @@ class HMM : public Benchmark
 
 	// Kernel Launchers
 	std::unique_ptr<KernelLauncher> fwd_init_alpha;
+	std::unique_ptr<KernelLauncher> fwd_norm_alpha;
+	std::unique_ptr<KernelLauncher> transpose_sym;
+	std::unique_ptr<KernelLauncher> fwd_update_alpha;
 
 	// Init params
 	void InitParam();
@@ -106,6 +112,15 @@ class HMM : public Benchmark
 
 	// Forward Init Alpha
 	void ForwardInitAlpha();
+
+	// Forward Norm Alpha
+	void ForwardNormAlpha(int start_pos);
+
+	// Transpose
+	void TransposeSym(float *a, float *aT, int size);
+
+	// Forward update alpha
+	void ForwardUpdateAlpha(int pos);
 
 	public:
 

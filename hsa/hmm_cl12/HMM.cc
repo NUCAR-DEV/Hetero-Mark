@@ -36,6 +36,12 @@ void HMM::InitKernels()
 	// Setup kernel launchers
 	fwd_init_alpha.reset(new FwdInitAlphaHsaLauncher(helper));
 	fwd_init_alpha->Init();
+	fwd_norm_alpha.reset(new FwdNormAlphaHsaLauncher(helper));
+	fwd_norm_alpha->Init();
+	transpose_sym.reset(new TransposeSymHsaLauncher(helper));
+	transpose_sym->Init();
+	fwd_update_alpha.reset(new FwdUpdateAlphaHsaLauncher(helper));
+	fwd_update_alpha->Init();
 
 }
 
@@ -139,26 +145,112 @@ void HMM::InitParam()
 
 void HMM::Forward()
 {
-	float zero = 0.f;
+	*(float *)lll = 0.f;
 	ForwardInitAlpha();
+	ForwardNormAlpha(0);
+	TransposeSym((float *)a, (float *)aT, N);
+
+	int frm;
+	int current, previous;
+	for (frm = 1; frm < T; frm++)
+	{
+		current = frm * N;
+		previous = current - N;
+
+		timer->BeginTimer();
+		memcpy(constMem, &(((float *)alpha)[previous]), bytes_n);
+		timer->EndTimer({"CPU", "memory"});
+
+		ForwardUpdateAlpha(current);
+		ForwardNormAlpha(current);
+	}
 }
 
 
 void HMM::ForwardInitAlpha()
 {
+#if 0
+	for (int i = 0; i < N; i++)
+	{
+		((float *)beta)[i] = 1.0;
+		((float *)alpha)[i] = ((float *)prior)[i] * ((float *)b)[i];
+	}
+#else
 	// Set global and local size
 	fwd_init_alpha->setGlobalSize(ceil(N/256.f)*256, 1, 1);
 	fwd_init_alpha->setGroupSize(256, 1, 1);
 
 	// Set Arguments
 	fwd_init_alpha->setArgument(0, sizeof(int), &N);
-	fwd_init_alpha->setArgument(1, sizeof(void *), &b);
-	fwd_init_alpha->setArgument(2, sizeof(void *), &prior);
-	fwd_init_alpha->setArgument(3, sizeof(void *), &alpha);
-	fwd_init_alpha->setArgument(4, sizeof(void *), &beta);
+	fwd_init_alpha->setArgument(1, sizeof(uint64_t), &b);
+	fwd_init_alpha->setArgument(2, sizeof(uint64_t), &prior);
+	fwd_init_alpha->setArgument(3, sizeof(uint64_t), &alpha);
+	fwd_init_alpha->setArgument(4, sizeof(uint64_t), &beta);
 
 	// Launch Kernel
 	fwd_init_alpha->LaunchKernel();
+#endif
+}
+
+
+void HMM::ForwardNormAlpha(int start_pos)
+{
+	// Set size
+	fwd_norm_alpha->setGlobalSize(ceil(N/256.f)*256, 1, 1);
+	fwd_norm_alpha->setGroupSize(256, 1, 1);
+
+	// Set arguments
+	int pos = start_pos;
+	fwd_norm_alpha->setArgument(0, sizeof(int), (void *)&N);
+	fwd_norm_alpha->setArgument(1, sizeof(int), (void *)&pos);
+	fwd_norm_alpha->setArgument(2, sizeof(float)*256, NULL);
+	fwd_norm_alpha->setArgument(3, sizeof(void *), (void *)&alpha);
+	fwd_norm_alpha->setArgument(4, sizeof(void *), (void *)&lll);
+
+	// Launch Kernel
+	fwd_norm_alpha->LaunchKernel();
+}
+
+
+void HMM::TransposeSym(float *a, float *aT, int size)
+{
+	// Set dim and size
+	transpose_sym->setDimension(2);
+	transpose_sym->setGroupSize(16, 16, 1);
+	transpose_sym->setGlobalSize(N, N, 1);
+
+	// Set arguments
+	transpose_sym->setArgument(0, sizeof(int), (void *)&N);
+	transpose_sym->setArgument(1, sizeof(float) * 272, NULL);
+	transpose_sym->setArgument(2, sizeof(void *), (void *)&a);
+	transpose_sym->setArgument(3, sizeof(void *), (void *)&aT);
+
+	// Launch kernel
+	transpose_sym->LaunchKernel();
+}
+
+
+void HMM::ForwardUpdateAlpha(int pos)
+{
+	int current = pos;
+
+	// Set dim and size
+	fwd_update_alpha->setDimension(2);
+	fwd_update_alpha->setGroupSize(16, 16, 1);
+	fwd_update_alpha->setGlobalSize(16, N, 1);
+
+	// Set argument
+	fwd_update_alpha->setArgument(0, sizeof(int), &N);
+	fwd_update_alpha->setArgument(1, sizeof(int), &current);
+	fwd_update_alpha->setArgument(2, sizeof(float) * 272, NULL);
+	fwd_update_alpha->setArgument(3, sizeof(void *), (void *)&constMem);
+	fwd_update_alpha->setArgument(4, sizeof(void *), (void *)&aT);
+	fwd_update_alpha->setArgument(5, sizeof(void *), (void *)&b);
+	fwd_update_alpha->setArgument(6, sizeof(void *), (void *)alpha);
+
+	// LaunchKernel
+	fwd_update_alpha->LaunchKernel();
+
 }
 
 

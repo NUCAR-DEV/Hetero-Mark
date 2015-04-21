@@ -17,6 +17,9 @@ protected:
 	// Group size
 	uint32_t group_size[3];
 
+	// Dim
+	uint32_t dim = 1;
+
 public:
 
 	/**
@@ -47,6 +50,19 @@ public:
 		global_size[0] = x;
 		global_size[1] = y;
 		global_size[2] = z;
+	}
+
+	/**
+	 * Set dimension
+	 */
+	void setDimension(uint32_t dim) 
+	{
+		if (dim < 1 || dim > 3)
+		{
+			printf("Dimension can only be 1, 2 or 3\n");
+			exit(1);
+		}
+		this->dim = dim;
 	}
 
 	/**

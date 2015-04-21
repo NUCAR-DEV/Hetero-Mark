@@ -1,10 +1,10 @@
-#include <cstring>
+KMeanssg>
 
 #include "../common/HsaKernelLauncher.h"
 #include "../common/HsaHelper.h"
 
 #include "IirKernelHsaLauncher.h"
-#include "IirFilter.h"
+#include "KMeans.h"
 
 IirFilter::IirFilter() :
 	Benchmark()
@@ -136,6 +136,11 @@ void IirFilter::Verify()
 				printf("Failed! Expect %f but was %f\n", 
 						cpu_y[i], out[i + start]);
 				success = 0;
+			}
+			else 
+			{
+				printf("Succeed! Expect %f and was %f\n",
+						cpu_y[i], out[i+start]);
 			}
 		}
 	}

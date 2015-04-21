@@ -1,9 +1,9 @@
-#ifndef HMM_FWDINITALPHAHSALAUNCHER_H
-#define HMM_FWDINITALPHAHSALAUNCHER_H
+#ifndef HMM_TRANSPOSESYMHSALAUNCHER_H
+#define HMM_TRANSPOSESYMHSALAUNCHER_H
 
 #include "../common/HsaKernelLauncher.h"
 
-class FwdInitAlphaHsaLauncher : public HsaKernelLauncher
+class TransposeSymHsaLauncher : public HsaKernelLauncher
 {
 
 	// Arguments
@@ -16,10 +16,9 @@ class FwdInitAlphaHsaLauncher : public HsaKernelLauncher
 		uint64_t __vqueue_pointer;
 		uint64_t __aqlwrap_pointer;
 		uint32_t N;
-		void *b;
-		void *prior;
-		void *alpha;
-		void *beta;
+		void *sm;
+		void *a;
+		void *aT;
 	} args;
 
 public:
@@ -27,7 +26,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	FwdInitAlphaHsaLauncher(HsaHelper *helper) : 
+	TransposeSymHsaLauncher(HsaHelper *helper) : 
 		HsaKernelLauncher(helper) {};
 
 	/**
@@ -35,7 +34,7 @@ public:
 	 */
 	void Init() override
 	{
-		name = "&__OpenCL_FWD_init_alpha_kernel";
+		name = "&__OpenCL_TransposeSym_kernel";
 		timer->BeginTimer();
 		memset(&args, 0, sizeof(args_t));
 		timer->EndTimer({"CPU", "memory"});
@@ -48,7 +47,7 @@ public:
 	void LaunchKernel() override
 	{
 		arguments = &args;
-		//printf("Launching fwd init alpha kernel\n");
+		//printf("Launching TransposeSym kernel\n");
 		HsaKernelLauncher::LaunchKernel();
 	}
 
@@ -65,16 +64,13 @@ public:
 			memcpy(&args.N, value, size);
 			break;
 		case 1:
-			memcpy(&args.b, value, size);
+			setGroupSegmentSize(size);
 			break;
 		case 2:
-			memcpy(&args.prior, value, size);
+			memcpy(&args.a, value, size);
 			break;
 		case 3:
-			memcpy(&args.alpha, value, size);
-			break;
-		case 4:
-			memcpy(&args.beta, value, size);
+			memcpy(&args.aT, value, size);
 			break;
 		default:
 			printf("Invalid argument index %d.\n", index);

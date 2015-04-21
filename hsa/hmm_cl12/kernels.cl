@@ -14,8 +14,8 @@ __kernel void FWD_init_alpha(const int    N,
 {
         size_t idx = get_global_id(0);
         if (idx < N) {
-                alpha[idx] = prior[idx] * b[idx];
-                beta[idx] = 1.0f; // for backward
+             alpha[idx] = prior[idx] * b[idx];
+             beta[idx] = 1.0; // for backward
         }
 }
  
@@ -657,7 +657,7 @@ __kernel void EM_sigma_dev(const int D,
 
 __kernel void EM_expect_sigma(const int blk_rows,
                             const int width,
-                            const int start,
+                            const size_t start,
                             __global const float *sigma_dev,
                             __global       float *expect_sigma)
 {

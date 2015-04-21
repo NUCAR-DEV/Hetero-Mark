@@ -2,9 +2,9 @@
 
 #include "../common/OptionParser.h"
 
-#include "HMM.h"
+#include "IirFilter.h"
 
-uint32_t N = 16;
+uint32_t len = 1024;
 bool is_verification_mode = false;
 
 void ParseArgument(int argc, char **argv)
@@ -14,10 +14,10 @@ void ParseArgument(int argc, char **argv)
 
 	// Set length argument
 	parser.AddArgument(
-			"N", 
-			"-n", "--num_hidden_states",
-			"The number of hidden states", 
-			"16",
+			"Data Length", 
+			"-l", "--length",
+			"The length of the data to be processed", 
+			"1024",
 			typeid(unsigned int)
 			);
 
@@ -25,8 +25,7 @@ void ParseArgument(int argc, char **argv)
 	parser.AddArgument(
 			"Verification Mode", 
 			"-v", "--verify",
-			"Enter verification mode.\n"
-			"Output will be elliminated if in benchmark mode.", 
+			"Enter verification mode", 
 			"false",
 			typeid(bool)
 			);	
@@ -35,11 +34,12 @@ void ParseArgument(int argc, char **argv)
 	parser.Parse(argc, argv);
 
 	// Get length
-	N = parser.getValue<uint32_t>("N");
-	printf("N: %d\n", N);
+	len = parser.getValue<uint32_t>("Data Length");
+	printf("Len: %d\n", len);
 
 	// Get verification mode
 	is_verification_mode = parser.getValue<bool>("Verification Mode");
+	printf("Verification mode: %s\n", is_verification_mode?"true":"false");
 }
 
 
@@ -53,18 +53,18 @@ int main(int argc, char **argv)
 	helper.setVerificationMode(is_verification_mode);
 
 	// Init benchmark
-	HMM hmm = HMM();
-	hmm.setHelper(&helper);
-	hmm.setNumHiddenState(N);
-	hmm.Init();
+	IirFilter iir = IirFilter();
+	iir.setHelper(&helper);
+	iir.setDataLength(len);
+	iir.Init();
 
 	// Run benchmark
-	hmm.Run();
+	iir.Run();
 
 	// Verify execution result
 	if (is_verification_mode)
-		hmm.Verify();
+		iir.Verify();
 
 	// Summarize
-	hmm.Summarize();
+	iir.Summarize();
 }

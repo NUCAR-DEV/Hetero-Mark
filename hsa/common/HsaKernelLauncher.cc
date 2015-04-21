@@ -98,7 +98,7 @@ void HsaKernelLauncher::LaunchKernel()
 		HSA_PACKET_HEADER_ACQUIRE_FENCE_SCOPE;
 	dispatch_packet->header |= HSA_FENCE_SCOPE_SYSTEM << 
 		HSA_PACKET_HEADER_RELEASE_FENCE_SCOPE;
-	dispatch_packet->setup  |= 1 << 
+	dispatch_packet->setup  |= dim << 
 		HSA_KERNEL_DISPATCH_PACKET_SETUP_DIMENSIONS;
 	dispatch_packet->workgroup_size_x = (uint16_t)group_size[0];
 	dispatch_packet->workgroup_size_y = (uint16_t)group_size[1];
@@ -122,13 +122,13 @@ void HsaKernelLauncher::LaunchKernel()
 	hsa_queue_store_write_index_relaxed(helper->getQueue(), index + 1);
 	hsa_signal_store_relaxed(helper->getQueue()->doorbell_signal, index);
 	helper->CheckError(err, "Dispatching kernel");
-	printf("Here\n");
+
 	// Wait signal
 	hsa_signal_value_t value = hsa_signal_wait_acquire(signal, 
 			HSA_SIGNAL_CONDITION_LT, 1, UINT64_MAX, 
 			HSA_WAIT_STATE_BLOCKED);
-	printf("Here\n");
 	timer->EndTimer({"GPU"});
+	helper->CheckError(err, "Finished kernel execution");
 }
 
 

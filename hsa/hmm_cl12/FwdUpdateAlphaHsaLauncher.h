@@ -1,9 +1,9 @@
-#ifndef HMM_FWDINITALPHAHSALAUNCHER_H
-#define HMM_FWDINITALPHAHSALAUNCHER_H
+#ifndef HMM_FWDUPDATEALPHAHSALAUNCHER_H
+#define HMM_FWDUPDATEALPHAHSALAUNCHER_H
 
 #include "../common/HsaKernelLauncher.h"
 
-class FwdInitAlphaHsaLauncher : public HsaKernelLauncher
+class FwdUpdateAlphaHsaLauncher : public HsaKernelLauncher
 {
 
 	// Arguments
@@ -16,10 +16,12 @@ class FwdInitAlphaHsaLauncher : public HsaKernelLauncher
 		uint64_t __vqueue_pointer;
 		uint64_t __aqlwrap_pointer;
 		uint32_t N;
+		uint32_t current;
+		void *sm;
+		void *constMem;
+		void *aT;
 		void *b;
-		void *prior;
 		void *alpha;
-		void *beta;
 	} args;
 
 public:
@@ -27,7 +29,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	FwdInitAlphaHsaLauncher(HsaHelper *helper) : 
+	FwdUpdateAlphaHsaLauncher(HsaHelper *helper) : 
 		HsaKernelLauncher(helper) {};
 
 	/**
@@ -35,7 +37,7 @@ public:
 	 */
 	void Init() override
 	{
-		name = "&__OpenCL_FWD_init_alpha_kernel";
+		name = "&__OpenCL_FWD_update_alpha_kernel";
 		timer->BeginTimer();
 		memset(&args, 0, sizeof(args_t));
 		timer->EndTimer({"CPU", "memory"});
@@ -48,7 +50,7 @@ public:
 	void LaunchKernel() override
 	{
 		arguments = &args;
-		//printf("Launching fwd init alpha kernel\n");
+		//printf("Launching FWD_update_alpha kernel\n");
 		HsaKernelLauncher::LaunchKernel();
 	}
 
@@ -65,16 +67,22 @@ public:
 			memcpy(&args.N, value, size);
 			break;
 		case 1:
-			memcpy(&args.b, value, size);
+			memcpy(&args.current, value, size);
 			break;
 		case 2:
-			memcpy(&args.prior, value, size);
+			setGroupSegmentSize(size);
 			break;
 		case 3:
-			memcpy(&args.alpha, value, size);
+			memcpy(&args.constMem, value, size);
 			break;
 		case 4:
-			memcpy(&args.beta, value, size);
+			memcpy(&args.aT, value, size);
+			break;
+		case 5:
+			memcpy(&args.b, value, size);
+			break;
+		case 6:
+			memcpy(&args.alpha, value, size);
 			break;
 		default:
 			printf("Invalid argument index %d.\n", index);
