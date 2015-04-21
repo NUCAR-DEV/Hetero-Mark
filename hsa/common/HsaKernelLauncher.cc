@@ -129,5 +129,10 @@ void HsaKernelLauncher::LaunchKernel()
 			HSA_SIGNAL_CONDITION_LT, 1, UINT64_MAX, 
 			HSA_WAIT_STATE_BLOCKED);
 	timer->EndTimer({"GPU"});
+}
 
+
+void HsaKernelLauncher::setArgument(int index, size_t size, void *value,
+		const char *option)
+{
 }

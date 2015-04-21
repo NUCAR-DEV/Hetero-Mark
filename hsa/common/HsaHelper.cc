@@ -183,12 +183,28 @@ void HsaHelper::CreateExecutable(hsa_code_object_t code_object)
 	CheckError(err, "Freeze the executable");
 }
 
-
+/*
 void HsaHelper::RegisterMemory(void *pointer, size_t size)
 {
 	timer->BeginTimer();
 	hsa_status_t err;
 	err = hsa_memory_register(pointer, size);
+	CheckError(err, "Register HSA memory");
+	timer->EndTimer({"HSA runtime", "memory", "HSA memory"});
+}
+*/
+
+void *HsaHelper::CreateBuffer(size_t size)
+{
+	// Create buffer
+	timer->BeginTimer();
+	void *ptr = malloc(size);
+	timer->EndTimer({"memory", "malloc"});
+
+	// Register buffer
+	timer->BeginTimer();
+	hsa_status_t err;
+	err = hsa_memory_register(ptr, size);
 	CheckError(err, "Register HSA memory");
 	timer->EndTimer({"HSA runtime", "memory", "HSA memory"});
 }

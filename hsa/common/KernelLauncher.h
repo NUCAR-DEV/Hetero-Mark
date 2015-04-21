@@ -49,6 +49,13 @@ public:
 		global_size[2] = z;
 	}
 
+	/**
+	 * Set argument 
+	 */
+	virtual void setArgument(int index, size_t size, void *value,
+			const char *option = NULL) = 0;
+
+
 };
 
 #endif

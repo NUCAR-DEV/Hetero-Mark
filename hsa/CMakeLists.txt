@@ -4,5 +4,6 @@ add_subdirectory (common)
 add_subdirectory (iir_cl12)
 add_subdirectory (iir_cl20)
 add_subdirectory (fir_cl12)
+add_subdirectory (hmm_cl12)
 
 

@@ -98,6 +98,12 @@ public:
 	 * Set arguments
 	 */
 	void setArguments(void *args) { this->arguments = args; }
+
+	/**
+	 * Set argument 
+	 */
+	virtual void setArgument(int index, size_t size, void *value,
+			const char *option = NULL);
 };
 
 #endif

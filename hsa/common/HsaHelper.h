@@ -79,7 +79,12 @@ public:
 	/**
 	 * Register memory
 	 */
-	void RegisterMemory(void *pointer, size_t size);
+	//void RegisterMemory(void *pointer, size_t size);
+
+	/**
+	 * Create Buffer
+	 */
+	void *CreateBuffer(size_t size);
 
 	/**
 	 * Setters
