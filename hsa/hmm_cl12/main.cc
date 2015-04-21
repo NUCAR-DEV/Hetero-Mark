@@ -4,7 +4,7 @@
 
 #include "HMM.h"
 
-uint32_t N = 1024;
+uint32_t N = 16;
 bool is_verification_mode = false;
 
 void ParseArgument(int argc, char **argv)
@@ -17,7 +17,7 @@ void ParseArgument(int argc, char **argv)
 			"N", 
 			"-n", "--num_hidden_states",
 			"The number of hidden states", 
-			"1024",
+			"16",
 			typeid(unsigned int)
 			);
 

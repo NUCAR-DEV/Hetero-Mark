@@ -20,13 +20,6 @@ void HMM::Init()
 	// Init kernels
 	InitKernels();
 
-	// Setup kernel launcher
-	/*
-	kernel_launcher.setHelper(helper);
-	kernel_launcher.setName("&__OpenCL_ParIIR_kernel");
-	kernel_launcher.Init();
-	*/
-
 	// Init arguments
 	InitParam();
 
@@ -39,6 +32,11 @@ void HMM::InitKernels()
 {
 	// Load program
 	helper->LoadProgram("kernels.brig");
+
+	// Setup kernel launchers
+	fwd_init_alpha.reset(new FwdInitAlphaHsaLauncher(helper));
+	fwd_init_alpha->Init();
+
 }
 
 
@@ -55,6 +53,60 @@ void HMM::InitBuffers()
 	// Forward
 	lll = helper->CreateBuffer(sizeof(float));
 	aT = helper->CreateBuffer(bytes_nn);
+
+	// Backward
+	beta = helper->CreateBuffer(bytes_nt);
+	betaB = helper->CreateBuffer(bytes_n);
+
+	// EM
+	xi_sum = helper->CreateBuffer(bytes_nn);
+	alpha_beta = helper->CreateBuffer(bytes_n);
+	gamma = helper->CreateBuffer(bytes_nt);
+	alpha_betaB = helper->CreateBuffer(bytes_nn);
+	xi_sum_tmp = helper->CreateBuffer(bytes_nn);
+
+	// intermediate blk results from the device
+	blk_result      = helper->CreateBuffer(bytes_tileblks);
+
+	// Expected values
+	expect_prior    = helper->CreateBuffer(bytes_n);
+	expect_A        = helper->CreateBuffer(bytes_nn);
+	expect_mu       = helper->CreateBuffer(bytes_dn);
+	expect_sigma    = helper->CreateBuffer(bytes_ddn);
+
+	gamma_state_sum = helper->CreateBuffer(bytes_n);
+	gamma_obs       = helper->CreateBuffer(bytes_dt);
+
+	// Setup init value
+	timer->BeginTimer();
+	a_host = (float *)malloc(sizeof(float) * N * N);
+	b_host = (float *)malloc(sizeof(float) * N * T);
+	prior_host = (float *)malloc(sizeof(float) * N);
+	observation_host = (float *)malloc(sizeof(float) * D * T);
+	for (int i = 0; i < (N * N); i++)
+	{
+		a_host[i] = 1.0f/(float)N;
+	}
+	for (int i = 0; i < (N * T); i++)
+	{
+		b_host[i] = 1.0f/(float)T;
+	}
+	for (int i = 0; i < (N); i++)
+	{
+		prior_host[i] = 1.0f/(float)N;
+	}
+	for (int i = 0; i < D; i++)
+	{
+		for(int j = 0; j < T; j++)
+		{
+			observation_host[i * T + j] = (float)j + 1.f;
+		}
+	}
+	timer->EndTimer({"CPU", "memory"});
+	memcpy(a, a_host, sizeof(float) * N * N);
+	memcpy(b, b_host, sizeof(float) * N * T);
+	memcpy(prior, prior_host, sizeof(float) * N);
+	memcpy(observations, observation_host, sizeof(float) * D * T);
 }
 
 
@@ -107,7 +159,6 @@ void HMM::ForwardInitAlpha()
 
 	// Launch Kernel
 	fwd_init_alpha->LaunchKernel();
-	
 }
 
 

@@ -76,6 +76,12 @@ class HMM : public Benchmark
 	// Constant
 	void *constMem;
 
+	// Memory in the host
+	float *a_host;
+	float *b_host;
+	float *prior_host;
+	float *observation_host;
+
 	// Kernel Launchers
 	std::unique_ptr<KernelLauncher> fwd_init_alpha;
 
@@ -131,7 +137,15 @@ class HMM : public Benchmark
 	/**
 	 * Set data length
 	 */
-	void setNumHiddenState(uint32_t N) { this->N = N; }
+	void setNumHiddenState(uint32_t N) 
+	{ 
+		if (N < TILE)
+		{
+			printf("N is smaller than %d.\n", TILE);
+			exit(1);
+		}
+		this->N = N; 
+	}
 };
 
 #endif

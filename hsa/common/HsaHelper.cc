@@ -207,4 +207,7 @@ void *HsaHelper::CreateBuffer(size_t size)
 	err = hsa_memory_register(ptr, size);
 	CheckError(err, "Register HSA memory");
 	timer->EndTimer({"HSA runtime", "memory", "HSA memory"});
+
+	// Return ptr
+	return ptr;
 }

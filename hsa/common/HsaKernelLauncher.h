@@ -56,9 +56,10 @@ public:
 	/**
 	 * Constructor
 	 */
-	HsaKernelLauncher() 
+	HsaKernelLauncher(HsaHelper *helper) 
 	{
 		timer = TimeKeeper::getInstance();
+		this->helper = helper;
 	}
 
 	/**

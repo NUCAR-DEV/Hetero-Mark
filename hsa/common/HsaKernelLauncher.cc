@@ -70,7 +70,6 @@ void HsaKernelLauncher::PrepareArgument()
 	helper->CheckError(err, "Allocate memory buffer");
 	memcpy(kernarg_address, arguments, kernarg_segment_size);
 	timer->EndTimer({"memory", "CPU", "HSA runtime", "HSA memory"});
-
 }
 
 
@@ -123,11 +122,12 @@ void HsaKernelLauncher::LaunchKernel()
 	hsa_queue_store_write_index_relaxed(helper->getQueue(), index + 1);
 	hsa_signal_store_relaxed(helper->getQueue()->doorbell_signal, index);
 	helper->CheckError(err, "Dispatching kernel");
-
+	printf("Here\n");
 	// Wait signal
 	hsa_signal_value_t value = hsa_signal_wait_acquire(signal, 
 			HSA_SIGNAL_CONDITION_LT, 1, UINT64_MAX, 
 			HSA_WAIT_STATE_BLOCKED);
+	printf("Here\n");
 	timer->EndTimer({"GPU"});
 }
 

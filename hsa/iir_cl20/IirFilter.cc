@@ -3,11 +3,11 @@
 #include "../common/HsaKernelLauncher.h"
 #include "../common/HsaHelper.h"
 
+#include "IirKernelHsaLauncher.h"
 #include "IirFilter.h"
 
 IirFilter::IirFilter() :
-	Benchmark(),
-	kernel_launcher()
+	Benchmark()
 {
 }
 
@@ -17,39 +17,38 @@ void IirFilter::Init()
 	// Init helper
 	helper->Init();
 
+	// Init arguments
+	InitParam();
+
+	// Init Kernels
+	InitKernels();
+}
+
+
+void IirFilter::InitKernels() 
+{	
 	// Load kernels
 	helper->LoadProgram("kernel.brig");
 
-	// Setup kernel launcher
-	kernel_launcher.setHelper(helper);
-	kernel_launcher.setName("&__OpenCL_ParIIR_kernel");
-	kernel_launcher.Init();
+	// Kernel
+	iir_kernel.reset(new IirKernelHsaLauncher(helper));
 
-	// Init arguments
-	InitParam();
+	// Setup kernel launcher
+	iir_kernel->Init();
 }
 
 
 void IirFilter::InitParam()
 {
-	// Reset
-	memset(&args, 0, sizeof(args));
-
 	// Set argument
 	channels = 64;
 	c = 3.0f;
 	rows = 256;
 
 	// Input and output argument
-	timer->BeginTimer();
-	in = (float *)malloc(sizeof(float) * len);
-	out = (float *)malloc(sizeof(float) * len * channels);
-	timer->EndTimer({"CPU", "memory", "malloc"});
+	in = (float *)helper->CreateBuffer(sizeof(float) * len);
+	out = (float *)helper->CreateBuffer(sizeof(float) * len * channels);
 	
-	// Register in out for HSA
-	helper->RegisterMemory(in, sizeof(float) * len);
-	helper->RegisterMemory(out, sizeof(float) * len *channels);
-
 	// Init Input
 	timer->BeginTimer();
 	for (int i = 0; i < len; i++)
@@ -59,12 +58,8 @@ void IirFilter::InitParam()
 	timer->EndTimer({"CPU"});
 
 	// Filter parameters
-	timer->BeginTimer();
-	nsec = (float *)malloc(sizeof(float) * rows * 2);
-	dsec = (float *)malloc(sizeof(float) * rows * 2);
-	timer->EndTimer({"CPU","memory", "malloc"});
-	helper->RegisterMemory(nsec, sizeof(float) * rows * 2);
-	helper->RegisterMemory(dsec, sizeof(float) * rows * 2);
+	nsec = (float *)helper->CreateBuffer(sizeof(float) * rows * 2);
+	dsec = (float *)helper->CreateBuffer(sizeof(float) * rows * 2);
 	timer->BeginTimer();
 	for (int i = 0; i < rows; i++)
 	{
@@ -76,27 +71,27 @@ void IirFilter::InitParam()
 	timer->EndTimer({"CPU"});
 
 	// Write args	
-	timer->BeginTimer();
-	args.x = in;
-	args.y = out;
-	args.nsec = nsec;
-	args.dsec = dsec;
-	args.len = len;
-	args.c = c;
-	args.sm = (void *)(4 * sizeof(float));
-	timer->EndTimer({"CPU"});
 
-	// Set to kernel launcher
-	kernel_launcher.setArguments(&args);
-	kernel_launcher.setGroupSize(rows, 1, 1);
-	kernel_launcher.setGlobalSize(channels * rows, 1, 1);
-	kernel_launcher.setGroupSegmentSize(1024 * sizeof(float));
 }
 
 
 void IirFilter::Run()
 {
-	kernel_launcher.LaunchKernel();
+	// Set kernel size
+	iir_kernel->setGroupSize(rows, 1, 1);
+	iir_kernel->setGlobalSize(channels * rows, 1, 1);
+
+	// Set argument
+	iir_kernel->setArgument(0, sizeof(uint32_t), &len);
+	iir_kernel->setArgument(1, sizeof(float), &c);
+	iir_kernel->setArgument(2, sizeof(void *), &nsec);
+	iir_kernel->setArgument(3, sizeof(void *), &dsec);
+	iir_kernel->setArgument(4, sizeof(void *), NULL);
+	iir_kernel->setArgument(5, sizeof(void *), &in);
+	iir_kernel->setArgument(6, sizeof(void *), &out);
+
+	// Launch kernel
+	iir_kernel->LaunchKernel();
 }
 
 
