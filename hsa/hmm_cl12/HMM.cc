@@ -43,6 +43,14 @@ void HMM::InitKernels()
 	fwd_update_alpha.reset(new FwdUpdateAlphaHsaLauncher(helper));
 	fwd_update_alpha->Init();
 
+	// Set backward kernels
+	bk_beta_b.reset(new BkBetaBHsaLauncher(helper));
+	bk_beta_b->Init();
+	bk_update_beta.reset(new BkUpdateBetaHsaLauncher(helper));
+	bk_update_beta->Init();
+	bk_norm_beta.reset(new BkNormBetaHsaLauncher(helper));
+	bk_norm_beta->Init();
+
 }
 
 
@@ -250,13 +258,109 @@ void HMM::ForwardUpdateAlpha(int pos)
 
 	// LaunchKernel
 	fwd_update_alpha->LaunchKernel();
+}
 
+
+
+
+//
+// Backward Algorithm
+// 
+void HMM::Backward()
+{
+	int j;
+	int current, previous;
+
+	for (j = T-2; j >= 0; j--)
+	{
+		current = j * N;
+		previous = current + N;
+
+		// beta(t+1).*b(t+1)
+		BackwardBetaB(previous);
+
+		// Copy betaB to constant memory
+		timer->BeginTimer();
+		memcpy(constMem, betaB, bytes_n);
+		timer->EndTimer({"CPU", "memory"});
+
+		// beta(t-1) = a * betaB;
+		BackwardUpdateBeta(current);
+
+		// Normalize beta at current frame
+		BackwardNormBeta(current);
+	}
+}
+
+
+void HMM::BackwardBetaB(int pos)
+{
+	int previous = pos;
+
+	// Set dim and size
+	bk_beta_b->setDimension(1);
+	bk_beta_b->setGlobalSize(ceil(N / 256.f) * 256, 1, 1);
+	bk_beta_b->setGroupSize(256, 1, 1);
+
+	// Set arguments
+	bk_beta_b->setArgument(0, sizeof(int), (void *)&N);
+	bk_beta_b->setArgument(1, sizeof(int), (void *)&previous);
+	bk_beta_b->setArgument(2, sizeof(void *), (void *)&beta);
+	bk_beta_b->setArgument(3, sizeof(void *), (void *)&b);
+	bk_beta_b->setArgument(4, sizeof(void *), (void *)&betaB);
+
+	// Launch kernel
+	bk_beta_b->LaunchKernel();
+}
+
+
+void HMM::BackwardUpdateBeta(int pos)
+{
+	int current = pos;
+
+	// Set dim and size
+	bk_update_beta->setDimension(2);
+	bk_update_beta->setGlobalSize(16, N, 1);
+	bk_update_beta->setGroupSize(16, 16, 1);
+
+	// Set arguments
+	bk_update_beta->setArgument(0, sizeof(int), (void *)&N);
+	bk_update_beta->setArgument(1, sizeof(int), (void *)&current);
+	bk_update_beta->setArgument(2, sizeof(float) * 272, NULL);
+	bk_update_beta->setArgument(3, sizeof(void *), (void *)&constMem);
+	bk_update_beta->setArgument(4, sizeof(void *), (void *)&a);
+	bk_update_beta->setArgument(5, sizeof(void *), (void *)&beta);
+
+	// Launch kernel
+	bk_update_beta->LaunchKernel();
+
+}
+
+
+void HMM::BackwardNormBeta(int pos)
+{
+	int current = pos;
+
+	// Set dim and size
+	bk_norm_beta->setDimension(1);
+	bk_norm_beta->setGlobalSize(ceil(N / 256.f) * 256, 1, 1);
+	bk_norm_beta->setGroupSize(256, 1, 1);
+
+	// Set arguments
+	bk_norm_beta->setArgument(0, sizeof(int), (void *)&N);
+	bk_norm_beta->setArgument(1, sizeof(int), (void *)&current);
+	bk_norm_beta->setArgument(2, sizeof(float) * 256, NULL);
+	bk_norm_beta->setArgument(3, sizeof(void *), (void *)&beta);
+
+	// Launch kernel
+	bk_norm_beta->LaunchKernel();
 }
 
 
 void HMM::Run()
 {
 	Forward();
+	Backward();
 }
 
 

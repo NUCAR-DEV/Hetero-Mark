@@ -9,6 +9,9 @@
 #include "FwdNormAlphaHsaLauncher.h"
 #include "TransposeSymHsaLauncher.h"
 #include "FwdUpdateAlphaHsaLauncher.h"
+#include "BkBetaBHsaLauncher.h"
+#include "BkUpdateBetaHsaLauncher.h"
+#include "BkNormBetaHsaLauncher.h"
 
 class KernelLauncher;
 
@@ -90,6 +93,9 @@ class HMM : public Benchmark
 	std::unique_ptr<KernelLauncher> fwd_norm_alpha;
 	std::unique_ptr<KernelLauncher> transpose_sym;
 	std::unique_ptr<KernelLauncher> fwd_update_alpha;
+	std::unique_ptr<KernelLauncher> bk_beta_b;
+	std::unique_ptr<KernelLauncher> bk_update_beta;
+	std::unique_ptr<KernelLauncher> bk_norm_beta;
 
 	// Init params
 	void InitParam();
@@ -122,7 +128,35 @@ class HMM : public Benchmark
 	// Forward update alpha
 	void ForwardUpdateAlpha(int pos);
 
-	public:
+
+	
+	//
+	// Backward Algorithm
+	//
+
+	// Backward
+	void Backward();
+
+	// Backward Beta B
+	void BackwardBetaB(int pos);
+
+	// Backward update beta
+	void BackwardUpdateBeta(int pos);
+
+	// Backward norm beta
+	void BackwardNormBeta(int pos);
+
+
+
+	
+	// 
+	// EM
+	//
+	
+	// EM
+	void EM();
+
+public:
 
 	/**
 	 * Constructor
