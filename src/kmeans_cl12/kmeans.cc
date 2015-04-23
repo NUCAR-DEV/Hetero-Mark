@@ -86,11 +86,15 @@ static int initialize(int use_gpu)
 	if( result != CL_SUCCESS ) { printf("ERROR: clGetContextInfo() failed\n"); return -1; }
 
 	// create command queue for the first device
+
+/*
 #ifdef CL_VERSION_2_0
 	cmd_queue = clCreateCommandQueueWithProperties( context, device_list[0], 0, NULL );
 #else
 	cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
 #endif
+*/
+	cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
 
 
 	if( !cmd_queue ) { printf("ERROR: clCreateCommandQueue() failed\n"); return -1; }
