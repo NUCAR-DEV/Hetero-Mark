@@ -4,6 +4,7 @@
 #include <math.h>
 #include <iostream>
 #include <string>
+#include <cassert>
 
 extern "C"
 {
@@ -136,22 +137,23 @@ float *center_d;
 
 int allocate(int n_points, int n_features, int n_clusters, float **feature)
 {
-
-	int sourcesize = 1024*1024;
-	char * source = (char *)calloc(sourcesize, sizeof(char)); 
-	if(!source) { printf("ERROR: calloc(%d) failed\n", sourcesize); return -1; }
-
-	// read the kernel core source
-	const char * tempchar = "./kmeans.cl";
-	FILE * fp = fopen(tempchar, "rb"); 
-	if(!fp) { printf("ERROR: unable to open '%s'\n", tempchar); return -1; }
-	size_t retv = fread(source + strlen(source), sourcesize, 1, fp);
-	if(retv != sourcesize) {
+	// Convert the contents of a file into a string
+	const char * filename = "./kmeans.cl";
+	FILE *f = fopen(filename, "r");
+	assert(f);
+	fseek(f, 0, SEEK_END);
+	size_t filesize = ftell(f);
+	size_t sourcesize = filesize + 1;
+	char *source = (char *) calloc(sourcesize, sizeof(char));
+	assert(source);
+	fseek(f, 0, SEEK_SET);
+	size_t ret = fread(source, sizeof(char), filesize, f);
+	if(ret != filesize) {
 		fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__, __LINE__);
 		exit(1);
 	}
 
-	fclose(fp);
+	fclose(f);
 		
 	// OpenCL initialization
 	int use_gpu = 1;
