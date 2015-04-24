@@ -146,8 +146,10 @@ int allocate(int n_points, int n_features, int n_clusters, float **feature)
 	FILE * fp = fopen(tempchar, "rb"); 
 	if(!fp) { printf("ERROR: unable to open '%s'\n", tempchar); return -1; }
 	size_t retv = fread(source + strlen(source), sourcesize, 1, fp);
-	if(!retv)
-  		fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__, __LINE__);
+	if(retv != sourcesize) {
+		fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__, __LINE__);
+		exit(1);
+	}
 
 	fclose(fp);
 		
