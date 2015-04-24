@@ -75,32 +75,42 @@ static int initialize(int use_gpu)
 	}
 
 	cl_context_properties ctxprop[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform_id, 0};
+
 	device_type = use_gpu ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
+
 	context = clCreateContextFromType( ctxprop, device_type, NULL, NULL, NULL );
-	if( !context ) { printf("ERROR: clCreateContextFromType(%s) failed\n", use_gpu ? "GPU" : "CPU"); return -1; }
+	if( !context ) 
+	{ 
+		printf("ERROR: clCreateContextFromType(%s) failed\n", use_gpu ? "GPU" : "CPU"); 
+		return -1; 
+	}
 
 	// get the list of GPUs
 	result = clGetContextInfo( context, CL_CONTEXT_DEVICES, 0, NULL, &size );
+
 	num_devices = (int) (size / sizeof(cl_device_id));
-	
-	if( result != CL_SUCCESS || num_devices < 1 ) { printf("ERROR: clGetContextInfo() failed\n"); return -1; }
+	if( result != CL_SUCCESS || num_devices < 1 )
+	{ 
+		printf("ERROR: clGetContextInfo() failed\n"); 
+		return -1; 
+	}
+
 	device_list = new cl_device_id[num_devices];
-	if( !device_list ) { printf("ERROR: new cl_device_id[] failed\n"); return -1; }
+	if( !device_list )
+	{ 
+		printf("ERROR: new cl_device_id[] failed\n"); 
+		return -1; 
+	}
+
 	result = clGetContextInfo( context, CL_CONTEXT_DEVICES, size, device_list, NULL );
-	if( result != CL_SUCCESS ) { printf("ERROR: clGetContextInfo() failed\n"); return -1; }
+	if( result != CL_SUCCESS ) 
+	{ 
+		printf("ERROR: clGetContextInfo() failed\n"); 
+		return -1; 
+	}
 
 	// create command queue for the first device
-
-/*
-#ifdef CL_VERSION_2_0
 	cmd_queue = clCreateCommandQueueWithProperties( context, device_list[0], 0, NULL );
-#else
-	cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
-#endif
-*/
-	cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
-
-
 	if( !cmd_queue ) { printf("ERROR: clCreateCommandQueue() failed\n"); return -1; }
 
 	return 0;
