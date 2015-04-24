@@ -54,10 +54,10 @@
 /**				 University of Virginia                 **/
 /**								**/
 /**   Description:	No longer supports fuzzy c-means clustering;	 	**/
-/**					only regular k-means clustering.					**/
-/**					No longer performs "validity" function to analyze	**/
-/**					compactness and separation crietria; instead		**/
-/**					calculate root mean squared error.					**/
+/**                 only regular k-means clustering.					**/
+/**                 No longer performs "validity" function to analyze	**/
+/**                 compactness and separation crietria; instead		**/
+/**                 calculate root mean squared error.					**/
 /**                                                                     **/
 /*************************************************************************/
 
@@ -81,7 +81,7 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
                           int    *membership) /* out: [npoints] */
 {    
     int      i, j, n = 0;		/* counters */
-	int		 loop=0, temp;
+    int		 loop=0, temp;
     int     *new_centers_len;	/* [nclusters]: no. of points in each cluster */
     float    delta;				/* if the point moved */
     float  **clusters;			/* out: [nclusters][nfeatures] */
