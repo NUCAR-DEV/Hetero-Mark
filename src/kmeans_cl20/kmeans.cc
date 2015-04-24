@@ -4,6 +4,7 @@
 #include <math.h>
 #include <iostream>
 #include <string>
+#include <cassert>
 
 extern "C"
 {
@@ -150,20 +151,23 @@ float *center_d;
 
 int allocate(int n_points, int n_features, int n_clusters, float **feature)
 {
+	const char * filename = "./kmeans.cl";                                      
+	FILE *f = fopen(filename, "r");                                             
+	assert(f);                                                                  
+	fseek(f, 0, SEEK_END);                                                      
+	size_t filesize = ftell(f);                                                 
+	size_t sourcesize = filesize + 1;                                           
+	char *source = (char *) calloc(sourcesize, sizeof(char));                   
+	assert(source);                                                             
+	fseek(f, 0, SEEK_SET);                                                      
+	size_t ret = fread(source, sizeof(char), filesize, f);                      
+	if(ret != filesize) {                                                       
+		fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__, __LINE__);
+		exit(1);                                                                
+	}                                                                           
 
-	int sourcesize = 1024*1024;
-	char * source = (char *)calloc(sourcesize, sizeof(char)); 
-	if(!source) { printf("ERROR: calloc(%d) failed\n", sourcesize); return -1; }
+	fclose(f);  
 
-	// read the kernel core source
-	const char * tempchar = "./kmeans.cl";
-	FILE * fp = fopen(tempchar, "rb"); 
-	if(!fp) { printf("ERROR: unable to open '%s'\n", tempchar); return -1; }
-	size_t retv = fread(source + strlen(source), sourcesize, 1, fp);
-	if(!retv)
-  		fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__, __LINE__);
-
-	fclose(fp);
 		
 	// OpenCL initialization
 	int use_gpu = 1;
@@ -176,11 +180,11 @@ int allocate(int n_points, int n_features, int n_clusters, float **feature)
 	if(err != CL_SUCCESS) { printf("ERROR: clCreateProgramWithSource() => %d\n", err); return -1; }
 	err = clBuildProgram(prog, 0, NULL, NULL, NULL, NULL);
 	{ // show warnings/errors
-	//	static char log[65536]; memset(log, 0, sizeof(log));
-	//	cl_device_id device_id = 0;
-	//	err = clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(device_id), &device_id, NULL);
-	//	clGetProgramBuildInfo(prog, device_id, CL_PROGRAM_BUILD_LOG, sizeof(log)-1, log, NULL);
-	//	if(err || strstr(log,"warning:") || strstr(log, "error:")) printf("<<<<\n%s\n>>>>\n", log);
+		static char log[65536]; memset(log, 0, sizeof(log));
+		cl_device_id device_id = 0;
+		err = clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(device_id), &device_id, NULL);
+		clGetProgramBuildInfo(prog, device_id, CL_PROGRAM_BUILD_LOG, sizeof(log)-1, log, NULL);
+		if(err || strstr(log,"warning:") || strstr(log, "error:")) printf("<<<<\n%s\n>>>>\n", log);
 	}
 	if(err != CL_SUCCESS) { printf("ERROR: clBuildProgram() => %d\n", err); return -1; }
 	
@@ -189,6 +193,7 @@ int allocate(int n_points, int n_features, int n_clusters, float **feature)
 		
 	kernel_s = clCreateKernel(prog, kernel_kmeans_c, &err);  
 	if(err != CL_SUCCESS) { printf("ERROR: clCreateKernel() 0 => %d\n", err); return -1; }
+
 	kernel2 = clCreateKernel(prog, kernel_swap, &err);  
 	if(err != CL_SUCCESS) { printf("ERROR: clCreateKernel() 0 => %d\n", err); return -1; }
 		
@@ -215,6 +220,7 @@ int allocate(int n_points, int n_features, int n_clusters, float **feature)
 	size_t global_work[3] = { (size_t)n_points, 1, 1 };
 	/// Ke Wang adjustable local group size 2013/08/07 10:37:33
 	size_t local_work_size= BLOCK_SIZE; // work group size is defined by RD_WG_SIZE_0 or RD_WG_SIZE_0_0 2014/06/10 17:00:51
+
 	if(global_work[0]%local_work_size !=0)
 	  global_work[0]=(global_work[0]/local_work_size+1)*local_work_size;
 
