@@ -178,7 +178,9 @@ int allocate(int n_points, int n_features, int n_clusters, float **feature)
 	const char * slist[2] = { source, 0 };
 	cl_program prog = clCreateProgramWithSource(context, 1, slist, NULL, &err);
 	if(err != CL_SUCCESS) { printf("ERROR: clCreateProgramWithSource() => %d\n", err); return -1; }
-	err = clBuildProgram(prog, 0, NULL, NULL, NULL, NULL);
+
+	// Build program in ocl 2.0
+	err = clBuildProgram(prog, 0, NULL, "-I ./ -cl-std=CL2.0", NULL, NULL);
 	{ // show warnings/errors
 		static char log[65536]; memset(log, 0, sizeof(log));
 		cl_device_id device_id = 0;

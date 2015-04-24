@@ -4,13 +4,13 @@
 
 __kernel void
 kmeans_kernel_c(__global float  *feature,   
-		__global float  *clusters,
-		__global int    *membership,
-		int     npoints,
-		int     nclusters,
-		int     nfeatures,
-		int		offset,
-		int		size
+		        __global float  *clusters,
+		        __global int    *membership,
+		        int     npoints,
+		        int     nclusters,
+		        int     nfeatures,
+		        int		offset,
+		        int		size
 	       ) 
 {
 	unsigned int point_id = get_global_id(0);
