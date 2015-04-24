@@ -1,4 +1,4 @@
-xifndef HMM_H
+#ifndef HMM_H
 #define HMM_H
 
 #include "clUtil.h"
