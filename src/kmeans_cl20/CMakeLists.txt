@@ -1,5 +1,5 @@
 set( BENCHMARK_NAME kmeans)
-set( SOURCE_FILES rmse.c read_input.c getopt.c cluster.c kmeans_clustering.c kmeans.cc)
+set( SOURCE_FILES kmeans.cc)
 set( EXTRA_FILES kmeans.cl )
 
 ############################################################################

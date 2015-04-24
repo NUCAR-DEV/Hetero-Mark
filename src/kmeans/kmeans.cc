@@ -56,22 +56,8 @@ using namespace std;
 
 extern "C"
 {
-	#include "kmeans.h"
+  #include "kmeans.h"
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 int main( int argc, char** argv) 
 {
@@ -236,7 +222,7 @@ int setup(int argc, char **argv) {
 	printf("\nI/O completed\n");
 	printf("\nNumber of objects: %d\n", npoints);
 	printf("Number of features: %d\n", nfeatures);	
-	/* ============== I/O end ==============*/
+	// ============== I/O end ==============//
 
 	// error check for clusters
 	if (npoints < min_nclusters)
@@ -247,14 +233,14 @@ int setup(int argc, char **argv) {
 	}
 
 
-	/* seed for future random number generator */	
+	// seed for future random number generator //	
 	srand(7);  
 
-	/* now features holds 2-dimensional array of features */
+	// now features holds 2-dimensional array of features //
 	memcpy(features[0], buf, npoints*nfeatures*sizeof(float));
 	free(buf);
 
-	/* ======================= core of the clustering ===================*/
+	// ======================= core of the clustering ===================//
 
 	//cluster_timing = omp_get_wtime();		/* Total clustering time */
 	cluster_centres = NULL;
@@ -273,7 +259,7 @@ int setup(int argc, char **argv) {
 	//cluster_timing = omp_get_wtime() - cluster_timing;
 
 
-	/* =============== Command Line Output =============== */
+	// =============== Command Line Output =============== //
 
 	/* cluster center coordinates
 	   :displayed only for when k=1*/
@@ -375,30 +361,29 @@ int cluster(int      npoints,			/* number of data points */
 	        int	     nloops			/* number of iteration for each number of clusters */ 
 			)
 {    
-	int	nclusters;			/* number of clusters k */	
-	int	index =0;			/* number of iteration to reach the best RMSE */
-	int	rmse;				/* RMSE for each clustering */
-	int    *membership;			/* which cluster a data point belongs to */
-	float **tmp_cluster_centres;		/* hold coordinates of cluster centers */
+	int	nclusters;			// number of clusters
+	int	index =0;			// number of iteration to reach the best RMSE
+	int	rmse;				// RMSE for each clustering
+	int    *membership;			// which cluster a data point belongs to
+	float **tmp_cluster_centres;		// hold coordinates of cluster centers
 	int	i;
 
 	// here svm
-	/* allocate memory for membership */
+	// allocate memory for membership //
 	membership = (int*) malloc(npoints * sizeof(int));
 
-	/* sweep k from min to max_nclusters to find the best number of clusters */
+	// sweep k from min to max_nclusters to find the best number of clusters //
 	for(nclusters = min_nclusters; nclusters <= max_nclusters; nclusters++)
 	{
-		if (nclusters > npoints) break;	/* cannot have more clusters than points */
+		if (nclusters > npoints) break;	// cannot have more clusters than points //
 
-		/* allocate device memory, invert data array (@ kmeans_cuda.cu) */
+		// allocate device memory, invert data array //
 		allocate(npoints, nfeatures, nclusters, features);
 
-
-		/* iterate nloops times for each number of clusters */
+		// iterate nloops times for each number of clusters //
 		for(i = 0; i < nloops; i++)
 		{
-			/* initialize initial cluster centers, CUDA calls (@ kmeans_cuda.cu) */
+			// initialize initial cluster centers, CUDA calls (@ kmeans_cuda.cu) //
 			tmp_cluster_centres = kmeans_clustering(features,
 					nfeatures,
 					npoints,
@@ -413,7 +398,7 @@ int cluster(int      npoints,			/* number of data points */
 
 			*cluster_centres = tmp_cluster_centres;
 
-			/* find the number of clusters with the best RMSE */
+			// find the number of clusters with the best RMSE //
 			if(isRMSE)
 			{
 				rmse = rms_err(features,
@@ -431,7 +416,8 @@ int cluster(int      npoints,			/* number of data points */
 			}			
 		}
 
-		deallocateMemory(); /* free device memory (@ kmeans_cuda.cu) */
+
+		deallocateMemory(); // free device memory
 	}
 
 	free(membership);
@@ -443,6 +429,9 @@ int cluster(int      npoints,			/* number of data points */
 int allocate(int n_points, int n_features, int n_clusters, float **feature)
 {
 	cl_int err;
+
+	// Helper to read kernel file
+	file = clFile::getInstance();
 
 	file->open("kmeans.cl");
 
@@ -508,33 +497,33 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
                           float   threshold,
                           int    *membership) /* out: [npoints] */
 {    
-    int      i, j, n = 0;		/* counters */
+    int      i, j, n = 0;		// counters */
     int		 loop=0, temp;
-    int     *new_centers_len;	/* [nclusters]: no. of points in each cluster */
-    float    delta;				/* if the point moved */
-    float  **clusters;			/* out: [nclusters][nfeatures] */
-    float  **new_centers;		/* [nclusters][nfeatures] */
+    int     *new_centers_len;	// [nclusters]: no. of points in each cluster
+    float    delta;				// if the point moved
+    float  **clusters;			// out: [nclusters][nfeatures]
+    float  **new_centers;		// [nclusters][nfeatures]
 
-	int     *initial;			/* used to hold the index of points not yet selected
-								   prevents the "birthday problem" of dual selection (?)
-								   considered holding initial cluster indices, but changed due to
-								   possible, though unlikely, infinite loops */
+	int     *initial;			// used to hold the index of points not yet selected
+								//   prevents the "birthday problem" of dual selection (?)
+								//   considered holding initial cluster indices, but changed due to
+								//   possible, though unlikely, infinite loops
 	int      initial_points;
 	int		 c = 0;
 
-	/* nclusters should never be > npoints
-	   that would guarantee a cluster without points */
+	// nclusters should never be > npoints
+	// that would guarantee a cluster without points
 	if (nclusters > npoints)
 		nclusters = npoints;
 
 	// fixme : use svm 
-    /* allocate space for and initialize returning variable clusters[] */
+    // allocate space for and initialize returning variable clusters[]
     clusters    = (float**) malloc(nclusters *             sizeof(float*));
     clusters[0] = (float*)  malloc(nclusters * nfeatures * sizeof(float));
     for (i=1; i<nclusters; i++)
         clusters[i] = clusters[i-1] + nfeatures;
 
-	/* initialize the random clusters */
+	// initialize the random clusters
 	initial = (int *) malloc (npoints * sizeof(int));
 	for (i = 0; i < npoints; i++)
 	{
@@ -542,7 +531,7 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
 	}
 	initial_points = npoints;
 
-    /* randomly pick cluster centers */
+    // randomly pick cluster centers
     for (i=0; i<nclusters && initial_points >= 0; i++) {
 		//n = (int)rand() % initial_points;		
 		
@@ -550,8 +539,8 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
         for (j=0; j<nfeatures; j++)
             clusters[i][j] = feature[initial[n]][j];	// remapped
 
-		/* swap the selected index to the end (not really necessary,
-		   could just move the end up) */
+		// swap the selected index to the end (not really necessary,
+		// could just move the end up)
 		temp = initial[n];
 		initial[n] = initial[initial_points-1];
 		initial[initial_points-1] = temp;
@@ -559,12 +548,12 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
 		n++;
     }
 
-	/* initialize the membership to -1 for all */
+	// initialize the membership to -1 for all
 	// fixme: use svm
     for (i=0; i < npoints; i++)
 	  membership[i] = -1;
 
-    /* allocate space for and initialize new_centers_len and new_centers */
+    // allocate space for and initialize new_centers_len and new_centers
     new_centers_len = (int*) calloc(nclusters, sizeof(int));
 
     new_centers    = (float**) malloc(nclusters *            sizeof(float*));
@@ -572,18 +561,18 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
     for (i=1; i<nclusters; i++)
         new_centers[i] = new_centers[i-1] + nfeatures;
 
-	/* iterate until convergence */
+	// iterate until convergence
 	do {
         delta = 0.0;
-		// CUDA
-		delta = (float) kmeansOCL(feature,			/* in: [npoints][nfeatures] */
-								   nfeatures,		/* number of attributes for each point */
-								   npoints,			/* number of data points */
-								   nclusters,		/* number of clusters */
-								   membership,		/* which cluster the point belongs to */
-								   clusters,		/* out: [nclusters][nfeatures] */
-								   new_centers_len,	/* out: number of points in each cluster */
-								   new_centers		/* sum of points in each cluster */
+
+		delta = (float) kmeansOCL(feature,			// in: [npoints][nfeatures]
+								   nfeatures,		// number of attributes for each point
+								   npoints,			// number of data points
+								   nclusters,		// number of clusters
+								   membership,		// which cluster the point belongs to
+								   clusters,		// out: [nclusters][nfeatures]
+								   new_centers_len,	// out: number of points in each cluster
+								   new_centers		// sum of points in each cluster
 								   );
 
 		/* replace old cluster centers with new_centers */

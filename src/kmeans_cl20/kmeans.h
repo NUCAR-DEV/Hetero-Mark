@@ -48,16 +48,73 @@
 extern "C" {
 #endif
 
+#ifdef NV                                                                       
+    #include <oclUtils.h>                                                       
+#else                                                                           
+	#include <CL/cl.h>                                                          
+#endif  
+
+#define _CRT_SECURE_NO_DEPRECATE 1
+#define RANDOM_MAX 2147483647
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include <math.h>
+#include <fcntl.h>
+#include <omp.h>
+#include <unistd.h>
+
+#include <clUtil.h>
+
+#include <float.h>
+
+float	min_rmse_ref = FLT_MAX;		
+extern double wtime(void);
+
+using namespace clHelper;
+
+// Helper objects
+clRuntime *runtime;
+clFile *file;
+
+static cl_platform_id   platform;
+static cl_context	    context;
+static cl_device_id     device;
+static cl_command_queue cmd_queue;
+
+
+cl_mem d_feature;
+cl_mem d_feature_swap;
+cl_mem d_cluster;
+cl_mem d_membership;
+
+cl_kernel kernel;
+cl_kernel kernel_s;
+cl_kernel kernel2;
+
+int   *membership_OCL;
+int   *membership_d;
+float *feature_d;
+float *clusters_d;
+float *center_d;
+
+void usage(char *argv0);
+int setup(int argc, char **argv);
+int initialize(int use_gpu); // initalize opencl
+int cluster(int, int, float**, int, int, float, int*, float***, float*, int, int);
+int allocate(int npoints, int nfeatures, int nclusters, float **feature);
+float** kmeans_clustering(float **, int , int , int , float , int *); 
+int	kmeansOCL(float **, int , int , int , int *, float **, int *, float **);
 /* rmse.c */
 float   euclid_dist_2        (float*, float*, int);
 int     find_nearest_point   (float* , int, float**, int);
 float	rms_err(float**, int, int, float**, int);
-int     cluster(int, int, float**, int, int, float, int*, float***, float*, int, int);
-int setup(int argc, char** argv);
-int allocate(int npoints, int nfeatures, int nclusters, float **feature);
+
 void deallocateMemory();
-int	kmeansOCL(float **feature, int nfeatures, int npoints, int nclusters, int *membership, float **clusters, int *new_centers_len, float  **new_centers);
-float** kmeans_clustering(float **feature, int nfeatures, int npoints, int nclusters, float threshold, int *membership); 
+int shutdown();
+
 
 #ifdef __cplusplus
 }

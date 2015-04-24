@@ -1,4 +1,3 @@
 #!/bin/sh
-rm -rf bin
-rm -rf CMakeFiles
+rm -rf bin CMakeFiles Makefile
 rm CMakeCache.txt cmake_install.cmake
