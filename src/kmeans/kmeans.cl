@@ -42,14 +42,14 @@ kmeans_kernel_c(__global float  *feature,
 	return;
 }
 
-__kernel void
-kmeans_swap(__global float  *feature,   
-            __global float  *feature_swap,
-            int     npoints,
-            int     nfeatures)
+
+// hint: 2D transpose
+__kernel void kmeans_swap(__global float  *feature,   
+                          __global float  *feature_swap,
+                          int     npoints,
+                          int     nfeatures)
 {
 	unsigned int tid = get_global_id(0);
 	for(int i = 0; i < nfeatures; i++)
 		feature_swap[i * npoints + tid] = feature[tid * nfeatures + i];
-
 } 

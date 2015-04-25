@@ -115,6 +115,12 @@ using namespace clHelper;
 
 class KMEANS
 {
+public:
+	KMEANS();
+	~KMEANS();
+	void Run(int, char **);
+
+private:
 	// Helper objects
 	clRuntime *runtime;
 	clFile *file;
@@ -124,22 +130,22 @@ class KMEANS
 
 	// ocl resources
 	cl_platform_id   platform;
-	cl_context	    context;
+	cl_context	     context;
 	cl_device_id     device;
 	cl_command_queue cmd_queue;
+	cl_program       prog;
 	
 	// ocl kernel
-	cl_kernel kernel;
 	cl_kernel kernel_s;
 	cl_kernel kernel2;
+	//cl_kernel kernel;
 	
+	// fixme
 	// SVM buffers
-	/*
-	cl_mem d_feature;
+	cl_mem d_feature;          // device feature
 	cl_mem d_feature_swap;
 	cl_mem d_cluster;
 	cl_mem d_membership;
-	*/
 
 	int   *membership_OCL;
 	int   *membership_d;
@@ -147,9 +153,33 @@ class KMEANS
 	float *clusters_d;
 	float *center_d;
 	
+	//-----------------------------------------------------------------------//
 	// Parameters
+	//-----------------------------------------------------------------------//
 	float	min_rmse_ref;		
-	//float	min_rmse_ref = FLT_MAX;		
+
+	// command line options 
+	char   *filename;                                                       
+
+	int isBinaryFile;                                                       
+	int isOutput;                                            
+	int npoints;                                                            
+	int nfeatures;                                                          
+	int max_nclusters;           
+	int min_nclusters;          
+	int isRMSE;                                                             
+	int nloops;             
+	int	best_nclusters;
+
+	int index;                  // number of iteration to reach the best RMSE
+	int *membership;			// which cluster a data point belongs to
+	float rmse;				    // RMSE for each clustering
+
+	float   threshold;            
+
+	float **feature;           // host feature                                                
+	float **cluster_centres;
+	float **tmp_cluster_centres;		// hold coordinates of cluster centers
 
 	//-----------------------------------------------------------------------//
 	// Usage function
@@ -161,11 +191,26 @@ class KMEANS
 	//-----------------------------------------------------------------------//
 	void Read(int argc, char **argv);
 
+	//-----------------------------------------------------------------------//
+	// Cluster function
+	//-----------------------------------------------------------------------//
+	void CL_initialize();
+	void CL_build_program();
+	void CL_create_kernels();
+	void CL_create_buffers(int);
+	void Swap_features();
+	void Clustering();
 
-	int setup(int argc, char **argv);
+	//-----------------------------------------------------------------------//
+	// Clean functions 
+	//-----------------------------------------------------------------------//
+	void CleanUpKernels();
+	void CleanUpBuffers();
+
+
+	//------------------------------------------------//
 	int initialize(int use_gpu); // initalize opencl
 	int cluster(int, int, float**, int, int, float, int*, float***, float*, int, int);
-	int allocate(int npoints, int nfeatures, int nclusters, float **feature);
 	float** kmeans_clustering(float **, int , int , int , float , int *); 
 	int	kmeansOCL(float **, int , int , int , int *, float **, int *, float **);
 	float   euclid_dist_2        (float*, float*, int);
@@ -175,15 +220,6 @@ class KMEANS
 	void deallocateMemory();
 	int shutdown();
 
-	//-----------------------------------------------------------------------//
-	// Clean functions 
-	//-----------------------------------------------------------------------//
-	void CleanUpKernels();
-	void CleanUpBuffers();
-
-public:
-	KMEANS();
-	~KMEANS();
 };
 
 
