@@ -55,8 +55,8 @@ class HMM
 	static const int BLOCKSIZE = 256;
 
 	int N;
-	int T = 64;	// number of (overlapping) windows 
-	int D = 64;	// number of features
+	const int T = 64;	// number of (overlapping) windows 
+	const int D = 64;	// number of features
 
 	int bytes_nn; 
 	int bytes_nt; 
