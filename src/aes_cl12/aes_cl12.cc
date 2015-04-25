@@ -5,13 +5,6 @@
 #include <string.h>
 #include <inttypes.h>
 
-#define ENABLE_PROFILE 1
-
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clTimeNDRangeKernel
-#endif
-
-
 AES::AES()
 {
         runtime  = clRuntime::getInstance();
@@ -124,7 +117,7 @@ void AES::InitKernel()
         err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
         checkOpenCLErrors(err, "Failed to build program...\n");
 
-        kernel = clCreateKernel(program, "CLRunnerntrl", &status);
+        kernel = clCreateKernel(program, "CLRunnerntrl", &err);
         checkOpenCLErrors(err, "Failed to create AES kernel\n");
 }
 
@@ -337,12 +330,12 @@ void AES::Run(int argc, char const *argv[])
             else { local_ws = (spawn/BASIC_UNIT); }
 
             cl_event event;
-            status = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_ws, &local_ws, 0, NULL, &event);
+            status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, &global_ws, &local_ws, 0, NULL, &event);
             checkOpenCLErrors(status, "clEnqueueNDRangeKernel\n");
 
             clWaitForEvents(1, &event);
 
-            status = clEnqueueReadBuffer(queue, dev_states, CL_TRUE, 0, 16*spawn*sizeof(uint8_t), &states, 0, NULL, NULL);
+            status = clEnqueueReadBuffer(cmdQueue, dev_states, CL_TRUE, 0, 16*spawn*sizeof(uint8_t), &states, 0, NULL, NULL);
             checkOpenCLErrors(status, "clEnqueueReadBuffer\n");
 
             clReleaseMemObject(dev_states);
