@@ -219,7 +219,6 @@ private:
 
 	void deallocateMemory();
 	int shutdown();
-
 };
 
 

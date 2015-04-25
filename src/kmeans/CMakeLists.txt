@@ -62,7 +62,7 @@ endif( )
 
 set( COMPILER_FLAGS "-std=c++0x" )
 set( LINKER_FLAGS " " )
-set( ADDITIONAL_LIBRARIES "" )
+set( ADDITIONAL_LIBRARIES "-lm -pthread" )
 
 # clUtil includes
 set( CLUTIL_INCLUDE_DIRS "../../include/clUtil" )

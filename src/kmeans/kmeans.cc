@@ -5,12 +5,10 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-
 #include <clUtil.h>
 
-using namespace std;
-
 #include "kmeans.h"
+using namespace std;
 
 KMEANS::KMEANS()
 {	
@@ -324,10 +322,6 @@ void KMEANS::Swap_features()
 								 0, 0, 0);
 	checkOpenCLErrors(err, "ERROR: clEnqueueNDRangeKernel()");
 }
-	
-	
-	
-	
 	
 	
 void KMEANS::Clustering()
