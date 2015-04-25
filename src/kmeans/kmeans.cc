@@ -5,12 +5,10 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-
 #include <clUtil.h>
 
-using namespace std;
-
 #include "kmeans.h"
+using namespace std;
 
 KMEANS::KMEANS()
 {	
@@ -48,10 +46,39 @@ void KMEANS::Usage(char *argv0)
 	exit(-1);
 }
 
-void KMEANS::Read()
+void KMEANS::Read(int argc, char **argv)
 {
-	
-	
+	int		opt;
+	extern char   *optarg;
+	char   *filename = 0;
+	float  *buf;
+	char	line[1024];
+	int	isBinaryFile = 0;
+
+	float	threshold = 0.001;		/* default value */
+	int	max_nclusters=5;		/* default value */
+	int	min_nclusters=5;		/* default value */
+	int	best_nclusters = 0;
+	int	nfeatures = 0;
+	int	npoints = 0;
+	float	len;
+
+	float **features;
+	float **cluster_centres=NULL;
+	int	i, j, index;
+	int	nloops = 1;				/* default value */
+
+	int	isRMSE = 0;		
+	float	rmse;
+
+	int	isOutput = 0;
+	//float	cluster_timing, io_timing;
+}
+
+
+void KMEANS::Run(int argc, char **argv)
+{
+	//Read(argc, argv);	
 	
 }
 
@@ -65,6 +92,8 @@ int main( int argc, char** argv)
 
 	printf("WG size of kernel_swap = %d, WG size of kernel_kmeans = %d \n", 
 		BLOCK_SIZE, BLOCK_SIZE2);
+
+	// kmeans->Run(argc, argv);
 
 	//setup(argc, argv);
 	//shutdown();

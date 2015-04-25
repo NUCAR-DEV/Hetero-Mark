@@ -115,6 +115,12 @@ using namespace clHelper;
 
 class KMEANS
 {
+public:
+	KMEANS();
+	~KMEANS();
+	void Run(int argc, char *argv[]);
+
+private:
 	// Helper objects
 	clRuntime *runtime;
 	clFile *file;
@@ -181,9 +187,6 @@ class KMEANS
 	void CleanUpKernels();
 	void CleanUpBuffers();
 
-public:
-	KMEANS();
-	~KMEANS();
 };
 
 
