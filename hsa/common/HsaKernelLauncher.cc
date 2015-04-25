@@ -68,6 +68,7 @@ void HsaKernelLauncher::PrepareArgument()
 	err = hsa_memory_allocate(kernarg_region, kernarg_segment_size, 
 			&kernarg_address);
 	helper->CheckError(err, "Allocate memory buffer");
+	printf("Kernarg_size: %d\n", kernarg_segment_size);
 	memcpy(kernarg_address, arguments, kernarg_segment_size);
 	timer->EndTimer({"memory", "CPU", "HSA runtime", "HSA memory"});
 }
@@ -112,6 +113,8 @@ void HsaKernelLauncher::LaunchKernel()
 	dispatch_packet->private_segment_size = private_segment_size;
 	dispatch_packet->group_segment_size = group_segment_size;
 	timer->EndTimer({"CPU", "HSA runtime"});
+
+	printf("Launching kernel %s.\n", name.c_str());
 	
 	timer->BeginTimer();
 	__atomic_store_n((uint8_t*)(&dispatch_packet->header), 

@@ -1,13 +1,13 @@
-#ifndef HMM_BKBETABHSALAUNCHER_H 
-#define HMM_BKBETABHSALAUNCHER_H
+#ifndef HMM_EMUPDATEXISUMHSALAUNCHER_H
+#define HMM_EMUPDATEXISUMHSALAUNCHER_H
 
 #include "../common/HsaKernelLauncher.h"
 
-class BkBetaBHsaLauncher : public HsaKernelLauncher
+class EmUpdateXisumHsaLauncher : public HsaKernelLauncher
 {
 
 	// Arguments
-	struct __attribute__((aligned(16))) args_t
+	struct __attribute__ ((aligned(16))) args_t
 	{
 		uint64_t __global_offset_0;
 		uint64_t __global_offset_1;
@@ -16,11 +16,9 @@ class BkBetaBHsaLauncher : public HsaKernelLauncher
 		uint64_t __vqueue_pointer;
 		uint64_t __aqlwrap_pointer;
 		uint32_t N;
-		uint32_t pos;
-		uint64_t *ret;
-		void *beta;
-		void *b;
-		void *betaB;
+		void *sum;
+		void *xi_sum_tmp;
+		void *xi_sum;
 	} args;
 
 public:
@@ -28,7 +26,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	BkBetaBHsaLauncher(HsaHelper *helper) : 
+	EmUpdateXisumHsaLauncer(HsaHelper *helper) : 
 		HsaKernelLauncher(helper) {};
 
 	/**
@@ -36,7 +34,7 @@ public:
 	 */
 	void Init() override
 	{
-		name = "&__OpenCL_BK_BetaB_kernel";
+		name = "&__OpenCL_EM_update_xisum_kernel";
 		timer->BeginTimer();
 		memset(&args, 0, sizeof(args_t));
 		timer->EndTimer({"CPU", "memory"});
@@ -49,16 +47,8 @@ public:
 	void LaunchKernel() override
 	{
 		arguments = &args;
-		args.ret = new uint64_t();
-		printf("Ret: 0x%016lx\n", *args.ret);
-		for (int i = 0; i < args.N; i++)
-		{
-			float *ptr = (float *)args.betaB;
-			ptr[i] = 0;
-		}
 		//printf("Launching fwd init alpha kernel\n");
 		HsaKernelLauncher::LaunchKernel();
-		printf("Ret: 0x%016lx\n", *args.ret);
 	}
 
 	/**
@@ -68,22 +58,19 @@ public:
 			const char *option = NULL) override
 	{
 		timer->BeginTimer();
-		switch (index) {
+		switch (index)
+		{
 		case 0:
 			memcpy(&args.N, value, size);
 			break;
 		case 1:
-			memcpy(&args.pos, value, size);
+			memcpy(&args.sum, value, size);
 			break;
 		case 2:
-			memcpy(&args.beta, value, size);
+			memcpy(&args.xi_sum_tmp, value, size);
 			break;
 		case 3:
-			memcpy(&args.b, value, size);
-			break;
-		case 4:
-			memcpy(&args.betaB, value, size);
-			printf("BetaB: %p, args.betaB: %p\n", *(void **)value, args.betaB);
+			memcpy(&arg.xi_sum, value, size);
 			break;
 		default:
 			printf("Invalid argument index %d.\n", index);

@@ -51,6 +51,10 @@ void HMM::InitKernels()
 	bk_norm_beta.reset(new BkNormBetaHsaLauncher(helper));
 	bk_norm_beta->Init();
 
+	// Set em kernels
+	em_beta_b_alpha_beta.reset(new EmBetaBAlphaBetaHsaLauncher(helper));
+	em_beta_b_alpha_beta->Init();
+
 }
 
 
@@ -357,10 +361,57 @@ void HMM::BackwardNormBeta(int pos)
 }
 
 
+void HMM::EM()
+{
+	timer->BeginTimer();
+	for(int i = 0; i < N * N; i++)
+	{
+		((float *)xi_sum)[i] = 0.f;
+	}
+	timer->EndTimer({"CPU", "memory"});
+
+	float sum;
+	int i, current, previous;
+	int window = 0 ;
+	for (window = 0; window < (T - 1); window++)
+	{
+		current = window * N;
+		previous = current + N;
+		EM_betaB_alphabeta(current, previous);
+	}
+}
+
+
+void HMM::EM_betaB_alphabeta(int curpos, int prepos)
+{
+	int current = curpos;
+	int previous = prepos;
+
+	// Dim and size
+	em_beta_b_alpha_beta->setDimension(1);
+	em_beta_b_alpha_beta->setGlobalSize(ceil(N/256.f) * 256, 1, 1);
+	em_beta_b_alpha_beta->setGroupSize(256, 1, 1);
+
+	// Arguments
+	em_beta_b_alpha_beta->setArgument(0, sizeof(int), (void *)&N);
+	em_beta_b_alpha_beta->setArgument(1, sizeof(int), (void *)&current);
+	em_beta_b_alpha_beta->setArgument(2, sizeof(int), (void *)&previous);
+	em_beta_b_alpha_beta->setArgument(3, sizeof(void *), (void *)&beta);
+	em_beta_b_alpha_beta->setArgument(4, sizeof(void *), (void *)&b);
+	em_beta_b_alpha_beta->setArgument(5, sizeof(void *), (void *)&alpha);
+	em_beta_b_alpha_beta->setArgument(6, sizeof(void *), (void *)&betaB);
+	em_beta_b_alpha_beta->setArgument(7, sizeof(void *), (void *)&alpha_beta);
+
+	// Launch kernel
+	em_beta_b_alpha_beta->LaunchKernel();
+}
+
+
 void HMM::Run()
 {
 	Forward();
 	Backward();
+//	EM();
 }
 
 

@@ -159,13 +159,16 @@ __kernel void FWD_update_alpha(const int N,
 //-----------------------------------------------------------------------------------------------//
 __kernel void BK_BetaB(const int N,
                        const int pos,
+		       __global unsigned long *ret,
                        __global const float *beta,
                        __global const float *b,
                        __global float *betaB)
 {
         size_t idx = get_global_id(0);
         if (idx < N) {
-                betaB[idx] = b[pos + idx] * beta[pos + idx];
+		*ret = (unsigned long)betaB;
+		betaB[idx] = 0;
+                //betaB[idx] = b[pos + idx] * beta[pos + idx];
         }
 }
 
@@ -267,17 +270,20 @@ __kernel void BK_norm_beta(const int N,
 __kernel void EM_betaB_alphabeta(const int N,
                                 const int current, 
                                 const int previous,
-								__global const float *beta, 
-								__global const float *b, 
-								__global const float *alpha,
+			//	const int no_use,
+				__global const float *beta, 
+				__global const float *b, 
+				__global const float *alpha,
 								__global       float *betaB,  
 								__global       float *alpha_beta)
 {
+	/*
 	size_t idx = get_global_id(0);
 	if (idx < N) {
 		betaB[idx]     = beta[previous + idx] * b[previous + idx];
 		alpha_beta[idx] = beta[current + idx] * alpha[current + idx];
 	}
+	*/
 }
 
 __kernel void EM_update_gamma(const int N,

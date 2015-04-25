@@ -12,6 +12,7 @@
 #include "BkBetaBHsaLauncher.h"
 #include "BkUpdateBetaHsaLauncher.h"
 #include "BkNormBetaHsaLauncher.h"
+#include "EmBetaBAlphaBetaHsaLauncher.h"
 
 class KernelLauncher;
 
@@ -96,6 +97,7 @@ class HMM : public Benchmark
 	std::unique_ptr<KernelLauncher> bk_beta_b;
 	std::unique_ptr<KernelLauncher> bk_update_beta;
 	std::unique_ptr<KernelLauncher> bk_norm_beta;
+	std::unique_ptr<KernelLauncher> em_beta_b_alpha_beta;
 
 	// Init params
 	void InitParam();
@@ -129,7 +131,7 @@ class HMM : public Benchmark
 	void ForwardUpdateAlpha(int pos);
 
 
-	
+
 	//
 	// Backward Algorithm
 	//
@@ -148,13 +150,25 @@ class HMM : public Benchmark
 
 
 
-	
+
 	// 
 	// EM
 	//
-	
+
 	// EM
 	void EM();
+	void EM_betaB_alphabeta(int curpos, int prepos);
+	void EM_update_gamma(int pos);
+	void EM_alpha_betaB(int pos);
+	void EM_pre_xisum();
+	void EM_update_xisum(float sumvalue);
+	void EM_gamma(int pos);
+	void EM_expectA();
+	void EM_gamma_state_sum();
+	void EM_gamma_obs();
+	void EM_expect_mu(int pos, int currentstate);
+	void EM_sigma_dev(int currentstate);
+	void EM_expect_sigma(size_t pos);
 
 public:
 
