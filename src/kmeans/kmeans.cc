@@ -17,18 +17,18 @@ KMEANS::KMEANS()
 KMEANS::~KMEANS()
 {	
 	CleanUpKernels();
-	CleanUpBuffers();
+	// Free_mem()
 }
 
 void KMEANS::CleanUpKernels()
 {
+	checkOpenCLErrors(clReleaseKernel(kernel_s),
+			"Failed to release kernel kernel_s");
 	
+	checkOpenCLErrors(clReleaseKernel(kernel2),
+			"Failed to release kernel kernel2");
 }
 
-void KMEANS::CleanUpBuffers()
-{
-	
-}
 
 void KMEANS::Usage(char *argv0)
 {
@@ -421,16 +421,6 @@ void KMEANS::Kmeans_clustering()
 {
 	int      i, j, n = 0;		// counters
 	int		 loop=0, temp;
-	//int     *new_centers_len;	// [nclusters]: no. of points in each cluster
-	//float    delta;				// if the point moved
-	//float  **clusters;			// out: [nclusters][nfeatures]
-	//float  **new_centers;		// [nclusters][nfeatures]
-
-	//int     *initial;			// used to hold the index of points not yet selected
-
-	//   prevents the "birthday problem" of dual selection (?)
-	//   considered holding initial cluster indices, but changed due to
-	//   possible, though unlikely, infinite loops
 	int      initial_points = npoints;
 	int		 c = 0;
 
@@ -755,8 +745,6 @@ int main( int argc, char** argv)
 		BLOCK_SIZE, BLOCK_SIZE2);
 
 	kmeans->Run(argc, argv);
-
-	//shutdown();
 
 	return 0;
 }

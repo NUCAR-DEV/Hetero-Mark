@@ -112,7 +112,6 @@ extern double wtime(void);
 
 using namespace clHelper;
 
-
 class KMEANS
 {
 public:
@@ -167,8 +166,6 @@ private:
 	//-----------------------------------------------------------------------//
 	// Device Parameters
 	//-----------------------------------------------------------------------//
-
-
 	// Helper objects
 	clRuntime *runtime;
 	clFile *file;
@@ -192,8 +189,6 @@ private:
 	cl_mem d_feature_swap;
 	cl_mem d_cluster;          // cluster
 	cl_mem d_membership;
-
-
 
 	//-----------------------------------------------------------------------//
 	// Usage function
@@ -233,7 +228,6 @@ private:
 	// Clean functions 
 	//-----------------------------------------------------------------------//
 	void CleanUpKernels();
-	void CleanUpBuffers();
 	void Free_mem();
 
 };
