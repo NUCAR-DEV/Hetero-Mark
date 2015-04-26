@@ -121,9 +121,61 @@ public:
 	void Run(int, char **);
 
 private:
+	//-----------------------------------------------------------------------//
+	// Host Parameters
+	//-----------------------------------------------------------------------//
+
+	// command line options 
+	char   *filename;                                                       
+	int isBinaryFile;                                                       
+	int isOutput;                                            
+	int npoints;                                                            
+	int nfeatures;                                                          
+	int max_nclusters;           
+	int min_nclusters;          
+	int isRMSE;                                                             
+	int nloops;                 // number of iterations for each cluster            
+	int   index;                // number of iteration to reach the best RMSE
+	float threshold;            
+
+	float **feature;           // host feature                                                
+
+
+	//-----------------  Clustering parameters ------------------------------//
+	int nclusters;               // number of clusters
+	int *membership;			// which cluster a data point belongs to
+	// hold coordinates of cluster centers
+	float **tmp_cluster_centres; // pointer to the clusters
+	float **cluster_centres;     // pointer to the clusters
+
+	//-----------------  Create_mem -----------------------------------------//
+	int   *membership_OCL;
+
+	//----------------- Kmeans_clustering parameters ------------------------//
+	float  **clusters;          // out: [nclusters][nfeatures]                  
+	int     *initial;           // used to hold the index of points not yet selected
+	int     *new_centers_len;   // [nclusters]: no. of points in each cluster   
+	float  **new_centers;       // [nclusters][nfeatures]               
+	float    delta;             // if the point moved                           
+
+	//----------------- rms_err parameters ----------------------------------//
+	float rmse;				    // RMSE for each clustering
+	float min_rmse;			
+	float	min_rmse_ref;		
+	int	best_nclusters;
+
+	//-----------------------------------------------------------------------//
+	// Device Parameters
+	//-----------------------------------------------------------------------//
+
+
 	// Helper objects
 	clRuntime *runtime;
 	clFile *file;
+
+	// ocl kernel
+	cl_kernel kernel_s;
+	cl_kernel kernel2;
 	
 	bool svmCoarseGrainAvail;
 	bool svmFineGrainAvail;
@@ -135,51 +187,13 @@ private:
 	cl_command_queue cmd_queue;
 	cl_program       prog;
 	
-	// ocl kernel
-	cl_kernel kernel_s;
-	cl_kernel kernel2;
-	//cl_kernel kernel;
-	
-	// fixme
-	// SVM buffers
+	// device memory
 	cl_mem d_feature;          // device feature
 	cl_mem d_feature_swap;
-	cl_mem d_cluster;
+	cl_mem d_cluster;          // cluster
 	cl_mem d_membership;
 
-	int   *membership_OCL;
-	int   *membership_d;
-	float *feature_d;
-	float *clusters_d;
-	float *center_d;
-	
-	//-----------------------------------------------------------------------//
-	// Parameters
-	//-----------------------------------------------------------------------//
-	float	min_rmse_ref;		
 
-	// command line options 
-	char   *filename;                                                       
-
-	int isBinaryFile;                                                       
-	int isOutput;                                            
-	int npoints;                                                            
-	int nfeatures;                                                          
-	int max_nclusters;           
-	int min_nclusters;          
-	int isRMSE;                                                             
-	int nloops;             
-	int	best_nclusters;
-
-	int index;                  // number of iteration to reach the best RMSE
-	int *membership;			// which cluster a data point belongs to
-	float rmse;				    // RMSE for each clustering
-
-	float   threshold;            
-
-	float **feature;           // host feature                                                
-	float **cluster_centres;
-	float **tmp_cluster_centres;		// hold coordinates of cluster centers
 
 	//-----------------------------------------------------------------------//
 	// Usage function
@@ -194,31 +208,34 @@ private:
 	//-----------------------------------------------------------------------//
 	// Cluster function
 	//-----------------------------------------------------------------------//
+	void Clustering();
 	void CL_initialize();
 	void CL_build_program();
 	void CL_create_kernels();
-	void CL_create_buffers(int);
+	void Create_mem();
 	void Swap_features();
-	void Clustering();
+	void Kmeans_clustering();
+	void Kmeans_ocl();
+
+	//-----------------------------------------------------------------------//
+	// rms function
+	//-----------------------------------------------------------------------//
+	float euclid_dist_2(float*, float*); 
+	int find_nearest_point(float*, float**);
+	void RMS_err();
+
+	//-----------------------------------------------------------------------//
+	// Command line ouput  
+	//-----------------------------------------------------------------------//
+	void Display_results();
 
 	//-----------------------------------------------------------------------//
 	// Clean functions 
 	//-----------------------------------------------------------------------//
 	void CleanUpKernels();
 	void CleanUpBuffers();
+	void Free_mem();
 
-
-	//------------------------------------------------//
-	int initialize(int use_gpu); // initalize opencl
-	int cluster(int, int, float**, int, int, float, int*, float***, float*, int, int);
-	float** kmeans_clustering(float **, int , int , int , float , int *); 
-	int	kmeansOCL(float **, int , int , int , int *, float **, int *, float **);
-	float   euclid_dist_2        (float*, float*, int);
-	int     find_nearest_point   (float* , int, float**, int);
-	float	rms_err(float**, int, int, float**, int);
-
-	void deallocateMemory();
-	int shutdown();
 };
 
 
