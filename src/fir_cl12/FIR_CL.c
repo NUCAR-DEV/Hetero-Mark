@@ -40,7 +40,9 @@ cl_float* temp_output = NULL;
 
 
 int main(int argc , char** argv) {
-  double start = time_stamp();
+        clock_t c_start, c_stop;
+        c_start = clock();
+	
 	/** Define Custom Variables */
 	int i,count;
 	int local;
@@ -376,10 +378,12 @@ int main(int argc , char** argv) {
 	eventList->printEvents();
 	eventList->dumpEvents("eventDumps");
 	delete eventList;
-	return 0;
 
-	double start = time_stamp();
-	printf("Total time = %f ms\n", end - start);
+	c_stop = clock();
+	float diff = (((float)c_stop - (float)c_start) / CLOCKS_PER_SEC) * 1000;
+	printf("\nDone! - Time taken: %f\n", diff);
+
+	return 0;
 }
 
 //#ifdef GPUPROF
