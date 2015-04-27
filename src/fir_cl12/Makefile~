@@ -1,0 +1,15 @@
+CC = g++
+CFLAGS = -g 
+
+
+OCL_LIB = -L /opt/AMDAPP/lib/x86_64/ -lOpenCL
+OCL_INC = -I /opt/AMDAPP/include
+FIR_DEPS = eventlist.cpp
+
+all : FIR
+
+FIR : FIR_CL.c 
+	$(CC) $(CFLAGS) -o $@ $< $(FIR_DEPS) $(OCL_INC) $(OCL_LIB)
+	
+clean :
+	rm -rf FIR

@@ -1,5 +1,5 @@
 set( BENCHMARK_NAME kmeans)
-set( SOURCE_FILES rmse.c read_input.c getopt.c cluster.c kmeans_clustering.c kmeans.cc)
+set( SOURCE_FILES kmeans.cc)
 set( EXTRA_FILES kmeans.cl )
 
 ############################################################################
@@ -62,7 +62,7 @@ endif( )
 
 set( COMPILER_FLAGS "-std=c++0x" )
 set( LINKER_FLAGS " " )
-set( ADDITIONAL_LIBRARIES "" )
+set( ADDITIONAL_LIBRARIES "-lm -pthread" )
 
 # clUtil includes
 set( CLUTIL_INCLUDE_DIRS "../../include/clUtil" )
