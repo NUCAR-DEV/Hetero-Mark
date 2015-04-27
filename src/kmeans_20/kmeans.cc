@@ -183,343 +183,9 @@ void KMEANS::Usage(char *argv0)
 	exit(-1);
 }
 
-void KMEANS::Read(int argc, char **argv)
-{
-	// ------------------------- command line options -----------------------//
-	int     opt;                                                                
-	extern char   *optarg;                                                      
-	isBinaryFile = 0;                                                       
-	threshold = 0.001;          // default value
-	max_nclusters=5;            // default value
-	min_nclusters=5;            // default value
-	isRMSE = 0;                                                             
-	isOutput = 0;                                            
-	nloops = 1;                 // default value
 
-	char    line[1024];                                                         
-	ssize_t ret; // add return value for read
 
-	float  *buf;                                                                
-	npoints = 0;                                                            
-	nfeatures = 0;                                                          
 
-	best_nclusters = 0;                                                     
-
-	int i, j;
-
-	// obtain command line arguments and change appropriate options
-	while ( (opt=getopt(argc,argv,"i:t:m:n:l:bro"))!= EOF) {                    
-		switch (opt) {                                                          
-			case 'i': filename=optarg;                                          
-					  break;                                                      
-			case 'b': isBinaryFile = 1;                                         
-					  break;                                                      
-			case 't': threshold=atof(optarg);                                   
-					  break;                                                      
-			case 'm': max_nclusters = atoi(optarg);                             
-					  break;                                                      
-			case 'n': min_nclusters = atoi(optarg);                             
-					  break;                                                      
-			case 'r': isRMSE = 1;                                               
-					  break;                                                      
-			case 'o': isOutput = 1;                                             
-					  break;                                                      
-			case 'l': nloops = atoi(optarg);                                    
-					  break;                                                      
-			case '?': Usage(argv[0]);                                           
-					  break;                                                      
-			default: Usage(argv[0]);                                            
-					 break;                                                      
-		}                                                                       
-	}                                                                       
-
-	if (filename == 0) Usage(argv[0]);  
-
-
-	//-----------------------------------------------------------------------//
-	// Setup Opencl env
-	//-----------------------------------------------------------------------//
-	CL_initialize();
-	CL_build_program();
-	CL_create_kernels();
-
-	//-----------------------------------------------------------------------//
-	// SVM buffers 
-	// 				feature, feature_swap, membership, clusters 
-	//-----------------------------------------------------------------------//
-	svmCoarseGrainAvail = runtime->isSVMavail(SVM_COARSE);
-	svmFineGrainAvail   = runtime->isSVMavail(SVM_FINE);
-
-	// runtime->displayDeviceInfo();
-	// cout << svmCoarseGrainAvail << endl;
-	// cout << svmFineGrainAvail << endl;
-
-
-	// Need at least coarse grain
-	if ( !svmCoarseGrainAvail )
-	{
-		printf("SVM coarse grain support unavailable\n");
-		exit(-1);
-	}
-	
-
-	// ============== I/O begin ==============//
-	//io_timing = omp_get_wtime();
-	if (isBinaryFile) 
-	{	//Binary file input
-		int infile;
-		if ((infile = open(filename, O_RDONLY, "0600")) == -1) {
-			fprintf(stderr, "Error: no such file (%s)\n", filename);
-			exit(1);
-		}
-
-		ret = read(infile, &npoints, sizeof(int));
-
-		if (ret == -1) {
-			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
-					__FILE__, __LINE__);
-		}
-
-		ret = read(infile, &nfeatures, sizeof(int));        
-		if (ret == -1) {
-			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
-					__FILE__, __LINE__);
-		}
-
-		bytes_pf = npoints * nfeatures * sizeof(float);
-
-		//----------//
-		// svmalloc
-		//----------//
-		feature_svm = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_pf, 0);
-		if ( !feature_svm )
-		{
-			printf("Cannot allocate SVM memory with clSVMAlloc.\n%s-%d\n",
-			__FILE__, __LINE__);
-			exit(-1);
-		}
-
-		// allocate space for features[][] and read attributes of all objects
-		// defined in header file
-		buf         = (float*) malloc(npoints*nfeatures*sizeof(float));
-		feature    = (float**)malloc(npoints*          sizeof(float*));
-		feature[0] = (float*) malloc(npoints*nfeatures*sizeof(float));
-
-		// fixme: svm buffer
-		for (i=1; i<npoints; i++)
-			feature[i] = feature[i-1] + nfeatures;
-
-		ret = read(infile, buf, npoints*nfeatures*sizeof(float));
-
-		if (ret == -1) {
-			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
-					__FILE__, __LINE__);
-		}
-
-		close(infile);
-	}
-	else 
-	{
-		FILE *infile;
-		if ((infile = fopen(filename, "r")) == NULL) {
-			fprintf(stderr, "Error: no such file (%s)\n", filename);
-			exit(1);
-		}		
-
-		while (fgets(line, 1024, infile) != NULL) {
-			if (strtok(line, " \t\n") != 0)
-				npoints++;			
-		}
-
-
-		rewind(infile);
-
-		while (fgets(line, 1024, infile) != NULL) {
-			if (strtok(line, " \t\n") != 0) {
-				// ignore the id (first attribute): nfeatures = 1;
-				while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
-				break;
-			}
-		}        
-
-		bytes_pf = npoints * nfeatures * sizeof(float);
-
-		//----------//
-		// svmalloc
-		//----------//
-		feature_svm = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_pf, 0);
-		if ( !feature_svm )
-		{
-			printf("Failed to allocate SVM memory : feature_svm.\n%s-%d\n",
-			__FILE__, __LINE__);
-			exit(-1);
-		}
-
-		// allocate space for features[] and read attributes of all objects
-		buf         = (float*) malloc(npoints*nfeatures*sizeof(float));
-		feature    = (float**)malloc(npoints*          sizeof(float*));
-		feature[0] = (float*) malloc(npoints*nfeatures*sizeof(float));
-
-		// fixme : svm buffer
-		for (i=1; i<npoints; i++)
-			feature[i] = feature[i-1] + nfeatures;
-
-		rewind(infile);
-
-		i = 0;
-
-		while (fgets(line, 1024, infile) != NULL) {
-
-			if (strtok(line, " \t\n") == NULL) continue;            
-
-			for (j=0; j<nfeatures; j++) {
-				buf[i] = atof(strtok(NULL, " ,\t\n"));             
-				i++;
-			}            
-		}
-
-		fclose(infile);
-	}
-
-	//io_timing = omp_get_wtime() - io_timing;
-
-	printf("\nI/O completed\n");
-	printf("\nNumber of objects: %d\n", npoints);
-	printf("Number of features: %d\n", nfeatures);
-	
-	// error check for clusters
-	if (npoints < min_nclusters)
-	{
-		printf("Error: min_nclusters(%d) > npoints(%d) -- cannot proceed\n", 
-				min_nclusters, npoints);
-		exit(0);
-	}
-
-	// now features holds 2-dimensional array of features //
-	memcpy(feature[0], buf, npoints*nfeatures*sizeof(float));
-
-	//---------------------//
-	// svm map for writing
-	//---------------------//
-	map_feature_svm(1);
-
-	memcpy(feature_svm, buf, bytes_pf);
-
-	unmap_feature_svm();
-
-
-	//clSVMFree(context, feature_svm);
-
-	//---------------------//
-	// svm membership_svm 
-	//---------------------//
-	bytes_p = sizeof(int) * npoints;
-
-	membership_svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, 
-	                                     bytes_p, 0);
-	if ( !membership_svm )
-	{
-		printf("Failed to allocate SVM memory : membership_svm.\n%s-%d\n",
-				__FILE__, __LINE__);
-		exit(-1);
-	}
-
-
-	free(buf);
-}
-
-
-
-void KMEANS::Clustering()
-{
-	cluster_centres = NULL;
-
-	cluster_centres_1 = NULL;
-
-	index =0;			    // number of iteration to reach the best RMSE
-	index_1 = 0;
-
-	// fixme
-	membership = (int*) malloc(npoints * sizeof(int));
-
-	min_rmse_ref   = FLT_MAX;		
-	min_rmse_ref_1 = FLT_MAX;		
-
-	int i;
-	//int	nclusters;			    // number of clusters
-
-	// sweep k from min to max_nclusters to find the best number of clusters
-	for(nclusters = min_nclusters; nclusters <= max_nclusters; nclusters++)
-	{
-		// cannot have more clusters than points
-		if (nclusters > npoints) 
-			break;	
-
-		// allocate device memory, invert data array
-		Create_mem();
-		Create_mem_svm();
-
-		Swap_features();
-		Swap_features_svm();
-
-		// iterate nloops times for each number of clusters //
-		for(i = 0; i < nloops; i++)
-		{
-
-			Kmeans_clustering();
-
-
-			if (cluster_centres) 
-			{
-				free(cluster_centres[0]);
-				free(cluster_centres);
-			}
-
-			// svm
-			if (cluster_centres_1) 
-			{
-				free(cluster_centres_1);
-			}
-
-			cluster_centres = tmp_cluster_centres;
-
-			// svm
-			cluster_centres_1 = tmp_cluster_centres_1;
-
-			// find the number of clusters with the best RMSE //
-			if(isRMSE)
-			{
-				RMS_err();
-
-				RMS_err_svm();
-
-				if(rmse < min_rmse_ref){
-					min_rmse_ref = rmse;		//update reference min RMSE
-					min_rmse = min_rmse_ref;	//update return min RMSE
-					best_nclusters = nclusters;	//update optimum number of clusters
-					index = i;			//update number of iteration to reach best RMSE
-				}
-
-				//svm
-				if(rmse_1 < min_rmse_ref_1){
-					min_rmse_ref_1 = rmse_1;		//update reference min RMSE
-					min_rmse_1 = min_rmse_ref_1;	//update return min RMSE
-					best_nclusters_1 = nclusters;	//update optimum number of clusters
-					index_1 = i;			//update number of iteration to reach best RMSE
-				}
-			}			
-
-			// remeber to unmap cluster_svm
-			unmap_cluster_svm();
-		}
-
-		Free_mem(); // free device memory
-
-		Free_mem_svm();
-	}
-
-	free(membership);
-}
 
 
 
@@ -605,8 +271,22 @@ void KMEANS::Create_mem()
 	membership_OCL = (int*) malloc(npoints * sizeof(int));
 }
 
+
+
+
 void KMEANS::Create_mem_svm()
 {
+	bytes_cf = nclusters * nfeatures  * sizeof(float);
+
+	feature_svm = (float *)clSVMAlloc(context, 
+	                                  CL_MEM_READ_WRITE, 
+									  bytes_pf, 0);
+	if ( !feature_svm )
+	{
+		printf("Failed to allocate feature_swap_svm.\n%s-%d\n",
+				__FILE__, __LINE__);
+		exit(-1);
+	}
 
 	feature_swap_svm = (float *)clSVMAlloc(context, 
 	                                       CL_MEM_READ_WRITE, 
@@ -618,7 +298,6 @@ void KMEANS::Create_mem_svm()
 		exit(-1);
 	}
 
-	bytes_cf = nclusters * nfeatures  * sizeof(float);
 	
 	cluster_svm = (float *)clSVMAlloc(context, 
                                       CL_MEM_READ_WRITE, 
@@ -631,7 +310,7 @@ void KMEANS::Create_mem_svm()
 		exit(-1);
 	}
 
-	// membership_OCL = (int*) malloc(npoints * sizeof(int));
+	membership_OCL = (int*) malloc(npoints * sizeof(int));
 }
 
 
@@ -672,6 +351,10 @@ void KMEANS::Swap_features()
 
 void KMEANS::Swap_features_svm()
 {
+	// copy feature to feature_svm
+	map_feature_svm(1);
+	memcpy(feature_svm, feature[0], npoints*nfeatures*sizeof(float));
+	unmap_feature_svm();
 
 	clSetKernelArgSVMPointer(kernel2, 0, (void*) &feature_svm);
 	clSetKernelArgSVMPointer(kernel2, 1, (void*) &feature_swap_svm);
@@ -692,6 +375,7 @@ void KMEANS::Swap_features_svm()
 								 &local_work_size, 
 								 0, 0, 0);
 	checkOpenCLErrors(err, "ERROR: clEnqueueNDRangeKernel()");
+
 }
 
 
@@ -709,10 +393,11 @@ void KMEANS::Free_mem()
 
 void KMEANS::Free_mem_svm()
 {
+	clSVMFree(context, feature_svm);
 	clSVMFree(context, feature_swap_svm);
 	clSVMFree(context, cluster_svm);
 
-	// free(membership_OCL);
+	free(membership_OCL);
 }
 
 
@@ -882,13 +567,13 @@ void KMEANS::Kmeans_clustering()
 
 	// fixme : use svm 
 	// allocate space for and initialize returning variable clusters[]
-	clusters    = (float**) malloc(nclusters *             sizeof(float*));
-	clusters[0] = (float*)  malloc(nclusters * nfeatures * sizeof(float));
-	for (i = 1; i < nclusters; i++) 
-	{
-		clusters[i] = clusters[i-1] + nfeatures;
-	}
-
+//	clusters    = (float**) malloc(nclusters *             sizeof(float*));
+//	clusters[0] = (float*)  malloc(nclusters * nfeatures * sizeof(float));
+//	for (i = 1; i < nclusters; i++) 
+//	{
+//		clusters[i] = clusters[i-1] + nfeatures;
+//	}
+//
 
 	// initialize the random clusters
 	initial = (int *) malloc (npoints * sizeof(int));
@@ -910,8 +595,8 @@ void KMEANS::Kmeans_clustering()
 	{
 		//n = (int)rand() % initial_points;		
 
-		for (j=0; j<nfeatures; j++)
-			clusters[i][j] = feature[initial[n]][j];	// remapped
+//		for (j=0; j<nfeatures; j++)
+//			clusters[i][j] = feature[initial[n]][j];	// remapped
 
 		//--------//
 		// svm
@@ -932,7 +617,7 @@ void KMEANS::Kmeans_clustering()
 	// fixme: use svm
 	for (i=0; i < npoints; i++) 
 	{
-		membership[i] = -1;
+		// membership[i] = -1;
 		membership_svm[i] = -1;
 	}
 
@@ -954,7 +639,7 @@ void KMEANS::Kmeans_clustering()
 	// iterate until convergence
 	do 
 	{
-		Kmeans_ocl();
+		// Kmeans_ocl();
 		Kmeans_ocl_svm();
 
 		//-----------//
@@ -970,7 +655,7 @@ void KMEANS::Kmeans_clustering()
 			{
 				if (new_centers_len[i] > 0)
 				{	// take average i.e. sum/n 
-					clusters[i][j] = new_centers[i][j] / new_centers_len[i];
+					// clusters[i][j] = new_centers[i][j] / new_centers_len[i];
 
 					// svm
 					cluster_svm[i * nfeatures + j] = new_centers[i][j] / new_centers_len[i];
@@ -995,7 +680,7 @@ void KMEANS::Kmeans_clustering()
 
 	// clusters is pointed to tmp_cluster_centres 
 	// return clusters;
-	tmp_cluster_centres = clusters;
+//	tmp_cluster_centres = clusters;
 
 	// pass the data 
 	map_cluster_svm(0); // map for read, remember to unmap
@@ -1123,7 +808,7 @@ void KMEANS::RMS_err_svm()
 	// pass data pointers
 	float *feature_loc, *cluster_centres_loc; 	
 	
-	// svm
+	// svm : map for reading
 	map_feature_svm(0);
 	feature_loc = feature_svm;
 
@@ -1154,72 +839,6 @@ void KMEANS::RMS_err_svm()
 
 
 
-void KMEANS::Display_results()
-{
-	int i, j;
-
-	// cluster center coordinates : displayed only for when k=1
-	if((min_nclusters == max_nclusters) && (isOutput == 1)) 
-	{                   
-		printf("\n================= Centroid Coordinates =================\n"); 
-		for(i = 0; i < max_nclusters; i++){                                     
-			printf("%d:", i);                                                   
-			for(j = 0; j < nfeatures; j++){                                     
-				printf(" %.2f", cluster_centres[i][j]);                         
-			}                                                                   
-			printf("\n\n");                                                     
-		}                                                                       
-	}                                                                           
-
-	float	len = (float) ((max_nclusters - min_nclusters + 1)*nloops);                 
-
-	printf("Number of Iteration: %d\n", nloops);                                
-	//printf("Time for I/O: %.5fsec\n", io_timing);                             
-	//printf("Time for Entire Clustering: %.5fsec\n", cluster_timing);          
-
-	if(min_nclusters != max_nclusters)
-	{                                         
-		if(nloops != 1)
-		{                                                        
-			//range of k, multiple iteration                                    
-			//printf("Average Clustering Time: %fsec\n",                        
-			//      cluster_timing / len);                                      
-			printf("Best number of clusters is %d\n", best_nclusters);          
-		}                                                                       
-		else
-		{                                                                   
-			//range of k, single iteration                                      
-			//printf("Average Clustering Time: %fsec\n",                        
-			//      cluster_timing / len);                                      
-			printf("Best number of clusters is %d\n", best_nclusters);          
-		}                                                                       
-	}                                                                           
-	else
-	{                                                                       
-		if(nloops != 1)
-		{                                                        
-			// single k, multiple iteration                                     
-			//printf("Average Clustering Time: %.5fsec\n",                      
-			//      cluster_timing / nloops);                                   
-			if(isRMSE) 
-			{// if calculated RMSE                                   
-				printf("Number of trials to approach the best RMSE of %.3f is %d\n",
-						min_rmse, index + 1);
-			}                                                                   
-		}                                                                       
-		else
-		{                                                                   
-			// single k, single iteration                                       
-			if(isRMSE)
-			{                                                         
-				// if calculated RMSE                                           
-				printf("Root Mean Squared Error: %.3f\n", min_rmse);                
-			}                                                                   
-		}                                                                       
-	}                                                                           
-
-}
-
 
 
 void KMEANS::Display_results_svm()
@@ -1233,7 +852,7 @@ void KMEANS::Display_results_svm()
 		for(i = 0; i < max_nclusters; i++){                                     
 			printf("%d:", i);                                                   
 			for(j = 0; j < nfeatures; j++){                                     
-				printf(" %.2f", cluster_centres_1[i * nfeatures + j]);                         
+				printf(" %.2f", cluster_centres[i * nfeatures + j]);                         
 			}                                                                   
 			printf("\n\n");                                                     
 		}                                                                       
@@ -1290,19 +909,354 @@ void KMEANS::Display_results_svm()
 
 
 
+void KMEANS::Clustering()
+{
+	// cluster_centres = NULL;
+	// index =0;			    // number of iteration to reach the best RMSE
+
+	cluster_centres_1 = NULL;
+	index_1 = 0;
+
+	// fixme
+	// membership = (int*) malloc(npoints * sizeof(int));
+
+	//---------------------//
+	// svm membership_svm 
+	//---------------------//
+	membership_svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_p, 0);
+	if ( !membership_svm )
+	{
+		printf("Failed to allocate SVM memory : membership_svm.\n%s-%d\n",
+				__FILE__, __LINE__);
+		exit(-1);
+	}
+
+
+	//min_rmse_ref   = FLT_MAX;		
+	min_rmse_ref_1 = FLT_MAX;		
+
+	int i;
+
+	//Create_mem_svm();
+	//Swap_features_svm();
+
+	// sweep k from min to max_nclusters to find the best number of clusters
+	for(nclusters = min_nclusters; nclusters <= max_nclusters; nclusters++)
+	{
+		// cannot have more clusters than points
+		if (nclusters > npoints) 
+			break;	
+
+		// allocate device memory, invert data array
+		// Create_mem();
+		//Swap_features();
+
+		//---------------------//
+		// svm :
+		//      feature_svm, feature_swap_svm, cluster_svm, membership_OCL 
+		//---------------------//
+		Create_mem_svm();
+		Swap_features_svm();
+
+
+		// iterate nloops times for each number of clusters //
+		for(i = 0; i < nloops; i++)
+		{
+
+			// kmeans clustering, return tmp_cluster_centres_1
+			Kmeans_clustering();
+
+			// when cluster_centres_1 is occupied, free it
+			if (cluster_centres_1) 
+			{
+				free(cluster_centres_1);
+			}
+
+			cluster_centres_1 = tmp_cluster_centres_1;
+
+			// save the last round for display
+			if( (nclusters == max_nclusters) && (i == (nloops - 1)) )
+			{
+				cluster_centres = (float *) malloc (bytes_cf);		
+				memcpy(cluster_centres, cluster_centres_1, bytes_cf);	
+			}
+
+
+
+
+			// find the number of clusters with the best RMSE //
+			if(isRMSE)
+			{
+				RMS_err_svm();
+
+		//		if(rmse < min_rmse_ref){
+		//			min_rmse_ref = rmse;		//update reference min RMSE
+		//			min_rmse = min_rmse_ref;	//update return min RMSE
+		//			best_nclusters = nclusters;	//update optimum number of clusters
+		//			index = i;			//update number of iteration to reach best RMSE
+		//		}
+
+				//svm
+				if(rmse_1 < min_rmse_ref_1){
+					min_rmse_ref_1 = rmse_1;		//update reference min RMSE
+					min_rmse_1 = min_rmse_ref_1;	//update return min RMSE
+					best_nclusters_1 = nclusters;	//update optimum number of clusters
+					index_1 = i;			//update number of iteration to reach best RMSE
+				}
+			}			
+
+			// remeber to unmap cluster_svm
+			unmap_cluster_svm();
+		}
+
+		Free_mem_svm();
+	}
+
+	clSVMFree(context, membership_svm);
+}
+
+
+
+void KMEANS::Read(int argc, char **argv)
+{
+	// ------------------------- command line options -----------------------//
+	int     opt;                                                                
+	extern char   *optarg;                                                      
+	isBinaryFile = 0;                                                       
+	threshold = 0.001;          // default value
+	max_nclusters=5;            // default value
+	min_nclusters=5;            // default value
+	isRMSE = 0;                                                             
+	isOutput = 0;                                            
+	nloops = 1;                 // default value
+
+	char    line[1024];                                                         
+	ssize_t ret; // add return value for read
+
+	float  *buf;                                                                
+	npoints = 0;                                                            
+	nfeatures = 0;                                                          
+
+	best_nclusters = 0;                                                     
+
+	int i, j;
+
+	// obtain command line arguments and change appropriate options
+	while ( (opt=getopt(argc,argv,"i:t:m:n:l:bro"))!= EOF) {                    
+		switch (opt) {                                                          
+			case 'i': filename=optarg;                                          
+					  break;                                                      
+			case 'b': isBinaryFile = 1;                                         
+					  break;                                                      
+			case 't': threshold=atof(optarg);                                   
+					  break;                                                      
+			case 'm': max_nclusters = atoi(optarg);                             
+					  break;                                                      
+			case 'n': min_nclusters = atoi(optarg);                             
+					  break;                                                      
+			case 'r': isRMSE = 1;                                               
+					  break;                                                      
+			case 'o': isOutput = 1;                                             
+					  break;                                                      
+			case 'l': nloops = atoi(optarg);                                    
+					  break;                                                      
+			case '?': Usage(argv[0]);                                           
+					  break;                                                      
+			default: Usage(argv[0]);                                            
+					 break;                                                      
+		}                                                                       
+	}                                                                       
+
+	if (filename == 0) Usage(argv[0]);  
+
+
+	//-----------------------------------------------------------------------//
+	// Setup Opencl env
+	//-----------------------------------------------------------------------//
+	CL_initialize();
+	CL_build_program();
+	CL_create_kernels();
+
+	//-----------------------------------------------------------------------//
+	// SVM buffers 
+	// 				feature, feature_swap, membership, clusters 
+	//-----------------------------------------------------------------------//
+	svmCoarseGrainAvail = runtime->isSVMavail(SVM_COARSE);
+	svmFineGrainAvail   = runtime->isSVMavail(SVM_FINE);
+
+	// runtime->displayDeviceInfo();
+	// cout << svmCoarseGrainAvail << endl;
+	// cout << svmFineGrainAvail << endl;
+
+
+	// Need at least coarse grain
+	if ( !svmCoarseGrainAvail )
+	{
+		printf("SVM coarse grain support unavailable\n");
+		exit(-1);
+	}
+	
+
+	// ============== I/O begin ==============//
+	//io_timing = omp_get_wtime();
+	if (isBinaryFile) 
+	{	//Binary file input
+		int infile;
+		if ((infile = open(filename, O_RDONLY, "0600")) == -1) {
+			fprintf(stderr, "Error: no such file (%s)\n", filename);
+			exit(1);
+		}
+
+		ret = read(infile, &npoints, sizeof(int));
+
+		if (ret == -1) {
+			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
+					__FILE__, __LINE__);
+		}
+
+		ret = read(infile, &nfeatures, sizeof(int));        
+		if (ret == -1) {
+			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
+					__FILE__, __LINE__);
+		}
+
+		// bytes_pf = npoints * nfeatures * sizeof(float);
+
+		//----------//
+		// svmalloc
+		//----------//
+		//feature_svm = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_pf, 0);
+		//if ( !feature_svm )
+		//{
+		//	printf("Cannot allocate SVM memory with clSVMAlloc.\n%s-%d\n",
+		//	__FILE__, __LINE__);
+		//	exit(-1);
+		//}
+
+		buf         = (float*) malloc(npoints*nfeatures*sizeof(float));
+		feature     = (float**)malloc(npoints*          sizeof(float*));
+		feature[0]  = (float*) malloc(npoints*nfeatures*sizeof(float));
+
+		for (i=1; i<npoints; i++)
+			feature[i] = feature[i-1] + nfeatures;
+
+		ret = read(infile, buf, npoints*nfeatures*sizeof(float));
+
+		if (ret == -1) {
+			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
+					__FILE__, __LINE__);
+		}
+
+		close(infile);
+	}
+	else 
+	{
+		FILE *infile;
+		if ((infile = fopen(filename, "r")) == NULL) {
+			fprintf(stderr, "Error: no such file (%s)\n", filename);
+			exit(1);
+		}		
+
+		while (fgets(line, 1024, infile) != NULL) {
+			if (strtok(line, " \t\n") != 0)
+				npoints++;			
+		}
+
+
+		rewind(infile);
+
+		while (fgets(line, 1024, infile) != NULL) {
+			if (strtok(line, " \t\n") != 0) {
+				// ignore the id (first attribute): nfeatures = 1;
+				while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
+				break;
+			}
+		}        
+
+
+		//----------//
+		// svmalloc
+		//----------//
+		//feature_svm = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_pf, 0);
+		//if ( !feature_svm )
+		//{
+		//	printf("Failed to allocate SVM memory : feature_svm.\n%s-%d\n",
+		//	__FILE__, __LINE__);
+		//	exit(-1);
+		//}
+
+		// allocate space for features[] and read attributes of all objects
+		buf         = (float*) malloc(npoints * nfeatures * sizeof(float));
+		feature     = (float**)malloc(npoints*          sizeof(float*));
+		feature[0]  = (float*) malloc(npoints*nfeatures*sizeof(float));
+
+		// fixme : svm buffer
+		for (i=1; i<npoints; i++)
+			feature[i] = feature[i-1] + nfeatures;
+
+		rewind(infile);
+
+		i = 0;
+
+		while (fgets(line, 1024, infile) != NULL) {
+
+			if (strtok(line, " \t\n") == NULL) continue;            
+
+			for (j=0; j<nfeatures; j++) {
+				buf[i] = atof(strtok(NULL, " ,\t\n"));             
+				i++;
+			}            
+		}
+
+		fclose(infile);
+	}
+
+	bytes_pf = npoints * nfeatures * sizeof(float);
+	bytes_p = sizeof(int) * npoints;
+
+	//io_timing = omp_get_wtime() - io_timing;
+
+	printf("\nI/O completed\n");
+	printf("\nNumber of objects: %d\n", npoints);
+	printf("Number of features: %d\n", nfeatures);
+	
+	// error check for clusters
+	if (npoints < min_nclusters)
+	{
+		printf("Error: min_nclusters(%d) > npoints(%d) -- cannot proceed\n", 
+				min_nclusters, npoints);
+		exit(0);
+	}
+
+	// now features holds 2-dimensional array of features //
+	memcpy(feature[0], buf, npoints*nfeatures*sizeof(float));
+
+	//---------------------//
+	// svm map for writing
+	//---------------------//
+	//map_feature_svm(1);
+	//memcpy(feature_svm, buf, bytes_pf);
+	//unmap_feature_svm();
+
+
+
+	free(buf);
+}
+
 
 
 
 
 void KMEANS::Run(int argc, char **argv)                                         
 {                                                                               
+	//--- read features and command line options ----//
 	Read(argc, argv);                                                         
 
+	//--- process clustering ---//
 	//cluster_timing = omp_get_wtime();		// Total clustering time
 	Clustering();
 	//cluster_timing = omp_get_wtime() - cluster_timing;	
 
-	// Display_results();	                                                                                
 	Display_results_svm();	                                                                                
 }    
 

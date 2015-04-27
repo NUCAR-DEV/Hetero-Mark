@@ -155,10 +155,11 @@ private:
 	int nclusters;               // number of clusters
 	// hold coordinates of cluster centers
 	float **tmp_cluster_centres; // pointer to the clusters
-	float **cluster_centres;     // pointer to the clusters
+
 
 	float *tmp_cluster_centres_1; // point to cluster_svm
 	float *cluster_centres_1;     
+	float *cluster_centres;     // pointer to the clusters
 
 	//-----------------  Create_mem -----------------------------------------//
 	int   *membership_OCL;
