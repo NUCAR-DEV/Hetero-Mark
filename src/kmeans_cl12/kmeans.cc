@@ -5,290 +5,746 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <clUtil.h>
 
-extern "C"
-{
 #include "kmeans.h"
+using namespace std;
+
+KMEANS::KMEANS()
+{	
 }
 
-#ifdef WIN
-	#include <windows.h>
-#else
-	#include <pthread.h>
-	#include <sys/time.h>
-	double gettime() {
-		struct timeval t;
-		gettimeofday(&t,NULL);
-		return t.tv_sec+t.tv_usec*1e-6;
-	}
-#endif
-
-
-#ifdef NV 
-	#include <oclUtils.h>
-#else
-	#include <CL/cl.h>
-#endif
-
-#ifndef FLT_MAX
-#define FLT_MAX 3.40282347e+38
-#endif
-
-#ifdef RD_WG_SIZE_0_0
-        #define BLOCK_SIZE RD_WG_SIZE_0_0
-#elif defined(RD_WG_SIZE_0)
-        #define BLOCK_SIZE RD_WG_SIZE_0
-#elif defined(RD_WG_SIZE)
-        #define BLOCK_SIZE RD_WG_SIZE
-#else
-        #define BLOCK_SIZE 256
-#endif
-
-#ifdef RD_WG_SIZE_1_0
-     #define BLOCK_SIZE2 RD_WG_SIZE_1_0
-#elif defined(RD_WG_SIZE_1)
-     #define BLOCK_SIZE2 RD_WG_SIZE_1
-#elif defined(RD_WG_SIZE)
-     #define BLOCK_SIZE2 RD_WG_SIZE
-#else
-     #define BLOCK_SIZE2 256
-#endif
-
-
-
-// local variables
-static cl_context	    context;
-static cl_command_queue cmd_queue;
-static cl_device_type   device_type;
-static cl_device_id   * device_list;
-static cl_int           num_devices;
-
-static int initialize(int use_gpu)
-{
-	cl_int result;
-	size_t size;
-
-	// create OpenCL context
-	cl_platform_id platform_id;
-	if (clGetPlatformIDs(1, &platform_id, NULL) != CL_SUCCESS) { printf("ERROR: clGetPlatformIDs(1,*,0) failed\n"); return -1; }
-	cl_context_properties ctxprop[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform_id, 0};
-	device_type = use_gpu ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
-	context = clCreateContextFromType( ctxprop, device_type, NULL, NULL, NULL );
-	if( !context ) { printf("ERROR: clCreateContextFromType(%s) failed\n", use_gpu ? "GPU" : "CPU"); return -1; }
-
-	// get the list of GPUs
-	result = clGetContextInfo( context, CL_CONTEXT_DEVICES, 0, NULL, &size );
-	num_devices = (int) (size / sizeof(cl_device_id));
-	
-	if( result != CL_SUCCESS || num_devices < 1 ) { printf("ERROR: clGetContextInfo() failed\n"); return -1; }
-	device_list = new cl_device_id[num_devices];
-	if( !device_list ) { printf("ERROR: new cl_device_id[] failed\n"); return -1; }
-	result = clGetContextInfo( context, CL_CONTEXT_DEVICES, size, device_list, NULL );
-	if( result != CL_SUCCESS ) { printf("ERROR: clGetContextInfo() failed\n"); return -1; }
-
-	// create command queue for the first device
-
-/*
-#ifdef CL_VERSION_2_0
-	cmd_queue = clCreateCommandQueueWithProperties( context, device_list[0], 0, NULL );
-#else
-	cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
-#endif
-*/
-	cmd_queue = clCreateCommandQueue( context, device_list[0], 0, NULL );
-
-
-	if( !cmd_queue ) { printf("ERROR: clCreateCommandQueue() failed\n"); return -1; }
-
-	return 0;
+KMEANS::~KMEANS()
+{	
+	CleanUpKernels();
+	// Free_mem()
 }
 
-static int shutdown()
+void KMEANS::CleanUpKernels()
 {
-	// release resources
-	if( cmd_queue ) clReleaseCommandQueue( cmd_queue );
-	if( context ) clReleaseContext( context );
-	if( device_list ) delete device_list;
-
-	// reset all variables
-	cmd_queue = 0;
-	context = 0;
-	device_list = 0;
-	num_devices = 0;
-	device_type = 0;
-
-	return 0;
+	checkOpenCLErrors(clReleaseKernel(kernel_s),
+			"Failed to release kernel kernel_s");
+	
+	checkOpenCLErrors(clReleaseKernel(kernel2),
+			"Failed to release kernel kernel2");
 }
 
-cl_mem d_feature;
-cl_mem d_feature_swap;
-cl_mem d_cluster;
-cl_mem d_membership;
 
-cl_kernel kernel;
-cl_kernel kernel_s;
-cl_kernel kernel2;
-
-int   *membership_OCL;
-int   *membership_d;
-float *feature_d;
-float *clusters_d;
-float *center_d;
-
-int allocate(int n_points, int n_features, int n_clusters, float **feature)
+void KMEANS::Usage(char *argv0)
 {
-	// Convert the contents of a file into a string
-	const char * filename = "./kmeans.cl";
-	FILE *f = fopen(filename, "r");
-	assert(f);
-	fseek(f, 0, SEEK_END);
-	size_t filesize = ftell(f);
-	size_t sourcesize = filesize + 1;
-	char *source = (char *) calloc(sourcesize, sizeof(char));
-	assert(source);
-	fseek(f, 0, SEEK_SET);
-	size_t ret = fread(source, sizeof(char), filesize, f);
-	if(ret != filesize) {
-		fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__, __LINE__);
-		exit(1);
+	const char *help =
+		"\nUsage: %s [switches] -i filename\n\n"
+		"    -i filename      :file containing data to be clustered\n"		
+		"    -m max_nclusters :maximum number of clusters allowed    [default=5]\n"
+		"    -n min_nclusters :minimum number of clusters allowed    [default=5]\n"
+		"    -t threshold     :threshold value                       [default=0.001]\n"
+		"    -l nloops        :iteration for each number of clusters [default=1]\n"
+		"    -b               :input file is in binary format\n"
+		"    -r               :calculate RMSE                        [default=off]\n"
+		"    -o               :output cluster center coordinates     [default=off]\n";
+	fprintf(stderr, help, argv0);
+	exit(-1);
+}
+
+void KMEANS::Read(int argc, char **argv)
+{
+	// ------------------------- command line options -----------------------//
+	int     opt;                                                                
+	extern char   *optarg;                                                      
+	isBinaryFile = 0;                                                       
+	threshold = 0.001;          // default value
+	max_nclusters=5;            // default value
+	min_nclusters=5;            // default value
+	isRMSE = 0;                                                             
+	isOutput = 0;                                            
+	nloops = 1;                 // default value
+
+	char    line[1024];                                                         
+	ssize_t ret; // add return value for read
+
+	float  *buf;                                                                
+	npoints = 0;                                                            
+	nfeatures = 0;                                                          
+
+	best_nclusters = 0;                                                     
+
+	int i, j;
+
+	// obtain command line arguments and change appropriate options
+	while ( (opt=getopt(argc,argv,"i:t:m:n:l:bro"))!= EOF) {                    
+		switch (opt) {                                                          
+			case 'i': filename=optarg;                                          
+					  break;                                                      
+			case 'b': isBinaryFile = 1;                                         
+					  break;                                                      
+			case 't': threshold=atof(optarg);                                   
+					  break;                                                      
+			case 'm': max_nclusters = atoi(optarg);                             
+					  break;                                                      
+			case 'n': min_nclusters = atoi(optarg);                             
+					  break;                                                      
+			case 'r': isRMSE = 1;                                               
+					  break;                                                      
+			case 'o': isOutput = 1;                                             
+					  break;                                                      
+			case 'l': nloops = atoi(optarg);                                    
+					  break;                                                      
+			case '?': Usage(argv[0]);                                           
+					  break;                                                      
+			default: Usage(argv[0]);                                            
+					 break;                                                      
+		}                                                                       
+	}                                                                       
+
+	if (filename == 0) Usage(argv[0]);  
+	
+	// ============== I/O begin ==============//
+
+	//io_timing = omp_get_wtime();
+	if (isBinaryFile) 
+	{	//Binary file input
+		int infile;
+		if ((infile = open(filename, O_RDONLY, "0600")) == -1) {
+			fprintf(stderr, "Error: no such file (%s)\n", filename);
+			exit(1);
+		}
+
+		ret = read(infile, &npoints, sizeof(int));
+
+		if (ret == -1) {
+			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
+					__FILE__, __LINE__);
+		}
+
+		ret = read(infile, &nfeatures, sizeof(int));        
+		if (ret == -1) {
+			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
+					__FILE__, __LINE__);
+		}
+
+		// allocate space for features[][] and read attributes of all objects
+		// defined in header file
+		buf         = (float*) malloc(npoints*nfeatures*sizeof(float));
+		feature    = (float**)malloc(npoints*          sizeof(float*));
+		feature[0] = (float*) malloc(npoints*nfeatures*sizeof(float));
+
+		// fixme: svm buffer
+		for (i=1; i<npoints; i++)
+			feature[i] = feature[i-1] + nfeatures;
+
+		ret = read(infile, buf, npoints*nfeatures*sizeof(float));
+
+		if (ret == -1) {
+			fprintf(stderr, "Error: failed to read, info: %s.%d\n", 
+					__FILE__, __LINE__);
+		}
+
+		close(infile);
+	}
+	else 
+	{
+		FILE *infile;
+		if ((infile = fopen(filename, "r")) == NULL) {
+			fprintf(stderr, "Error: no such file (%s)\n", filename);
+			exit(1);
+		}		
+
+		while (fgets(line, 1024, infile) != NULL) {
+			if (strtok(line, " \t\n") != 0)
+				npoints++;			
+		}
+
+
+		rewind(infile);
+
+		while (fgets(line, 1024, infile) != NULL) {
+			if (strtok(line, " \t\n") != 0) {
+				// ignore the id (first attribute): nfeatures = 1;
+				while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
+				break;
+			}
+		}        
+
+		// allocate space for features[] and read attributes of all objects
+		buf         = (float*) malloc(npoints*nfeatures*sizeof(float));
+		feature    = (float**)malloc(npoints*          sizeof(float*));
+		feature[0] = (float*) malloc(npoints*nfeatures*sizeof(float));
+
+		// fixme : svm buffer
+		for (i=1; i<npoints; i++)
+			feature[i] = feature[i-1] + nfeatures;
+
+		rewind(infile);
+
+		i = 0;
+
+		while (fgets(line, 1024, infile) != NULL) {
+
+			if (strtok(line, " \t\n") == NULL) continue;            
+
+			for (j=0; j<nfeatures; j++) {
+				buf[i] = atof(strtok(NULL, " ,\t\n"));             
+				i++;
+			}            
+		}
+
+		fclose(infile);
 	}
 
-	fclose(f);
-		
-	// OpenCL initialization
-	int use_gpu = 1;
-	if(initialize(use_gpu)) return -1;
+	//io_timing = omp_get_wtime() - io_timing;
 
-	// compile kernel
-	cl_int err = 0;
-	const char * slist[2] = { source, 0 };
-	cl_program prog = clCreateProgramWithSource(context, 1, slist, NULL, &err);
-	if(err != CL_SUCCESS) { printf("ERROR: clCreateProgramWithSource() => %d\n", err); return -1; }
-	err = clBuildProgram(prog, 0, NULL, NULL, NULL, NULL);
-	{ // show warnings/errors
-	//	static char log[65536]; memset(log, 0, sizeof(log));
-	//	cl_device_id device_id = 0;
-	//	err = clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(device_id), &device_id, NULL);
-	//	clGetProgramBuildInfo(prog, device_id, CL_PROGRAM_BUILD_LOG, sizeof(log)-1, log, NULL);
-	//	if(err || strstr(log,"warning:") || strstr(log, "error:")) printf("<<<<\n%s\n>>>>\n", log);
+	printf("\nI/O completed\n");
+	printf("\nNumber of objects: %d\n", npoints);
+	printf("Number of features: %d\n", nfeatures);
+	
+	// error check for clusters
+	if (npoints < min_nclusters)
+	{
+		printf("Error: min_nclusters(%d) > npoints(%d) -- cannot proceed\n", 
+				min_nclusters, npoints);
+		exit(0);
 	}
-	if(err != CL_SUCCESS) { printf("ERROR: clBuildProgram() => %d\n", err); return -1; }
-	
-	const char * kernel_kmeans_c  = "kmeans_kernel_c";
-	const char * kernel_swap  = "kmeans_swap";	
-		
-	kernel_s = clCreateKernel(prog, kernel_kmeans_c, &err);  
-	if(err != CL_SUCCESS) { printf("ERROR: clCreateKernel() 0 => %d\n", err); return -1; }
-	kernel2 = clCreateKernel(prog, kernel_swap, &err);  
-	if(err != CL_SUCCESS) { printf("ERROR: clCreateKernel() 0 => %d\n", err); return -1; }
-		
-	clReleaseProgram(prog);	
-	
-	d_feature = clCreateBuffer(context, CL_MEM_READ_WRITE, n_points * n_features * sizeof(float), NULL, &err );
-	if(err != CL_SUCCESS) { printf("ERROR: clCreateBuffer d_feature (size:%d) => %d\n", n_points * n_features, err); return -1;}
-	d_feature_swap = clCreateBuffer(context, CL_MEM_READ_WRITE, n_points * n_features * sizeof(float), NULL, &err );
-	if(err != CL_SUCCESS) { printf("ERROR: clCreateBuffer d_feature_swap (size:%d) => %d\n", n_points * n_features, err); return -1;}
-	d_cluster = clCreateBuffer(context, CL_MEM_READ_WRITE, n_clusters * n_features  * sizeof(float), NULL, &err );
-	if(err != CL_SUCCESS) { printf("ERROR: clCreateBuffer d_cluster (size:%d) => %d\n", n_clusters * n_features, err); return -1;}
-	d_membership = clCreateBuffer(context, CL_MEM_READ_WRITE, n_points * sizeof(int), NULL, &err );
-	if(err != CL_SUCCESS) { printf("ERROR: clCreateBuffer d_membership (size:%d) => %d\n", n_points, err); return -1;}
-		
-	//write buffers
-	err = clEnqueueWriteBuffer(cmd_queue, d_feature, 1, 0, n_points * n_features * sizeof(float), feature[0], 0, 0, 0);
-	if(err != CL_SUCCESS) { printf("ERROR: clEnqueueWriteBuffer d_feature (size:%d) => %d\n", n_points * n_features, err); return -1; }
-	
+
+	// now features holds 2-dimensional array of features //
+	memcpy(feature[0], buf, npoints*nfeatures*sizeof(float));
+	free(buf);
+}
+
+void KMEANS::CL_initialize()
+{
+
+	runtime    = clRuntime::getInstance();
+	// OpenCL objects get from clRuntime class
+	platform   = runtime->getPlatformID();
+	context    = runtime->getContext();
+	device     = runtime->getDevice();
+	cmd_queue  = runtime->getCmdQueue(0);
+
+}
+
+void KMEANS::CL_build_program()
+{
+	cl_int err;
+	// Helper to read kernel file
+	file = clFile::getInstance();
+	file->open("kmeans.cl");
+
+	const char *source = file->getSourceChar();
+	prog = clCreateProgramWithSource(context, 1, (const char **)&source, NULL, &err);
+	checkOpenCLErrors(err, "Failed to create Program with source...\n");
+
+
+	// Create program with OpenCL 2.0 support
+	err = clBuildProgram(prog, 0, NULL, "-I ./ -cl-std=CL2.0", NULL, NULL);
+	checkOpenCLErrors(err, "Failed to build program...\n");
+
+}
+
+void KMEANS::CL_create_kernels()
+{
+	cl_int err;
+	// Create kernels
+	kernel_s = clCreateKernel(prog, "kmeans_kernel_c", &err);
+	checkOpenCLErrors(err, "Failed to create kmeans_kernel_c");
+
+	kernel2 = clCreateKernel(prog, "kmeans_swap", &err);
+	checkOpenCLErrors(err, "Failed to create kernel kmeans_swap");
+}
+
+void KMEANS::Create_mem()
+{
+	cl_int err;
+
+	// Create buffers
+	d_feature = clCreateBuffer(context, 
+	                           CL_MEM_READ_WRITE, 
+							   npoints * nfeatures * sizeof(float), 
+							   NULL, 
+							   &err);
+	checkOpenCLErrors(err, "clCreateBuffer d_feature failed");
+
+	d_feature_swap = clCreateBuffer(context, 
+	                                CL_MEM_READ_WRITE, 
+									npoints * nfeatures * sizeof(float), 
+									NULL, 
+									&err);
+	checkOpenCLErrors(err, "clCreateBuffer d_feature_swap failed");
+
+
+	d_membership = clCreateBuffer(context, 
+	                              CL_MEM_READ_WRITE, 
+								  npoints * sizeof(int), 
+								  NULL, 
+								  &err);
+	checkOpenCLErrors(err, "clCreateBuffer d_membership failed");
+
+
+	d_cluster = clCreateBuffer(context, 
+	                           CL_MEM_READ_WRITE, 
+							   nclusters * nfeatures  * sizeof(float), 
+							   NULL, 
+							   &err);
+	checkOpenCLErrors(err, "clCreateBuffer d_cluster failed");
+
+	membership_OCL = (int*) malloc(npoints * sizeof(int));
+}
+
+
+void KMEANS::Swap_features()
+{
+	cl_int err;
+
+	// fixme
+	err = clEnqueueWriteBuffer(cmd_queue, 
+			d_feature, 
+			1, 
+			0, 
+			npoints * nfeatures * sizeof(float), 
+			feature[0], 
+			0, 0, 0);
+	checkOpenCLErrors(err, "ERROR: clEnqueueWriteBuffer d_feature");
+
 	clSetKernelArg(kernel2, 0, sizeof(void *), (void*) &d_feature);
 	clSetKernelArg(kernel2, 1, sizeof(void *), (void*) &d_feature_swap);
-	clSetKernelArg(kernel2, 2, sizeof(cl_int), (void*) &n_points);
-	clSetKernelArg(kernel2, 3, sizeof(cl_int), (void*) &n_features);
-	
-	size_t global_work[3] = { (size_t)n_points, 1, 1 };
-	/// Ke Wang adjustable local group size 2013/08/07 10:37:33
-	size_t local_work_size= BLOCK_SIZE; // work group size is defined by RD_WG_SIZE_0 or RD_WG_SIZE_0_0 2014/06/10 17:00:51
-	if(global_work[0]%local_work_size !=0)
-	  global_work[0]=(global_work[0]/local_work_size+1)*local_work_size;
+	clSetKernelArg(kernel2, 2, sizeof(cl_int), (void*) &npoints);
+	clSetKernelArg(kernel2, 3, sizeof(cl_int), (void*) &nfeatures);	
 
-	err = clEnqueueNDRangeKernel(cmd_queue, kernel2, 1, NULL, global_work, &local_work_size, 0, 0, 0);
-	if(err != CL_SUCCESS) { printf("ERROR: clEnqueueNDRangeKernel()=>%d failed\n", err); return -1; }
-	
-	membership_OCL = (int*) malloc(n_points * sizeof(int));
+	size_t global_work     = (size_t) npoints;
+	size_t local_work_size = BLOCK_SIZE;
+
+	if(global_work % local_work_size != 0)
+		global_work = (global_work / local_work_size + 1) * local_work_size;
+
+	err = clEnqueueNDRangeKernel(cmd_queue, 
+	                             kernel2, 
+								 1, 
+								 NULL, 
+								 &global_work, 
+								 &local_work_size, 
+								 0, 0, 0);
+	checkOpenCLErrors(err, "ERROR: clEnqueueNDRangeKernel()");
 }
+	
 
-void deallocateMemory()
+void KMEANS::Free_mem()
 {
 	clReleaseMemObject(d_feature);
 	clReleaseMemObject(d_feature_swap);
 	clReleaseMemObject(d_cluster);
 	clReleaseMemObject(d_membership);
+
 	free(membership_OCL);
-
 }
-
-
-int main( int argc, char** argv) 
+	
+void KMEANS::Kmeans_ocl()
 {
-	printf("WG size of kernel_swap = %d, WG size of kernel_kmeans = %d \n", BLOCK_SIZE, BLOCK_SIZE2);
-
-	setup(argc, argv);
-	shutdown();
-}
-
-int	kmeansOCL(float **feature,    /* in: [npoints][nfeatures] */
-           int     n_features,
-           int     n_points,
-           int     n_clusters,
-           int    *membership,
-		   float **clusters,
-		   int     *new_centers_len,
-           float  **new_centers)	
-{
-  
-	int delta = 0;
 	int i, j, k;
-	cl_int err = 0;
-	
-	size_t global_work[3] = { (size_t)n_points, 1, 1 }; 
 
-	/// Ke Wang adjustable local group size 2013/08/07 10:37:33
-	size_t local_work_size=BLOCK_SIZE2; // work group size is defined by RD_WG_SIZE_1 or RD_WG_SIZE_1_0 2014/06/10 17:00:41
-	if(global_work[0]%local_work_size !=0)
-	  global_work[0]=(global_work[0]/local_work_size+1)*local_work_size;
-	
-	err = clEnqueueWriteBuffer(cmd_queue, d_cluster, 1, 0, n_clusters * n_features * sizeof(float), clusters[0], 0, 0, 0);
-	if(err != CL_SUCCESS) { printf("ERROR: clEnqueueWriteBuffer d_cluster (size:%d) => %d\n", n_points, err); return -1; }
+	cl_int err;
+
+	// Ke Wang adjustable local group size 2013/08/07 10:37:33
+	// work group size is defined by RD_WG_SIZE_1 or RD_WG_SIZE_1_0 2014/06/10 17:00:41
+	size_t global_work     = (size_t) npoints;
+	size_t local_work_size = BLOCK_SIZE2; 
+
+	if(global_work % local_work_size !=0)
+		global_work = (global_work / local_work_size + 1) * local_work_size;
+
+	// fixme: use svm
+	err = clEnqueueWriteBuffer(cmd_queue, 
+	                           d_cluster, 
+							   1, 
+							   0, 
+							   nclusters * nfeatures * sizeof(float), 
+							   clusters[0], 
+							   0, 0, 0);
+	checkOpenCLErrors(err, "ERROR: clEnqueueWriteBuffer d_cluster");
 
 	int size = 0; int offset = 0;
-					
+
 	clSetKernelArg(kernel_s, 0, sizeof(void *), (void*) &d_feature_swap);
 	clSetKernelArg(kernel_s, 1, sizeof(void *), (void*) &d_cluster);
 	clSetKernelArg(kernel_s, 2, sizeof(void *), (void*) &d_membership);
-	clSetKernelArg(kernel_s, 3, sizeof(cl_int), (void*) &n_points);
-	clSetKernelArg(kernel_s, 4, sizeof(cl_int), (void*) &n_clusters);
-	clSetKernelArg(kernel_s, 5, sizeof(cl_int), (void*) &n_features);
+	clSetKernelArg(kernel_s, 3, sizeof(cl_int), (void*) &npoints);
+	clSetKernelArg(kernel_s, 4, sizeof(cl_int), (void*) &nclusters);
+	clSetKernelArg(kernel_s, 5, sizeof(cl_int), (void*) &nfeatures);
 	clSetKernelArg(kernel_s, 6, sizeof(cl_int), (void*) &offset);
 	clSetKernelArg(kernel_s, 7, sizeof(cl_int), (void*) &size);
 
-	err = clEnqueueNDRangeKernel(cmd_queue, kernel_s, 1, NULL, global_work, &local_work_size, 0, 0, 0);
-	if(err != CL_SUCCESS) { printf("ERROR: clEnqueueNDRangeKernel()=>%d failed\n", err); return -1; }
+	err = clEnqueueNDRangeKernel(cmd_queue, 
+	                             kernel_s, 
+								 1, 
+								 NULL, 
+								 &global_work, 
+								 &local_work_size, 
+								 0, 0, 0);
+	checkOpenCLErrors(err, "ERROR: clEnqueueNDRangeKernel(kernel_s)");
+
 	clFinish(cmd_queue);
-	err = clEnqueueReadBuffer(cmd_queue, d_membership, 1, 0, n_points * sizeof(int), membership_OCL, 0, 0, 0);
-	if(err != CL_SUCCESS) { printf("ERROR: Memcopy Out\n"); return -1; }
-	
-	delta = 0;
-	for (i = 0; i < n_points; i++)
+
+	// fixme : use svm
+	err = clEnqueueReadBuffer(cmd_queue, 
+	                          d_membership, 
+							  1, 
+							  0, 
+							  npoints * sizeof(int), 
+							  membership_OCL, 
+							  0, 0, 0);
+	checkOpenCLErrors(err, "ERROR: Memcopy Out"); 
+
+
+	int delta_tmp = 0;
+	for (i = 0; i < npoints; i++)
 	{
 		int cluster_id = membership_OCL[i];
 		new_centers_len[cluster_id]++;
 		if (membership_OCL[i] != membership[i])
 		{
-			delta++;
+			// update membership
+			delta_tmp++;
 			membership[i] = membership_OCL[i];
 		}
-		for (j = 0; j < n_features; j++)
+		for (j = 0; j < nfeatures; j++)
 		{
 			new_centers[cluster_id][j] += feature[i][j];
 		}
 	}
 
-	return delta;
+	delta = (float) delta_tmp;
+}
+
+
+
+
+
+void KMEANS::Kmeans_clustering()
+{
+	int      i, j, n = 0;		// counters
+	int		 loop=0, temp;
+	int      initial_points = npoints;
+	int		 c = 0;
+
+	// nclusters should never be > npoints
+	// that would guarantee a cluster without points
+	if (nclusters > npoints) 
+	{
+		nclusters = npoints;
+	}
+
+	// fixme : use svm 
+	// allocate space for and initialize returning variable clusters[]
+	clusters    = (float**) malloc(nclusters *             sizeof(float*));
+	clusters[0] = (float*)  malloc(nclusters * nfeatures * sizeof(float));
+	for (i = 1; i < nclusters; i++) 
+	{
+		clusters[i] = clusters[i-1] + nfeatures;
+	}
+
+	// initialize the random clusters
+	initial = (int *) malloc (npoints * sizeof(int));
+	for (i = 0; i < npoints; i++)
+	{
+		initial[i] = i;
+	}
+
+
+	// fixme
+	// randomly pick cluster centers
+	for (i = 0; i < nclusters && initial_points >= 0; i++) 
+	{
+		//n = (int)rand() % initial_points;		
+
+		for (j=0; j<nfeatures; j++)
+			clusters[i][j] = feature[initial[n]][j];	// remapped
+
+		// swap the selected index to the end (not really necessary,
+		// could just move the end up)
+		temp                      = initial[n];
+		initial[n]                = initial[initial_points-1];
+		initial[initial_points-1] = temp;
+		initial_points--;
+		n++;
+	}
+
+	// initialize the membership to -1 for all
+	// fixme: use svm
+	for (i=0; i < npoints; i++) 
+	{
+		membership[i] = -1;
+	}
+
+	// allocate space for and initialize new_centers_len and new_centers
+	new_centers_len = (int*) calloc(nclusters, sizeof(int));
+
+	new_centers    = (float**) malloc(nclusters *            sizeof(float*));
+	new_centers[0] = (float*)  calloc(nclusters * nfeatures, sizeof(float));
+	for (i=1; i<nclusters; i++)
+		new_centers[i] = new_centers[i-1] + nfeatures;
+
+	// iterate until convergence
+	do 
+	{
+		Kmeans_ocl();
+
+		// replace old cluster centers with new_centers
+		// CPU side of reduction
+		for (i=0; i<nclusters; i++) 
+		{
+			for (j=0; j<nfeatures; j++) 
+			{
+				if (new_centers_len[i] > 0)
+				{	// take average i.e. sum/n 
+					clusters[i][j] = new_centers[i][j] / new_centers_len[i];
+				}
+				new_centers[i][j] = 0.0;	// set back to 0
+			}
+			new_centers_len[i] = 0;			// set back to 0 
+		}	 
+
+		c++;
+
+	} while ((delta > threshold) && (loop++ < 500));	// makes sure loop terminates
+	
+
+	printf("iterated %d times\n", c);
+
+	free(new_centers[0]);
+	free(new_centers);
+	free(new_centers_len);
+
+	// clusters is pointed to tmp_cluster_centres 
+	// return clusters;
+	tmp_cluster_centres = clusters;
+}
+
+
+void KMEANS::Clustering()
+{
+	cluster_centres = NULL;
+	index =0;			    // number of iteration to reach the best RMSE
+
+	// fixme
+	membership = (int*) malloc(npoints * sizeof(int));
+
+
+	CL_initialize();
+	CL_build_program();
+	CL_create_kernels();
+
+
+	min_rmse_ref = FLT_MAX;		
+
+	int i;
+	//int	nclusters;			    // number of clusters
+
+	// sweep k from min to max_nclusters to find the best number of clusters
+	for(nclusters = min_nclusters; nclusters <= max_nclusters; nclusters++)
+	{
+		// cannot have more clusters than points
+		if (nclusters > npoints) 
+			break;	
+
+		// allocate device memory, invert data array
+		Create_mem();
+		Swap_features();
+
+		// iterate nloops times for each number of clusters //
+		for(i = 0; i < nloops; i++)
+		{
+
+			Kmeans_clustering();
+
+
+			if (cluster_centres) 
+			{
+				free(cluster_centres[0]);
+				free(cluster_centres);
+			}
+
+			cluster_centres = tmp_cluster_centres;
+
+			// find the number of clusters with the best RMSE //
+			if(isRMSE)
+			{
+				RMS_err();
+
+				if(rmse < min_rmse_ref){
+					min_rmse_ref = rmse;		//update reference min RMSE
+					min_rmse = min_rmse_ref;	//update return min RMSE
+					best_nclusters = nclusters;	//update optimum number of clusters
+					index = i;			//update number of iteration to reach best RMSE
+				}
+			}			
+		}
+
+		Free_mem(); // free device memory
+	}
+
+	free(membership);
+}
+
+// multi-dimensional spatial Euclid distance square
+float KMEANS::euclid_dist_2(float *pt1, 
+                            float *pt2)
+{                                                                               
+	int i;                                                                      
+	float ans=0.0;                                                              
+
+	for (i=0; i<nfeatures; i++)                                                   
+		ans += (pt1[i]-pt2[i]) * (pt1[i]-pt2[i]);                               
+
+	return(ans);                                                                
+}
+
+int KMEANS::find_nearest_point(float  *pt,           // [nfeatures]
+                               float  **pts)         // [npts][nfeatures]
+{                                                                               
+	int index_local, i;                                                               
+	float max_dist = FLT_MAX;                                                     
+
+	// find the cluster center id with min distance to pt
+	for (i=0; i<nclusters; i++) 
+	{                                                    
+		float dist;                                                             
+		dist = euclid_dist_2(pt, pts[i]);  // no need square root
+		if (dist < max_dist) 
+		{                                                  
+			max_dist = dist;                                                    
+			index_local   = i;                                                       
+		}                                                                       
+	}                                                                           
+	return(index_local);                                                              
+}                                                                           
+
+
+void KMEANS::RMS_err()
+{
+	int    i;                                                                   
+	int   nearest_cluster_index;    // cluster center id with min distance to pt
+	float  sum_euclid = 0.0;        // sum of Euclidean distance squares
+	float  ret;                     // return value
+
+	// pass data pointers
+	float **feature_loc, **cluster_centres_loc; 	
+	feature_loc = feature;
+	cluster_centres_loc = tmp_cluster_centres;
+
+	// calculate and sum the sqaure of euclidean distance
+#pragma omp parallel for \
+  shared(feature_loc, cluster_centres_loc) \
+  firstprivate(npoints, nfeatures, nclusters) \
+  private(i, nearest_cluster_index) \
+  schedule (static)  
+
+		for (i=0; i<npoints; i++) 
+		{                                                 
+
+			nearest_cluster_index = find_nearest_point(feature_loc[i],
+					                                   cluster_centres_loc);
+
+			
+			sum_euclid += euclid_dist_2(feature_loc[i],                                 
+					                    cluster_centres_loc[nearest_cluster_index]);
+				
+		}                                                                           
+
+	// divide by n, then take sqrt
+	rmse = sqrt(sum_euclid / npoints);                                           
+}
+
+void KMEANS::Display_results()
+{
+	int i, j;
+
+	// cluster center coordinates : displayed only for when k=1
+	if((min_nclusters == max_nclusters) && (isOutput == 1)) 
+	{                   
+		printf("\n================= Centroid Coordinates =================\n"); 
+		for(i = 0; i < max_nclusters; i++){                                     
+			printf("%d:", i);                                                   
+			for(j = 0; j < nfeatures; j++){                                     
+				printf(" %.2f", cluster_centres[i][j]);                         
+			}                                                                   
+			printf("\n\n");                                                     
+		}                                                                       
+	}                                                                           
+
+	float	len = (float) ((max_nclusters - min_nclusters + 1)*nloops);                 
+
+	printf("Number of Iteration: %d\n", nloops);                                
+	//printf("Time for I/O: %.5fsec\n", io_timing);                             
+	//printf("Time for Entire Clustering: %.5fsec\n", cluster_timing);          
+
+	if(min_nclusters != max_nclusters)
+	{                                         
+		if(nloops != 1)
+		{                                                        
+			//range of k, multiple iteration                                    
+			//printf("Average Clustering Time: %fsec\n",                        
+			//      cluster_timing / len);                                      
+			printf("Best number of clusters is %d\n", best_nclusters);          
+		}                                                                       
+		else
+		{                                                                   
+			//range of k, single iteration                                      
+			//printf("Average Clustering Time: %fsec\n",                        
+			//      cluster_timing / len);                                      
+			printf("Best number of clusters is %d\n", best_nclusters);          
+		}                                                                       
+	}                                                                           
+	else
+	{                                                                       
+		if(nloops != 1)
+		{                                                        
+			// single k, multiple iteration                                     
+			//printf("Average Clustering Time: %.5fsec\n",                      
+			//      cluster_timing / nloops);                                   
+			if(isRMSE) 
+			{// if calculated RMSE                                   
+				printf("Number of trials to approach the best RMSE of %.3f is %d\n",
+						min_rmse, index + 1);
+			}                                                                   
+		}                                                                       
+		else
+		{                                                                   
+			// single k, single iteration                                       
+			if(isRMSE)
+			{                                                         
+				// if calculated RMSE                                           
+				printf("Root Mean Squared Error: %.3f\n", min_rmse);                
+			}                                                                   
+		}                                                                       
+	}                                                                           
+
+}
+
+
+
+void KMEANS::Run(int argc, char **argv)                                         
+{                                                                               
+	// ----------------- Read input file and allocate features --------------//
+	Read(argc, argv);                                                         
+
+	// ----------------- Clustering -------------------------- --------------//
+	//cluster_timing = omp_get_wtime();		// Total clustering time
+	Clustering();
+	//cluster_timing = omp_get_wtime() - cluster_timing;	
+
+	//
+	Display_results();	                                                                                
+}    
+
+
+
+int main( int argc, char** argv) 
+{
+
+	std::unique_ptr<KMEANS> kmeans(new KMEANS);
+
+	printf("WG size of kernel_swap = %d, WG size of kernel_kmeans = %d \n", 
+		BLOCK_SIZE, BLOCK_SIZE2);
+
+	kmeans->Run(argc, argv);
+
+	return 0;
 }

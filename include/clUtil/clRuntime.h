@@ -43,6 +43,9 @@ private:
         int displayContextInfo(cl_context ctx, 
                 cl_context_info ctx_info);
 
+        int displayDeviceInfo(cl_context ctx, 
+                cl_context_info device_info);
+
         void requireCL20();
 
 public:
@@ -233,19 +236,20 @@ int clRuntime::displayDeviceInfo()
         for(cl_uint i = 0; i < deviceCount; ++i)
         {
                 char deviceName[1024];
+				cl_ulong maxmembytes;
+
                 err = clGetDeviceInfo(deviceIds[i], CL_DEVICE_NAME, sizeof(deviceName),
                         deviceName, NULL);
                 checkOpenCLErrors(err, "Failed at clGetDeviceInfo");
-                if (deviceIds[i] == device)
-                {
-                        std::cout << "(*)\tDevice " << i << " = " << deviceName
-                                <<", Device ID = "<< deviceIds[i] << std::endl;
-                }
-                else 
-                {
-                        std::cout << "\tDevice " << i << " = " << deviceName
-                                <<", Device ID = "<< deviceIds[i]<< std::endl;
-                }
+
+                err = clGetDeviceInfo(deviceIds[i], CL_DEVICE_MAX_MEM_ALLOC_SIZE, 
+				                      sizeof(cl_ulong), &maxmembytes, NULL);
+
+				std::cout << "(*)\tDevice " << i << " = " << deviceName
+					<<"\n\tDevice ID = "<< deviceIds[i]  
+					<<"\n\tMax Memory = " << (float) maxmembytes / 1048576  << "MB" 
+					<< std::endl;
+
         }
 
         free(deviceIds);

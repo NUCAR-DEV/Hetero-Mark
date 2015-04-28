@@ -14,7 +14,8 @@ kmeans_kernel_c(__global float  *feature,
 	       ) 
 {
 	unsigned int point_id = get_global_id(0);
-	int index = 0;
+
+	int indexx = 0;
 	//const unsigned int point_id = get_global_id(0);
 	if (point_id < npoints)
 	{
@@ -31,25 +32,26 @@ kmeans_kernel_c(__global float  *feature,
 			dist = ans;
 			if (dist < min_dist) {
 				min_dist = dist;
-				index    = i;
+				indexx    = i;
 
 			}
 		}
 		//printf("%d\n", index);
-		membership[point_id] = index;
+		membership[point_id] = indexx;
 	}	
 
 	return;
 }
 
-__kernel void
+
+// hint: 2D transpose
+__kernel void 
 kmeans_swap(__global float  *feature,   
-            __global float  *feature_swap,
-            int     npoints,
-            int     nfeatures)
+                          __global float  *feature_swap,
+                          int     npoints,
+                          int     nfeatures)
 {
 	unsigned int tid = get_global_id(0);
 	for(int i = 0; i < nfeatures; i++)
 		feature_swap[i * npoints + tid] = feature[tid * nfeatures + i];
-
 } 
