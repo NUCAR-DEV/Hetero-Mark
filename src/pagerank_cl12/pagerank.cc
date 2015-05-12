@@ -261,6 +261,7 @@ void PageRank::Test()
 	FillBufferCpu();
 	Print();
 	PageRankCpu();
+	Print();
 }
 
 
