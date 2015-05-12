@@ -8,7 +8,9 @@ set( SUBDIRECTORIES
 	iir_cl12
 	iir_cl20 
 	sw_cl12
-	sw_cl20)
+	sw_cl20
+	oclmemtests
+	)
 
 ############################################################################
 
