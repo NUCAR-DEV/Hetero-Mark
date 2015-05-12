@@ -1,6 +1,6 @@
-set( BENCHMARK_NAME tpl )
-set( SOURCE_FILES tpl.cc )
-set( EXTRA_FILES tpl_Kernels.cl )
+set( BENCHMARK_NAME pagerank )
+set( SOURCE_FILES pagerank.cc )
+set( EXTRA_FILES pagerank_Kernels.cl )
 
 ############################################################################
 
