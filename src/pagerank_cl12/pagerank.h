@@ -12,7 +12,7 @@
 #include <time.h>
 
 using namespace clHelper;
-using namespace std;
+//using namespace std;
 
 class PageRank
 {
@@ -32,8 +32,10 @@ private:
 	void InitKernel();
 	void InitBuffer();
 	void InitBufferCpu();
+	void InitBufferGpu();
 	void FillBuffer();
 	void FillBufferCpu();
+	void FillBufferGpu();
 	void ExecKernel();
 
 	void FreeKernel();
@@ -42,15 +44,10 @@ private:
 
 	void ReadCsrMatrix();
 	void ReadDenseVector();
-	void Print();
 	void PageRankCpu();
-	float* GetEigenV();
 
-
-
-
-	string fileName1;
-	string fileName2;
+	std::string fileName1;
+	std::string fileName2;
 	int nnz;
 	int nr;
 	int* rowOffset;
@@ -63,20 +60,28 @@ private:
 	cl_mem d_val;
 	cl_mem d_vector;
 	cl_mem d_eigenV;
-	ifstream csrMatrix;
-	ifstream denseVector;
+	std::ifstream csrMatrix;
+	std::ifstream denseVector;
 	size_t global_work_size[1];
 	size_t local_work_size[1];
 	int workGroupSize;
+	int maxIter;
+	int isVectorGiven;
 
 public:
 	PageRank();
-	PageRank(string, string);
+	PageRank(std::string, std::string);
+	PageRank(std::string);
 	~PageRank();
 
 	void Run();
 	void CpuRun();
 	void Test();
+	float* GetEigenV();
+	void Print();
+	void PrintOutput();
+	int GetLength();
+	float abs(float);
 	
 };
 
