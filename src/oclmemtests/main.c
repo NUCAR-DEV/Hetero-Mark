@@ -11,7 +11,6 @@
 
 int main(int argc, const char * argv[])
 {
-  printf("\nCasSimpleOCLMemTests - buffer / kernel overhead test\nCarter McCardwell, NUCAR built April 13 2015\nPlease wait...");
   srand(time(NULL));
   clock_t c_main_start, c_main_stop, c_test_start, c_test_stop;
   c_main_start = clock();
