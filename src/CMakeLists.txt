@@ -9,7 +9,9 @@ set( SUBDIRECTORIES
 	iir_cl20 
 	sw_cl12
 	sw_cl20
-	pagerank_cl12)
+	pagerank_cl12
+	oclmemtests
+	)
 
 ############################################################################
 
