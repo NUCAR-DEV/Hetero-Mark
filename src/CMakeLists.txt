@@ -9,9 +9,12 @@ set( SUBDIRECTORIES
 	iir_cl20 
 	sw_cl12
 	sw_cl20
-	pagerank_cl12)
+	pagerank_cl12
+	pagerank_cl20
+	oclmemtests
+	)
 
-############################################################################
+###############################################################
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
