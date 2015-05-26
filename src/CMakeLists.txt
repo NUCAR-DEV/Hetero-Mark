@@ -2,7 +2,6 @@ set( FOLDER_NAME src )
 set( SUBDIRECTORIES 
 	aes_cl12
 	aes_cl20 
-	fir_cl12 
 	hmm_cl12
 	hmm_cl20 
 	iir_cl12
@@ -10,7 +9,6 @@ set( SUBDIRECTORIES
 	sw_cl12
 	sw_cl20
 	pagerank_cl12
-	oclmemtests
 	)
 
 ############################################################################
