@@ -112,13 +112,13 @@ void PageRank::FillBuffer()
 
 void PageRank::FillBufferGpu()
 {
-	err = clEnqueueWriteBuffer(cmdQueue, d_rowOffset, CL_TRUE, 0, sizeof(int)*(nr+1), rowOffset, NULL, NULL, NULL);
+	err = clEnqueueWriteBuffer(cmdQueue, d_rowOffset, CL_TRUE, 0, sizeof(int)*(nr+1), rowOffset, 0, NULL, NULL);
 	checkOpenCLErrors(err, "Failed to write buffer...\n");
-	err = clEnqueueWriteBuffer(cmdQueue, d_col, CL_TRUE, 0, sizeof(int)*nnz, col, NULL, NULL, NULL);
+	err = clEnqueueWriteBuffer(cmdQueue, d_col, CL_TRUE, 0, sizeof(int)*nnz, col, 0, NULL, NULL);
 	checkOpenCLErrors(err, "Failed to write buffer...\n");
-	err = clEnqueueWriteBuffer(cmdQueue, d_val, CL_TRUE, 0, sizeof(float)*nnz, val, NULL, NULL, NULL);
+	err = clEnqueueWriteBuffer(cmdQueue, d_val, CL_TRUE, 0, sizeof(float)*nnz, val, 0, NULL, NULL);
 	checkOpenCLErrors(err, "Failed to write buffer...\n");
-	err = clEnqueueWriteBuffer(cmdQueue, d_vector, CL_TRUE, 0, sizeof(float)*nr, vector, NULL, NULL, NULL);
+	err = clEnqueueWriteBuffer(cmdQueue, d_vector, CL_TRUE, 0, sizeof(float)*nr, vector, 0, NULL, NULL);
 	checkOpenCLErrors(err, "Failed to write buffer...\n");
 	//err = clEnqueueWriteBuffer(cmdQueue, d_eigenV, CL_TRUE, 0, sizeof(float)*nr, eigenV, NULL, NULL, NULL);
 	//checkOpenCLErrors(err, "Failed to write buffer...\n");
@@ -232,9 +232,9 @@ void PageRank::ExecKernel()
 void PageRank::ReadBuffer()
 {
 	if(maxIter % 2 == 1)
-		clEnqueueReadBuffer(cmdQueue, d_eigenV, CL_TRUE, 0, sizeof(float)*nr, eigenV, NULL, NULL, NULL);
+		clEnqueueReadBuffer(cmdQueue, d_eigenV, CL_TRUE, 0, sizeof(float)*nr, eigenV, 0, NULL, NULL);
 	else
-		clEnqueueReadBuffer(cmdQueue, d_vector, CL_TRUE, 0, sizeof(float)*nr, eigenV, NULL, NULL, NULL);
+		clEnqueueReadBuffer(cmdQueue, d_vector, CL_TRUE, 0, sizeof(float)*nr, eigenV, 0, NULL, NULL);
 }
 
 void PageRank::CpuRun()
