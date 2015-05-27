@@ -4,13 +4,13 @@
 //vals are temporary
 //x is the input vector
 
-__kernel void spmv_kernel(int num_rows,
+__kernel void pageRank_kernel(int num_rows,
               __global int* rowOffset,
               __global int* col,
               __global float* val,
+              __local float *vals,
               __global float* x,
-              __global float* y,
-              __local float *vals)
+              __global float* y)
 {
   int thread_id = get_global_id(0);
   int local_id = get_local_id(0);
@@ -19,6 +19,7 @@ __kernel void spmv_kernel(int num_rows,
   int row = warp_id;
 
   if (row < num_rows) {
+    y[row] = 0.0;
     int row_A_start = rowOffset[row];
     int row_A_end = rowOffset[row + 1];
 
