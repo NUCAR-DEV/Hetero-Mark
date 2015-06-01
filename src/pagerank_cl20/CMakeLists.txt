@@ -1,4 +1,4 @@
-set( BENCHMARK_NAME pagerank )
+set( BENCHMARK_NAME pagerank20 )
 set( SOURCE_FILES pagerank.cc )
 set( EXTRA_FILES pagerank_Kernels.cl )
 
