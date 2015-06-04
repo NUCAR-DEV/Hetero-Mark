@@ -60,7 +60,7 @@ endif( )
 
 ############################################################################
 
-set( COMPILER_FLAGS "-std=c++11" )
+set( COMPILER_FLAGS "-w -std=c++11" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 
