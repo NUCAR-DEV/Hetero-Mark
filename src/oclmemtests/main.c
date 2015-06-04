@@ -176,17 +176,19 @@ es the OCL mode - 1=1.2, 2=2.0\n");
 	      for (nx = 0; 1; nx++)
 		{
 		  printf("\nOCL2: %i x 1000 integars", nx);
-		  int *indata = (int *)malloc(sizeof(int)*nx*1000);
-		  int *outdata = (int *)malloc(sizeof(int)*nx*1000);
 		  int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*nx*1000, 0);
-		  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*nx*1000, 0, 0, 0);
-		  if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); }
-		  for (i = 0; ni < nx*1000; ni++) { memcpy(&svm[ni], &indata[ni], sizeof(int)); }
-		  err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
-		  if (err != CL_SUCCESS) { printf("enqueueunmap ocl20 %i", err); }
-		  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svm, sizeof(int)*nx*1000, 0, 0, 0);
-		  if (err != CL_SUCCESS) { printf("enqueusvmmap2 ocl20 %i", err); }
-		  for (ni = 0; ni < nx*1000; ni++) { memcpy(&outdata[ni], &svm[ni], sizeof(int)); }
+
+		  /* int *indata = (int *)malloc(sizeof(int)*nx*1000); */
+		  /* int *outdata = (int *)malloc(sizeof(int)*nx*1000); */
+		  /* err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*nx*1000, 0, 0, 0); */
+		  /* if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); } */
+		  /* for (i = 0; ni < nx*1000; ni++) { memcpy(&svm[ni], &indata[ni], sizeof(int)); } */
+		  /* err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0); */
+		  /* if (err != CL_SUCCESS) { printf("enqueueunmap ocl20 %i", err); } */
+		  /* err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svm, sizeof(int)*nx*1000, 0, 0, 0); */
+		  /* if (err != CL_SUCCESS) { printf("enqueusvmmap2 ocl20 %i", err); } */
+		  /* for (ni = 0; ni < nx*1000; ni++) { memcpy(&outdata[ni], &svm[ni], sizeof(int)); } */
+
 		  clSVMFree(context, svm);
 		}
 	    }
