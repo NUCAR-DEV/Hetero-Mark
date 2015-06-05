@@ -10,7 +10,12 @@ set( SUBDIRECTORIES
 	sw_cl20
 	pagerank_cl12
 	pagerank_cl20
-	oclmemtests
+	kerneloverhead_cl12
+	kerneloverhead_cl20
+	memcopy_cl12
+	memcopy_cl20
+	maxmem_cl12
+	maxmem_cl20
 	)
 
 ###############################################################
