@@ -19,7 +19,7 @@ int main(int argc, const char * argv[])
   FILE *cl_code = fopen("kernel.cl", "r");
   if (cl_code == NULL) { printf("\nerror: clfile\n"); return(1); }
   char *source_str = (char *)malloc(MAX_SOURCE_SIZE);
-  fread(source_str, 1, MAX_SOURCE_SIZE, cl_code);
+  int res = fread(source_str, 1, MAX_SOURCE_SIZE, cl_code);
   fclose(cl_code);
   size_t source_length = strlen(source_str);
   
@@ -39,10 +39,10 @@ int main(int argc, const char * argv[])
   context = clCreateContext(0, 1, &device, NULL, NULL, &err);
   if (err != CL_SUCCESS) { printf("createcontext %i", err); return 1; }
 
-  queue = clCreateCommandQueue(context, device, NULL, &err);
+  queue = clCreateCommandQueueWithProperties(context, device, NULL, &err);
   if (err != CL_SUCCESS) { printf("commandqueue %i", err); return 1; }
 
-  program = clCreateProgramWithSource(context, 1, &source_str, &source_length, &err);
+  program = clCreateProgramWithSource(context, 1, (const char**)&source_str, &source_length, &err);
   if (err != CL_SUCCESS) { printf("createprogram %i", err); return 1; }
 
 
@@ -77,11 +77,13 @@ int main(int argc, const char * argv[])
       c_test_stop = clock();
       clReleaseMemObject(buffer);
     
-      for (i = 0; i < x*10000; i++) { if (indata[i] != outdata[i]) { printf("\nNote: Memory corruption occured during transfer(s)"); break; }}
+      for (i = 0; i < x*10000; i++) { if (indata[i] != outdata[i]) { printf("\nNote: Memory corruption occured during transfer(s)"); break; 
+	}
+      }
       diff = (((float)c_test_stop - (float)c_test_start) / CLOCKS_PER_SEC ) * 1000;
       printf("\nTest %i done, time: %f ms", x, diff);
     }
-
+  
   clReleaseContext(context);
   clReleaseCommandQueue(queue);
   printf("\n");

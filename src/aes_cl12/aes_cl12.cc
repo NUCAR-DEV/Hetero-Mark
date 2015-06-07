@@ -266,7 +266,7 @@ void AES::Run(int argc, char const *argv[])
                 {
                     if (hexMode == 1)
                     {
-                        if (fscanf(infile, "%02x", &states[currentOffset+ix]) != EOF) { ; }
+                        if (fscanf(infile, "%02x", (unsigned int *)&states[currentOffset+ix]) != EOF) { ; }
                         else
                         {
                             if (ix > 0) { for (int ixx = ix; ixx < 16; ixx++) { states[currentOffset+ixx] = 0x00; } }

@@ -19,7 +19,7 @@ int main(int argc, const char * argv[])
   FILE *cl_code = fopen("kernel.cl", "r");
   if (cl_code == NULL) { printf("\nerror: clfile\n"); return(1); }
   char *source_str = (char *)malloc(MAX_SOURCE_SIZE);
-  fread(source_str, 1, MAX_SOURCE_SIZE, cl_code);
+  int res = fread(source_str, 1, MAX_SOURCE_SIZE, cl_code);
   fclose(cl_code);
   size_t source_length = strlen(source_str);
   
@@ -39,10 +39,10 @@ int main(int argc, const char * argv[])
   context = clCreateContext(0, 1, &device, NULL, NULL, &err);
   if (err != CL_SUCCESS) { printf("createcontext %i", err); return 1; }
 
-  queue = clCreateCommandQueue(context, device, NULL, &err);
+  queue = clCreateCommandQueueWithProperties(context, device, NULL, &err);
   if (err != CL_SUCCESS) { printf("commandqueue %i", err); return 1; }
 
-  program = clCreateProgramWithSource(context, 1, &source_str, &source_length, &err);
+  program = clCreateProgramWithSource(context, 1, (const char**)&source_str, &source_length, &err);
   if (err != CL_SUCCESS) { printf("createprogram %i", err); return 1; }
 
   err = clBuildProgram(program, 1, &device, "-I ./ -cl-std=CL2.0", NULL, NULL);
@@ -67,17 +67,20 @@ int main(int argc, const char * argv[])
       int *indata = (int *)malloc(sizeof(int)*x*10000);
       int *outdata = (int *)malloc(sizeof(int)*x*10000);
       for (i = 0; i < x*10000; i++) { indata[i] = rand(); }
-      
+
+      // Timer -> allocation of memory + mem copy to GPU + mem copy back to CPU
       c_test_start = clock();
       int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*x*10000, 0);
       err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*x*10000, 0, 0, 0);
       if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); }
       for (i = 0; i < x*10000; i++) { memcpy(&svm[i], &indata[i], sizeof(int)); }
+      //memcpy(&svm[0], &indata[0], sizeof(int)*x);
       err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
       if (err != CL_SUCCESS) { printf("enqueueunmap ocl20 %i", err); }
       err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svm, sizeof(int)*x*10000, 0, 0, 0);
       if (err != CL_SUCCESS) { printf("enqueusvmmap2 ocl20 %i", err); }
       for (i = 0; i < x*10000; i++) { memcpy(&outdata[i], &svm[i], sizeof(int)); }
+      //memcpy(&outdata[0], &svm[0], sizeof(int)*x);
       c_test_stop = clock();
       clSVMFree(context, svm);
 

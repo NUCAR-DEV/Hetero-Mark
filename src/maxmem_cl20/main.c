@@ -18,7 +18,7 @@ int main(int argc, const char * argv[])
   FILE *cl_code = fopen("kernel.cl", "r");
   if (cl_code == NULL) { printf("\nerror: clfile\n"); return(1); }
   char *source_str = (char *)malloc(MAX_SOURCE_SIZE);
-  fread(source_str, 1, MAX_SOURCE_SIZE, cl_code);
+  int res = fread(source_str, 1, MAX_SOURCE_SIZE, cl_code);
   fclose(cl_code);
   size_t source_length = strlen(source_str);
 
@@ -38,10 +38,10 @@ int main(int argc, const char * argv[])
   context = clCreateContext(0, 1, &device, NULL, NULL, &err);
   if (err != CL_SUCCESS) { printf("createcontext %i", err); return 1; }
 
-  queue = clCreateCommandQueue(context, device, NULL, &err);
+  queue = clCreateCommandQueueWithProperties(context, device, NULL, &err);
   if (err != CL_SUCCESS) { printf("commandqueue %i", err); return 1; }
 
-  program = clCreateProgramWithSource(context, 1, &source_str, &source_length, &err);
+  program = clCreateProgramWithSource(context, 1, (const char**)&source_str, &source_length, &err);
   if (err != CL_SUCCESS) { printf("createprogram %i", err); return 1; }
 
   err = clBuildProgram(program, 1, &device, "-I ./ -cl-std=CL2.0", NULL, NULL);
@@ -62,10 +62,20 @@ int main(int argc, const char * argv[])
   printf("\nMax Array Test");
   unsigned long nx, ni;
 
-  for (nx = 0; 1; nx++)
+  cl_uint result;
+
+  for (nx = 1347; 1; nx++)
     {
-      printf("\nOCL2: %i x 1000 integars", nx);
-      int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*nx*1000, 0);
+      printf("\nOCL2: %zu x 1000 integars", nx);
+      int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*nx*1000, result);
+      result = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*nx*1000, 0, 0, 0);
+      int test = 8;
+      memcpy(&svm[nx*1000], &test, sizeof(int));
+      result = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
+      if (result != CL_SUCCESS) { 
+	printf("\nFailed to allocate memory, error %u", result); 
+	return 1;
+      }
       clSVMFree(context, svm);
     }
   

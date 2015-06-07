@@ -19,7 +19,7 @@ int main(int argc, const char * argv[])
   FILE *cl_code = fopen("kernel.cl", "r");
   if (cl_code == NULL) { printf("\nerror: clfile\n"); return(1); }
   char *source_str = (char *)malloc(MAX_SOURCE_SIZE);
-  fread(source_str, 1, MAX_SOURCE_SIZE, cl_code);
+  int res = fread(source_str, 1, MAX_SOURCE_SIZE, cl_code);
   fclose(cl_code);
   size_t source_length = strlen(source_str);
 
@@ -39,10 +39,10 @@ int main(int argc, const char * argv[])
   context = clCreateContext(0, 1, &device, NULL, NULL, &err);
   if (err != CL_SUCCESS) { printf("createcontext %i", err); return 1; }
 
-  queue = clCreateCommandQueue(context, device, NULL, &err);
+  queue = clCreateCommandQueueWithProperties(context, device, NULL, &err);
   if (err != CL_SUCCESS) { printf("commandqueue %i", err); return 1; }
 
-  program = clCreateProgramWithSource(context, 1, &source_str, &source_length, &err);
+  program = clCreateProgramWithSource(context, 1, (const char**)&source_str, &source_length, &err);
   if (err != CL_SUCCESS) { printf("createprogram %i", err); return 1; }
 
   err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
@@ -65,7 +65,7 @@ int main(int argc, const char * argv[])
   
   for (nx = 0; 1; nx++)
     {
-      printf("\nOCL1: %ix1000 integars", nx);
+      printf("\nOCL1: %zux1000 integars", nx);
       int *indata = (int *)malloc(sizeof(int)*nx*1000);
       for (ni = 0; ni < nx*1000; ni++) { indata[ni] = rand(); }
       cl_mem buffer = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, nx*1000*sizeof(int), indata, &err);
