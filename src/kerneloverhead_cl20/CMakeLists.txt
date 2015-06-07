@@ -1,4 +1,4 @@
-set( BENCHMARK_NAME kerneloverhead_cl12 )
+set( BENCHMARK_NAME kerneloverhead )
 set( SOURCE_FILES main.c )
 set( EXTRA_FILES kernel.cl )
 
