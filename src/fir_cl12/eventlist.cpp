@@ -318,7 +318,7 @@ void EventList::dumpEvents(char* path)
 
 	// Write the events to file with each field separated by semicolons
 	for(int i = 0; i < (int)this->event_list.size(); i++) {
-		fprintf(fp, "%s;\t%s;\t%llu;\t%llu;\t%llu;\t%llu\n",
+		fprintf(fp, "%s;\t%s;\t%lu;\t%lu;\t%lu;\t%lu\n",
 				this->event_list[i]->type,
 				this->event_list[i]->name,
 				getEventValue(this->event_list[i]->event,
@@ -331,7 +331,7 @@ void EventList::dumpEvents(char* path)
 												CL_PROFILING_COMMAND_END) - this->gpu_timer_start);
 	}
 	for(int i = 0; i < (int)this->user_event_list.size(); i++) {
-		fprintf(fp, "%s;\t%s;\t%llu;\t%llu;\t%llu;\t%llu\n",
+		fprintf(fp, "%s;\t%s;\t%lu;\t%lu;\t%lu;\t%lu\n",
 				this->user_event_list[i]->type,
 				this->user_event_list[i]->name,
 				getUserEventValue(this->user_event_list[i]->event,
@@ -439,10 +439,10 @@ void EventList::printEvents() {
 
 	for(int i = 0; i < (int)this->event_list.size(); i++) {
 		printf("%s (%s)\
-               \n\tQueued:     %llu\
-               \n\tSubmitted:  %llu\
-               \n\tStarted:    %llu\
-               \n\tCompleted:  %llu\n", 
+               \n\tQueued:     %lu\
+               \n\tSubmitted:  %lu\
+               \n\tStarted:    %lu\
+               \n\tCompleted:  %lu\n", 
                this->event_list[i]->name,
                this->event_list[i]->type,
                getEventValue(this->event_list[i]->event,
@@ -456,10 +456,10 @@ void EventList::printEvents() {
 	}
 	for(int i = 0; i < (int)this->user_event_list.size(); i++) {
 		printf("%s (%s)\
-               \n\tQueued:     %llu\
-               \n\tSubmitted:  %llu\
-               \n\tStarted:    %llu\
-               \n\tCompleted:  %llu\n", 
+               \n\tQueued:     %lu\
+               \n\tSubmitted:  %lu\
+               \n\tStarted:    %lu\
+               \n\tCompleted:  %lu\n", 
                this->user_event_list[i]->name,
                this->user_event_list[i]->type,
                getUserEventValue(this->user_event_list[i]->event,

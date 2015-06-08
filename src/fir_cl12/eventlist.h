@@ -6,7 +6,7 @@
 
 #include <sstream>
 #include <string>
-//#include <CL/cl.h>
+#include <CL/cl.h>
 
 //! A Better Event Handling Class
 class EventList

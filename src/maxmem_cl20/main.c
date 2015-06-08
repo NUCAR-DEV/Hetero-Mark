@@ -70,12 +70,12 @@ int main(int argc, const char * argv[])
       int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*nx*1000, result);
       result = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*nx*1000, 0, 0, 0);
       int test = 8;
-      memcpy(&svm[nx*1000], &test, sizeof(int));
-      result = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
+      //memcpy(&svm[nx*1000-1], &test, sizeof(int));
+      /*result = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
       if (result != CL_SUCCESS) { 
 	printf("\nFailed to allocate memory, error %u", result); 
 	return 1;
-      }
+      }*/
       clSVMFree(context, svm);
     }
   

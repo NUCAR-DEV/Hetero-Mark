@@ -1,4 +1,4 @@
-set( BENCHMARK_NAME fir )
+set( BENCHMARK_NAME fir20 )
 set( SOURCE_FILES fir.c )
 set( EXTRA_FILES fir_Kernels.cl )
 
