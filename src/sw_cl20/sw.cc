@@ -425,7 +425,16 @@ void ShallowWater::Run()
 
 int main(int argc, char const *argv[])
 {
-        std::unique_ptr<ShallowWater> sw(new ShallowWater());
+	if(argc != 3)
+	{
+		printf("Usage: %s dim_x dim_y\n",argv[0]);
+		exit(-1);
+	}
+
+	unsigned dim_x = atoi(argv[1]);
+	unsigned dim_y = atoi(argv[2]);
+	
+        std::unique_ptr<ShallowWater> sw(new ShallowWater(dim_x, dim_y));
     
         sw->Run();
 
