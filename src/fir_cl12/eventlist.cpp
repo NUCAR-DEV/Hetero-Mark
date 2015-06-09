@@ -245,7 +245,7 @@ char* EventList::createFilenameWithTimestamp()
 }
 
 // Create a file and dump the event information
-void EventList::dumpEvents(char* path) 
+void EventList::dumpEvents(char const * path) 
 {
 	FILE* fp =  NULL;
 

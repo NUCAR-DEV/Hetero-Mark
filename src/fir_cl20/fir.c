@@ -100,7 +100,7 @@ int main(int argc , char** argv) {
 	cl_context context = clCreateContext( NULL, 1, &device_id, NULL, NULL, &ret);
 
 	// Create a command queue
-	cl_command_queue queue = clCreateCommandQueueWithProperties(context, device_id, CL_QUEUE_PROFILING_ENABLE, &ret);
+	cl_command_queue queue = clCreateCommandQueueWithProperties(context, device_id, NULL, &ret);
 	// Allocate SVM buffers
     input = (cl_float *)clSVMAlloc(context, CL_MEM_READ_ONLY, numTotalData*sizeof(cl_float), 0);
     output = (cl_float *)clSVMAlloc(context, CL_MEM_READ_WRITE, numTotalData*sizeof(cl_float), 0);
