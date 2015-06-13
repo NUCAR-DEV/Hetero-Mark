@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string.h>
 #include <inttypes.h>
+#include <time.h>/* for clock_gettime */
 
 AES::AES()
 {
