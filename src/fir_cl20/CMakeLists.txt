@@ -1,5 +1,5 @@
 set( BENCHMARK_NAME fir20 )
-set( SOURCE_FILES fir.c )
+set( SOURCE_FILES fir.cc )
 set( EXTRA_FILES fir_Kernels.cl )
 
 ############################################################################
@@ -59,7 +59,7 @@ endif( )
 
 ############################################################################
 
-set( COMPILER_FLAGS "-std=c99" )
+set( COMPILER_FLAGS "-std=c++11" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 
