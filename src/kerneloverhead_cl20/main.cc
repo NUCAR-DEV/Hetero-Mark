@@ -12,9 +12,14 @@
 
 int main(int argc, const char * argv[])
 {
-  /*  srand(time(NULL));
-  clock_t c_main_start, c_main_stop, c_test_start, c_test_stop;
-  c_main_start = clock(); */
+
+  if (argc != 2) {
+  printf("Missing the length of max ints!\nUsage: ./<exec> int#\n");
+    exit(EXIT_FAILURE);
+  }
+
+  int maxnum = atoi(argv[1]);
+
   uint64_t diff;
   struct timespec start, end;
   
@@ -69,38 +74,32 @@ int main(int argc, const char * argv[])
   /*  c_test_start = clock(); */
   clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
 
-  for (int i = 0; i < 1000; i++)
+  for (int i = 0; i < maxnum; i++)
     {
       err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
       if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
       clFinish(queue);
     }
-  /* c_test_stop = clock();
-  diff = (((float)c_test_stop - (float)c_test_start) / CLOCKS_PER_SEC ) * 1000;
-  printf("\n\tTest-1 done, time: %f ms", diff); */
-  
+
   clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
 
   diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  printf("\n\tTest-1 done, time: %llu nanoseconds\n", (long long unsigned int) diff);
+  printf("\n\tTest-1: 'sync' done, time: %llu nanoseconds\n", (long long unsigned int) diff);
   
   // async
-  //  c_test_start = clock();
   clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
 
-  for (int i = 0; i < 1000; i++)
+  for (int i = 0; i < maxnum; i++)
     {
       err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
       if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
     }
   clFinish(queue);
-  /*   c_test_stop = clock();
-  diff = (((float)c_test_stop - (float)c_test_start) / CLOCKS_PER_SEC ) * 1000;
-  printf("\n\tTest-2 done, time: %f ms", diff); */
+
   clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
 
   diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  printf("\n\tTest-2 done, time: %llu nanoseconds\n", (long long unsigned int) diff);
+  printf("\n\tTest-2: 'async' done, time: %llu nanoseconds\n", (long long unsigned int) diff);
 
   clReleaseContext(context);
   clReleaseCommandQueue(queue);
