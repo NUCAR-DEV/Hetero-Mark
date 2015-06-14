@@ -402,13 +402,13 @@ void AES::Run(int argc, char const *argv[])
                     for (int ix = 0; ix < 4; ix++)
                     {
                         char hex[3];
-                        sprintf(hex, "%02x", &svm_ptr[(i*16)+ix]);
+                        sprintf(hex, "%02x", svm_ptr[(i*16)+ix]);
                         for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-                        sprintf(hex, "%02x", &svm_ptr[(i*16)+ix+4]);
+                        sprintf(hex, "%02x", svm_ptr[(i*16)+ix+4]);
                         for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-                        sprintf(hex, "%02x", &svm_ptr[(i*16)+ix+8]);
+                        sprintf(hex, "%02x", svm_ptr[(i*16)+ix+8]);
                         for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-                        sprintf(hex, "%02x", &svm_ptr[(i*16)+ix+12]);
+                        sprintf(hex, "%02x", svm_ptr[(i*16)+ix+12]);
                         for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
                     }
                 }

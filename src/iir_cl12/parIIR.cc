@@ -1,10 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio.h>/* for printf */
+#include <stdint.h>/* for uint64 definition */
+#include <stdlib.h>/* for exit() definition */
+#include <time.h>/* for clock_gettime */
 #include <string.h>
 #include <clUtil.h>
 #include <CL/cl_platform.h> // cl_float2
 
 #include "parIIR.h"
+
+#define BILLION 1000000000L
 
 void cpu_pariir(float *x, float *y, float *ns, float *dsec, float c, int len);
 
@@ -275,6 +279,8 @@ void ParIIR::Run()
 //-----------------------------------------------------------------------------------------------//
 int main(int argc, char *argv[])
 {
+  uint64_t diff;
+  struct timespec start, end;
 	if(argc != 2)
 	{
 		printf("Missing the length of input!\nUsage: ./parIIR Len\n");
@@ -289,11 +295,19 @@ int main(int argc, char *argv[])
 	// opencl 1.2
 	std::unique_ptr<ParIIR> parIIR(new ParIIR(len));
 
-	double start = time_stamp();
-	parIIR->Run();
-        double end = time_stamp();
+	//	double start = time_stamp();
+	clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
 
-        printf("Total time = %f ms\n", end - start);
+	parIIR->Run();
+
+	clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
+
+	diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+	printf("Total elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
+
+	//        double end = time_stamp();
+
+	//        printf("Total time = %f ms\n", end - start);
 
 	return 0;
 }

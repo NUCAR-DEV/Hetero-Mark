@@ -1,5 +1,5 @@
 set( BENCHMARK_NAME fir_cl12 )
-set( SOURCE_FILES FIR_CL.c )
+set( SOURCE_FILES FIR_CL.cc eventlist.cpp )
 set( EXTRA_FILES FIR.cl )
 
 ############################################################################
@@ -60,7 +60,7 @@ endif( )
 
 ############################################################################
 
-set( COMPILER_FLAGS "-std=c99" )
+set( COMPILER_FLAGS "-std=c++11" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 

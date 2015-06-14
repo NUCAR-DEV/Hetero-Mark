@@ -1,6 +1,6 @@
-set( BENCHMARK_NAME fir20 )
-set( SOURCE_FILES fir.cc )
-set( EXTRA_FILES fir_Kernels.cl )
+set( BENCHMARK_NAME maxmem_cl20 )
+set( SOURCE_FILES main.c )
+set( EXTRA_FILES kernel.cl )
 
 ############################################################################
 
@@ -23,6 +23,7 @@ endif()
 
 # Unset OPENCL_LIBRARIES, so that corresponding arch specific libs are found when bitness is changed
 unset(OPENCL_LIBRARIES CACHE)
+unset(OPENCL_INCLUDE_DIRS CACHE)
 
 if( BITNESS EQUAL 64 )
   set(BITNESS_SUFFIX x86_64)
@@ -42,13 +43,13 @@ endif()
 # Find OpenCL include and libs
 find_path( OPENCL_INCLUDE_DIRS 
     NAMES OpenCL/cl.h CL/cl.h
-    HINTS $ENV{AMDAPPSDKROOT}/include ../../include/
+    HINTS ../../include/ $ENV{AMDAPPSDKROOT}/include
 )
 mark_as_advanced(OPENCL_INCLUDE_DIRS)
 
 find_library( OPENCL_LIBRARIES
 	NAMES OpenCL
-	HINTS ../../lib/ $ENV{AMDAPPSDKROOT}/lib
+	HINTS $ENV{AMDAPPSDKROOT}/lib
 	PATH_SUFFIXES ${PLATFORM}${BITNESS} ${BITNESS_SUFFIX}
 )
 mark_as_advanced( OPENCL_LIBRARIES )
@@ -59,7 +60,7 @@ endif( )
 
 ############################################################################
 
-set( COMPILER_FLAGS "-std=c++11" )
+set( COMPILER_FLAGS "-std=c99" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 

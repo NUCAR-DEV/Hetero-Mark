@@ -84,18 +84,19 @@ es the OCL mode - 1=1.2, 2=2.0\n");
 	{
 	case 1:
 	  printf("\nmemtime int copy test:");
-	  for (int x = 1; x < 11; x++)
+	  int maxnum = 1;
+	  for (int x = 100; x <= 1000; x+100)
 	    {
-	      printf("\nTest %i, %i objects", x, x*10000);
-	      int *indata = (int *)malloc(sizeof(int)*x*10000);
-	      int *outdata = (int *)malloc(sizeof(int)*x*10000);
-	      for (i = 0; i < x*10000; i++) { indata[i] = rand(); }
+	      printf("\nTest %i, %i objects", x, x*maxnum);
+	      int *indata = (int *)malloc(sizeof(int)*x*maxnum);
+	      int *outdata = (int *)malloc(sizeof(int)*x*maxnum);
+	      for (i = 0; i < x*maxnum; i++) { indata[i] = rand(); }
 	      if (oclMode == 1)
 		{
 		  c_test_start = clock();
-		  cl_mem buffer = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, x*10000*sizeof(int), indata, &err);
+		  cl_mem buffer = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, x*maxnum*sizeof(int), indata, &err);
 		  if (err != CL_SUCCESS) { printf("createbuffer ocl12 %i", err); }
-		  err = clEnqueueReadBuffer(queue, buffer, CL_TRUE, 0, x*10000*sizeof(int), outdata, 0, NULL, NULL);
+		  err = clEnqueueReadBuffer(queue, buffer, CL_TRUE, 0, x*maxnum*sizeof(int), outdata, 0, NULL, NULL);
 		  if (err != CL_SUCCESS) { printf("readbuffer ocl12 %i", err); }
 		  clFinish(queue);
 		  c_test_stop = clock();
@@ -104,19 +105,19 @@ es the OCL mode - 1=1.2, 2=2.0\n");
 	      else if (oclMode == 2)
 		{
 		  c_test_start = clock();
-		  int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*x*10000, 0);
-		  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*x*10000, 0, 0, 0);
+		  int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*x*maxnum, 0);
+		  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*x*maxnum, 0, 0, 0);
 		  if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); }
-		  for (i = 0; i < x*10000; i++) { memcpy(&svm[i], &indata[i], sizeof(int)); }
+		  for (i = 0; i < x*maxnum; i++) { memcpy(&svm[i], &indata[i], sizeof(int)); }
 		  err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
 		  if (err != CL_SUCCESS) { printf("enqueueunmap ocl20 %i", err); }
-		  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svm, sizeof(int)*x*10000, 0, 0, 0);
+		  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svm, sizeof(int)*x*maxnum, 0, 0, 0);
 		  if (err != CL_SUCCESS) { printf("enqueusvmmap2 ocl20 %i", err); }
-		  for (i = 0; i < x*10000; i++) { memcpy(&outdata[i], &svm[i], sizeof(int)); }
+		  for (i = 0; i < x*maxnum; i++) { memcpy(&outdata[i], &svm[i], sizeof(int)); }
 		  c_test_stop = clock();
 		  clSVMFree(context, svm);
 		}
-	      for (i = 0; i < x*10000; i++) { if (indata[i] != outdata[i]) { printf("\nNote: Memory corruption occured during transfer(s)"); break; }}
+	      for (i = 0; i < x*maxnum; i++) { if (indata[i] != outdata[i]) { printf("\nNote: Memory corruption occured during transfer(s)"); break; }}
 	      diff = (((float)c_test_stop - (float)c_test_start) / CLOCKS_PER_SEC ) * 1000;
 	      printf("\nTest %i done, time: %f ms", x, diff);
 	    }
@@ -176,17 +177,19 @@ es the OCL mode - 1=1.2, 2=2.0\n");
 	      for (nx = 0; 1; nx++)
 		{
 		  printf("\nOCL2: %i x 1000 integars", nx);
-		  int *indata = (int *)malloc(sizeof(int)*nx*1000);
-		  int *outdata = (int *)malloc(sizeof(int)*nx*1000);
 		  int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*nx*1000, 0);
-		  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*nx*1000, 0, 0, 0);
-		  if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); }
-		  for (i = 0; ni < nx*1000; ni++) { memcpy(&svm[ni], &indata[ni], sizeof(int)); }
-		  err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
-		  if (err != CL_SUCCESS) { printf("enqueueunmap ocl20 %i", err); }
-		  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svm, sizeof(int)*nx*1000, 0, 0, 0);
-		  if (err != CL_SUCCESS) { printf("enqueusvmmap2 ocl20 %i", err); }
-		  for (ni = 0; ni < nx*1000; ni++) { memcpy(&outdata[ni], &svm[ni], sizeof(int)); }
+
+		  /* int *indata = (int *)malloc(sizeof(int)*nx*1000); */
+		  /* int *outdata = (int *)malloc(sizeof(int)*nx*1000); */
+		  /* err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*nx*1000, 0, 0, 0); */
+		  /* if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); } */
+		  /* for (i = 0; ni < nx*1000; ni++) { memcpy(&svm[ni], &indata[ni], sizeof(int)); } */
+		  /* err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0); */
+		  /* if (err != CL_SUCCESS) { printf("enqueueunmap ocl20 %i", err); } */
+		  /* err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svm, sizeof(int)*nx*1000, 0, 0, 0); */
+		  /* if (err != CL_SUCCESS) { printf("enqueusvmmap2 ocl20 %i", err); } */
+		  /* for (ni = 0; ni < nx*1000; ni++) { memcpy(&outdata[ni], &svm[ni], sizeof(int)); } */
+
 		  clSVMFree(context, svm);
 		}
 	    }

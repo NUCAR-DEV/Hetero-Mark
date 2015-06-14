@@ -1,15 +1,19 @@
 #ifndef PageRank_H
 #define PageRank_H
 
+#include <stdio.h>/* for printf */
+#include <stdint.h>/* for uint64 definition */
+#include <stdlib.h>/* for exit() definition */
+#include <time.h>/* for clock_gettime */
 #include <clUtil.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <cstring>
 #include <sstream>
 #include <time.h>
+
+#define BILLION 1000000000L
 
 using namespace clHelper;
 //using namespace std;

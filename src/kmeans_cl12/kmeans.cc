@@ -1,6 +1,8 @@
-#include <stdio.h>
+#include <stdio.h>/* for printf */
+#include <stdint.h>/* for uint64 definition */
+#include <stdlib.h>/* for exit() definition */
+#include <time.h>/* for clock_gettime */
 #include <string.h>
-#include <stdlib.h>
 #include <math.h>
 #include <iostream>
 #include <string>
@@ -8,6 +10,9 @@
 #include <clUtil.h>
 
 #include "kmeans.h"
+
+#define BILLION 1000000000L
+
 using namespace std;
 
 KMEANS::KMEANS()
@@ -738,13 +743,21 @@ void KMEANS::Run(int argc, char **argv)
 
 int main( int argc, char** argv) 
 {
+  uint64_t diff;
+  struct timespec start, end;
 
-	std::unique_ptr<KMEANS> kmeans(new KMEANS);
-
-	printf("WG size of kernel_swap = %d, WG size of kernel_kmeans = %d \n", 
-		BLOCK_SIZE, BLOCK_SIZE2);
-
-	kmeans->Run(argc, argv);
-
-	return 0;
+  clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
+  std::unique_ptr<KMEANS> kmeans(new KMEANS);
+  
+  printf("WG size of kernel_swap = %d, WG size of kernel_kmeans = %d \n", 
+	 BLOCK_SIZE, BLOCK_SIZE2);
+  
+  
+  kmeans->Run(argc, argv);
+  clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
+  
+  diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+  printf("Total elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
+  
+  return 0;
 }
