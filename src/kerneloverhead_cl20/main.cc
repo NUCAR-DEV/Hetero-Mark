@@ -69,7 +69,7 @@ int main(int argc, const char * argv[])
   /*  c_test_start = clock(); */
   clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
 
-  for (int i = 0; i < 100000; i++)
+  for (int i = 0; i < 1000; i++)
     {
       err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
       if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
@@ -88,7 +88,7 @@ int main(int argc, const char * argv[])
   //  c_test_start = clock();
   clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
 
-  for (int i = 0; i < 100000; i++)
+  for (int i = 0; i < 1000; i++)
     {
       err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
       if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
