@@ -11,11 +11,13 @@
 
 int main(int argc, const char * argv[])
 {
-  srand(time(NULL));
-  clock_t c_main_start, c_main_stop, c_test_start, c_test_stop;
-  c_main_start = clock();
-  
-    
+  if (argc != 2) {
+    printf("Missing the length of max ints to start testing!\nUsage: ./<exec> int#\n");
+    exit(EXIT_FAILURE);
+  }
+
+  int maxnum = atoi(argv[1]);
+
   FILE *cl_code = fopen("kernel.cl", "r");
   if (cl_code == NULL) { printf("\nerror: clfile\n"); return(1); }
   char *source_str = (char *)malloc(MAX_SOURCE_SIZE);
@@ -63,7 +65,7 @@ int main(int argc, const char * argv[])
   printf("\nMax Array Test");
   unsigned long nx, ni;
   
-  for (nx = 0; 1; nx++)
+  for (nx = maxnum; 1; nx++)
     {
       printf("\nOCL1: %zux1000 integars", nx);
       int *indata = (int *)malloc(sizeof(int)*nx*1000);

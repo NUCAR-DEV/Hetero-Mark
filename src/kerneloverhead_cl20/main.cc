@@ -14,7 +14,7 @@ int main(int argc, const char * argv[])
 {
 
   if (argc != 2) {
-  printf("Missing the length of max ints!\nUsage: ./<exec> int#\n");
+    printf("Missing the length of max ints!\nUsage: ./<exec> int#\n");
     exit(EXIT_FAILURE);
   }
 
@@ -70,37 +70,47 @@ int main(int argc, const char * argv[])
   cl_event event;
   const size_t local = 1;
   const size_t global = 1;
-
-  /*  c_test_start = clock(); */
-  clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
-
-  for (int i = 0; i < maxnum; i++)
-    {
-      err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
-      if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
-      clFinish(queue);
-    }
-
-  clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
-
-  diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  printf("\n\tTest-1: 'sync' done, time: %llu nanoseconds\n", (long long unsigned int) diff);
   
-  // async
-  clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
-
-  for (int i = 0; i < maxnum; i++)
-    {
-      err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
-      if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
-    }
+  err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0 \
+			       , NULL, NULL);
+  if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
   clFinish(queue);
 
-  clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
+  //  for (int xx = 1; xx < 11; xx++) { 
 
-  diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  printf("\n\tTest-2: 'async' done, time: %llu nanoseconds\n", (long long unsigned int) diff);
+  //  maxnum = xx * 100;
 
+    printf ("\nNumber of kernels = %i\n", maxnum);
+   
+    clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
+  
+    for (int i = 0; i < maxnum; i++)
+      {
+	err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
+	if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
+	clFinish(queue);
+      }
+
+    clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
+  
+    diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+    printf("\n\tTest-1: 'sync' done, time: %llu nanoseconds\n", (long long unsigned int) diff);
+  
+    // async
+    clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
+    
+    for (int i = 0; i < maxnum; i++)
+      {
+	err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
+	if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
+      }
+    clFinish(queue);
+    
+    clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
+    
+    diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+    printf("\n\tTest-2: 'async' done, time: %llu nanoseconds\n", (long long unsigned int) diff);
+    //  }
   clReleaseContext(context);
   clReleaseCommandQueue(queue);
   printf("\n");
