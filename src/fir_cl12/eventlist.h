@@ -1,12 +1,12 @@
 #ifndef _EVENTLIST_
 #define _EVENTLIST_
 
-#include <iostream>
+//#include <iostream>
 #include <vector>
 
 #include <sstream>
 #include <string>
-#include <CL/cl.h>
+//#include <CL/cl.h>
 
 //! A Better Event Handling Class
 class EventList

@@ -234,8 +234,9 @@ void AES::InitKeys()
 {
         // Read the private key in
         for (int i = 0; i < 32; i++)
-                fscanf(keyfile, "%x", (int *)&key[i]);
-
+                int res = fscanf(keyfile, "%02x", (int *)&key[i]);
+                //res is simply a variable to supress the "ignored"
+                //results warning
         // Expand key
         KeyExpansion(key);
 
@@ -265,7 +266,7 @@ void AES::Run(int argc, char const *argv[])
                 {
                     if (hexMode == 1)
                     {
-                        if (fscanf(infile, "%x", &states[currentOffset+ix]) != EOF) { ; }
+                        if (fscanf(infile, "%02x", (unsigned int *)&states[currentOffset+ix]) != EOF) { ; }
                         else
                         {
                             if (ix > 0) { for (int ixx = ix; ixx < 16; ixx++) { states[currentOffset+ixx] = 0x00; } }
