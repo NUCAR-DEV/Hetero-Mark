@@ -4,10 +4,10 @@
 
 __kernel void ParIIR(const int len, 
                      const float c, 
-                     __constant float2 *nsec, 
-                     __constant float2 *dsec, 
+                     __global float2 *nsec, 
+                     __global float2 *dsec, 
                      __local float *sm,
-                     __constant float *x, 
+                     __global float *x, 
                      __global float *y) 
 {
 	int gid = get_global_id(0);

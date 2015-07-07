@@ -42,3 +42,6 @@ cmake_install.cmake
 # hsa file
 *.hsail
 *.brig
+
+# debug file
+*.debug

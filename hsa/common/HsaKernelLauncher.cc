@@ -110,8 +110,8 @@ void HsaKernelLauncher::LaunchKernel()
 	dispatch_packet->completion_signal = signal;
 	dispatch_packet->kernel_object = kernel_object;
 	dispatch_packet->kernarg_address = (void*) kernarg_address;
-	dispatch_packet->private_segment_size = private_segment_size;
-	dispatch_packet->group_segment_size = group_segment_size;
+	dispatch_packet->private_segment_size = 1000;
+	dispatch_packet->group_segment_size = 1000000;
 	timer->EndTimer({"CPU", "HSA runtime"});
 
 	printf("Launching kernel %s.\n", name.c_str());

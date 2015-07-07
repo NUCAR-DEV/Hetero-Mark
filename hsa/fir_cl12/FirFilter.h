@@ -62,6 +62,8 @@ public:
 	 */
 	void Verify() override;
 
+	void Summarize() {};
+
 	/**
 	 * Set data length
 	 */

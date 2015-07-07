@@ -18,10 +18,15 @@ class IirKernelHsaLauncher : public HsaKernelLauncher
 		uint32_t len;
 		float c;
 		void *nsec;
+		uint32_t pad1;
 		void *dsec;
+		uint32_t pad2;
 		void *sm;
+		uint32_t pad3;
 		void *x;
+		uint32_t pad4;
 		void *y;
+		uint32_t pad5;
 	} args;
 
 public:
