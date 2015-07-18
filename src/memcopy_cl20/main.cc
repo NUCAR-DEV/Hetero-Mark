@@ -9,13 +9,17 @@
 
 #include <CL/cl.h>
 
+#define BILLION 1000000000L
+
 int main(int argc, const char * argv[])
 {
-  srand(time(NULL));
+  /*  srand(time(NULL));
   clock_t c_main_start, c_main_stop, c_test_start, c_test_stop;
-  c_main_start = clock();
-  
-  
+  c_main_start = clock(); */
+
+  uint64_t diff;
+  struct timespec start, end;
+
   FILE *cl_code = fopen("kernel.cl", "r");
   if (cl_code == NULL) { printf("\nerror: clfile\n"); return(1); }
   char *source_str = (char *)malloc(MAX_SOURCE_SIZE);
@@ -57,7 +61,6 @@ int main(int argc, const char * argv[])
     return 1;
   }
 
-  float diff = 0;
   int i;
   
   printf("\nmemtime int copy test:");
@@ -69,7 +72,9 @@ int main(int argc, const char * argv[])
       for (i = 0; i < x*10000; i++) { indata[i] = rand(); }
 
       // Timer -> allocation of memory + mem copy to GPU + mem copy back to CPU
-      c_test_start = clock();
+      //c_test_start = clock();
+      clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
+
       int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*x*10000, 0);
       err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*x*10000, 0, 0, 0);
       if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); }
@@ -81,12 +86,16 @@ int main(int argc, const char * argv[])
       if (err != CL_SUCCESS) { printf("enqueusvmmap2 ocl20 %i", err); }
       for (i = 0; i < x*10000; i++) { memcpy(&outdata[i], &svm[i], sizeof(int)); }
       //memcpy(&outdata[0], &svm[0], sizeof(int)*x);
-      c_test_stop = clock();
+      //      c_test_stop = clock();
+      clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
+
       clSVMFree(context, svm);
 
       for (i = 0; i < x*10000; i++) { if (indata[i] != outdata[i]) { printf("\nNote: Memory corruption occured during transfer(s)"); break; }}
-      diff = (((float)c_test_stop - (float)c_test_start) / CLOCKS_PER_SEC ) * 1000;
-      printf("\nTest %i done, time: %f ms", x, diff);
+      /*      diff = (((float)c_test_stop - (float)c_test_start) / CLOCKS_PER_SEC ) * 1000;
+	      printf("\nTest %i done, time: %f ms", x, diff); */
+      diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      printf("\n Test %i done, time: %llu nanoseconds\n", x, (long long unsigned int) diff);
     }
   clReleaseContext(context);
   clReleaseCommandQueue(queue);

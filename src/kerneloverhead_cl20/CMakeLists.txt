@@ -1,5 +1,5 @@
 set( BENCHMARK_NAME kerneloverhead )
-set( SOURCE_FILES main.c )
+set( SOURCE_FILES main.cc )
 set( EXTRA_FILES kernel.cl )
 
 ############################################################################
@@ -60,7 +60,7 @@ endif( )
 
 ############################################################################
 
-set( COMPILER_FLAGS "-std=c99" )
+set( COMPILER_FLAGS "-std=c++11" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 

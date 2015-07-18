@@ -1,9 +1,14 @@
 #include "sw.h"
 
+#include <stdio.h>/* for printf */
+#include <stdint.h>/* for uint64 definition */
+#include <stdlib.h>/* for exit() definition */
+#include <time.h>/* for clock_gettime */
 #include <memory>
 #include <cmath>
-#include <stdio.h>
 #include <unistd.h>
+
+#define BILLION 1000000000L
 
 void advance_spinner()
 {
@@ -430,13 +435,21 @@ int main(int argc, char const *argv[])
 		printf("Usage: %s dim_x dim_y\n",argv[0]);
 		exit(-1);
 	}
-
+	uint64_t diff;
+	struct timespec start, end;
 	unsigned dim_x = atoi(argv[1]);
 	unsigned dim_y = atoi(argv[2]);
 	
+	clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
+
         std::unique_ptr<ShallowWater> sw(new ShallowWater(dim_x, dim_y));
     
         sw->Run();
+
+	clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
+
+	diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+	printf("elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
 
         return 0;
 }

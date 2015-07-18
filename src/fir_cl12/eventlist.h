@@ -6,7 +6,7 @@
 
 #include <sstream>
 #include <string>
-//#include <CL/cl.h>
+#include <CL/cl.h>
 
 //! A Better Event Handling Class
 class EventList
@@ -49,7 +49,7 @@ public:
 	static cl_int clSetUserEventStatus(cl_user_event, cl_int execution_status);
 
 	// Writes event information to file
-	void dumpEvents(char* path);
+	void dumpEvents(char const * path);
 
 	// Prints the events to the screen
 	void printEvents();

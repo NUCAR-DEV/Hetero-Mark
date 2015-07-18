@@ -1,4 +1,4 @@
-set( BENCHMARK_NAME kmeans)
+set( BENCHMARK_NAME kmeans20)
 set( SOURCE_FILES kmeans.cc)
 set( EXTRA_FILES kmeans.cl )
 

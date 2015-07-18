@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string.h>
 #include <inttypes.h>
+#include <time.h>/* for clock_gettime */
 
 AES::AES()
 {
@@ -334,7 +335,7 @@ void AES::Run(int argc, char const *argv[])
             status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, &global_ws, &local_ws, 0, NULL, &event);
             checkOpenCLErrors(status, "clEnqueueNDRangeKernel\n");
 
-            clWaitForEvents(1, &event);
+            clFinish(cmdQueue);
 
             status = clEnqueueReadBuffer(cmdQueue, dev_states, CL_TRUE, 0, 16*spawn*sizeof(uint8_t), &states, 0, NULL, NULL);
             checkOpenCLErrors(status, "clEnqueueReadBuffer\n");

@@ -60,7 +60,7 @@ endif( )
 
 ############################################################################
 
-set( COMPILER_FLAGS "-std=c99 -Wno-format" )
+set( COMPILER_FLAGS "-std=c99" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 

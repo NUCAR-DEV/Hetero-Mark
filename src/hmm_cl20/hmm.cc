@@ -1,12 +1,14 @@
 #include <iostream>
+#include <stdint.h>/* for uint64 definition */
+#include <time.h>/* for clock_gettime */
 #include <string.h>
 #include <clUtil.h>
 #include <math.h>
 #include "hmm.h"
 
-#include <iostream>
-
 using namespace std;
+
+#define BILLION 1000000000L
 
 HMM::HMM(int N)
 {
@@ -1454,11 +1456,13 @@ void HMM::Run()
 
 int main(int argc, char const *argv[])
 {
-        if(argc != 2){
+  uint64_t diff;
+  struct timespec start, end;
+  if(argc != 2){
                 puts("Please specify the number of hidden states N. (e.g., $./gpuhmmsr N)\nExit Program!");
                 exit(1);
         }
-
+  
         printf("=>Start program.\n");
 
         int N = atoi(argv[1]);
@@ -1466,11 +1470,17 @@ int main(int argc, char const *argv[])
         // Smart pointer, auto cleanup in destructor
         std::unique_ptr<HMM> hmm(new HMM(N));
 
-        double start = time_stamp();
+	//      double start = time_stamp();
+	clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
         hmm->Run();
-        double end = time_stamp();
+	clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
 
-        printf("Total time = %f s\n", end - start);
+	diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+	printf("Total elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
+
+        //double end = time_stamp();
+
+	//        printf("Total time = %f s\n", end - start);
 
         return 0;
 }

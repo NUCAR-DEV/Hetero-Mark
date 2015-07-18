@@ -319,10 +319,14 @@ float PageRank::abs(float num)
 
 int main(int argc, char const *argv[])
 {
+  uint64_t diff;
+  struct timespec start, end;
 	if (argc < 2) {
 		std::cout << "Usage: pagerank input_matrix [input_vector]" << std::endl;
 		exit(-1);
 	}
+	clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
+	
 	std::unique_ptr<PageRank> pr;
 	std::unique_ptr<PageRank> prCpu;
 	if (argc == 2) {
@@ -349,5 +353,9 @@ int main(int argc, char const *argv[])
 			//std::cout << eigenGpu[i] << "\t" << eigenCpu[i] << std::endl;
 		}
 	}
+	clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
+
+	diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+	printf("Total elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
 	return 0;
 }
