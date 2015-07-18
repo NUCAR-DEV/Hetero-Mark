@@ -31,25 +31,17 @@ void TimeKeeper::BeginTimer()
 	}
 
 	// Get new time
-	struct timeval t;
-	if (gettimeofday(&t, 0) != 0)
-	{
-		printf("Error starting timer\n");
-		exit(1);
-	}
-	start_time_in_second.reset(new double(t.tv_sec + t.tv_usec * 1e-6));
+	struct timespec t;
+	clock_gettime(CLOCK_MONOTONIC, &t);
+	start_time_in_second.reset(new double(t.tv_sec + t.tv_nsec * 1e-9));
 }
 
 
 void TimeKeeper::EndTimer(std::initializer_list<const char *> catagories)
 {
 	// Get end time
-	struct timeval t;
-	if (gettimeofday(&t, 0) != 0)
-	{
-		printf("Error stoppint timer\n");
-		exit(1);
-	}
+	struct timespec t;
+	clock_gettime(CLOCK_MONOTONIC, &t);
 
 	// Check if the timer started
 	if (!start_time_in_second.get())
@@ -59,7 +51,7 @@ void TimeKeeper::EndTimer(std::initializer_list<const char *> catagories)
 	}
 
 	// Calculate time passed
-	double end_time_in_second = t.tv_sec + t.tv_usec * 1e-6;
+	double end_time_in_second = t.tv_sec + t.tv_nsec * 1e-9;
 	double time_passed_in_second = end_time_in_second - 
 		*(start_time_in_second.get());
 
