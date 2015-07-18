@@ -42,6 +42,11 @@ cmake_install.cmake
 # hsa file
 *.hsail
 *.brig
+isa.txt
 
 # debug file
 *.debug
+
+# snack file
+*_brig.h
+*.snackwrap.c
