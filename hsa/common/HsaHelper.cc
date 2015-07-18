@@ -8,7 +8,7 @@ void HsaHelper::CheckError(hsa_status_t err, const char *information)
 {
 	if (err) 
 	{
-		printf("Error(%d): %s\n", err, information);
+		printf("Error(0x%x): %s\n", err, information);
 		exit(err);
 	}
 	else

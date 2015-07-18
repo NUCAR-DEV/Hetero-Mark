@@ -3,12 +3,13 @@ cmake_minimum_required (VERSION 2.6)
 set (HSA_RUNTIME_PATH "$ENV{HSA_RUNTIME_PATH}")
 set (M2S_ROOT "$ENV{M2S_ROOT}")
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_GLAGS} -m32 -std=c++0x")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_GLAGS} -std=c++0x")
 
-link_directories(${M2S_ROOT}/lib/.libs/)
+#link_directories(${M2S_ROOT}/lib/.libs/)
+link_directories(${HSA_RUNTIME_PATH}/lib/)
 
 add_executable(HMM12 main.cc HMM.cc)
 include_directories(${HSA_RUNTIME_PATH}/include)
-target_link_libraries(HMM12 HsaHelper m2s-hsa)
+target_link_libraries(HMM12 HsaHelper hsa-runtime64)
 
 

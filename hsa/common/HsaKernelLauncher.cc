@@ -33,7 +33,7 @@ void HsaKernelLauncher::Init()
 	// Retrieve symbol
 	hsa_executable_symbol_t symbol;
 	err = hsa_executable_get_symbol(helper->getExecutable(), 
-			"", name.c_str(), helper->getGpu(), 0, &symbol);
+			NULL, name.c_str(), helper->getGpu(), 0, &symbol);
 	helper->CheckError(err, "Get symbol");
 
 	// Get kernel object
@@ -41,10 +41,26 @@ void HsaKernelLauncher::Init()
 			HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT, 
 			&kernel_object);
 	helper->CheckError(err, "Get kernel object");
+
+	// Get kernel argument size
 	err = hsa_executable_symbol_get_info(symbol,
 			HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_KERNARG_SEGMENT_SIZE,
 			&kernarg_segment_size);
 	helper->CheckError(err, "Get kernel argument segment size");
+
+	// Get private segment size
+	err = hsa_executable_symbol_get_info(symbol, 
+			HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_PRIVATE_SEGMENT_SIZE,
+			&private_segment_size);
+	helper->CheckError(err, "Get private segment size");
+
+	// Get group segment size
+	err = hsa_executable_symbol_get_info(symbol,
+			HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_GROUP_SEGMENT_SIZE,
+			&group_segment_size);
+	helper->CheckError(err, "Get group segment size");
+
+	// End timer
 	timer->EndTimer({"HSA runtime", "CPU"});
 }
 
@@ -110,8 +126,8 @@ void HsaKernelLauncher::LaunchKernel()
 	dispatch_packet->completion_signal = signal;
 	dispatch_packet->kernel_object = kernel_object;
 	dispatch_packet->kernarg_address = (void*) kernarg_address;
-	dispatch_packet->private_segment_size = 1000;
-	dispatch_packet->group_segment_size = 1000000;
+	dispatch_packet->private_segment_size = private_segment_size;
+	dispatch_packet->group_segment_size = group_segment_size;
 	timer->EndTimer({"CPU", "HSA runtime"});
 
 	printf("Launching kernel %s.\n", name.c_str());
