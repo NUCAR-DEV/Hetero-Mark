@@ -67,8 +67,15 @@ int main(int argc, const char * argv[])
 
   if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); }
 
+  /* option 1 */
   for (i = 0; i < sz; i++) { svm[i] = 2; }
-  
+  /* * * */
+
+  /* option 2 */
+  for (i = 0; i < sz; i++) { indata[i] = 2; } 
+  memcpy(&svm, &indata, sizeof(int)*sz);
+  /* * * */
+
   err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
 
   if (err != CL_SUCCESS) { printf("enqueueunmap ocl20 %i", err); }
