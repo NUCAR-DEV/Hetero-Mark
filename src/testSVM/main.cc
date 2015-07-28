@@ -63,22 +63,16 @@ int main(int argc, const char * argv[])
   int *indata = (int *)malloc(sizeof(int)*sz);
   int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*sz, 0);
     
-  //  clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
- 
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*sz, 0, 0, 0);
 
   if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); }
 
   for (i = 0; i < sz; i++) { svm[i] = 2; }
   
-  //  memcpy(&svm, &indata, sizeof(int)*sz);
-
   err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
 
   if (err != CL_SUCCESS) { printf("enqueueunmap ocl20 %i", err); }
   
-  //  clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
-
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svm, sizeof(int)*sz, 0, 0, 0);
 
   printf("\n Data \n");
@@ -93,38 +87,4 @@ int main(int argc, const char * argv[])
   free(indata);
 
   printf("--Done--");
-  //  diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  //  printf("\n Test 1 done, time: %llu nanoseconds\n", (long long unsigned int) diff);
-
-  //  clReleaseCommandQueue(queue);
-  //  clReleaseContext(context);
 }
-  /*---- */
-
-  // int *svmnew = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*10000, 0);
-  // int *dummysvmnew = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*10000, 0);
- 
-  // clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
-
-  // err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svmnew, sizeof(int)*10000, 0, 0, 0);
-  // err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, dummysvmnew, sizeof(int)*10000, 0, 0, 0);
-
-  // if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); }
-  // for (i = 0; i < 10000; i++) { 
-  //   memcpy(&svmnew[i], &indata[i], sizeof(int)); 
-  //   memcpy(&dummysvmnew[i], &indata[i], sizeof(int)); 
-  // }
-
-  // err = clEnqueueSVMUnmap(queue, svmnew, 0, 0, 0);
-  // err = clEnqueueSVMUnmap(queue, dummysvmnew, 0, 0, 0);
-
-  // if (err != CL_SUCCESS) { printf("enqueueunmap ocl20 %i", err); }
-  
-  // clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
-
-  // clSVMFree(context, svmnew);
-  // clSVMFree(context, dummysvmnew);
-  
-  // diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  // printf("\n Test 2 done, time: %llu nanoseconds\n", (long long unsigned int) diff);
-
