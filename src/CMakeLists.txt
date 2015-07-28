@@ -28,7 +28,7 @@ set( SUBDIRECTORIES
 	memcopy_cl20
 	maxmem_cl12
 	maxmem_cl20
-	testSVM
+	#testSVM
 	)
 
 ###############################################################
