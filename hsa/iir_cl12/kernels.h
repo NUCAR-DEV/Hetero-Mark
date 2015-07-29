@@ -52,5 +52,5 @@ struct snk_image3d_s {
 
 #define __SNK_DEFS
 #endif
-extern _CPPSTRING_ void IIR(const int len,const float c,  float* nsec,  float* dsec,size_t sm_size, float* x,float* y, const snk_lparm_t * lparm);
+extern _CPPSTRING_ void IIR(const int len,const float c,float* nsec,float* dsec,size_t sm_size,float* x,float* y, const snk_lparm_t * lparm);
 extern _CPPSTRING_ void IIR_init(const int printStats);

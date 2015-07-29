@@ -11,4 +11,4 @@ kernels.o: kernels.cl
 	snack.sh -c kernels.cl
 
 clean:
-	rm *.o FIR *.snackwrap.c *_brig.h isa.txt
+	rm *.o IIR *.snackwrap.c *_brig.h isa.txt
