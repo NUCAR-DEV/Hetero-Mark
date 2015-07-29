@@ -13,8 +13,8 @@
 
 int main(int argc, const char * argv[])
 {
-  uint64_t diff;
-  struct timespec start, end;
+  uint64_t diff1, diff2;
+  struct timespec start, end1, end2;
 
   FILE *cl_code = fopen("kernel.cl", "r");
   if (cl_code == NULL) { printf("\nerror: clfile\n"); return(1); }
@@ -57,41 +57,52 @@ int main(int argc, const char * argv[])
     return 1;
   }
 
-  int i;
-  int sz = 10;
+  int i, j = 0;
+  int sz = 100;
+  int cline = 20;
 
-  int *indata = (int *)malloc(sizeof(int)*sz);
-  int *svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*sz, 0);
-    
-  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*sz, 0, 0, 0);
+  int *indata  = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*sz, 0);
+  int *OneOut = (int *)malloc(sizeof(int)*sz);
+  int *TwoOut = (int *)malloc(sizeof(int)*sz);
+
+  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, indata, sizeof(int)*sz, 0, 0, 0);
 
   if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); }
 
-  /* option 1 */
-  for (i = 0; i < sz; i++) { svm[i] = 2; }
-  /* * * */
+  for (i = 0; i < sz; i++) {   indata[i] = rand(); }
+  
+  clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
+  
+  for (i = 0; i < sz; i = i+cline) {
+    memcpy(&OneOut[i], &indata[i], sizeof(int)*cline);
+  }
 
-  /* option 2 */
-  for (i = 0; i < sz; i++) { indata[i] = 2; } 
-  memcpy(&svm, &indata, sizeof(int)*sz);
-  /* * * */
+  clock_gettime(CLOCK_MONOTONIC, &end1);/* mark the end time */
 
-  err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
+  for (i = 0; i < sz; i = i+cline) {
+    memcpy(&OneOut[i], &indata[i], sizeof(int)*cline);
+    memcpy(&TwoOut[i], &indata[i], sizeof(int)*cline);
+  }
+
+  clock_gettime(CLOCK_MONOTONIC, &end2);/* mark the end time */
+  
+  err = clEnqueueSVMUnmap(queue, indata, 0, 0, 0);
 
   if (err != CL_SUCCESS) { printf("enqueueunmap ocl20 %i", err); }
   
-  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svm, sizeof(int)*sz, 0, 0, 0);
+  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, indata, sizeof(int)*sz, 0, 0, 0);
 
-  printf("\n Data \n");
-
-  for (i=0; i<sz; i++) {
-    printf("%d", svm[i]);
-  }
-  
-  err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
+  err = clEnqueueSVMUnmap(queue, indata, 0, 0, 0);
   err = clFinish(queue);
-  clSVMFree(context, svm);
-  free(indata);
+  clSVMFree(context, indata);
+  free(OneOut);
+  free(TwoOut);
 
-  printf("--Done--");
+  diff1 = BILLION * (end1.tv_sec - start.tv_sec) + end1.tv_nsec - start.tv_nsec;
+  printf("\n Test 1 done, time: %llu nanoseconds\n", (long long unsigned int) diff1);
+  diff2 = BILLION * (end2.tv_sec - start.tv_sec) + end2.tv_nsec - start.tv_nsec;
+  printf("\n Test 2 done, time: %llu nanoseconds\n", (long long unsigned int) diff2);
+
+  //printf("\n\n--Done--\n");
 }
+
