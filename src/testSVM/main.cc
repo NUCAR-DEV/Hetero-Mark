@@ -59,7 +59,7 @@ int main(int argc, const char * argv[])
 
   int i, j = 0;
   int sz = 100;
-  int cline = 20;
+  int cline = 4;
 
   int *indata  = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*sz, 0);
   int *OneOut = (int *)malloc(sizeof(int)*sz);
