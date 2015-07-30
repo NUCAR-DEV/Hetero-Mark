@@ -105,7 +105,7 @@ int main(int argc, const char * argv[])
 
   diff1 = BILLION * (end1.tv_sec - start.tv_sec) + end1.tv_nsec - start.tv_nsec;
   printf("\n Test 1 done, time: %llu nanoseconds\n", (long long unsigned int) diff1);
-  diff2 = BILLION * (end2.tv_sec - start.tv_sec) + end2.tv_nsec - start.tv_nsec;
+  diff2 = BILLION * (end2.tv_sec - end1.tv_sec) + end2.tv_nsec - end1.tv_nsec;
   printf("\n Test 2 done, time: %llu nanoseconds\n", (long long unsigned int) diff2);
 
   //printf("\n\n--Done--\n");
