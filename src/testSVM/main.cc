@@ -58,14 +58,17 @@ int main(int argc, const char * argv[])
   }
 
   int i, j = 0;
-  int sz = 100;
+  int sz = 1000000;
   int cline = 4;
 
   int *indata  = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*sz, 0);
-  int *OneOut = (int *)malloc(sizeof(int)*sz);
-  int *TwoOut = (int *)malloc(sizeof(int)*sz);
+  int *indata2  = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(int)*sz, 0);
+  int *out1 = (int *)malloc(sizeof(int)*sz);
+  int *out2 = (int *)malloc(sizeof(int)*sz);
+  int *out3 = (int *)malloc(sizeof(int)*sz);
 
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, indata, sizeof(int)*sz, 0, 0, 0);
+  err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, indata2, sizeof(int)*sz, 0, 0, 0);
 
   if (err != CL_SUCCESS) { printf("enqueuesvmmap ocl20 %i", err); }
 
@@ -74,14 +77,14 @@ int main(int argc, const char * argv[])
   clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
   
   for (i = 0; i < sz; i = i+cline) {
-    memcpy(&OneOut[i], &indata[i], sizeof(int)*cline);
+    memcpy(&out1[i], &indata[i], sizeof(int)*cline);
   }
 
   clock_gettime(CLOCK_MONOTONIC, &end1);/* mark the end time */
 
   for (i = 0; i < sz; i = i+cline) {
-    memcpy(&OneOut[i], &indata[i], sizeof(int)*cline);
-    memcpy(&TwoOut[i], &indata[i], sizeof(int)*cline);
+    memcpy(&out2[i], &indata2[i], sizeof(int)*cline);
+    memcpy(&out3[i], &indata2[i], sizeof(int)*cline);
   }
 
   clock_gettime(CLOCK_MONOTONIC, &end2);/* mark the end time */
@@ -95,8 +98,10 @@ int main(int argc, const char * argv[])
   err = clEnqueueSVMUnmap(queue, indata, 0, 0, 0);
   err = clFinish(queue);
   clSVMFree(context, indata);
-  free(OneOut);
-  free(TwoOut);
+  clSVMFree(context, indata2);
+  free(out1);
+  free(out2);
+  free(out3);
 
   diff1 = BILLION * (end1.tv_sec - start.tv_sec) + end1.tv_nsec - start.tv_nsec;
   printf("\n Test 1 done, time: %llu nanoseconds\n", (long long unsigned int) diff1);
