@@ -1,0 +1,400 @@
+
+ Test 1 done, time: 567 nanoseconds
+
+ Test 2 done, time: 928 nanoseconds
+
+ Test 1 done, time: 231 nanoseconds
+
+ Test 2 done, time: 465 nanoseconds
+
+ Test 1 done, time: 488 nanoseconds
+
+ Test 2 done, time: 699 nanoseconds
+
+ Test 1 done, time: 495 nanoseconds
+
+ Test 2 done, time: 860 nanoseconds
+
+ Test 1 done, time: 534 nanoseconds
+
+ Test 2 done, time: 923 nanoseconds
+
+ Test 1 done, time: 364 nanoseconds
+
+ Test 2 done, time: 580 nanoseconds
+
+ Test 1 done, time: 313 nanoseconds
+
+ Test 2 done, time: 610 nanoseconds
+
+ Test 1 done, time: 615 nanoseconds
+
+ Test 2 done, time: 1013 nanoseconds
+
+ Test 1 done, time: 303 nanoseconds
+
+ Test 2 done, time: 511 nanoseconds
+
+ Test 1 done, time: 510 nanoseconds
+
+ Test 2 done, time: 1063 nanoseconds
+
+ Test 1 done, time: 687 nanoseconds
+
+ Test 2 done, time: 1097 nanoseconds
+
+ Test 1 done, time: 586 nanoseconds
+
+ Test 2 done, time: 977 nanoseconds
+
+ Test 1 done, time: 313 nanoseconds
+
+ Test 2 done, time: 529 nanoseconds
+
+ Test 1 done, time: 669 nanoseconds
+
+ Test 2 done, time: 1045 nanoseconds
+
+ Test 1 done, time: 593 nanoseconds
+
+ Test 2 done, time: 1080 nanoseconds
+
+ Test 1 done, time: 585 nanoseconds
+
+ Test 2 done, time: 992 nanoseconds
+
+ Test 1 done, time: 497 nanoseconds
+
+ Test 2 done, time: 709 nanoseconds
+
+ Test 1 done, time: 475 nanoseconds
+
+ Test 2 done, time: 834 nanoseconds
+
+ Test 1 done, time: 601 nanoseconds
+
+ Test 2 done, time: 979 nanoseconds
+
+ Test 1 done, time: 5992 nanoseconds
+
+ Test 2 done, time: 6305 nanoseconds
+
+ Test 1 done, time: 433 nanoseconds
+
+ Test 2 done, time: 608 nanoseconds
+
+ Test 1 done, time: 507 nanoseconds
+
+ Test 2 done, time: 970 nanoseconds
+
+ Test 1 done, time: 478 nanoseconds
+
+ Test 2 done, time: 735 nanoseconds
+
+ Test 1 done, time: 492 nanoseconds
+
+ Test 2 done, time: 817 nanoseconds
+
+ Test 1 done, time: 316 nanoseconds
+
+ Test 2 done, time: 553 nanoseconds
+
+ Test 1 done, time: 365 nanoseconds
+
+ Test 2 done, time: 585 nanoseconds
+
+ Test 1 done, time: 392 nanoseconds
+
+ Test 2 done, time: 638 nanoseconds
+
+ Test 1 done, time: 418 nanoseconds
+
+ Test 2 done, time: 698 nanoseconds
+
+ Test 1 done, time: 503 nanoseconds
+
+ Test 2 done, time: 984 nanoseconds
+
+ Test 1 done, time: 288 nanoseconds
+
+ Test 2 done, time: 576 nanoseconds
+
+ Test 1 done, time: 390 nanoseconds
+
+ Test 2 done, time: 740 nanoseconds
+
+ Test 1 done, time: 694 nanoseconds
+
+ Test 2 done, time: 1073 nanoseconds
+
+ Test 1 done, time: 354 nanoseconds
+
+ Test 2 done, time: 569 nanoseconds
+
+ Test 1 done, time: 606 nanoseconds
+
+ Test 2 done, time: 1009 nanoseconds
+
+ Test 1 done, time: 370 nanoseconds
+
+ Test 2 done, time: 651 nanoseconds
+
+ Test 1 done, time: 742 nanoseconds
+
+ Test 2 done, time: 944 nanoseconds
+
+ Test 1 done, time: 502 nanoseconds
+
+ Test 2 done, time: 789 nanoseconds
+
+ Test 1 done, time: 694 nanoseconds
+
+ Test 2 done, time: 1115 nanoseconds
+
+ Test 1 done, time: 295 nanoseconds
+
+ Test 2 done, time: 513 nanoseconds
+
+ Test 1 done, time: 335 nanoseconds
+
+ Test 2 done, time: 556 nanoseconds
+
+ Test 1 done, time: 470 nanoseconds
+
+ Test 2 done, time: 752 nanoseconds
+
+ Test 1 done, time: 314 nanoseconds
+
+ Test 2 done, time: 532 nanoseconds
+
+ Test 1 done, time: 402 nanoseconds
+
+ Test 2 done, time: 623 nanoseconds
+
+ Test 1 done, time: 468 nanoseconds
+
+ Test 2 done, time: 788 nanoseconds
+
+ Test 1 done, time: 623 nanoseconds
+
+ Test 2 done, time: 998 nanoseconds
+
+ Test 1 done, time: 528 nanoseconds
+
+ Test 2 done, time: 5125 nanoseconds
+
+ Test 1 done, time: 639 nanoseconds
+
+ Test 2 done, time: 1018 nanoseconds
+
+ Test 1 done, time: 724 nanoseconds
+
+ Test 2 done, time: 1122 nanoseconds
+
+ Test 1 done, time: 573 nanoseconds
+
+ Test 2 done, time: 1092 nanoseconds
+
+ Test 1 done, time: 603 nanoseconds
+
+ Test 2 done, time: 1010 nanoseconds
+
+ Test 1 done, time: 595 nanoseconds
+
+ Test 2 done, time: 1048 nanoseconds
+
+ Test 1 done, time: 493 nanoseconds
+
+ Test 2 done, time: 941 nanoseconds
+
+ Test 1 done, time: 511 nanoseconds
+
+ Test 2 done, time: 945 nanoseconds
+
+ Test 1 done, time: 638 nanoseconds
+
+ Test 2 done, time: 1142 nanoseconds
+
+ Test 1 done, time: 370 nanoseconds
+
+ Test 2 done, time: 541 nanoseconds
+
+ Test 1 done, time: 385 nanoseconds
+
+ Test 2 done, time: 589 nanoseconds
+
+ Test 1 done, time: 578 nanoseconds
+
+ Test 2 done, time: 907 nanoseconds
+
+ Test 1 done, time: 292 nanoseconds
+
+ Test 2 done, time: 618 nanoseconds
+
+ Test 1 done, time: 573 nanoseconds
+
+ Test 2 done, time: 903 nanoseconds
+
+ Test 1 done, time: 401 nanoseconds
+
+ Test 2 done, time: 665 nanoseconds
+
+ Test 1 done, time: 432 nanoseconds
+
+ Test 2 done, time: 621 nanoseconds
+
+ Test 1 done, time: 696 nanoseconds
+
+ Test 2 done, time: 1082 nanoseconds
+
+ Test 1 done, time: 582 nanoseconds
+
+ Test 2 done, time: 1099 nanoseconds
+
+ Test 1 done, time: 496 nanoseconds
+
+ Test 2 done, time: 1011 nanoseconds
+
+ Test 1 done, time: 439 nanoseconds
+
+ Test 2 done, time: 654 nanoseconds
+
+ Test 1 done, time: 476 nanoseconds
+
+ Test 2 done, time: 849 nanoseconds
+
+ Test 1 done, time: 491 nanoseconds
+
+ Test 2 done, time: 754 nanoseconds
+
+ Test 1 done, time: 336 nanoseconds
+
+ Test 2 done, time: 619 nanoseconds
+
+ Test 1 done, time: 505 nanoseconds
+
+ Test 2 done, time: 922 nanoseconds
+
+ Test 1 done, time: 285 nanoseconds
+
+ Test 2 done, time: 509 nanoseconds
+
+ Test 1 done, time: 434 nanoseconds
+
+ Test 2 done, time: 612 nanoseconds
+
+ Test 1 done, time: 588 nanoseconds
+
+ Test 2 done, time: 996 nanoseconds
+
+ Test 1 done, time: 451 nanoseconds
+
+ Test 2 done, time: 753 nanoseconds
+
+ Test 1 done, time: 485 nanoseconds
+
+ Test 2 done, time: 1004 nanoseconds
+
+ Test 1 done, time: 447 nanoseconds
+
+ Test 2 done, time: 847 nanoseconds
+
+ Test 1 done, time: 373 nanoseconds
+
+ Test 2 done, time: 566 nanoseconds
+
+ Test 1 done, time: 374 nanoseconds
+
+ Test 2 done, time: 564 nanoseconds
+
+ Test 1 done, time: 340 nanoseconds
+
+ Test 2 done, time: 549 nanoseconds
+
+ Test 1 done, time: 487 nanoseconds
+
+ Test 2 done, time: 863 nanoseconds
+
+ Test 1 done, time: 616 nanoseconds
+
+ Test 2 done, time: 1011 nanoseconds
+
+ Test 1 done, time: 417 nanoseconds
+
+ Test 2 done, time: 625 nanoseconds
+
+ Test 1 done, time: 683 nanoseconds
+
+ Test 2 done, time: 1088 nanoseconds
+
+ Test 1 done, time: 255 nanoseconds
+
+ Test 2 done, time: 547 nanoseconds
+
+ Test 1 done, time: 600 nanoseconds
+
+ Test 2 done, time: 1072 nanoseconds
+
+ Test 1 done, time: 627 nanoseconds
+
+ Test 2 done, time: 1025 nanoseconds
+
+ Test 1 done, time: 605 nanoseconds
+
+ Test 2 done, time: 1023 nanoseconds
+
+ Test 1 done, time: 336 nanoseconds
+
+ Test 2 done, time: 547 nanoseconds
+
+ Test 1 done, time: 592 nanoseconds
+
+ Test 2 done, time: 988 nanoseconds
+
+ Test 1 done, time: 690 nanoseconds
+
+ Test 2 done, time: 1095 nanoseconds
+
+ Test 1 done, time: 710 nanoseconds
+
+ Test 2 done, time: 1059 nanoseconds
+
+ Test 1 done, time: 460 nanoseconds
+
+ Test 2 done, time: 662 nanoseconds
+
+ Test 1 done, time: 588 nanoseconds
+
+ Test 2 done, time: 988 nanoseconds
+
+ Test 1 done, time: 375 nanoseconds
+
+ Test 2 done, time: 666 nanoseconds
+
+ Test 1 done, time: 398 nanoseconds
+
+ Test 2 done, time: 743 nanoseconds
+
+ Test 1 done, time: 476 nanoseconds
+
+ Test 2 done, time: 673 nanoseconds
+
+ Test 1 done, time: 576 nanoseconds
+
+ Test 2 done, time: 901 nanoseconds
+
+ Test 1 done, time: 503 nanoseconds
+
+ Test 2 done, time: 1029 nanoseconds
+
+ Test 1 done, time: 380 nanoseconds
+
+ Test 2 done, time: 600 nanoseconds
+
+ Test 1 done, time: 354 nanoseconds
+
+ Test 2 done, time: 657 nanoseconds
+
+ Test 1 done, time: 248 nanoseconds
+
+ Test 2 done, time: 591 nanoseconds
