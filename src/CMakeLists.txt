@@ -28,7 +28,8 @@ set( SUBDIRECTORIES
 	micro-benchmark/memcopy_cl20
 	micro-benchmark/maxmem_cl12
 	micro-benchmark/maxmem_cl20
-	micro-benchmark/testSVM
+	micro-benchmark/svmCPUcaching
+	micro-benchmark/svmGPUcaching
 	)
 
 ###############################################################
