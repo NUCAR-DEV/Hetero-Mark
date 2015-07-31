@@ -1,4 +1,4 @@
-set( BENCHMARK_NAME testSVM )
+set( BENCHMARK_NAME svmCaching )
 set( SOURCE_FILES main.cc )
 set( EXTRA_FILES kernel.cl )
 
