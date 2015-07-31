@@ -38,39 +38,42 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_BENCHMARK_H_
-#define HSA_COMMON_BENCHMARK_H_
+#ifndef HSA_COMMON_ARGUMENTVALUE_H_
+#define HSA_COMMON_ARGUMENTVALUE_H_
 
-/**
- * A benchmark is a program that test platform performance. It follows the 
- * steps of Initialize, Run, Verify, Summarize and Cleanup.
- */
-class Benchmark {
+class ArgumentValue {
+ protected:
+  
+   // The value of the argument. It is always stored as an string. Users need 
+   // to convert is explicitly into desired types with as<Type> functions
+   std::string value;
+
  public:
-  /**
-   * Initialize environment, parameter, buffers
-   */
-  virtual void Initialize() = 0;
 
   /**
-   * Run the benchmark
+   * Constructor. The value of the newly created instance will be set to
+   * empty at the beginning
    */
-  virtual void Run() = 0;
+  ArgumentValue() : value() {
+  }
+  
+  /**
+   * Return the value in type of string
+   */
+  virtual const std::string asString() {
+    return value; 
+  }
 
   /**
-   * Verify
+   * Return the value in type of uint32_t
+   * This function may throw error. The caller should catch the error
    */
-  virtual void Verify() = 0;
-
-  /**
-   * Summarize
-   */
-  virtual void Summarize() = 0;
-
-  /**
-   * Clean up
-   */
-  virtual void CleanUp() = 0;
+  virtual uint32_t asInt32() {
+    uint32_t integer;
+    integer = stoi(value);
+    return integer;
+  }
+  
 }
 
-#endif  // HSA_COMMON_BENCHMARK_H_
+#endif  // HSA_COMMMON_ARGUMENTVALUE_H_
