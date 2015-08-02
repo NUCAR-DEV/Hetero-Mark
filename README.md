@@ -1,4 +1,4 @@
-# hsaBench
+Hetero-Mark
 HSA benchmarks
 
 Compilation guide

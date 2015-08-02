@@ -1,4 +1,4 @@
-set( FOLDER_NAME hsaBench )
+set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
 
 ############################################################################
