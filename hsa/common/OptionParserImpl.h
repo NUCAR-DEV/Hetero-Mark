@@ -38,46 +38,46 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_ARGUMENTVALUE_H_
-#define HSA_COMMON_ARGUMENTVALUE_H_
+#ifndef HSA_COMMON_OPTIONPARSERIMPL_H_
+#define HSA_COMMON_OPTIONPARSERIMPL_H_
 
+#include <map>
 #include <string>
+#include <memory>
 
-class ArgumentValue {
- protected:
-  // The value of the argument. It is always stored as an string. Users need
-  // to convert is explicitly into desired types with as<Type> functions
-  std::string value;
+#include "hsa/common/OptionParser.h"
+#include "hsa/common/OptionSetting.h"
+#include "hsa/common/ArgumentValueFactory.h"
 
+/**
+ * An option parser is responsible for parsing user input for a particular 
+ * option setting
+ */
+class OptionParserImpl : public OptionParser {
  public:
   /**
-   * Constructor. The value of the newly created instance will be set to
-   * empty at the beginning
+   * Constructor
    */
-  ArgumentValue() : value() {
-  }
+  OptionParserImpl(OptionSetting *optionSetting,
+    ArgumentValueFactory *argumentValueFactory) :
+    optionSetting(optionSetting),
+    argumentValueFactory(argumentValueFactory) {}
 
   /**
-   * Set the value in string format
+   * Parse the command line argument
    */
-  virtual void setValue(const char *value) { this->value = value; }
+  void parse(int argc, const char **argv) override;
 
   /**
-   * Return the value in type of string
+   * Get the argument value by their names
    */
-  virtual const std::string asString() {
-    return value;
-  }
+  ArgumentValue *getValue(const char *name) override;
 
-  /**
-   * Return the value in type of uint32_t
-   * This function may throw error. The caller should catch the error
-   */
-  virtual uint32_t asInt32() {
-    uint32_t integer;
-    integer = stoi(value);
-    return integer;
-  }
+ protected:
+  OptionSetting *optionSetting;
+  ArgumentValueFactory *argumentValueFactory;
+  // A map that maps name of argument to its value
+  std::map<std::string, std::unique_ptr<ArgumentValue>> argumentValues;
 };
 
-#endif  // HSA_COMMON_ARGUMENTVALUE_H_
+#endif  // HSA_COMMON_OPTIONPARSERIMPL_H_

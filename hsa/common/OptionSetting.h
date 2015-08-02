@@ -38,46 +38,36 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_ARGUMENTVALUE_H_
-#define HSA_COMMON_ARGUMENTVALUE_H_
+#ifndef HSA_COMMON_OPTIONSETTING_H_
+#define HSA_COMMON_OPTIONSETTING_H_
 
-#include <string>
+#include <memory>
 
-class ArgumentValue {
- protected:
-  // The value of the argument. It is always stored as an string. Users need
-  // to convert is explicitly into desired types with as<Type> functions
-  std::string value;
+#include "hsa/common/Argument.h"
 
+/**
+ * An OptionSetting is a list of registered argument for the program
+ */
+class OptionSetting {
  public:
   /**
-   * Constructor. The value of the newly created instance will be set to
-   * empty at the beginning
+   * The iterator for the arguments
    */
-  ArgumentValue() : value() {
-  }
+  class Iterator {
+   public:
+    virtual bool hasNext() = 0;
+    virtual Argument *next() = 0;
+  };
 
   /**
-   * Set the value in string format
+   * Add an argument to the command line option setting
    */
-  virtual void setValue(const char *value) { this->value = value; }
+  virtual void addArgument(std::unique_ptr<Argument> argument) = 0;
 
   /**
-   * Return the value in type of string
+   * Get the argument iterator
    */
-  virtual const std::string asString() {
-    return value;
-  }
-
-  /**
-   * Return the value in type of uint32_t
-   * This function may throw error. The caller should catch the error
-   */
-  virtual uint32_t asInt32() {
-    uint32_t integer;
-    integer = stoi(value);
-    return integer;
-  }
+  virtual std::unique_ptr<Iterator> getIterator() = 0;
 };
 
-#endif  // HSA_COMMON_ARGUMENTVALUE_H_
+#endif  // HSA_COMMON_OPTIONSETTING_H_

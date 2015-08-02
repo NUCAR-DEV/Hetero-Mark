@@ -38,46 +38,26 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_ARGUMENTVALUE_H_
-#define HSA_COMMON_ARGUMENTVALUE_H_
+#include "hsa/common/OptionSettingImpl.h"
 
-#include <string>
+void OptionSettingImpl::addArgument(std::unique_ptr<Argument> argument) {
+  arguments.emplace(argument->getName(), std::move(argument));
+}
 
-class ArgumentValue {
- protected:
-  // The value of the argument. It is always stored as an string. Users need
-  // to convert is explicitly into desired types with as<Type> functions
-  std::string value;
+std::unique_ptr<OptionSetting::Iterator>
+OptionSettingImpl::getIterator() {
+  OptionSetting::Iterator *it =
+    new Iterator(arguments.begin(), arguments.end());
+  std::unique_ptr<OptionSetting::Iterator> iterator(it);
+  return std::move(iterator);
+}
 
- public:
-  /**
-   * Constructor. The value of the newly created instance will be set to
-   * empty at the beginning
-   */
-  ArgumentValue() : value() {
-  }
+bool OptionSettingImpl::Iterator::hasNext() {
+  return iterator != end;
+}
 
-  /**
-   * Set the value in string format
-   */
-  virtual void setValue(const char *value) { this->value = value; }
-
-  /**
-   * Return the value in type of string
-   */
-  virtual const std::string asString() {
-    return value;
-  }
-
-  /**
-   * Return the value in type of uint32_t
-   * This function may throw error. The caller should catch the error
-   */
-  virtual uint32_t asInt32() {
-    uint32_t integer;
-    integer = stoi(value);
-    return integer;
-  }
-};
-
-#endif  // HSA_COMMON_ARGUMENTVALUE_H_
+Argument *OptionSettingImpl::Iterator::next() {
+  Argument *argument = iterator->second.get();
+  iterator++;
+  return argument;
+}

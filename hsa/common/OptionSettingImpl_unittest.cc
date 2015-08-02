@@ -38,46 +38,33 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_ARGUMENTVALUE_H_
-#define HSA_COMMON_ARGUMENTVALUE_H_
+#include "hsa/common/OptionSettingImpl.h"
+#include "hsa/common/OptionSetting.h"
+#include "hsa/common/Argument.h"
+#include "gtest/gtest.h"
 
-#include <string>
+TEST(OptionSettingImpl, Iterator) {
+  // Create environment
+  std::unique_ptr<OptionSetting> optionSetting(new OptionSettingImpl());
+  std::unique_ptr<Argument> arg1(new Argument("arg1"));
+  std::unique_ptr<Argument> arg2(new Argument("arg2"));
+  optionSetting->addArgument(std::move(arg1));
+  optionSetting->addArgument(std::move(arg2));
 
-class ArgumentValue {
- protected:
-  // The value of the argument. It is always stored as an string. Users need
-  // to convert is explicitly into desired types with as<Type> functions
-  std::string value;
+  // Get the iterator
+  std::unique_ptr<OptionSetting::Iterator> it = optionSetting->getIterator();
 
- public:
-  /**
-   * Constructor. The value of the newly created instance will be set to
-   * empty at the beginning
-   */
-  ArgumentValue() : value() {
-  }
+  // Iterator has next when it intialize
+  EXPECT_TRUE(it->hasNext());
 
-  /**
-   * Set the value in string format
-   */
-  virtual void setValue(const char *value) { this->value = value; }
+  // Two argument can be in any order
+  Argument *arg = it->next();
+  EXPECT_STREQ("arg1", arg->getName().c_str());
+  arg = it->next();
+  EXPECT_STREQ("arg2", arg->getName().c_str());
 
-  /**
-   * Return the value in type of string
-   */
-  virtual const std::string asString() {
-    return value;
-  }
+  // At this time, no next argument
+  EXPECT_FALSE(it->hasNext());
+}
 
-  /**
-   * Return the value in type of uint32_t
-   * This function may throw error. The caller should catch the error
-   */
-  virtual uint32_t asInt32() {
-    uint32_t integer;
-    integer = stoi(value);
-    return integer;
-  }
-};
 
-#endif  // HSA_COMMON_ARGUMENTVALUE_H_

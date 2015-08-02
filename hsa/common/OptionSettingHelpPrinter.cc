@@ -38,46 +38,16 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_ARGUMENTVALUE_H_
-#define HSA_COMMON_ARGUMENTVALUE_H_
+#include "hsa/common/OptionSettingHelpPrinter.h"
 
-#include <string>
-
-class ArgumentValue {
- protected:
-  // The value of the argument. It is always stored as an string. Users need
-  // to convert is explicitly into desired types with as<Type> functions
-  std::string value;
-
- public:
-  /**
-   * Constructor. The value of the newly created instance will be set to
-   * empty at the beginning
-   */
-  ArgumentValue() : value() {
+void OptionSettingHelpPrinter::print(OptionSetting *optionSetting) {
+  auto it = optionSetting->getIterator();
+  while (it->hasNext()) {
+    Argument *argument = it->next();
+    (*ostream) << argument->getName() << ": " <<
+      argument->getShortPrompt() << " " <<
+      argument->getLongPrompt() << " " <<
+      "[" << argument->getType() << "]\n" <<
+      "  " << argument->getDescription() << "\n\n";
   }
-
-  /**
-   * Set the value in string format
-   */
-  virtual void setValue(const char *value) { this->value = value; }
-
-  /**
-   * Return the value in type of string
-   */
-  virtual const std::string asString() {
-    return value;
-  }
-
-  /**
-   * Return the value in type of uint32_t
-   * This function may throw error. The caller should catch the error
-   */
-  virtual uint32_t asInt32() {
-    uint32_t integer;
-    integer = stoi(value);
-    return integer;
-  }
-};
-
-#endif  // HSA_COMMON_ARGUMENTVALUE_H_
+}

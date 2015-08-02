@@ -38,46 +38,26 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_ARGUMENTVALUE_H_
-#define HSA_COMMON_ARGUMENTVALUE_H_
+#ifndef HSA_COMMON_OPTIONPARSER_H_
+#define HSA_COMMON_OPTIONPARSER_H_
 
-#include <string>
+#include "ArgumentValue.h"
 
-class ArgumentValue {
- protected:
-  // The value of the argument. It is always stored as an string. Users need
-  // to convert is explicitly into desired types with as<Type> functions
-  std::string value;
-
+/**
+ * An option parser is responsible for parsing user input for a particular 
+ * option setting
+ */
+class OptionParser {
  public:
   /**
-   * Constructor. The value of the newly created instance will be set to
-   * empty at the beginning
+   * Parse the result
    */
-  ArgumentValue() : value() {
-  }
+  virtual void parse(int argc, const char **argv) = 0;
 
   /**
-   * Set the value in string format
+   * Get the argument value by argument name
    */
-  virtual void setValue(const char *value) { this->value = value; }
-
-  /**
-   * Return the value in type of string
-   */
-  virtual const std::string asString() {
-    return value;
-  }
-
-  /**
-   * Return the value in type of uint32_t
-   * This function may throw error. The caller should catch the error
-   */
-  virtual uint32_t asInt32() {
-    uint32_t integer;
-    integer = stoi(value);
-    return integer;
-  }
+  virtual ArgumentValue *getValue(const char *name) = 0;
 };
 
-#endif  // HSA_COMMON_ARGUMENTVALUE_H_
+#endif  // HSA_COMMON_OPTIONPARSER_H_

@@ -9,7 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.ece.neu.edu)
+ * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -41,46 +41,104 @@
 #ifndef HSA_COMMON_ARGUMENT_H_
 #define HSA_COMMON_ARGUMENT_H_
 
+#include <string>
+
 /**
  * An argument is a value that can be set via the command line option
  */
 class Argument {
-protected: 
-
+ protected:
   // Name of the argument
   std::string name;
 
-  // Short format
-  std::string short_format;
+  // Short prompt is the leading word of the argument, starting with a single
+  // dash. It should only has error. For example "-h" for help information
+  std::string shortPrompt;
 
-  // Long format
-  std::string long_format;
+  // Long prompt is the leading word of the argument, starting with two dashes.
+  // It is usually a word. For example, "--help" for help information
+  std::string longPrompt;
 
   // Description of the argument
   std::string description;
 
   // Default value
-  std::string default_value;
+  std::string defaultValue;
 
-  // Type of the input
-  const std::type_info &type;
+  // Type of the argument. This field does not do any validation. It is only
+  // used as part of help messages.
+  std::string type;
 
-  // Human readable name of the type
-  std::string type_name;
-
-  // Value, store the original input string
-  std::string value;
-
-public: 
-
+ public:
   /**
    * Constructor 
    */
-  Argument(const char *name, 
-    const char *short_format, const char *long_format, 
-    const char *description, const char *default_value,
-    const std::type_info &type);
+  explicit Argument(const char *name) : name(name) {}
+
+  /**
+   * Get the name of the argument
+   */
+  virtual const std::string getName() { return name; }
+
+  /**
+   * Set short prompt
+   */
+  virtual void setShortPrompt(const char *shortPrompt) {
+    this->shortPrompt = shortPrompt;
+  }
+
+  /**
+   * Get the short prompt format
+   */
+  virtual const std::string getShortPrompt() { return shortPrompt; }
+
+  /**
+   * Set long prompt
+   */
+  virtual void setLongPrompt(const char *longPrompt) {
+    this->longPrompt = longPrompt;
+  }
+
+  /**
+   * Get the long prompt format
+   */
+  virtual const std::string getLongPrompt() { return longPrompt; }
+
+  /**
+   * Set type information
+   */
+  virtual void setType(const char *type) {
+    this->type = type;
+  }
+
+  /**
+   * Get the type string
+   */
+  virtual const std::string getType() { return type; }
+
+  /**
+   * Set the default value
+   */
+  virtual void setDefaultValue(const char *defaultValue) {
+    this->defaultValue = defaultValue;
+  }
+
+  /**
+   * Get the default value
+   */
+  virtual const std::string getDefaultValue() { return defaultValue; }
+
+  /**
+   * Set the description
+   */
+  virtual void setDescription(const char *description) {
+    this->description = description;
+  }
+
+  /**
+   * Get the description
+   */
+  virtual const std::string getDescription() { return description; }
 };
 
-
-#endif // #HSA_COMMON_BENCHMARK_H_
+#endif  // HSA_COMMON_ARGUMENT_H_

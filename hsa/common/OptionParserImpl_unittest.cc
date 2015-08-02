@@ -38,46 +38,44 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_ARGUMENTVALUE_H_
-#define HSA_COMMON_ARGUMENTVALUE_H_
+#include <memory>
+#include "hsa/common/OptionSetting.h"
+#include "hsa/common/OptionSettingImpl.h"
+#include "hsa/common/OptionParser.h"
+#include "hsa/common/OptionParserImpl.h"
+#include "gtest/gtest.h"
 
-#include <string>
+TEST(OptionParserImpl, parse) {
+  // Setup environment
+  ArgumentValueFactory argumentValueFactory;
+  auto optionSetting = std::unique_ptr<OptionSetting>(new OptionSettingImpl());
+  auto optionParser = std::unique_ptr<OptionParser>(new OptionParserImpl(
+        optionSetting.get(), &argumentValueFactory));
 
-class ArgumentValue {
- protected:
-  // The value of the argument. It is always stored as an string. Users need
-  // to convert is explicitly into desired types with as<Type> functions
-  std::string value;
+  // Setup arguments that uses a short prompt
+  auto arg1 = std::unique_ptr<Argument>(new Argument("name"));
+  arg1->setShortPrompt("-n");
+  arg1->setType("string");
+  optionSetting->addArgument(std::move(arg1));
 
- public:
-  /**
-   * Constructor. The value of the newly created instance will be set to
-   * empty at the beginning
-   */
-  ArgumentValue() : value() {
-  }
+  // Setup argument that uses a long prompt
+  auto arg2 = std::unique_ptr<Argument>(new Argument("arg2"));
+  arg2->setLongPrompt("--arg2");
+  arg2->setType("bool");
+  optionSetting->addArgument(std::move(arg2));
 
-  /**
-   * Set the value in string format
-   */
-  virtual void setValue(const char *value) { this->value = value; }
+  // Configure user input
+  int argc = 4;
+  const char *argv[] = {"run", "-n", "name", "--arg2"};
 
-  /**
-   * Return the value in type of string
-   */
-  virtual const std::string asString() {
-    return value;
-  }
+  // Parse
+  optionParser->parse(argc, argv);
 
-  /**
-   * Return the value in type of uint32_t
-   * This function may throw error. The caller should catch the error
-   */
-  virtual uint32_t asInt32() {
-    uint32_t integer;
-    integer = stoi(value);
-    return integer;
-  }
-};
-
-#endif  // HSA_COMMON_ARGUMENTVALUE_H_
+  // Check result
+  ArgumentValue *value1 = optionParser->getValue("name");
+  ASSERT_TRUE(value1!=nullptr);
+  EXPECT_STREQ("name", value1->asString().c_str());
+  ArgumentValue *value2 = optionParser->getValue("arg2");
+  ASSERT_TRUE(value2!=nullptr);
+  EXPECT_STREQ("true", value2->asString().c_str());
+}

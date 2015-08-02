@@ -4,33 +4,71 @@ HAVE_CPPCHECK=$(if $(shell which $(CPPCHECK)),TRUE)
 CPPLINT=cpplint.py
 HAVE_CPPLINT=$(if $(shell which $(CPPLINT)),TRUE)
 
-CXX=g++
-CXXFLAG=-std=c++0x
+IFLAG=-I../../ -I../gtest/include
 
-HEADERS=Benchmark.h \
+GTEST=../gtest/gtest_main.a
+
+CXX=g++
+CXXFLAG=-std=c++0x -Wall -Werror -pthread -g
+
+HEADERS=Argument.h \
+	ArgumentValue.h\
+	ArgumentValueFactory.h \
+	Benchmark.h \
 	OptionParser.h \
+	OptionParserImpl.h \
+	OptionSetting.h \
+	OptionSettingHelpPrinter.h \
+	OptionSettingImpl.h \
 	TimeKeeper.h
 
-OBJS=OptionParser.o
+SRCS=OptionParserImpl.cc \
+     OptionSettingImpl.cc \
+     OptionSettingHelpPrinter.cc
+
+UNIT_TESTS=OptionParserImpl_unittest.o \
+           OptionSettingImpl_unittest.o \
+	   OptionSettingHelpPrinter_unittest.o
+
+OBJS=OptionParserImpl.o \
+     OptionSettingImpl.o \
+     OptionSettingHelpPrinter.o
 
 all: common.a
 
-%.o: %.cc $(HEADERS)
-	echo here
+.PHONY: clean check unittest
+
+check: cpp_lint cpp_check all unittest
+
+# Define cppcheck rules
 ifeq ($(HAVE_CPPCHECK), TRUE)
-	$(CPPCHECK) $^
+cpp_check:  $(HEADERS) $(SRCS)
+	$(CPPCHECK) $(HEADERS) $(SRCS)
+else
+cpp_check:
+	echo "Warning: cppcheck is not available."
 endif
+
+#define cpplint rules
 ifeq ($(HAVE_CPPLINT), TRUE)
-	$(CPPLINT) $^
+cpp_lint: $(HEADERS) $(SRCS)
+	$(CPPLINT) $(HEADERS) $(SRCS)
+else
+cpp_lint:
+	echo "Warning: cpplint is not available"
 endif
-	$(CXX) $(CXXFLAG) -c -o $@ $<
+
+unittest: common.a $(UNIT_TESTS) $(OBJS)
+	g++ $^ $(GTEST) -o $@ $(CXXFLAG) $(IFLAG)
+	./$@
+
+
+%.o: %.cc $(HEADERS)
+	$(CXX) $(CXXFLAG) $(IFLAG) -c -o $@ $<
 
 common.a: $(OBJS)
-	ar rcs $@ $^
-	
+	ar rcs $@ $(OBJS)
+
 
 clean:
 	rm *.o *.a
-
-
-	

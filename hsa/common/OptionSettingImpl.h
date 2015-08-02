@@ -38,46 +38,50 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_ARGUMENTVALUE_H_
-#define HSA_COMMON_ARGUMENTVALUE_H_
+#ifndef HSA_COMMON_OPTIONSETTINGIMPL_H_
+#define HSA_COMMON_OPTIONSETTINGIMPL_H_
 
+#include <map>
 #include <string>
 
-class ArgumentValue {
- protected:
-  // The value of the argument. It is always stored as an string. Users need
-  // to convert is explicitly into desired types with as<Type> functions
-  std::string value;
+#include "hsa/common/OptionSetting.h"
 
+class OptionSettingImpl : public OptionSetting {
  public:
   /**
-   * Constructor. The value of the newly created instance will be set to
-   * empty at the beginning
+   * The iterator for arguments
    */
-  ArgumentValue() : value() {
-  }
+  class Iterator : public OptionSetting::Iterator {
+   public:
+    Iterator(
+      std::map<std::string, std::unique_ptr<Argument>>::iterator begin,
+      std::map<std::string, std::unique_ptr<Argument>>::iterator end) :
+      begin(begin),
+      iterator(begin),
+      end(end) {}
+    bool hasNext() override;
+    Argument *next() override;
+
+   private:
+    std::map<std::string, std::unique_ptr<Argument>>::iterator begin;
+    std::map<std::string, std::unique_ptr<Argument>>::iterator iterator;
+    std::map<std::string, std::unique_ptr<Argument>>::iterator end;
+  };
 
   /**
-   * Set the value in string format
+   * Add an argument
    */
-  virtual void setValue(const char *value) { this->value = value; }
+  void addArgument(std::unique_ptr<Argument> argument) override;
 
   /**
-   * Return the value in type of string
+   * Get the argument iterator
    */
-  virtual const std::string asString() {
-    return value;
-  }
+  std::unique_ptr<OptionSetting::Iterator> getIterator() override;
 
-  /**
-   * Return the value in type of uint32_t
-   * This function may throw error. The caller should catch the error
-   */
-  virtual uint32_t asInt32() {
-    uint32_t integer;
-    integer = stoi(value);
-    return integer;
-  }
+ protected:
+  std::map<std::string, std::unique_ptr<Argument>> arguments;
 };
 
-#endif  // HSA_COMMON_ARGUMENTVALUE_H_
+#endif  // HSA_COMMON_OPTIONSETTINGIMPL_H_
+
+
