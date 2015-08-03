@@ -38,9 +38,10 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include <iostream>
 #include "hsa/common/OptionSettingHelpPrinter.h"
 
-void OptionSettingHelpPrinter::print(OptionSetting *optionSetting) {
+void OptionSettingHelpPrinter::print(std::ostream *ostream) {
   auto it = optionSetting->getIterator();
   while (it->hasNext()) {
     Argument *argument = it->next();

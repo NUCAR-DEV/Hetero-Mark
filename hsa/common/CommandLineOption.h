@@ -38,65 +38,31 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <sstream>
+#ifndef HSA_COMMON_COMMANDLINEOPTION_H_
+#define HSA_COMMON_COMMANDLINEOPTION_H_
 
-#include "hsa/common/OptionSettingHelpPrinter.h"
+#include <iostream>
 #include "hsa/common/OptionSetting.h"
-#include "gtest/gtest.h"
+#include "hsa/common/OptionParser.h"
+#include "hsa/common/ArgumentValue.h"
 
-TEST(OptionSettingHelpPrinter, print) {
-  class MockupArgument : public Argument {
-   public:
-    MockupArgument (const char *name) : Argument(name) {}
-    const std::string getShortPrompt() { return "-n"; }
-    const std::string getLongPrompt() { return "--name"; }
-    const std::string getType() { return "string"; }
-    const std::string getDescription() { return "This is a description"; }
-  };
+/**
+ * A CommandLineOption is a facade for the command line argument parsing 
+ * system.
+ */
+class CommandLineOption {
+ public:
+  CommandLineOption(const char *name, const char *description);
+  void addArgument(const char *name,
+      const char *type, const char *defaultValue,
+      const char *shortPrompt, const char *longPrompt,
+      const char *description);
+  void parse(int argc, const char **argv);
+  void help(std::ostream *ostream = &std::cout);
+  ArgumentValue *getArgumentValue(const char *name);
+ protected:
+  std::unique_ptr<OptionSetting> optionSetting;
+  std::unique_ptr<OptionParser> optionParser;
+};
 
-  class MockupOptionSetting : public OptionSetting {
-    class MockupIterator : public OptionSetting::Iterator {
-     public:
-      MockupIterator() {
-        arg1.reset(new MockupArgument("arg1"));
-        arg2.reset(new MockupArgument("arg2"));
-      }
-      bool hasNext() {
-        if (index == 2) return false;
-        return true;
-      }
-      Argument *next() {
-        index++;
-        if (index == 1) return arg1.get();
-        if (index == 2) return arg2.get();
-        return nullptr;
-      }
-     private: 
-      int index = 0;
-      std::unique_ptr<Argument> arg1;
-      std::unique_ptr<Argument> arg2;
-    };
-
-    std::unique_ptr<OptionSetting::Iterator> getIterator() override {
-      OptionSetting::Iterator *it = new MockupOptionSetting::MockupIterator();
-      std::unique_ptr<OptionSetting::Iterator> it_unique(it);
-      return std::move(it_unique);
-    }
-
-    void addArgument(std::unique_ptr<Argument> argument) override {};
-
-  };
-
-  MockupOptionSetting mockupOptionSetting;
-  std::stringstream stringstream;
-  OptionSettingHelpPrinter printer(&mockupOptionSetting);
-  printer.print(&stringstream);
-  
-  std::string result = stringstream.str();
-  EXPECT_STREQ(
-      "arg1: -n --name [string]\n"
-      "  This is a description\n\n"
-      "arg2: -n --name [string]\n"
-      "  This is a description\n\n", 
-      result.c_str());
-}
+#endif  // HSA_COMMON_COMMANDLINEOPTION_H_

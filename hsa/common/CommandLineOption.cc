@@ -38,65 +38,57 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <sstream>
-
+#include <stdexcept>
+#include <string>
+#include "hsa/common/CommandLineOption.h"
+#include "hsa/common/OptionSettingImpl.h"
+#include "hsa/common/OptionParserImpl.h"
 #include "hsa/common/OptionSettingHelpPrinter.h"
-#include "hsa/common/OptionSetting.h"
-#include "gtest/gtest.h"
+#include "hsa/common/Argument.h"
 
-TEST(OptionSettingHelpPrinter, print) {
-  class MockupArgument : public Argument {
-   public:
-    MockupArgument (const char *name) : Argument(name) {}
-    const std::string getShortPrompt() { return "-n"; }
-    const std::string getLongPrompt() { return "--name"; }
-    const std::string getType() { return "string"; }
-    const std::string getDescription() { return "This is a description"; }
-  };
+CommandLineOption::CommandLineOption(const char *name,
+    const char *description) {
+  optionSetting.reset(new OptionSettingImpl());
+}
 
-  class MockupOptionSetting : public OptionSetting {
-    class MockupIterator : public OptionSetting::Iterator {
-     public:
-      MockupIterator() {
-        arg1.reset(new MockupArgument("arg1"));
-        arg2.reset(new MockupArgument("arg2"));
-      }
-      bool hasNext() {
-        if (index == 2) return false;
-        return true;
-      }
-      Argument *next() {
-        index++;
-        if (index == 1) return arg1.get();
-        if (index == 2) return arg2.get();
-        return nullptr;
-      }
-     private: 
-      int index = 0;
-      std::unique_ptr<Argument> arg1;
-      std::unique_ptr<Argument> arg2;
-    };
+void CommandLineOption::addArgument(const char *name,
+      const char *type, const char *defaultValue,
+      const char *shortPrompt, const char *longPrompt,
+      const char *description) {
+  auto argument = std::unique_ptr<Argument>(new Argument(name));
+  argument->setType(type);
+  argument->setDefaultValue(defaultValue);
+  argument->setShortPrompt(shortPrompt);
+  argument->setLongPrompt(longPrompt);
+  argument->setDescription(description);
+  optionSetting->addArgument(std::move(argument));
+}
 
-    std::unique_ptr<OptionSetting::Iterator> getIterator() override {
-      OptionSetting::Iterator *it = new MockupOptionSetting::MockupIterator();
-      std::unique_ptr<OptionSetting::Iterator> it_unique(it);
-      return std::move(it_unique);
-    }
+void CommandLineOption::parse(int argc, const char **argv) {
+  ArgumentValueFactory argumentValueFactory;
+  optionParser.reset(new OptionParserImpl(optionSetting.get(),
+        &argumentValueFactory));
+  optionParser->parse(argc, argv);
+}
 
-    void addArgument(std::unique_ptr<Argument> argument) override {};
+void CommandLineOption::help(std::ostream *ostream) {
+  OptionSettingHelpPrinter printer(optionSetting.get());
+  printer.print(ostream);
+}
 
-  };
+ArgumentValue *CommandLineOption::getArgumentValue(const char *name) {
+  // Check if the arguments have been parsed
+  if (!optionParser.get()) {
+    throw std::runtime_error("Command line argument not parsed. Call parse() "
+        "before getArgumentValue");
+  }
 
-  MockupOptionSetting mockupOptionSetting;
-  std::stringstream stringstream;
-  OptionSettingHelpPrinter printer(&mockupOptionSetting);
-  printer.print(&stringstream);
-  
-  std::string result = stringstream.str();
-  EXPECT_STREQ(
-      "arg1: -n --name [string]\n"
-      "  This is a description\n\n"
-      "arg2: -n --name [string]\n"
-      "  This is a description\n\n", 
-      result.c_str());
+  // Try to get argument value
+  ArgumentValue *argumentValue = optionParser->getValue(name);
+  if (!argumentValue) {
+    throw std::runtime_error(std::string("Argument ") + name + " not found");
+  }
+
+  // Return argument value
+  return argumentValue;
 }

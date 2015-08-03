@@ -41,7 +41,39 @@
 #ifndef HSA_COMMON_TIMEKEEPER_H_
 #define HSA_COMMON_TIMEKEEPER_H_
 
+#include <string>
+#include <utility>
+
+/**
+ * A TimeKeeper is responsible for keep track of how time is used
+ */
 class TimeKeeper {
+ public:
+  /**
+   * The iterator that goes through all catagories
+   */
+  class Iterator {
+   public:
+    virtual bool hasNext() = 0;
+    virtual std::pair<std::string, double> Next() = 0;
+  };
+
+  /**
+   * Start the timer. Timer cannot be nested. That means the timer must be 
+   * ended before start again.
+   */
+  virtual void start() = 0;
+
+  /**
+   * End the time and set the catagories that the time since timer start 
+   * belongs to.
+   */
+  virtual void end(std::initializer_list<const char *> catagories) = 0;
+
+  /**
+   * Get the iterator that walks through all catagories
+   */
+  virtual Iterator getCatagoryIterator() = 0;
 }
 
 #endif  // HSA_COMMON_TIMEKEEPER_H_

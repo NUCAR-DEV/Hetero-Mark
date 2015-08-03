@@ -15,28 +15,35 @@ HEADERS=Argument.h \
 	ArgumentValue.h\
 	ArgumentValueFactory.h \
 	Benchmark.h \
+	CommandLineOption.h \
 	OptionParser.h \
 	OptionParserImpl.h \
 	OptionSetting.h \
 	OptionSettingHelpPrinter.h \
 	OptionSettingImpl.h \
-	TimeKeeper.h
+	TimeKeeper.h \
+	Timer.h \
+	TimerImpl.h
 
-SRCS=OptionParserImpl.cc \
+SRCS=CommandLineOption.cc \
+     OptionParserImpl.cc \
      OptionSettingImpl.cc \
-     OptionSettingHelpPrinter.cc
+     OptionSettingHelpPrinter.cc \
+     TimerImpl.cc
 
 UNIT_TESTS=OptionParserImpl_unittest.o \
            OptionSettingImpl_unittest.o \
 	   OptionSettingHelpPrinter_unittest.o
 
-OBJS=OptionParserImpl.o \
+OBJS=CommandLineOption.o \
+     OptionParserImpl.o \
      OptionSettingImpl.o \
-     OptionSettingHelpPrinter.o
+     OptionSettingHelpPrinter.o \
+     TimerImpl.o
 
 all: common.a
 
-.PHONY: clean check unittest
+.PHONY: clean cpp_check cpp_lint check unittest
 
 check: cpp_lint cpp_check all unittest
 

@@ -38,32 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_OPTIONSETTINGHELPPRINTER_H_
-#define HSA_COMMON_OPTIONSETTINGHELPPRINTER_H_
+#include <time.h>
+#include "hsa/common/TimerImpl.h"
 
-#include <iostream>
-#include "hsa/common/OptionSetting.h"
-
-/**
- * An OptionSettingHelpPrinter prints the help information for an OptionSetting
- */
-class OptionSettingHelpPrinter {
- public:
-  /**
-   * Constructor
-   *
-   * @param:ostream The output stream to print the information to
-   */
-  explicit OptionSettingHelpPrinter(OptionSetting *optionSetting) :
-    optionSetting(optionSetting) {}
-
-  /**
-   * Print the help information into output stream
-   */
-  void print(std::ostream *ostream = &std::cout);
-
- protected:
-  OptionSetting *optionSetting;
-};
-
-#endif  // HSA_COMMON_OPTIONSETTINGHELPPRINTER_H_
+double TimerImpl::getTimeInSec() {
+  struct timespec time;
+  clock_gettime(CLOCK_MONOTONIC, &time);
+  double timeInSec = static_cast<double>(time.tv_sec) +
+    static_cast<double>(time.tv_nsec) * 1e-9;
+  return timeInSec;
+}

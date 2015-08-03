@@ -38,32 +38,20 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_OPTIONSETTINGHELPPRINTER_H_
-#define HSA_COMMON_OPTIONSETTINGHELPPRINTER_H_
+#ifndef HSA_COMMON_TIMERIMPL_H_
+#define HSA_COMMON_TIMERIMPL_H_
 
-#include <iostream>
-#include "hsa/common/OptionSetting.h"
+#include "hsa/common/Timer.h"
 
 /**
- * An OptionSettingHelpPrinter prints the help information for an OptionSetting
+ * A timer is an object where you can get current time
  */
-class OptionSettingHelpPrinter {
+class TimerImpl : public Timer {
  public:
   /**
-   * Constructor
-   *
-   * @param:ostream The output stream to print the information to
+   * Return current time in second
    */
-  explicit OptionSettingHelpPrinter(OptionSetting *optionSetting) :
-    optionSetting(optionSetting) {}
-
-  /**
-   * Print the help information into output stream
-   */
-  void print(std::ostream *ostream = &std::cout);
-
- protected:
-  OptionSetting *optionSetting;
+  double getTimeInSec() override;
 };
 
-#endif  // HSA_COMMON_OPTIONSETTINGHELPPRINTER_H_
+#endif  // HSA_COMMON_TIMERIMPL_H_

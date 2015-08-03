@@ -70,7 +70,6 @@ void OptionParserImpl::parse(int argc, const char **argv) {
       auto it = optionSetting->getIterator();
       while (it->hasNext()) {
         Argument *searchArgument = it->next();
-        std::cout << searchArgument->getName() << "\n";
         if (searchArgument->getShortPrompt() == arg) {
           argument = searchArgument;
           break;
