@@ -38,39 +38,62 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_BENCHMARK_H_
-#define HSA_COMMON_BENCHMARK_H_
+#ifndef HSA_COMMON_TIMEKEEPERIMPL_H_
+#define HSA_COMMON_TIMEKEEPERIMPL_H_
 
-/**
- * A benchmark is a program that test platform performance. It follows the 
- * steps of Initialize, Run, Verify, Summarize and Cleanup.
- */
-class Benchmark {
+#include <string>
+#include <utility>
+#include <map>
+#include "hsa/common/TimeKeeper.h"
+#include "hsa/common/Timer.h"
+
+class TimeKeeperImpl : public TimeKeeper {
  public:
   /**
-   * Initialize environment, parameter, buffers
+   * The iterator that goes through all catagories
    */
-  virtual void initialize() = 0;
+  class Iterator : public TimeKeeper::Iterator{
+   public:
+    Iterator(std::map<std::string, double>::iterator begin,
+        std::map<std::string, double>::iterator end);
+
+    bool hasNext() override;;
+
+    std::pair<std::string, double> next() override;
+   private:
+    std::map<std::string, double>::iterator begin;
+    std::map<std::string, double>::iterator iterator;
+    std::map<std::string, double>::iterator end;
+  };
 
   /**
-   * Run the benchmark
+   * Constructor
+   *
+   * @param: timer The timer object is depends on
    */
-  virtual void run() = 0;
+  explicit TimeKeeperImpl(Timer *timer);
 
   /**
-   * Verify
+   * Start the timer. Timer cannot be nested. That means the timer must be 
+   * ended before start again.
    */
-  virtual void verify() = 0;
+  void start() override;
 
   /**
-   * Summarize
+   * End the time and set the catagories that the time since timer start 
+   * belongs to.
    */
-  virtual void summarize() = 0;
+  void end(std::initializer_list<const char *> catagories) override;
 
   /**
-   * Clean up
+   * Get the iterator that walks through all catagories
    */
-  virtual void cleanUp() = 0;
+  std::unique_ptr<TimeKeeper::Iterator> getCatagoryIterator() override;
+
+ protected:
+  std::map<std::string, double> timeCatagories;
+  Timer *timer;
+  double startTime = 0;
 };
 
-#endif  // HSA_COMMON_BENCHMARK_H_
+#endif  // HSA_COMMON_TIMEKEEPERIMPL_H_

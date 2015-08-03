@@ -38,39 +38,29 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_BENCHMARK_H_
-#define HSA_COMMON_BENCHMARK_H_
+#ifndef HSA_COMMON_TIMEMEASUREMENT_H_
+#define HSA_COMMON_TIMEMEASUREMENT_H_
+
+#include <iostream>
+#include <memory>
+#include <initializer_list>
+#include "hsa/common/Timer.h"
+#include "hsa/common/TimeKeeper.h"
 
 /**
- * A benchmark is a program that test platform performance. It follows the 
- * steps of Initialize, Run, Verify, Summarize and Cleanup.
+ * A TimeMeasurement object is a facade for the time measurement system. It 
+ * provides interfaces to the users for the time measurment system.
  */
-class Benchmark {
+class TimeMeasurement {
  public:
-  /**
-   * Initialize environment, parameter, buffers
-   */
-  virtual void initialize() = 0;
+  TimeMeasurement();
+  void start();
+  void end(std::initializer_list<const char *> catagories);
+  void summarize(std::ostream *ostream = &std::cout);
 
-  /**
-   * Run the benchmark
-   */
-  virtual void run() = 0;
-
-  /**
-   * Verify
-   */
-  virtual void verify() = 0;
-
-  /**
-   * Summarize
-   */
-  virtual void summarize() = 0;
-
-  /**
-   * Clean up
-   */
-  virtual void cleanUp() = 0;
+ protected:
+  std::unique_ptr<Timer> timer;
+  std::unique_ptr<TimeKeeper> timeKeeper;
 };
 
-#endif  // HSA_COMMON_BENCHMARK_H_
+#endif  // HSA_COMMON_TIMEMEASUREMENT_H_

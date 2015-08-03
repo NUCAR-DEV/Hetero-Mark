@@ -38,39 +38,60 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_BENCHMARK_H_
-#define HSA_COMMON_BENCHMARK_H_
+#include "hsa/common/BenchmarkRunner.h"
+#include "hsa/common/Benchmark.h"
+#include "hsa/common/TimeMeasurement.h"
+#include "hsa/common/Timer.h"
+#include "hsa/common/TimeKeeperImpl.h"
+#include "gtest/gtest.h"
 
-/**
- * A benchmark is a program that test platform performance. It follows the 
- * steps of Initialize, Run, Verify, Summarize and Cleanup.
- */
-class Benchmark {
- public:
-  /**
-   * Initialize environment, parameter, buffers
-   */
-  virtual void initialize() = 0;
+TEST(BenchmarkRunner, run_benchmark) {
+  class MockupTimer : public Timer {
+   public:
+    double getTimeInSec() override {
+      involkTime++;
+      return static_cast<double>(involkTime);
+    }
+   protected:
+    int involkTime = 0;
+  };
 
-  /**
-   * Run the benchmark
-   */
-  virtual void run() = 0;
+  class MockupTimeMeasurement : public TimeMeasurement {
+   public:
+    MockupTimeMeasurement(std::unique_ptr<Timer> timer) {
+      this->timer = std::move(timer);
+      timeKeeper.reset(new TimeKeeperImpl(this->timer.get()));
+    }
+    void summarize(std::ostream *ostream) {}
+  };
 
-  /**
-   * Verify
-   */
-  virtual void verify() = 0;
+  class MockupBenchmark : public Benchmark {
+   public:
+    void initialize() override { pass += "initialize,"; }
+    void run() override { pass += "run,"; }
+    void verify() override { pass += "verify,"; }
+    void summarize() override { pass += "summary,"; }
+    void cleanUp() override { pass += "cleanup"; }
+    const std::string &getPass() const { return pass; }
+    void cleanPass() { pass = ""; }
+   protected:
+    std::string pass = "";
+  };
 
-  /**
-   * Summarize
-   */
-  virtual void summarize() = 0;
+  MockupBenchmark benchmark;
+  std::unique_ptr<MockupTimer> timer = 
+    std::unique_ptr<MockupTimer>(new MockupTimer);
+  MockupTimeMeasurement measurement(std::move(timer));
+  BenchmarkRunner runner(&benchmark, &measurement);
 
-  /**
-   * Clean up
-   */
-  virtual void cleanUp() = 0;
-};
+  runner.run();
+  
+  const std::string &pass = benchmark.getPass();
+  EXPECT_STREQ("initialize,run,summary,cleanup", pass.c_str());
 
-#endif  // HSA_COMMON_BENCHMARK_H_
+  benchmark.cleanPass();
+  runner.setVerificationMode(true);
+  runner.run();
+  const std::string &pass2 = benchmark.getPass();
+  EXPECT_STREQ("initialize,run,verify,summary,cleanup", pass2.c_str());
+}

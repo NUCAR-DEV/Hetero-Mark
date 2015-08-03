@@ -43,6 +43,7 @@
 
 #include <string>
 #include <utility>
+#include <memory>
 
 /**
  * A TimeKeeper is responsible for keep track of how time is used
@@ -55,7 +56,7 @@ class TimeKeeper {
   class Iterator {
    public:
     virtual bool hasNext() = 0;
-    virtual std::pair<std::string, double> Next() = 0;
+    virtual std::pair<std::string, double> next() = 0;
   };
 
   /**
@@ -73,7 +74,7 @@ class TimeKeeper {
   /**
    * Get the iterator that walks through all catagories
    */
-  virtual Iterator getCatagoryIterator() = 0;
-}
+  virtual std::unique_ptr<Iterator> getCatagoryIterator() = 0;
+};
 
 #endif  // HSA_COMMON_TIMEKEEPER_H_

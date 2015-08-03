@@ -38,39 +38,32 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_BENCHMARK_H_
-#define HSA_COMMON_BENCHMARK_H_
+#include "hsa/common/BenchmarkRunner.h"
 
-/**
- * A benchmark is a program that test platform performance. It follows the 
- * steps of Initialize, Run, Verify, Summarize and Cleanup.
- */
-class Benchmark {
- public:
-  /**
-   * Initialize environment, parameter, buffers
-   */
-  virtual void initialize() = 0;
+void BenchmarkRunner::run() {
+  timeMeasurement->start();
+  benchmark->initialize();
+  timeMeasurement->end({"Initialize"});
 
-  /**
-   * Run the benchmark
-   */
-  virtual void run() = 0;
+  timeMeasurement->start();
+  benchmark->run();
+  timeMeasurement->end({"Run"});
 
-  /**
-   * Verify
-   */
-  virtual void verify() = 0;
+  if (verificationMode) {
+    timeMeasurement->start();
+    benchmark->verify();
+    timeMeasurement->end({"Verify"});
+  }
 
-  /**
-   * Summarize
-   */
-  virtual void summarize() = 0;
+  timeMeasurement->start();
+  benchmark->summarize();
+  timeMeasurement->end({"Summarize"});
 
-  /**
-   * Clean up
-   */
-  virtual void cleanUp() = 0;
-};
+  timeMeasurement->start();
+  benchmark->cleanUp();
+  timeMeasurement->end({"Cleanup"});
+}
 
-#endif  // HSA_COMMON_BENCHMARK_H_
+void BenchmarkRunner::summarize(std::ostream *ostream) {
+  timeMeasurement->summarize(ostream);
+}

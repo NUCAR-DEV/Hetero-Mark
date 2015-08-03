@@ -38,39 +38,26 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_BENCHMARK_H_
-#define HSA_COMMON_BENCHMARK_H_
+#ifndef HSA_COMMON_TIMEKEEPERSUMMARYPRINTER_H_
+#define HSA_COMMON_TIMEKEEPERSUMMARYPRINTER_H_
 
-/**
- * A benchmark is a program that test platform performance. It follows the 
- * steps of Initialize, Run, Verify, Summarize and Cleanup.
- */
-class Benchmark {
+#include <iostream>
+
+class TimeKeeperSummaryPrinter {
  public:
   /**
-   * Initialize environment, parameter, buffers
+   * Constructor
    */
-  virtual void initialize() = 0;
+  explicit TimeKeeperSummaryPrinter(TimeKeeper *timeKeeper) :
+    timeKeeper(timeKeeper) {}
 
   /**
-   * Run the benchmark
+   * Print
    */
-  virtual void run() = 0;
+  virtual void print(std::ostream *ostream = &std::cout);
 
-  /**
-   * Verify
-   */
-  virtual void verify() = 0;
-
-  /**
-   * Summarize
-   */
-  virtual void summarize() = 0;
-
-  /**
-   * Clean up
-   */
-  virtual void cleanUp() = 0;
+ private:
+  TimeKeeper *timeKeeper;
 };
 
-#endif  // HSA_COMMON_BENCHMARK_H_
+#endif  // HSA_COMMON_TIMEKEEPERSUMMARYPRINTER_H_

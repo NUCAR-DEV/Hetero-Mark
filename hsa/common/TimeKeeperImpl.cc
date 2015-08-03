@@ -38,39 +38,62 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_BENCHMARK_H_
-#define HSA_COMMON_BENCHMARK_H_
+#include <stdexcept>
+#include <memory>
+#include "hsa/common/TimeKeeperImpl.h"
 
-/**
- * A benchmark is a program that test platform performance. It follows the 
- * steps of Initialize, Run, Verify, Summarize and Cleanup.
- */
-class Benchmark {
- public:
-  /**
-   * Initialize environment, parameter, buffers
-   */
-  virtual void initialize() = 0;
+TimeKeeperImpl::Iterator::Iterator(
+    std::map<std::string, double>::iterator begin,
+    std::map<std::string, double>::iterator end) :
+  begin(begin),
+  iterator(begin),
+  end(end) {}
 
-  /**
-   * Run the benchmark
-   */
-  virtual void run() = 0;
+bool TimeKeeperImpl::Iterator::hasNext() {
+  if (iterator == end) {
+    return false;
+  } else {
+    return true;
+  }
+}
 
-  /**
-   * Verify
-   */
-  virtual void verify() = 0;
+std::pair<std::string, double> TimeKeeperImpl::Iterator::next() {
+  std::pair<std::string, double> pair(iterator->first, iterator->second);
+  iterator++;
+  return pair;
+}
 
-  /**
-   * Summarize
-   */
-  virtual void summarize() = 0;
+TimeKeeperImpl::TimeKeeperImpl(Timer *timer) : timer(timer) {
+}
 
-  /**
-   * Clean up
-   */
-  virtual void cleanUp() = 0;
-};
+void TimeKeeperImpl::start() {
+  if (startTime != 0) {
+    throw std::runtime_error("Timer is already runnin.");
+  }
+  startTime = timer->getTimeInSec();
+}
 
-#endif  // HSA_COMMON_BENCHMARK_H_
+void TimeKeeperImpl::end(std::initializer_list<const char *> catagoryNames) {
+  if (startTime == 0) {
+    throw std::runtime_error("Timer has not been started.");
+  }
+  double endTime = timer->getTimeInSec();
+  double timeDifference = endTime - startTime;
+  startTime = 0;
+
+  // Accumulate the time into catagories
+  for (auto catagoryName : catagoryNames) {
+    auto catagory = timeCatagories.find(catagoryName);
+    if (catagory == timeCatagories.end()) {
+      timeCatagories.emplace(catagoryName, 0);
+      catagory = timeCatagories.find(catagoryName);
+    }
+    catagory->second += timeDifference;
+  }
+}
+
+std::unique_ptr<TimeKeeper::Iterator> TimeKeeperImpl::getCatagoryIterator() {
+  Iterator *it = new Iterator(timeCatagories.begin(), timeCatagories.end());
+  std::unique_ptr<TimeKeeper::Iterator> it_unique(it);
+  return std::move(it_unique);
+}

@@ -15,30 +15,44 @@ HEADERS=Argument.h \
 	ArgumentValue.h\
 	ArgumentValueFactory.h \
 	Benchmark.h \
+	BenchmarkRunner.h \
 	CommandLineOption.h \
 	OptionParser.h \
 	OptionParserImpl.h \
 	OptionSetting.h \
 	OptionSettingHelpPrinter.h \
 	OptionSettingImpl.h \
+	TimeMeasurement.h \
 	TimeKeeper.h \
+	TimeKeeperImpl.h \
+	TimeKeeperSummaryPrinter.h \
 	Timer.h \
 	TimerImpl.h
 
-SRCS=CommandLineOption.cc \
+SRCS=BenchmarkRunner.cc \
+     CommandLineOption.cc \
      OptionParserImpl.cc \
      OptionSettingImpl.cc \
      OptionSettingHelpPrinter.cc \
+     TimeMeasurement.cc \
+     TimeKeeperImpl.cc \
+     TimeKeeperSummaryPrinter.cc \
      TimerImpl.cc
 
-UNIT_TESTS=OptionParserImpl_unittest.o \
+UNIT_TESTS=BenchmarkRunner_unittest.o \
+           OptionParserImpl_unittest.o \
            OptionSettingImpl_unittest.o \
-	   OptionSettingHelpPrinter_unittest.o
+	   OptionSettingHelpPrinter_unittest.o \
+	   TimeKeeperImpl_unittest.o
 
-OBJS=CommandLineOption.o \
+OBJS=BenchmarkRunner.o \
+     CommandLineOption.o \
      OptionParserImpl.o \
      OptionSettingImpl.o \
      OptionSettingHelpPrinter.o \
+     TimeMeasurement.o \
+     TimeKeeperImpl.o \
+     TimeKeeperSummaryPrinter.o \
      TimerImpl.o
 
 all: common.a
@@ -75,7 +89,6 @@ unittest: common.a $(UNIT_TESTS) $(OBJS)
 
 common.a: $(OBJS)
 	ar rcs $@ $(OBJS)
-
 
 clean:
 	rm *.o *.a

@@ -38,39 +38,40 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_BENCHMARK_H_
-#define HSA_COMMON_BENCHMARK_H_
+#include <gtest/gtest.h>
+#include "hsa/common/Timer.h"
+#include "hsa/common/TimeKeeper.h"
+#include "hsa/common/TimeKeeperImpl.h"
 
-/**
- * A benchmark is a program that test platform performance. It follows the 
- * steps of Initialize, Run, Verify, Summarize and Cleanup.
- */
-class Benchmark {
- public:
-  /**
-   * Initialize environment, parameter, buffers
-   */
-  virtual void initialize() = 0;
+TEST(TimeKeeperImpl, keep_time) {
+  class MockupTimer : public Timer {
+   public:
+    double getTimeInSec() override{
+      involkTime++;
+      return static_cast<double>(involkTime);
+    }
+   private:
+    int involkTime = 0;
+  };
 
-  /**
-   * Run the benchmark
-   */
-  virtual void run() = 0;
+  // Create environment
+  MockupTimer timer;
+  TimeKeeperImpl timeKeeper(&timer);
 
-  /**
-   * Verify
-   */
-  virtual void verify() = 0;
+  // Count
+  timeKeeper.start();
+  timeKeeper.end({"catagoryA"});
+  timeKeeper.start();
+  timeKeeper.end({"catagoryA", "catagoryB"});
 
-  /**
-   * Summarize
-   */
-  virtual void summarize() = 0;
+  // Get Iterator
+  auto it = timeKeeper.getCatagoryIterator();
 
-  /**
-   * Clean up
-   */
-  virtual void cleanUp() = 0;
-};
-
-#endif  // HSA_COMMON_BENCHMARK_H_
+  // Assert result
+  auto pair = it->next();
+  EXPECT_STREQ("catagoryA", pair.first.c_str());
+  EXPECT_DOUBLE_EQ(2.0, pair.second);
+  pair = it->next();
+  EXPECT_STREQ("catagoryB", pair.first.c_str());
+  EXPECT_DOUBLE_EQ(1.0, pair.second);
+}
