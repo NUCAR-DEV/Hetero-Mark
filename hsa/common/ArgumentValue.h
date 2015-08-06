@@ -78,6 +78,23 @@ class ArgumentValue {
     integer = stoi(value);
     return integer;
   }
+
+  virtual bool asBool() {
+    if (value == "true") {
+      return true;
+    } else if (value == "false") {
+      return false;
+    } else {
+      throw std::runtime_error(std::string("Value ") + value + " cannot be"
+          "interpreted as bool");
+    }
+  }
+
+  virtual uint64_t asUInt64() {
+    uint64_t integer;
+    integer = stoul(value);
+    return integer;
+  }
 };
 
 #endif  // HSA_COMMON_ARGUMENTVALUE_H_

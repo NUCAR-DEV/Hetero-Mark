@@ -97,3 +97,11 @@ std::unique_ptr<TimeKeeper::Iterator> TimeKeeperImpl::getCatagoryIterator() {
   std::unique_ptr<TimeKeeper::Iterator> it_unique(it);
   return std::move(it_unique);
 }
+
+double TimeKeeperImpl::getTime(const char *catagory_name) {
+  auto catagory = timeCatagories.find(catagory_name);
+  if (catagory == timeCatagories.end()) {
+    return 0;
+  } else {
+    return catagory->second;}
+}

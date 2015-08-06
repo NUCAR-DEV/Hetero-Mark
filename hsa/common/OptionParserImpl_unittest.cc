@@ -64,6 +64,13 @@ TEST(OptionParserImpl, parse) {
   arg2->setType("bool");
   optionSetting->addArgument(std::move(arg2));
 
+  // Setup an argument with default value
+  auto arg3 = std::unique_ptr<Argument>(new Argument("arg3"));
+  arg3->setLongPrompt("--arg3");
+  arg3->setType("int32");
+  arg3->setDefaultValue("1234");
+  optionSetting->addArgument(std::move(arg3));
+
   // Configure user input
   int argc = 4;
   const char *argv[] = {"run", "-n", "name", "--arg2"};
@@ -78,4 +85,7 @@ TEST(OptionParserImpl, parse) {
   ArgumentValue *value2 = optionParser->getValue("arg2");
   ASSERT_TRUE(value2!=nullptr);
   EXPECT_STREQ("true", value2->asString().c_str());
+  ArgumentValue *value3 = optionParser->getValue("arg3");
+  ASSERT_TRUE(value3!=nullptr);
+  EXPECT_EQ(1234, value3->asInt32());
 }

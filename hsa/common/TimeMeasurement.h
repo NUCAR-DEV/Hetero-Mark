@@ -57,6 +57,7 @@ class TimeMeasurement {
   void start();
   void end(std::initializer_list<const char *> catagories);
   void summarize(std::ostream *ostream = &std::cout);
+  double getTime(const char *catagory);
 
  protected:
   std::unique_ptr<Timer> timer;

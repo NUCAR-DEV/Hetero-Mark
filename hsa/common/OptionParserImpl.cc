@@ -44,6 +44,16 @@
 #include "hsa/common/OptionParserImpl.h"
 
 void OptionParserImpl::parse(int argc, const char **argv) {
+  // First of all, set all argument with default values
+  auto iterator = optionSetting->getIterator();
+  while (iterator->hasNext()) {
+    Argument *argument = iterator->next();
+    std::string defaultValue = argument->getDefaultValue();
+    auto argumentValue = argumentValueFactory->produceArgumentValue(
+          defaultValue.c_str());
+    argumentValues.emplace(argument->getName(), std::move(argumentValue));
+  }
+
   // Skip argv[0], because it is the executable name
   for (int i = 1; i < argc; i++) {
     std::string arg(argv[i]);
@@ -94,8 +104,8 @@ void OptionParserImpl::parse(int argc, const char **argv) {
     // Bool type argument is treated differently
     if (argument->getType() == "bool") {
       // Create argument value
-      auto argumentValue = argumentValueFactory->produceArgumentValue("true");
-      argumentValues.emplace(argument->getName(), std::move(argumentValue));
+      auto argumentValue = argumentValues.find(argument->getName());
+      argumentValue->second->setValue("true");
       return;
     } else {
       // Non-bool type prompt cannot be the last argument
@@ -108,9 +118,8 @@ void OptionParserImpl::parse(int argc, const char **argv) {
       // FIXME: validate argument type
       std::string arg2(argv[i + 1]);
       i++;
-      auto argumentValue = argumentValueFactory->produceArgumentValue(
-          arg2.c_str());
-      argumentValues.emplace(argument->getName(), std::move(argumentValue));
+      auto argumentValue = argumentValues.find(argument->getName());
+      argumentValue->second->setValue(arg2.c_str());
     }
   }
 }

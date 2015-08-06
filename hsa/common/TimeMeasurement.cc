@@ -60,3 +60,7 @@ void TimeMeasurement::summarize(std::ostream *ostream) {
   TimeKeeperSummaryPrinter printer(timeKeeper.get());
   printer.print(ostream);
 }
+
+double TimeMeasurement::getTime(const char *catagory) {
+  return timeKeeper->getTime(catagory);
+}

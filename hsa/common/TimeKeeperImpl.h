@@ -74,6 +74,11 @@ class TimeKeeperImpl : public TimeKeeper {
   explicit TimeKeeperImpl(Timer *timer);
 
   /**
+   * Destructor
+   */
+  virtual ~TimeKeeperImpl() {}
+
+  /**
    * Start the timer. Timer cannot be nested. That means the timer must be 
    * ended before start again.
    */
@@ -89,6 +94,11 @@ class TimeKeeperImpl : public TimeKeeper {
    * Get the iterator that walks through all catagories
    */
   std::unique_ptr<TimeKeeper::Iterator> getCatagoryIterator() override;
+
+  /**
+   * Get time used in a catagory by the catagory's name
+   */
+  double getTime(const char *catagory_name) override;
 
  protected:
   std::map<std::string, double> timeCatagories;

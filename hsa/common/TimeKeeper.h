@@ -60,6 +60,11 @@ class TimeKeeper {
   };
 
   /**
+   * Virtual destructor
+   */
+  virtual ~TimeKeeper() {}
+
+  /**
    * Start the timer. Timer cannot be nested. That means the timer must be 
    * ended before start again.
    */
@@ -75,6 +80,11 @@ class TimeKeeper {
    * Get the iterator that walks through all catagories
    */
   virtual std::unique_ptr<Iterator> getCatagoryIterator() = 0;
+
+  /**
+   * Get the time used in a catagory by the catagory's name
+   */
+  virtual double getTime(const char *catagory_name) = 0;
 };
 
 #endif  // HSA_COMMON_TIMEKEEPER_H_
