@@ -48,7 +48,7 @@
 
 CommandLineOption::CommandLineOption(const char *name,
     const char *description) {
-  optionSetting.reset(new OptionSettingImpl());
+  optionSetting.reset(new OptionSettingImpl(name, description));
 }
 
 void CommandLineOption::addArgument(const char *name,

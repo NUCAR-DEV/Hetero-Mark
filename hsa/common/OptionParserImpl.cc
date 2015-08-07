@@ -75,7 +75,7 @@ void OptionParserImpl::parse(int argc, const char **argv) {
 
     // According to the prompt, find the argument
     // FIXME Move this part of code to another function
-    Argument *argument;
+    Argument *argument = nullptr;
     if (isShortPrompt) {
       auto it = optionSetting->getIterator();
       while (it->hasNext()) {

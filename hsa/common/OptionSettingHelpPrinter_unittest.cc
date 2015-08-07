@@ -52,6 +52,7 @@ TEST(OptionSettingHelpPrinter, print) {
     const std::string getLongPrompt() { return "--name"; }
     const std::string getType() { return "string"; }
     const std::string getDescription() { return "This is a description"; }
+    const std::string getDefaultValue() { return "default"; }
   };
 
   class MockupOptionSetting : public OptionSetting {
@@ -85,6 +86,13 @@ TEST(OptionSettingHelpPrinter, print) {
 
     void addArgument(std::unique_ptr<Argument> argument) override {};
 
+    const std::string getProgramName() override {
+      return "Test program";
+    }
+
+    const std::string getProgramDescription() override {
+      return "Test description";
+    }
   };
 
   MockupOptionSetting mockupOptionSetting;
@@ -94,9 +102,11 @@ TEST(OptionSettingHelpPrinter, print) {
   
   std::string result = stringstream.str();
   EXPECT_STREQ(
-      "arg1: -n --name [string]\n"
+      "\nTest program\n"
+      "Test description\n\n"
+      "arg1[string]: -n --name (default = default)\n"
       "  This is a description\n\n"
-      "arg2: -n --name [string]\n"
+      "arg2[string]: -n --name (default = default)\n"
       "  This is a description\n\n", 
       result.c_str());
 }

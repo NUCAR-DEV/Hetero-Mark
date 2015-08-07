@@ -48,7 +48,8 @@
 
 int main(int argc, const char **argv) {
   // Setup command line option
-  CommandLineOption commandLineOption("Caching Micro-benchmark",
+  CommandLineOption commandLineOption(
+      "====== Caching Micro-benchmark ======",
       "This benchmark checks if HSA uses proper cache for both CPU and GPU"
       " memory access");
   commandLineOption.addArgument("Help", "bool", "false",

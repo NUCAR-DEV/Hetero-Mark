@@ -12,7 +12,7 @@ IFLAG=-I../../../ -I../../gtest/include
 GTEST=../../gtest/gtest_main.a
 
 CXX=g++
-CXXFLAG=-std=c++0x -Wall -Werror -pthread -O0
+CXXFLAG=-std=c++0x -Wall -Werror -pthread -O0 -g
 HSA_RUNTIME=-L$(HSA_RUNTIME_PATH)/lib -lhsa-runtime64
 
 HEADERS=ReadOnCPU.h \

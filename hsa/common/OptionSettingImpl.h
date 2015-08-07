@@ -69,6 +69,13 @@ class OptionSettingImpl : public OptionSetting {
   };
 
   /**
+   * Constructor
+   */
+  OptionSettingImpl(const char *name, const char *description) :
+    name(name),
+    description(description) {}
+
+  /**
    * Add an argument
    */
   void addArgument(std::unique_ptr<Argument> argument) override;
@@ -78,8 +85,18 @@ class OptionSettingImpl : public OptionSetting {
    */
   std::unique_ptr<OptionSetting::Iterator> getIterator() override;
 
+  const std::string getProgramName() override {
+    return name;
+  }
+
+  const std::string getProgramDescription() override {
+    return description;
+  }
+
  protected:
   std::map<std::string, std::unique_ptr<Argument>> arguments;
+  std::string name;
+  std::string description;
 };
 
 #endif  // HSA_COMMON_OPTIONSETTINGIMPL_H_

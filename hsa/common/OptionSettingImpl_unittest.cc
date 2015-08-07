@@ -45,7 +45,8 @@
 
 TEST(OptionSettingImpl, Iterator) {
   // Create environment
-  std::unique_ptr<OptionSetting> optionSetting(new OptionSettingImpl());
+  std::unique_ptr<OptionSetting> optionSetting(
+      new OptionSettingImpl("", ""));
   std::unique_ptr<Argument> arg1(new Argument("arg1"));
   std::unique_ptr<Argument> arg2(new Argument("arg2"));
   optionSetting->addArgument(std::move(arg1));

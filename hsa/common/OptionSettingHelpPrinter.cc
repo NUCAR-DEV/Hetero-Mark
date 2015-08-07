@@ -42,13 +42,19 @@
 #include "hsa/common/OptionSettingHelpPrinter.h"
 
 void OptionSettingHelpPrinter::print(std::ostream *ostream) {
+  // Print program information
+  (*ostream) << "\n" << optionSetting->getProgramName() << "\n"
+    << optionSetting->getProgramDescription() << "\n\n";
+
+  // Print argument information
   auto it = optionSetting->getIterator();
   while (it->hasNext()) {
     Argument *argument = it->next();
-    (*ostream) << argument->getName() << ": " <<
+    (*ostream) << argument->getName() <<
+      "[" << argument->getType() << "]" << ": " <<
       argument->getShortPrompt() << " " <<
       argument->getLongPrompt() << " " <<
-      "[" << argument->getType() << "]\n" <<
+      "(default = " << argument->getDefaultValue() << ")\n" <<
       "  " << argument->getDescription() << "\n\n";
   }
 }

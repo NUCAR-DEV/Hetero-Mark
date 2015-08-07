@@ -48,9 +48,10 @@
 TEST(OptionParserImpl, parse) {
   // Setup environment
   ArgumentValueFactory argumentValueFactory;
-  auto optionSetting = std::unique_ptr<OptionSetting>(new OptionSettingImpl());
+  auto optionSetting = std::unique_ptr<OptionSetting>(
+      new OptionSettingImpl("", ""));
   auto optionParser = std::unique_ptr<OptionParser>(new OptionParserImpl(
-        optionSetting.get(), &argumentValueFactory));
+      optionSetting.get(), &argumentValueFactory));
 
   // Setup arguments that uses a short prompt
   auto arg1 = std::unique_ptr<Argument>(new Argument("name"));

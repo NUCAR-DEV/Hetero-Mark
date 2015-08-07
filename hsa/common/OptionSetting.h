@@ -42,6 +42,7 @@
 #define HSA_COMMON_OPTIONSETTING_H_
 
 #include <memory>
+#include <string>
 
 #include "hsa/common/Argument.h"
 
@@ -60,6 +61,11 @@ class OptionSetting {
   };
 
   /**
+   * Virtual destructor
+   */
+  virtual ~OptionSetting() {}
+
+  /**
    * Add an argument to the command line option setting
    */
   virtual void addArgument(std::unique_ptr<Argument> argument) = 0;
@@ -68,6 +74,16 @@ class OptionSetting {
    * Get the argument iterator
    */
   virtual std::unique_ptr<Iterator> getIterator() = 0;
+
+  /**
+   * Get the name of the program
+   */
+  virtual const std::string getProgramName() = 0;
+
+  /**
+   * Get the description of the program
+   */
+  virtual const std::string getProgramDescription() = 0;
 };
 
 #endif  // HSA_COMMON_OPTIONSETTING_H_
