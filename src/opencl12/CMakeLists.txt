@@ -1,9 +1,13 @@
 set( FOLDER_NAME src )
 set( SUBDIRECTORIES 
-  common
+  aes_cl12
+  fir_cl12
+  hmm_cl12
+  iir_cl12
+  kmeans_cl12
   opencl12
-  opencl20
-  hsa
+  pagerank_cl12
+  sw_cl12
 )
 
 ###############################################################
