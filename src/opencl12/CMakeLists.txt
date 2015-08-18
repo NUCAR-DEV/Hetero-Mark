@@ -5,7 +5,6 @@ set( SUBDIRECTORIES
   hmm_cl12
   iir_cl12
   kmeans_cl12
-  opencl12
   pagerank_cl12
   sw_cl12
 )

@@ -1,5 +1,13 @@
+include(CppLint.cmake)
 set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
+
+# Include from path root
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+set( check_target check )
+set( check_target_src )
+add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}")
 
 ############################################################################
 
@@ -8,9 +16,10 @@ cmake_minimum_required( VERSION 2.6.0 )
 project( ${FOLDER_NAME} )
 
 # Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
 
 foreach( subdir ${SUBDIRECTORIES} )
-    add_subdirectory( ${subdir} )
+  add_subdirectory( ${subdir} )
 endforeach( subdir )
+
