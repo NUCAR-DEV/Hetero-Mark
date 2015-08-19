@@ -23,13 +23,13 @@ set( SUBDIRECTORIES
 	sw_cl12
 	sw_cl20
    # Microbenchmark
-   #    micro-benchmark/kerneloverhead_cl20
-   #    micro-benchmark/memcopy_cl12
-   #    micro-benchmark/memcopy_cl20
-   #	micro-benchmark/maxmem_cl12
-   #    micro-benchmark/maxmem_cl20
+        micro-benchmark/kerneloverhead_cl20
+        micro-benchmark/memcopy_cl12
+        micro-benchmark/memcopy_cl20
+        micro-benchmark/maxmem_cl12
+        micro-benchmark/maxmem_cl20
         micro-benchmark/svmCPUcaching
-   #	micro-benchmark/svmGPUcaching
+        micro-benchmark/svmGPUcaching
 	)
 
 ###############################################################
