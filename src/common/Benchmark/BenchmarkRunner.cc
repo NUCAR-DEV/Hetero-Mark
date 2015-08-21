@@ -38,7 +38,7 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "hsa/common/BenchmarkRunner.h"
+#include "src/common/Benchmark/BenchmarkRunner.h"
 
 void BenchmarkRunner::run() {
   timeMeasurement->start();

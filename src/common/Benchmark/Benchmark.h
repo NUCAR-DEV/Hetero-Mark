@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_BENCHMARK_H_
-#define HSA_COMMON_BENCHMARK_H_
+#ifndef SRC_COMMON_BENCHMARK_BENCHMARK_H_
+#define SRC_COMMON_BENCHMARK_BENCHMARK_H_
 
 /**
  * A benchmark is a program that test platform performance. It follows the 
@@ -73,4 +73,4 @@ class Benchmark {
   virtual void cleanUp() = 0;
 };
 
-#endif  // HSA_COMMON_BENCHMARK_H_
+#endif  // SRC_COMMON_BENCHMARK_BENCHMARK_H_

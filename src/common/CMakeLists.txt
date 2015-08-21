@@ -1,5 +1,6 @@
 set( FOLDER_NAME common )
 set( SUBDIRECTORIES 
+  Benchmark
   clUtil
 )
 

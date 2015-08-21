@@ -2,12 +2,18 @@ include(CppLint.cmake)
 set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
 
+set( CMAKE_CXX_FLAGS "-Wall -Werror" )
+
 # Include from path root
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+# Style check
 set( check_target check )
 set( check_target_src )
 add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}")
+
+# Test
+enable_testing()
 
 ############################################################################
 

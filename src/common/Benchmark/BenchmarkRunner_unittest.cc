@@ -38,12 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "hsa/common/BenchmarkRunner.h"
-#include "hsa/common/Benchmark.h"
-#include "hsa/common/TimeMeasurement.h"
-#include "hsa/common/Timer.h"
-#include "hsa/common/TimeKeeperImpl.h"
+#include <string>
 #include "gtest/gtest.h"
+#include "src/common/Benchmark/BenchmarkRunner.h"
+#include "src/common/Benchmark/Benchmark.h"
+#include "src/common/Timer/TimeMeasurement.h"
+#include "src/common/Timer/Timer.h"
+#include "src/common/Timer/TimeKeeperImpl.h"
 
 TEST(BenchmarkRunner, run_benchmark) {
   class MockupTimer : public Timer {
@@ -58,7 +59,7 @@ TEST(BenchmarkRunner, run_benchmark) {
 
   class MockupTimeMeasurement : public TimeMeasurement {
    public:
-    MockupTimeMeasurement(std::unique_ptr<Timer> timer) {
+    explicit MockupTimeMeasurement(std::unique_ptr<Timer> timer) {
       this->timer = std::move(timer);
       timeKeeper.reset(new TimeKeeperImpl(this->timer.get()));
     }
@@ -79,13 +80,13 @@ TEST(BenchmarkRunner, run_benchmark) {
   };
 
   MockupBenchmark benchmark;
-  std::unique_ptr<MockupTimer> timer = 
+  std::unique_ptr<MockupTimer> timer =
     std::unique_ptr<MockupTimer>(new MockupTimer);
   MockupTimeMeasurement measurement(std::move(timer));
   BenchmarkRunner runner(&benchmark, &measurement);
 
   runner.run();
-  
+
   const std::string &pass = benchmark.getPass();
   EXPECT_STREQ("initialize,run,summary,cleanup", pass.c_str());
 

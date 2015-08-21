@@ -38,11 +38,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_BENCHMARKRUNNER_H_
-#define HSA_COMMON_BENCHMARKRUNNER_H_
+#ifndef SRC_COMMON_BENCHMARK_BENCHMARKRUNNER_H_
+#define SRC_COMMON_BENCHMARK_BENCHMARKRUNNER_H_
 
-#include "hsa/common/Benchmark.h"
-#include "hsa/common/TimeMeasurement.h"
+#include "src/common/Benchmark/Benchmark.h"
+#include "src/common/Timer/TimeMeasurement.h"
 
 class BenchmarkRunner {
  public:
@@ -82,4 +82,4 @@ class BenchmarkRunner {
   TimeMeasurement *timeMeasurement;
 };
 
-#endif  // HSA_COMMON_BENCHMARKRUNNER_H_
+#endif  // SRC_COMMON_BENCHMARK_BENCHMARKRUNNER_H_
