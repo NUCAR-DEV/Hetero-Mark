@@ -1,6 +1,7 @@
 include(../../CppLint.cmake)
 set( FOLDER_NAME hsa )
 set( SUBDIRECTORIES 
+    fir_cl20
 )
 
 set( check_target ${FOLDER_NAME}_check )

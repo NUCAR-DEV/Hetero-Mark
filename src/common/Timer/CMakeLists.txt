@@ -1,6 +1,6 @@
 set( FOLDER_NAME Timer )
 set( SUBDIRECTORIES )
-set( SOURCE_FILES 
+set( SRC_FILES
   TimeKeeperImpl.cc
   TimeKeeperSummaryPrinter.cc
   TimeMeasurementImpl.cc
@@ -18,11 +18,11 @@ set( TEST_FILES
 
 # Style check
 set( check_target ${FOLDER_NAME}_check )
-set( check_target_src ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
+set( check_target_src ${SRC_FILES} ${HEADER_FILES} ${TEST_FILES})
 add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}")
 
 # Unit test
-add_executable(${FOLDER_NAME}_unittest ${TEST_FILES} ${SOURCE_FILES} ${HEADER_FILES})
+add_executable(${FOLDER_NAME}_unittest ${TEST_FILES} ${SRC_FILES} ${HEADER_FILES})
 target_link_libraries(${FOLDER_NAME}_unittest gtest gtest_main)
 add_test(${FOLDER_NAME} ${FOLDER_NAME}_unittest)
 
@@ -36,4 +36,4 @@ project( ${FOLDER_NAME} )
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
 
-add_library(Timer ${SOURCE_FILES} ${HEADER_FILES})
+add_library(Timer ${SRC_FILES} ${HEADER_FILES})

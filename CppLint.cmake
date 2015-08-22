@@ -1,6 +1,5 @@
 function(add_style_check_target TARGET_NAME SOURCES_LIST SUB_DIRS)
 
-  message("${SOURCES_LIST}")
   # Check if python is available
   find_package(PythonInterp)
   if(NOT PYTHONINTERP_FOUND)
