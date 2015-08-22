@@ -61,7 +61,7 @@ TEST(BenchmarkRunner, run_benchmark) {
     void run() override { pass += "run,"; }
     void verify() override { pass += "verify,"; }
     void summarize() override { pass += "summary,"; }
-    void cleanUp() override { pass += "cleanup"; }
+    void cleanup() override { pass += "cleanup"; }
     const std::string &getPass() const { return pass; }
     void cleanPass() { pass = ""; }
    protected:

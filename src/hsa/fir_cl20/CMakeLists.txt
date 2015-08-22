@@ -1,14 +1,29 @@
+set(CMAKE_SUPPRESS_REGENERATION TRUE)
+cmake_minimum_required( VERSION 2.6.0 )
+
+# Group samples by folder
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
+
 set( FOLDER_NAME fir_cl20 )
 set( SUBDIRECTORIES )
 set( SRC_FILES 
-  fir.cc 
+  main.cc
+  FirBenchmark.h
+  FirBenchmark.cc
 )
 set( HEADER_FILES )
 set( TEST_FILES )
 file(COPY kernels.cl DESTINATION .)
 
-# Check is snack is available
+# Check if snack is available
 find_file(have_snack NAMES snack.sh DOC "snack.sh file") 
+
+# Check if HSA runtime is available
+find_library(HSA_RUNTIME 
+  NAMES hsa-runtime64
+  PATHS $ENV{HSA_RUNTIME_PATH}/lib
+  NO_DEFAULT_PATH)
 
 # Style check
 set( check_target ${FOLDER_NAME}_check )
@@ -24,14 +39,7 @@ endif (${TEST_FILES})
 
 ###############################################################
 
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
-
-# Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-
-if (have_snack)
+if (have_snack AND HSA_RUNTIME)
   add_custom_command(
     OUTPUT kernels.o kernels.h
     COMMAND snack.sh -c kernels.cl
@@ -41,7 +49,9 @@ if (have_snack)
     VERBATIM
   )
   add_executable(fir_hsa_cl20 kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
-else (have_snack)
+  target_link_libraries(fir_hsa_cl20 
+    Timer CommandLineOption Benchmark ${HSA_RUNTIME})
+else (have_snack AND HSA_RUNTIME)
   message(WARNING "Skipping fir_hsa_cl20, snack.sh is not found")
-endif (have_snack)
+endif (have_snack AND HSA_RUNTIME)
 

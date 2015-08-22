@@ -70,10 +70,19 @@ class ArgumentValue {
   }
 
   /**
-   * Return the value in type of uint32_t
+   * Return the value in type of int32_t
    * This function may throw error. The caller should catch the error
    */
-  virtual uint32_t asInt32() {
+  virtual int32_t asInt32() {
+    int32_t integer;
+    integer = stoi(value);
+    return integer;
+  }
+
+  /**
+   * Return the value in type of uint32_t
+   */
+  virtual uint32_t asUInt32() {
     uint32_t integer;
     integer = stoi(value);
     return integer;
@@ -88,6 +97,12 @@ class ArgumentValue {
       throw std::runtime_error(std::string("Value ") + value + " cannot be"
           "interpreted as bool");
     }
+  }
+  
+  virtual int64_t asInt64() {
+    int64_t integer;
+    integer = stol(value);
+    return integer;
   }
 
   virtual uint64_t asUInt64() {

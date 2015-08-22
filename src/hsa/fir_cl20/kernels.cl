@@ -4,12 +4,10 @@
  */
 
 __kernel void FIR(
-		__global float * output,
-		__global float * coeff,       	/* numFilter sets of coeff, each is numTap long */
- 		__global float * temp_input,    	/* numFilter sets of temp data, each 
-                                                       	is (numData+numTap-1) long, 
-                                                 		the first (numTap-1) data is actually the history data */
-		uint numTap){
+  __global float * output,
+  __global float * coeff,
+  __global float * temp_input,
+  uint numTap){
 #if 1
     uint tid = get_global_id(0);
     uint numData = get_global_size(0);

@@ -38,39 +38,31 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_BENCHMARK_BENCHMARK_H_
-#define SRC_COMMON_BENCHMARK_BENCHMARK_H_
+#ifndef SRC_HSA_FIR_CL20_FIRBENCHMARK_H_
+#define SRC_HSA_FIR_CL20_FIRBENCHMARK_H_
 
-/**
- * A benchmark is a program that test platform performance. It follows the 
- * steps of Initialize, Run, Verify, Summarize and Cleanup.
- */
-class Benchmark {
+#include "src/common/Benchmark/Benchmark.h"
+
+class FirBenchmark : public Benchmark {
+ private:
+  unsigned int numTap = 1024;
+  unsigned int numData = 0;
+  unsigned int numTotalData = 0;
+  unsigned int numBlocks = 0;
+  int local;
+  float *input = nullptr;
+  float *output = nullptr;
+  float *coeff = nullptr;
+  float *temp_output = nullptr;
  public:
-  /**
-   * Initialize environment, parameter, buffers
-   */
-  virtual void initialize() = 0;
+  void initialize() override;
+  void run() override;
+  void verify() override;
+  void summarize() override;
+  void cleanup() override;
 
-  /**
-   * Run the benchmark
-   */
-  virtual void run() = 0;
-
-  /**
-   * Verify
-   */
-  virtual void verify() = 0;
-
-  /**
-   * Summarize
-   */
-  virtual void summarize() = 0;
-
-  /**
-   * Clean up
-   */
-  virtual void cleanup() = 0;
+  void setNumBlocks(unsigned int numBlocks) { this->numBlocks = numBlocks; }
+  void setNumData(unsigned int numData) { this->numData = numData; }
 };
 
-#endif  // SRC_COMMON_BENCHMARK_BENCHMARK_H_
+#endif  // SRC_HSA_FIR_CL20_FIRBENCHMARK_H_

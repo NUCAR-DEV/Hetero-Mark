@@ -60,7 +60,7 @@ void BenchmarkRunner::run() {
   timeMeasurement->end({"Summarize"});
 
   timeMeasurement->start();
-  benchmark->cleanUp();
+  benchmark->cleanup();
   timeMeasurement->end({"Cleanup"});
 }
 

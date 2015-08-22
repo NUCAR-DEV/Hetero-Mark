@@ -52,13 +52,13 @@
  * A TimeMeasurement object is a facade for the time measurement system. It 
  * provides interfaces to the users for the time measurment system.
  */
-class TimeMeasurementImpl {
+class TimeMeasurementImpl : public TimeMeasurement {
  public:
   TimeMeasurementImpl();
-  void start();
-  void end(std::initializer_list<const char *> catagories);
-  void summarize(std::ostream *ostream = &std::cout);
-  double getTime(const char *catagory);
+  void start() override;
+  void end(std::initializer_list<const char *> catagories) override;
+  void summarize(std::ostream *ostream = &std::cout) override;
+  double getTime(const char *catagory) override;
 
  protected:
   std::unique_ptr<Timer> timer;

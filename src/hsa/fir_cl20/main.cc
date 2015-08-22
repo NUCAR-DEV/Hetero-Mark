@@ -38,39 +38,43 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_BENCHMARK_BENCHMARK_H_
-#define SRC_COMMON_BENCHMARK_BENCHMARK_H_
+#include "src/common/Benchmark/BenchmarkRunner.h"
+#include "src/common/Timer/TimeMeasurement.h"
+#include "src/common/Timer/TimeMeasurementImpl.h"
+#include "src/common/CommandLineOption/CommandLineOption.h"
+#include "src/hsa/fir_cl20/FirBenchmark.h"
 
-/**
- * A benchmark is a program that test platform performance. It follows the 
- * steps of Initialize, Run, Verify, Summarize and Cleanup.
- */
-class Benchmark {
- public:
-  /**
-   * Initialize environment, parameter, buffers
-   */
-  virtual void initialize() = 0;
+int main(int argc, const char **argv) {
+  // Setup command line option
+  CommandLineOption commandLineOption(
+    "====== Hetero-Mark FIR Benchmarks (HSA mode) ======",
+    "This benchmarks runs Finite Impulse Response (FIR) filter.");
+  commandLineOption.addArgument("Help", "bool", "false",
+      "-h", "--help", "Dump help information");
+  commandLineOption.addArgument("NumData", "integer", "1024",
+      "-n", "--num-data",
+      "Number of data elements in each data block");
+  commandLineOption.addArgument("NumBlock", "integer", "1024",
+      "-b", "--num-block",
+      "Number of data blocks, each data block is process in one kernel "
+      "launching");
 
-  /**
-   * Run the benchmark
-   */
-  virtual void run() = 0;
+  commandLineOption.parse(argc, argv);
+  if (commandLineOption.getArgumentValue("Help")->asBool()) {
+    commandLineOption.help();
+    return 0;
+  }
+  uint32_t numData = commandLineOption.getArgumentValue("NumData")
+    ->asUInt32();
+  uint32_t numBlock = commandLineOption.getArgumentValue("NumBlock")
+    ->asUInt32();
 
-  /**
-   * Verify
-   */
-  virtual void verify() = 0;
-
-  /**
-   * Summarize
-   */
-  virtual void summarize() = 0;
-
-  /**
-   * Clean up
-   */
-  virtual void cleanup() = 0;
-};
-
-#endif  // SRC_COMMON_BENCHMARK_BENCHMARK_H_
+  // Create and run benchmarks
+  std::unique_ptr<FirBenchmark> benchmark(new FirBenchmark());
+  benchmark->setNumData(numData);
+  benchmark->setNumBlocks(numBlock);
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
+  runner.run();
+  runner.summarize();
+}

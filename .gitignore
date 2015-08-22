@@ -55,3 +55,7 @@ isa.txt
 # snack file
 *_brig.h
 *.snackwrap.c
+
+# Unit tests
+googletest-prefix
+*_unittest
