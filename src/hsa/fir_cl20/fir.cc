@@ -3,7 +3,7 @@
 #include <stdlib.h>/* for exit() definition */
 #include <time.h>/* for clock_gettime */
 #include <string.h>
-#include "fir_Kernels.h"
+#include "src/hsa/fir_cl20/kernels.h"
 
 #define BILLION 1000000000L
 

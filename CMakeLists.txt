@@ -17,7 +17,8 @@ add_definitions(
 option (enable-test "Compile all Hetero-mark unit tests" OFF)
 
 # Include from path root
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_BINARY_DIR})
 
 # Style check
 set( check_target check )
