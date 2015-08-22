@@ -98,7 +98,7 @@ class ArgumentValue {
           "interpreted as bool");
     }
   }
-  
+
   virtual int64_t asInt64() {
     int64_t integer;
     integer = stol(value);
