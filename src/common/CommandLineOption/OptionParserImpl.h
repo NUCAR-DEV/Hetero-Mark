@@ -38,16 +38,16 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_OPTIONPARSERIMPL_H_
-#define HSA_COMMON_OPTIONPARSERIMPL_H_
+#ifndef SRC_COMMON_COMMANDLINEOPTION_OPTIONPARSERIMPL_H_
+#define SRC_COMMON_COMMANDLINEOPTION_OPTIONPARSERIMPL_H_
 
 #include <map>
 #include <string>
 #include <memory>
 
-#include "hsa/common/OptionParser.h"
-#include "hsa/common/OptionSetting.h"
-#include "hsa/common/ArgumentValueFactory.h"
+#include "src/common/CommandLineOption/OptionParser.h"
+#include "src/common/CommandLineOption/OptionSetting.h"
+#include "src/common/CommandLineOption/ArgumentValueFactory.h"
 
 /**
  * An option parser is responsible for parsing user input for a particular 
@@ -80,4 +80,4 @@ class OptionParserImpl : public OptionParser {
   std::map<std::string, std::unique_ptr<ArgumentValue>> argumentValues;
 };
 
-#endif  // HSA_COMMON_OPTIONPARSERIMPL_H_
+#endif  // SRC_COMMON_COMMANDLINEOPTION_OPTIONPARSERIMPL_H_

@@ -41,7 +41,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "hsa/common/OptionParserImpl.h"
+#include "src/common/CommandLineOption/OptionParserImpl.h"
 
 void OptionParserImpl::parse(int argc, const char **argv) {
   // First of all, set all argument with default values

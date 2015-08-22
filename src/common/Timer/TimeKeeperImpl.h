@@ -38,14 +38,14 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_TIMEKEEPERIMPL_H_
-#define HSA_COMMON_TIMEKEEPERIMPL_H_
+#ifndef SRC_COMMON_TIMER_TIMEKEEPERIMPL_H_
+#define SRC_COMMON_TIMER_TIMEKEEPERIMPL_H_
 
 #include <string>
 #include <utility>
 #include <map>
-#include "hsa/common/TimeKeeper.h"
-#include "hsa/common/Timer.h"
+#include "src/common/Timer/TimeKeeper.h"
+#include "src/common/Timer/Timer.h"
 
 class TimeKeeperImpl : public TimeKeeper {
  public:
@@ -106,4 +106,4 @@ class TimeKeeperImpl : public TimeKeeper {
   double startTime = 0;
 };
 
-#endif  // HSA_COMMON_TIMEKEEPERIMPL_H_
+#endif  // SRC_COMMON_TIMER_TIMEKEEPERIMPL_H_

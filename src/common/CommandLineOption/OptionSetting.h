@@ -38,13 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_OPTIONSETTING_H_
-#define HSA_COMMON_OPTIONSETTING_H_
+#ifndef SRC_COMMON_COMMANDLINEOPTION_OPTIONSETTING_H_
+#define SRC_COMMON_COMMANDLINEOPTION_OPTIONSETTING_H_
 
 #include <memory>
 #include <string>
 
-#include "hsa/common/Argument.h"
+#include "src/common/CommandLineOption/Argument.h"
 
 /**
  * An OptionSetting is a list of registered argument for the program
@@ -86,4 +86,4 @@ class OptionSetting {
   virtual const std::string getProgramDescription() = 0;
 };
 
-#endif  // HSA_COMMON_OPTIONSETTING_H_
+#endif  // SRC_COMMON_COMMANDLINEOPTION_OPTIONSETTING_H_

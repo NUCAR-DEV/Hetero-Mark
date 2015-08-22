@@ -39,11 +39,11 @@
  */
 
 #include <memory>
-#include "hsa/common/OptionSetting.h"
-#include "hsa/common/OptionSettingImpl.h"
-#include "hsa/common/OptionParser.h"
-#include "hsa/common/OptionParserImpl.h"
 #include "gtest/gtest.h"
+#include "src/common/CommandLineOption/OptionSetting.h"
+#include "src/common/CommandLineOption/OptionSettingImpl.h"
+#include "src/common/CommandLineOption/OptionParser.h"
+#include "src/common/CommandLineOption/OptionParserImpl.h"
 
 TEST(OptionParserImpl, parse) {
   // Setup environment
@@ -81,12 +81,12 @@ TEST(OptionParserImpl, parse) {
 
   // Check result
   ArgumentValue *value1 = optionParser->getValue("name");
-  ASSERT_TRUE(value1!=nullptr);
+  ASSERT_TRUE(value1 != nullptr);
   EXPECT_STREQ("name", value1->asString().c_str());
   ArgumentValue *value2 = optionParser->getValue("arg2");
-  ASSERT_TRUE(value2!=nullptr);
+  ASSERT_TRUE(value2 != nullptr);
   EXPECT_STREQ("true", value2->asString().c_str());
   ArgumentValue *value3 = optionParser->getValue("arg3");
-  ASSERT_TRUE(value3!=nullptr);
+  ASSERT_TRUE(value3 != nullptr);
   EXPECT_EQ(1234, value3->asInt32());
 }

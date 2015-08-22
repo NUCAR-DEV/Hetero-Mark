@@ -3,6 +3,7 @@ set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
 
 set( CMAKE_CXX_FLAGS "-Wall -Werror" )
+ADD_DEFINITIONS(-std=c++11)
 
 # Include from path root
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -14,6 +15,8 @@ add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}"
 
 # Test
 enable_testing()
+add_subdirectory(lib/gtest-1.7.0)
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 ############################################################################
 

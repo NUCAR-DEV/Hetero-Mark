@@ -39,7 +39,7 @@
  */
 
 #include <time.h>
-#include "hsa/common/TimerImpl.h"
+#include "src/common/Timer/TimerImpl.h"
 
 double TimerImpl::getTimeInSec() {
   struct timespec time;

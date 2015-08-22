@@ -39,7 +39,7 @@
  */
 
 #include <iostream>
-#include "hsa/common/OptionSettingHelpPrinter.h"
+#include "src/common/CommandLineOption/OptionSettingHelpPrinter.h"
 
 void OptionSettingHelpPrinter::print(std::ostream *ostream) {
   // Print program information

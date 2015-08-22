@@ -1,6 +1,12 @@
-set( FOLDER_NAME src )
+include(../../CppLint.cmake)
+set( FOLDER_NAME hsa )
 set( SUBDIRECTORIES 
 )
+
+set( check_target ${FOLDER_NAME}_check )
+set( check_target_src )
+add_style_check_target( ${check_target} "${check_target_src}" 
+    "${subdirectories}" )
 
 ###############################################################
 

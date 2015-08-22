@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_OPTIONPARSER_H_
-#define HSA_COMMON_OPTIONPARSER_H_
+#ifndef SRC_COMMON_COMMANDLINEOPTION_OPTIONPARSER_H_
+#define SRC_COMMON_COMMANDLINEOPTION_OPTIONPARSER_H_
 
 #include "ArgumentValue.h"
 
@@ -60,4 +60,4 @@ class OptionParser {
   virtual ArgumentValue *getValue(const char *name) = 0;
 };
 
-#endif  // HSA_COMMON_OPTIONPARSER_H_
+#endif  // SRC_COMMON_COMMANDLINEOPTION_OPTIONPARSER_H_

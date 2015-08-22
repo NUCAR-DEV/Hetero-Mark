@@ -38,14 +38,14 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_TIMEMEASUREMENT_H_
-#define HSA_COMMON_TIMEMEASUREMENT_H_
+#ifndef SRC_COMMON_TIMER_TIMEMEASUREMENT_H_
+#define SRC_COMMON_TIMER_TIMEMEASUREMENT_H_
 
 #include <iostream>
 #include <memory>
 #include <initializer_list>
-#include "hsa/common/Timer.h"
-#include "hsa/common/TimeKeeper.h"
+#include "src/common/Timer/Timer.h"
+#include "src/common/Timer/TimeKeeper.h"
 
 /**
  * A TimeMeasurement object is a facade for the time measurement system. It 
@@ -53,15 +53,10 @@
  */
 class TimeMeasurement {
  public:
-  TimeMeasurement();
-  void start();
-  void end(std::initializer_list<const char *> catagories);
-  void summarize(std::ostream *ostream = &std::cout);
-  double getTime(const char *catagory);
-
- protected:
-  std::unique_ptr<Timer> timer;
-  std::unique_ptr<TimeKeeper> timeKeeper;
+  virtual void start() = 0;
+  virtual void end(std::initializer_list<const char *> catagories) = 0;
+  virtual void summarize(std::ostream *ostream = &std::cout) = 0;
+  virtual double getTime(const char *catagory) = 0;
 };
 
-#endif  // HSA_COMMON_TIMEMEASUREMENT_H_
+#endif  // SRC_COMMON_TIMER_TIMEMEASUREMENT_H_

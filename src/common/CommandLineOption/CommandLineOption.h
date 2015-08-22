@@ -38,13 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_COMMANDLINEOPTION_H_
-#define HSA_COMMON_COMMANDLINEOPTION_H_
+#ifndef SRC_COMMON_COMMANDLINEOPTION_COMMANDLINEOPTION_H_
+#define SRC_COMMON_COMMANDLINEOPTION_COMMANDLINEOPTION_H_
 
 #include <iostream>
-#include "hsa/common/OptionSetting.h"
-#include "hsa/common/OptionParser.h"
-#include "hsa/common/ArgumentValue.h"
+#include "src/common/CommandLineOption/OptionSetting.h"
+#include "src/common/CommandLineOption/OptionParser.h"
+#include "src/common/CommandLineOption/ArgumentValue.h"
 
 /**
  * A CommandLineOption is a facade for the command line argument parsing 
@@ -65,4 +65,4 @@ class CommandLineOption {
   std::unique_ptr<OptionParser> optionParser;
 };
 
-#endif  // HSA_COMMON_COMMANDLINEOPTION_H_
+#endif  // SRC_COMMON_COMMANDLINEOPTION_COMMANDLINEOPTION_H_

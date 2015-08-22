@@ -35,6 +35,7 @@ Makefile
 *.cmake
 build
 bin
+Testing
 !CppLint.cmake
 
 #ctags

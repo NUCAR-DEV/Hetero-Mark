@@ -38,13 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_OPTIONSETTINGIMPL_H_
-#define HSA_COMMON_OPTIONSETTINGIMPL_H_
+#ifndef SRC_COMMON_COMMANDLINEOPTION_OPTIONSETTINGIMPL_H_
+#define SRC_COMMON_COMMANDLINEOPTION_OPTIONSETTINGIMPL_H_
 
 #include <map>
 #include <string>
 
-#include "hsa/common/OptionSetting.h"
+#include "src/common/CommandLineOption/OptionSetting.h"
 
 class OptionSettingImpl : public OptionSetting {
  public:
@@ -99,6 +99,4 @@ class OptionSettingImpl : public OptionSetting {
   std::string description;
 };
 
-#endif  // HSA_COMMON_OPTIONSETTINGIMPL_H_
-
-
+#endif  // SRC_COMMON_COMMANDLINEOPTION_OPTIONSETTINGIMPL_H_

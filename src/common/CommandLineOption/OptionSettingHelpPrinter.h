@@ -38,11 +38,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_OPTIONSETTINGHELPPRINTER_H_
-#define HSA_COMMON_OPTIONSETTINGHELPPRINTER_H_
+#ifndef SRC_COMMON_COMMANDLINEOPTION_OPTIONSETTINGHELPPRINTER_H_
+#define SRC_COMMON_COMMANDLINEOPTION_OPTIONSETTINGHELPPRINTER_H_
 
 #include <iostream>
-#include "hsa/common/OptionSetting.h"
+#include "src/common/CommandLineOption/OptionSetting.h"
 
 /**
  * An OptionSettingHelpPrinter prints the help information for an OptionSetting
@@ -66,4 +66,4 @@ class OptionSettingHelpPrinter {
   OptionSetting *optionSetting;
 };
 
-#endif  // HSA_COMMON_OPTIONSETTINGHELPPRINTER_H_
+#endif  // SRC_COMMON_COMMANDLINEOPTION_OPTIONSETTINGHELPPRINTER_H_

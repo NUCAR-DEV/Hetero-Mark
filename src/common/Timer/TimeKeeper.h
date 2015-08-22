@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_TIMEKEEPER_H_
-#define HSA_COMMON_TIMEKEEPER_H_
+#ifndef SRC_COMMON_TIMER_TIMEKEEPER_H_
+#define SRC_COMMON_TIMER_TIMEKEEPER_H_
 
 #include <string>
 #include <utility>
@@ -87,4 +87,4 @@ class TimeKeeper {
   virtual double getTime(const char *catagory_name) = 0;
 };
 
-#endif  // HSA_COMMON_TIMEKEEPER_H_
+#endif  // SRC_COMMON_TIMER_TIMEKEEPER_H_

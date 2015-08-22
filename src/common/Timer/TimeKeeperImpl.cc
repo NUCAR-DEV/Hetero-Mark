@@ -40,7 +40,7 @@
 
 #include <stdexcept>
 #include <memory>
-#include "hsa/common/TimeKeeperImpl.h"
+#include "src/common/Timer/TimeKeeperImpl.h"
 
 TimeKeeperImpl::Iterator::Iterator(
     std::map<std::string, double>::iterator begin,

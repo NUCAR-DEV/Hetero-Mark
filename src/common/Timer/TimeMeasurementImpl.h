@@ -38,29 +38,31 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "hsa/common/TimeMeasurement.h"
-#include "hsa/common/TimeKeeperImpl.h"
-#include "hsa/common/TimerImpl.h"
-#include "hsa/common/TimeKeeperSummaryPrinter.h"
+#ifndef SRC_COMMON_TIMER_TIMEMEASUREMENTIMPL_H_
+#define SRC_COMMON_TIMER_TIMEMEASUREMENTIMPL_H_
 
-TimeMeasurement::TimeMeasurement() {
-  timer.reset(new TimerImpl());
-  timeKeeper.reset(new TimeKeeperImpl(timer.get()));
-}
+#include <iostream>
+#include <memory>
+#include <initializer_list>
+#include "src/common/Timer/Timer.h"
+#include "src/common/Timer/TimeMeasurement.h"
+#include "src/common/Timer/TimeKeeper.h"
 
-void TimeMeasurement::start() {
-  timeKeeper->start();
-}
+/**
+ * A TimeMeasurement object is a facade for the time measurement system. It 
+ * provides interfaces to the users for the time measurment system.
+ */
+class TimeMeasurementImpl {
+ public:
+  TimeMeasurementImpl();
+  void start();
+  void end(std::initializer_list<const char *> catagories);
+  void summarize(std::ostream *ostream = &std::cout);
+  double getTime(const char *catagory);
 
-void TimeMeasurement::end(std::initializer_list<const char *> catagories) {
-  timeKeeper->end(catagories);
-}
+ protected:
+  std::unique_ptr<Timer> timer;
+  std::unique_ptr<TimeKeeper> timeKeeper;
+};
 
-void TimeMeasurement::summarize(std::ostream *ostream) {
-  TimeKeeperSummaryPrinter printer(timeKeeper.get());
-  printer.print(ostream);
-}
-
-double TimeMeasurement::getTime(const char *catagory) {
-  return timeKeeper->getTime(catagory);
-}
+#endif  // SRC_COMMON_TIMER_TIMEMEASUREMENTIMPL_H_

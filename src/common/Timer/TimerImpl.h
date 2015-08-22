@@ -38,10 +38,10 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_TIMERIMPL_H_
-#define HSA_COMMON_TIMERIMPL_H_
+#ifndef SRC_COMMON_TIMER_TIMERIMPL_H_
+#define SRC_COMMON_TIMER_TIMERIMPL_H_
 
-#include "hsa/common/Timer.h"
+#include "src/common/Timer/Timer.h"
 
 /**
  * A timer is an object where you can get current time
@@ -54,4 +54,4 @@ class TimerImpl : public Timer {
   double getTimeInSec() override;
 };
 
-#endif  // HSA_COMMON_TIMERIMPL_H_
+#endif  // SRC_COMMON_TIMER_TIMERIMPL_H_

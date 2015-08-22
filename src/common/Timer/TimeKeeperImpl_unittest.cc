@@ -39,14 +39,14 @@
  */
 
 #include <gtest/gtest.h>
-#include "hsa/common/Timer.h"
-#include "hsa/common/TimeKeeper.h"
-#include "hsa/common/TimeKeeperImpl.h"
+#include "src/common/Timer/Timer.h"
+#include "src/common/Timer/TimeKeeper.h"
+#include "src/common/Timer/TimeKeeperImpl.h"
 
 TEST(TimeKeeperImpl, keep_time) {
   class MockupTimer : public Timer {
    public:
-    double getTimeInSec() override{
+    double getTimeInSec() override {
       involkTime++;
       return static_cast<double>(involkTime);
     }

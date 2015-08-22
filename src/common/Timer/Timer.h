@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_TIMER_H_
-#define HSA_COMMON_TIMER_H_
+#ifndef SRC_COMMON_TIMER_TIMER_H_
+#define SRC_COMMON_TIMER_TIMER_H_
 
 /**
  * A timer is an object where you can get current time
@@ -52,4 +52,4 @@ class Timer {
   virtual double getTimeInSec() = 0;
 };
 
-#endif  // HSA_COMMON_TIMER_H_
+#endif  // SRC_COMMON_TIMER_TIMER_H_

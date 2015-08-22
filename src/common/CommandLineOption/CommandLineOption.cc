@@ -40,11 +40,12 @@
 
 #include <stdexcept>
 #include <string>
-#include "hsa/common/CommandLineOption.h"
-#include "hsa/common/OptionSettingImpl.h"
-#include "hsa/common/OptionParserImpl.h"
-#include "hsa/common/OptionSettingHelpPrinter.h"
-#include "hsa/common/Argument.h"
+
+#include "src/common/CommandLineOption/CommandLineOption.h"
+#include "src/common/CommandLineOption/OptionSettingImpl.h"
+#include "src/common/CommandLineOption/OptionParserImpl.h"
+#include "src/common/CommandLineOption/OptionSettingHelpPrinter.h"
+#include "src/common/CommandLineOption/Argument.h"
 
 CommandLineOption::CommandLineOption(const char *name,
     const char *description) {

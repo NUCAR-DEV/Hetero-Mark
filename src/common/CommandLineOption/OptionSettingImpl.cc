@@ -38,7 +38,7 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "hsa/common/OptionSettingImpl.h"
+#include "src/common/CommandLineOption/OptionSettingImpl.h"
 
 void OptionSettingImpl::addArgument(std::unique_ptr<Argument> argument) {
   arguments.emplace(argument->getName(), std::move(argument));

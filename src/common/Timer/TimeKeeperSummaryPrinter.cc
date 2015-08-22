@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "hsa/common/TimeKeeper.h"
-#include "hsa/common/TimeKeeperSummaryPrinter.h"
+#include "src/common/Timer/TimeKeeper.h"
+#include "src/common/Timer/TimeKeeperSummaryPrinter.h"
 
 void TimeKeeperSummaryPrinter::print(std::ostream *ostream) {
   auto it = timeKeeper->getCatagoryIterator();

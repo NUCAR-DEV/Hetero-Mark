@@ -39,15 +39,15 @@
  */
 
 #include <sstream>
-
-#include "hsa/common/OptionSettingHelpPrinter.h"
-#include "hsa/common/OptionSetting.h"
+#include <string>
 #include "gtest/gtest.h"
+#include "src/common/CommandLineOption/OptionSettingHelpPrinter.h"
+#include "src/common/CommandLineOption/OptionSetting.h"
 
 TEST(OptionSettingHelpPrinter, print) {
   class MockupArgument : public Argument {
    public:
-    MockupArgument (const char *name) : Argument(name) {}
+    explicit MockupArgument(const char *name) : Argument(name) {}
     const std::string getShortPrompt() { return "-n"; }
     const std::string getLongPrompt() { return "--name"; }
     const std::string getType() { return "string"; }
@@ -72,7 +72,7 @@ TEST(OptionSettingHelpPrinter, print) {
         if (index == 2) return arg2.get();
         return nullptr;
       }
-     private: 
+     private:
       int index = 0;
       std::unique_ptr<Argument> arg1;
       std::unique_ptr<Argument> arg2;
@@ -99,7 +99,7 @@ TEST(OptionSettingHelpPrinter, print) {
   std::stringstream stringstream;
   OptionSettingHelpPrinter printer(&mockupOptionSetting);
   printer.print(&stringstream);
-  
+
   std::string result = stringstream.str();
   EXPECT_STREQ(
       "\nTest program\n"
@@ -107,6 +107,6 @@ TEST(OptionSettingHelpPrinter, print) {
       "arg1[string]: -n --name (default = default)\n"
       "  This is a description\n\n"
       "arg2[string]: -n --name (default = default)\n"
-      "  This is a description\n\n", 
+      "  This is a description\n\n",
       result.c_str());
 }

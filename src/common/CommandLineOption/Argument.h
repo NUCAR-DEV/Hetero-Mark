@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef HSA_COMMON_ARGUMENT_H_
-#define HSA_COMMON_ARGUMENT_H_
+#ifndef SRC_COMMON_COMMANDLINEOPTION_ARGUMENT_H_
+#define SRC_COMMON_COMMANDLINEOPTION_ARGUMENT_H_
 
 #include <string>
 
@@ -141,4 +141,4 @@ class Argument {
   virtual const std::string getDescription() { return description; }
 };
 
-#endif  // HSA_COMMON_ARGUMENT_H_
+#endif  // SRC_COMMON_COMMANDLINEOPTION_ARGUMENT_H_

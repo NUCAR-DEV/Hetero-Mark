@@ -47,23 +47,12 @@
 #include "src/common/Timer/TimeKeeperImpl.h"
 
 TEST(BenchmarkRunner, run_benchmark) {
-  class MockupTimer : public Timer {
-   public:
-    double getTimeInSec() override {
-      involkTime++;
-      return static_cast<double>(involkTime);
-    }
-   protected:
-    int involkTime = 0;
-  };
-
   class MockupTimeMeasurement : public TimeMeasurement {
    public:
-    explicit MockupTimeMeasurement(std::unique_ptr<Timer> timer) {
-      this->timer = std::move(timer);
-      timeKeeper.reset(new TimeKeeperImpl(this->timer.get()));
-    }
+    void start() {}
+    void end(std::initializer_list<const char *> catagories) {}
     void summarize(std::ostream *ostream) {}
+    double getTime(const char *catagory) { return 0; }
   };
 
   class MockupBenchmark : public Benchmark {
@@ -80,9 +69,7 @@ TEST(BenchmarkRunner, run_benchmark) {
   };
 
   MockupBenchmark benchmark;
-  std::unique_ptr<MockupTimer> timer =
-    std::unique_ptr<MockupTimer>(new MockupTimer);
-  MockupTimeMeasurement measurement(std::move(timer));
+  MockupTimeMeasurement measurement;
   BenchmarkRunner runner(&benchmark, &measurement);
 
   runner.run();
