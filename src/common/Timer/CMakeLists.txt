@@ -23,12 +23,12 @@ add_style_check_target(${check_target}
   "${check_target_src}" "${SUBDIRECTORIES}")
 
 # Unit test
-if (hetero_mark_test)
+if (enable-test)
   add_executable(${FOLDER_NAME}_unittest 
     ${TEST_FILES} ${SRC_FILES} ${HEADER_FILES})
   target_link_libraries(${FOLDER_NAME}_unittest gtest gtest_main)
   add_test(${FOLDER_NAME} ${FOLDER_NAME}_unittest)
-endif (hetero_mark_test)
+endif (enable-test)
 
 ###############################################################
 

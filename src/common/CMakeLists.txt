@@ -14,7 +14,6 @@ add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}"
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
-project( ${FOLDER_NAME} )
 
 # Group samples by folder
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
