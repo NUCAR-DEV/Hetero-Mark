@@ -1,5 +1,45 @@
-#ifndef CL_PROFILER_H
-#define CL_PROFILER_H
+/*
+ * Hetero-mark
+ *
+ * Copyright (c) 2015 Northeastern University
+ * All rights reserved.
+ *
+ * Developed by:
+ *   Northeastern University Computer Architecture Research (NUCAR) Group
+ *   Northeastern University
+ *   http://www.ece.neu.edu/groups/nucar/
+ *
+ * Author: Xiang Gong (xgong@ece.neu.edu)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal with the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ *   Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimers.
+ *
+ *   Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimers in the
+ *   documentation and/or other materials provided with the distribution.
+ *
+ *   Neither the names of NUCAR, Northeastern University, nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this Software without specific prior written permission.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS WITH THE SOFTWARE.
+ */
+
+#ifndef SRC_COMMON_CLUTIL_CLPROFILER_H_
+#define SRC_COMMON_CLUTIL_CLPROFILER_H_
 
 #include <sys/time.h>
 #include <map>
@@ -8,6 +48,7 @@
 #include <iostream>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace clHelper {
 
@@ -20,7 +61,7 @@ class clProfilerMeta {
   std::vector<std::unique_ptr<std::pair<double, double>>> timeTable;
 
  public:
-  clProfilerMeta(std::string nm);
+  explicit clProfilerMeta(std::string nm);
   ~clProfilerMeta();
 
   /// Getters
@@ -38,7 +79,7 @@ class clProfilerMeta {
     return os;
   }
 
-  void Dump(std::ostream &os) const;
+  void Dump(const std::ostream &os) const;
 };
 
 clProfilerMeta::clProfilerMeta(std::string nm)
@@ -93,7 +134,7 @@ class clProfiler {
   static clProfiler *getInstance();
 
   // Get number of record
-  int getNumRecord() const { return profilingData.size(); };
+  int getNumRecord() const { return profilingData.size(); }
 
   // Dump kernel profiling time
   void getExecTime(std::string name = "");
@@ -200,11 +241,12 @@ cl_int clProfileNDRangeKernel(cl_command_queue cmdQ, cl_kernel kernel,
   // Get kernel name
   char kernelName[1024];
   err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char),
-                        (void *)kernelName, NULL);
+                        reinterpret_cast<void *>(kernelName), NULL);
   checkOpenCLErrors(err, "Failed to get kernel name");
 
   clProfiler *prof = clProfiler::getInstance();
-  prof->addExecTime(kernelName, (double)start, (double)end);
+  prof->addExecTime(kernelName, static_cast<double>(start),
+                    static_cast<double>(end));
 
   return enqueueErr;
 }
@@ -229,7 +271,7 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ, cl_kernel kernel, cl_uint wd,
   // Get kernel name
   char kernelName[1024];
   err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char),
-                        (void *)kernelName, NULL);
+                        reinterpret_cast<void *>(kernelName), NULL);
   checkOpenCLErrors(err, "Failed to get kernel name");
 
   clProfiler *prof = clProfiler::getInstance();
@@ -237,6 +279,6 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ, cl_kernel kernel, cl_uint wd,
 
   return enqueueErr;
 }
-}
+}  // namespace clHelper
 
-#endif
+#endif  // SRC_COMMON_CLUTIL_CLPROFILER_H_

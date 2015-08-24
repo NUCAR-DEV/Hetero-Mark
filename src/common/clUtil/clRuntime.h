@@ -1,9 +1,49 @@
-#ifndef CL_RUNTIME_H
-#define CL_RUNTIME_H
+/*
+ * Hetero-mark
+ *
+ * Copyright (c) 2015 Northeastern University
+ * All rights reserved.
+ *
+ * Developed by:
+ *   Northeastern University Computer Architecture Research (NUCAR) Group
+ *   Northeastern University
+ *   http://www.ece.neu.edu/groups/nucar/
+ *
+ * Author: Xiang Gong (xgong@ece.neu.edu)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal with the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ *   Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimers.
+ *
+ *   Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimers in the
+ *   documentation and/or other materials provided with the distribution.
+ *
+ *   Neither the names of NUCAR, Northeastern University, nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this Software without specific prior written permission.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS WITH THE SOFTWARE.
+ */
+#ifndef SRC_COMMON_CLUTIL_CLRUNTIME_H_
+#define SRC_COMMON_CLUTIL_CLRUNTIME_H_
 
-#include <memory>
-#include <vector>
 #include <CL/cl.h>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "clError.h"
 
@@ -181,7 +221,6 @@ int clRuntime::displayPlatformInfo(cl_platform_id plt_id,
 }
 
 int clRuntime::displayContextInfo(cl_context ctx, cl_context_info ctx_info) {
-  // TODO
   return 0;
 }
 
@@ -205,8 +244,8 @@ int clRuntime::displayDeviceInfo() {
   checkOpenCLErrors(err, "Failed at clGetDeviceIDs");
 
   // Get device ids
-  cl_device_id *deviceIds =
-      (cl_device_id *)malloc(sizeof(cl_device_id) * deviceCount);
+  cl_device_id *deviceIds = reinterpret_cast<cl_device_id *>(
+      malloc(sizeof(cl_device_id) * deviceCount));
   err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, deviceCount, deviceIds,
                        NULL);
   checkOpenCLErrors(err, "Failed at clGetDeviceIDs");
@@ -225,9 +264,8 @@ int clRuntime::displayDeviceInfo() {
                           sizeof(cl_ulong), &maxmembytes, NULL);
 
     std::cout << "(*)\tDevice " << i << " = " << deviceName
-              << "\n\tDevice ID = " << deviceIds[i]
-              << "\n\tMax Memory = " << (float)maxmembytes / 1048576 << "MB"
-              << std::endl;
+              << "\n\tDevice ID = " << deviceIds[i] << "\n\tMax Memory = "
+              << static_cast<float>(maxmembytes) / 1048576 << "MB" << std::endl;
   }
 
   free(deviceIds);
@@ -246,9 +284,9 @@ cl_command_queue clRuntime::getCmdQueue(
     unsigned index, cl_command_queue_properties properties) {
   cl_int err;
 
-  if (index < cmdQueueRepo.size())
+  if (index < cmdQueueRepo.size()) {
     return cmdQueueRepo[index];
-  else {
+  } else {
 #ifdef CL_VERSION_2_0
     std::vector<cl_queue_properties> queue_properties;
 
@@ -315,4 +353,4 @@ cl_uint clRuntime::getNumComputeUnit() const {
 
 }  // namespace clHelper
 
-#endif
+#endif  // SRC_COMMON_CLUTIL_CLRUNTIME_H_
