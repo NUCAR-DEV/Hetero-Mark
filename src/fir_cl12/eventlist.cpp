@@ -14,7 +14,7 @@
 #include <sys/time.h>
 #endif
 
-#include "eventlist.h"
+#include "include/eventlist.h"
 
 //! Constructor
 EventList::EventList(cl_context context, cl_command_queue commandQueue,

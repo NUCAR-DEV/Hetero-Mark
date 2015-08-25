@@ -27,7 +27,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * WITH THE SOFTWARE.
  *
- * Advanced Encryption Code With OpenCL 1.2
+ * Advanced Encryption Code With OpenCL 2.0
  *
  * It takes a plain text or hex file and encrypts it with a given key
  *
