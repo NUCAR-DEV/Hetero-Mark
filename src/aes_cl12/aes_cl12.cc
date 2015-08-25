@@ -1,27 +1,34 @@
 /* Copyright (c) 2015 Northeastern University
  * All rights reserved.
  *
- * Developed by:Northeastern University Computer Architecture Research (NUCAR) Group, Northeastern University
- * http://www.ece.neu.edu/groups/nucar/
- *  
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
- * documentation files (the "Software"), to deal with the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * Developed by:Northeastern University Computer Architecture Research (NUCAR)
+ * Group, Northeastern University, http://www.ece.neu.edu/groups/nucar/
  *
- * Redistributions of source code must retain the above copyright notice, this list of conditions and the following 
- * disclaimers. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
- * the following disclaimers in the documentation and/or other materials provided with the distribution. Neither the
- * names of NUCAR, Northeastern University, nor the names of its contributors may be used to endorse or promote 
- * products derived from this Software without specific prior written permission.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
- * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ *  with the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/
+ * or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimers. Redistributions in binary
+ * form must reproduce the above copyright notice, this list of conditions and
+ * the following disclaimers in the documentation and/or other materials
+ * provided with the distribution. Neither the names of NUCAR, Northeastern
+ * University, nor the names of its contributors may be used to endorse or
+ * promote products derived from this Software without specific prior written
+ * permission.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * WITH THE SOFTWARE.
  *
  * Advanced Encryption Code With OpenCL 1.2
- * 
+ *
  * It takes a plain text or hex file and encrypts it with a given key
  *
  */
@@ -269,32 +276,34 @@ void AES::Run(int argc, char const *argv[]) {
       for (int ix = 0; ix < 16; ix++) {
         if (hexMode == 1) {
           if (fscanf(infile, "%02x",
-                     (unsigned int *)&states[currentOffset+ix]) != EOF) { ;
+                     (unsigned int *)&states[currentOffset+ix]) != EOF) {
           } else {
-            if (ix > 0) { 
-              for (int ixx = ix; ixx < 16; ixx++) { 
-                states[currentOffset+ixx] = 0x00; 
-              } 
+            if (ix > 0) {
+              for (int ixx = ix; ixx < 16; ixx++) {
+                states[currentOffset+ixx] = 0x00;
+              }
             } else { spawn--; }
-	    i = RUNNING_THREADS + 1;
-	    end = 0;
-	    break;
-	  }
-	}
-	else {
-	  ch = getc(infile);
-	  if (ch != EOF) { states[currentOffset+ix] = ch; }
-	  else {
-	    if (ix > 0) { for (int ixx = ix; ixx < 16; ixx++) { states[currentOffset+ixx] = 0x00; } }
-	    else { spawn--; }
-	    i = RUNNING_THREADS + 1;
-	    end = 0;
-	    break;
-	  }
-	}
+            i = RUNNING_THREADS + 1;
+            end = 0;
+            break;
+          }
+        } else {
+          ch = getc(infile);
+          if (ch != EOF) { states[currentOffset+ix] = ch;
+          } else {
+            if (ix > 0) { for (int ixx = ix; ixx < 16; ixx++) {
+                states[currentOffset+ixx] = 0x00;
+              }
+            } else { spawn--; }
+            i = RUNNING_THREADS + 1;
+            end = 0;
+            break;
+          }
+        }
       }
-    } if (spawn == 0) { break; }
-    //arrange data correctly
+    }
+    if (spawn == 0) { break; }
+    // arrange data correctly
     for (int i = 0; i < spawn; i++) {
       currentOffset = i*16;
       uint8_t temp[16];
@@ -314,33 +323,37 @@ void AES::Run(int argc, char const *argv[]) {
       memcpy(&temp[7], &states[currentOffset+13], sizeof(uint8_t));
       memcpy(&temp[11], &states[currentOffset+14], sizeof(uint8_t));
       memcpy(&temp[15], &states[currentOffset+15], sizeof(uint8_t));
-      for (int c = 0; c < 16; c++) { 
-	memcpy(&states[currentOffset+c], &temp[c], sizeof(uint8_t)); 
+      for (int c = 0; c < 16; c++) {
+        memcpy(&states[currentOffset+c], &temp[c], sizeof(uint8_t));
       }
     }
-    //Set data for workers----------
+    // Set data for workers----------
 
     cl_int status;
 
-    dev_states = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 16*spawn*sizeof(uint8_t), states, &status);
+    dev_states = clCreateBuffer(context, CL_MEM_READ_WRITE | \
+               CL_MEM_COPY_HOST_PTR, 16*spawn*sizeof(uint8_t), states, &status);
 
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &dev_states);
     checkOpenCLErrors(status, "clSetKernelArg\n");
 
-    //Calculations to optimize the execution of the kernel
+    // Calculations to optimize the execution of the kernel
     size_t local_ws;
     const size_t global_ws = spawn;
-    if (spawn < BASIC_UNIT) { local_ws = 1; }
-    else if (spawn % BASIC_UNIT > 0) { local_ws = (spawn/BASIC_UNIT) + 1; }
-    else { local_ws = (spawn/BASIC_UNIT); }
+    if (spawn < BASIC_UNIT) { local_ws = 1;
+    } else if (spawn % BASIC_UNIT > 0) { local_ws = (spawn/BASIC_UNIT) + 1;
+    } else { local_ws = (spawn/BASIC_UNIT); }
 
     cl_event event;
-    status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, &global_ws, &local_ws, 0, NULL, &event);
+    status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, \
+                                     &global_ws, &local_ws, 0, NULL, &event);
     checkOpenCLErrors(status, "clEnqueueNDRangeKernel\n");
 
     clFinish(cmdQueue);
 
-    status = clEnqueueReadBuffer(cmdQueue, dev_states, CL_TRUE, 0, 16*spawn*sizeof(uint8_t), &states, 0, NULL, NULL);
+    status = clEnqueueReadBuffer(cmdQueue, dev_states, CL_TRUE, 0, \
+                            16*spawn*sizeof(uint8_t), &states, 0, NULL, NULL);
+
     checkOpenCLErrors(status, "clEnqueueReadBuffer\n");
 
     clReleaseMemObject(dev_states);
@@ -348,18 +361,18 @@ void AES::Run(int argc, char const *argv[]) {
     for (int i = 0; i < spawn; i++) {
       currentOffset = i*16;
       for (int ix = 0; ix < 4; ix++) {
-	char hex[3];
-	sprintf(hex, "%02x", states[currentOffset+ix]);
-	for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-	sprintf(hex, "%02x", states[currentOffset+ix+4]);
-	for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-	sprintf(hex, "%02x", states[currentOffset+ix+8]);
-	for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-	sprintf(hex, "%02x", states[currentOffset+ix+12]);
-	for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
+        char hex[3];
+        sprintf(hex, "%02x", states[currentOffset+ix]);
+        for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
+        sprintf(hex, "%02x", states[currentOffset+ix+4]);
+        for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
+        sprintf(hex, "%02x", states[currentOffset+ix+8]);
+        for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
+        sprintf(hex, "%02x", states[currentOffset+ix+12]);
+        for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
       }
     }
-  } //while
+  }  // while
 
   fflush(outfile);
 }
