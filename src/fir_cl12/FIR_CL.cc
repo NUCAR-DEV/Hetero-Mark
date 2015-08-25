@@ -47,11 +47,11 @@
 
 #define BILLION 1000000000L
 
-#define CHECK_STATUS(status, message)		\
-  if (status != CL_SUCCESS) {			\
-    printf(message);				\
-    printf("\n");				\
-    return 1;					\
+#define CHECK_STATUS(status, message)           \
+  if (status != CL_SUCCESS) {                   \
+    printf(message);                            \
+    printf("\n");                               \
+    return 1;                                   \
   }
 
 // #ifdef GPUPROF
@@ -77,7 +77,7 @@ int main(int argc , char** argv) {
   clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
 
   /** Define Custom Variables */
-  int i,count;
+  int i, count;
   int local;
 
   if (argc < 3) {
@@ -105,15 +105,15 @@ int main(int argc , char** argv) {
   temp_output = (cl_float *) malloc( (numData+numTap-1) * sizeof(cl_float) );
 
   /** Initialize the input data */
-  for(i = 0; i < numTotalData; i++) {
+  for (i = 0; i < numTotalData; i++) {
     input[i] = 8;
     output[i] = 99;
   }
 
-  for(i = 0; i < numTap; i++)
+  for (i = 0; i < numTap; i++)
     coeff[i] = 1.0/numTap;
 
-  for(i = 0; i < (numData+numTap-1); i++ )
+  for (i = 0; i < (numData+numTap-1); i++ )
     temp_output[i] = 0.0;
 
   // Event Creation
@@ -124,7 +124,7 @@ int main(int argc , char** argv) {
   // Read the input file
   FILE *fip;
   i = 0;
-  fip = fopen("temp.dat","r");
+  fip = fopen("temp.dat", "r");
   while (i < numTotalData) {
     int res = fscanf(fip, "%f", &input[i]);
     i++;
@@ -134,7 +134,7 @@ int main(int argc , char** argv) {
 #if 0
   printf("\n The Input:\n");
   i = 0;
-  while(i < numTotalData ) {
+  while (i < numTotalData) {
     printf("%f, ", input[i]);
     i++;
   }
@@ -185,32 +185,32 @@ int main(int argc , char** argv) {
   /* cl_command_queue command_queue = clCreateCommandQueueWithProperties\
      (context, device_id, NULL, &ret); */
   cl_queue_properties props[] = {CL_QUEUE_PROPERTIES, \
-				 CL_QUEUE_PROFILING_ENABLE, 0};
+                                 CL_QUEUE_PROFILING_ENABLE, 0};
   cl_command_queue command_queue = \
     clCreateCommandQueueWithProperties(context, device_id, props, &ret);
   // Create Eventlist for Timestamps
   eventList = new EventList(context, command_queue, device_id, true);
 
   // #ifdef GPUPROF
-  //	// Create performance counter Init
-  //	GPA_Initialize();
-  //	GPA_OpenContext( command_queue );
-  //	GPA_EnableAllCounters();
+  // // Create performance counter Init
+  // GPA_Initialize();
+  // GPA_OpenContext( command_queue );
+  // GPA_EnableAllCounters();
   // #endif
 
   // Create memory buffers on the device for each vector
   cl_mem inputBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY,
-				      sizeof(cl_float) * numData, NULL, &ret);
+                                      sizeof(cl_float) * numData, NULL, &ret);
   cl_mem outputBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE,
                                        sizeof(cl_float) * numData, NULL, &ret);
   cl_mem coeffBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY,
-				      sizeof(cl_float) * numTap, NULL, &ret);
+                                      sizeof(cl_float) * numTap, NULL, &ret);
   cl_mem temp_outputBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE,
-					    sizeof(cl_float) * (numData+numTap-1), NULL, &ret);
+                             sizeof(cl_float) * (numData+numTap-1), NULL, &ret);
 
   // Create a program from the kernel source
   cl_program program = clCreateProgramWithSource(context, 1,
-						 (const char **)&source_str, (const size_t *)&source_size, &ret);
+                (const char **)&source_str, (const size_t *)&source_size, &ret);
 
   // Build the program
   ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
@@ -257,7 +257,7 @@ int main(int argc , char** argv) {
   size_t localThreads[1]={128};
   cl_command_type cmdType;
   count = 0;
-  while(count < numBlocks) {
+  while (count < numBlocks) {
     /* fill in the temp_input buffer object */
     ret = clEnqueueWriteBuffer(command_queue,
                                temp_outputBuffer,
@@ -308,7 +308,7 @@ int main(int argc , char** argv) {
                                  NULL,
                                  &event);
 
-    CHECK_STATUS(ret,"Error: Range kernel. (clCreateKernel)\n");
+    CHECK_STATUS(ret, "Error: Range kernel. (clCreateKernel)\n");
     ret = clWaitForEvents(1, &event);
     ret = clWaitForEvents(1, &event);
 
@@ -341,36 +341,36 @@ int main(int argc , char** argv) {
     //              "Results1.log" );
     // currentWaitSessionID++;
     // }
-    //		//Cleanup
-    //		GPA_CloseContext();
+    // //Cleanup
+    // GPA_CloseContext();
     //
-    //#endif
+    // #endif
 
     eventList->add(event);
 
     /* Get the output buffer */
     ret = clEnqueueReadBuffer(command_queue,
-			      outputBuffer,
-			      CL_TRUE,
-			      0,
-			      numData * sizeof( cl_float ),
-			      output + count * numData,
-			      0,
-			      NULL,
-			      &event );
+                              outputBuffer,
+                              CL_TRUE,
+                              0,
+                              numData * sizeof(cl_float),
+                              output + count * numData,
+                              0,
+                              NULL,
+                              &event);
     eventList->add(event);
-    count ++;
+    count++;
   }
 
   /* Uncomment to print output */
-  //printf("\n The Output:\n");
-  //i = 0;
-  //while( i<numTotalData )
-  //{
-  //	printf( "%f ", output[i] );
+  // printf("\n The Output:\n");
+  // i = 0;
+  // while( i<numTotalData )
+  // {
+  //   printf( "%f ", output[i] );
 
-  //	i++;
-  //}
+  //   i++;
+  // }
 
   ret = clFlush(command_queue);
   ret = clFinish(command_queue);
@@ -388,9 +388,9 @@ int main(int argc , char** argv) {
   free(coeff);
   free(temp_output);
 
-  //#ifdef GPUPROF
-  //	GPA_Destroy();
-  //#endif
+  // #ifdef GPUPROF
+  //   GPA_Destroy();
+  // #endif
 
   /* comment to hide timing events */
   eventList->printEvents();
@@ -404,81 +404,69 @@ int main(int argc , char** argv) {
   return 0;
 }
 
-//#ifdef GPUPROF
-//// Perfoemance API write function
-//void WriteSession( gpa_uint32 currentWaitSessionID,  char* filename )
-//{
-//	static bool doneHeadings = false;
-//	gpa_uint32 count;
-//	GPA_GetEnabledCount( &count );
-//	FILE* f;
-//	if ( !doneHeadings )
-//	{
-//		const char* name;
-//		f = fopen( filename, "w+" );
-//		assert( f );
-//		fprintf( f, "Identifier, " );
-//		for ( gpa_uint32 counter = 0 ; counter < count ; counter++ )
-//		{
-//			gpa_uint32 enabledCounterIndex;
-//			GPA_GetEnabledIndex( counter, &enabledCounterIndex );
-//			GPA_GetCounterName( enabledCounterIndex, &name );
-//			fprintf( f, "%s, ", name );
-//		}
-//		fprintf( f, "\n" );
-//		fclose( f );
-//		doneHeadings = true;
-//	}
-//	f = fopen( filename, "a+" );
-//	assert( f );
-//	gpa_uint32 sampleCount;
-//	GPA_GetSampleCount( currentWaitSessionID, &sampleCount );
-//	for ( gpa_uint32 sample = 0 ; sample < sampleCount ; sample++ )
-//	{
-//		fprintf( f, "session: %d; sample: %d, ", currentWaitSessionID,
-//				sample );
-//		for ( gpa_uint32 counter = 0 ; counter < count ; counter++ )
-//		{
-//			gpa_uint32 enabledCounterIndex;
-//			GPA_GetEnabledIndex( counter, &enabledCounterIndex );
-//			GPA_Type type;
-//			GPA_GetCounterDataType( enabledCounterIndex, &type );
-//			if ( type == GPA_TYPE_UINT32 )
-//			{
-//				gpa_uint32 value;
-//				GPA_GetSampleUInt32( currentWaitSessionID,
-//						sample, enabledCounterIndex, &value );
-//				fprintf( f, "%u,", value );
-//			}
-//			else if ( type == GPA_TYPE_UINT64 )
-//			{
-//				gpa_uint64 value;
-//				GPA_GetSampleUInt64( currentWaitSessionID,
-//						sample, enabledCounterIndex, &value );
-//				fprintf( f, "%I64u,", value );
-//			}
-//			else if ( type == GPA_TYPE_FLOAT32 )
-//			{
-//				gpa_float32 value;
-//				GPA_GetSampleFloat32( currentWaitSessionID,
-//						sample, enabledCounterIndex, &value );
-//				fprintf( f, "%f,", value );
-//			}
-//			else if ( type == GPA_TYPE_FLOAT64 )
-//			{
-//				gpa_float64 value;
-//				GPA_GetSampleFloat64( currentWaitSessionID,
-//						sample, enabledCounterIndex, &value );
-//				fprintf( f, "%f,", value );
-//			}
-//			else
-//			{
-//				assert(false);
-//			}
-//		}
-//		fprintf( f, "\n" );
-//	}
-//	fclose( f );
-//}
-//#endif
+// #ifdef GPUPROF
+// // Perfoemance API write function
+// void WriteSession( gpa_uint32 currentWaitSessionID,  char* filename )
+// {
+//   static bool doneHeadings = false;
+//   gpa_uint32 count;
+//   GPA_GetEnabledCount( &count );
+//   FILE* f;
+//   if ( !doneHeadings ) {
+//     const char* name;
+//     f = fopen( filename, "w+" );
+//     assert( f );
+//     fprintf(f, "Identifier, ");
+//     for (gpa_uint32 counter = 0 ; counter < count ; counter++) {
+//       gpa_uint32 enabledCounterIndex;
+//       GPA_GetEnabledIndex(counter, &enabledCounterIndex);
+//       GPA_GetCounterName(enabledCounterIndex, &name);
+//       fprintf(f, "%s, ", name);
+//     }
+//     fprintf(f, "\n");
+//     fclose(f);
+//     doneHeadings = true;
+//     }
+//     f = fopen(filename, "a+");
+//     assert(f);
+//     gpa_uint32 sampleCount;
+//     GPA_GetSampleCount(currentWaitSessionID, &sampleCount);
+//     for (gpa_uint32 sample = 0 ; sample < sampleCount ; sample++) {
+//       fprintf( f, "session: %d; sample: %d, ", currentWaitSessionID, sample);
+//       for (gpa_uint32 counter = 0 ; counter < count; counter++) {
+//         gpa_uint32 enabledCounterIndex;
+//         GPA_GetEnabledIndex( counter, &enabledCounterIndex );
+//     GPA_Type type;
+//     GPA_GetCounterDataType( enabledCounterIndex, &type );
+//     if ( type == GPA_TYPE_UINT32 ) {
+//     gpa_uint32 value;
+//     GPA_GetSampleUInt32(currentWaitSessionID, sample, \
+//                         enabledCounterIndex, &value );
+//     fprintf( f, "%u,", value );
+//   }
+//   else if ( type == GPA_TYPE_UINT64 ) {
+//     gpa_uint64 value;
+//     GPA_GetSampleUInt64(currentWaitSessionID,
+//                         sample, enabledCounterIndex, &value);
+//     fprintf(f, "%I64u,", value);
+//   }
+//   else if ( type == GPA_TYPE_FLOAT32 ) {
+//     gpa_float32 value;
+//     GPA_GetSampleFloat32(currentWaitSessionID,
+//                          sample, enabledCounterIndex, &value);
+//     fprintf(f, "%f,", value);
+//   } else if (type == GPA_TYPE_FLOAT64) {
+//     gpa_float64 value;
+//     GPA_GetSampleFloat64( currentWaitSessionID,
+//     sample, enabledCounterIndex, &value );
+//     fprintf( f, "%f,", value );
+//   } else {
+//     assert(false);
+//   }
+// }
+// fprintf( f, "\n" );
+// }
+// fclose( f );
+// }
+// #endif
 
