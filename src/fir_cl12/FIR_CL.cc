@@ -205,13 +205,17 @@ int main(int argc , char** argv) {
                                        sizeof(cl_float) * numData, NULL, &ret);
   cl_mem coeffBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                       sizeof(cl_float) * numTap, NULL, &ret);
-  cl_mem temp_outputBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE,
-                             sizeof(cl_float) * (numData+numTap-1), NULL, &ret);
+  cl_mem temp_outputBuffer = clCreateBuffer(context,
+                                            CL_MEM_READ_WRITE,
+                                            sizeof(cl_float)*(numData+numTap-1),
+                                            NULL,
+                                            &ret);
 
   // Create a program from the kernel source
   cl_program program = clCreateProgramWithSource(context, 1,
-                (const char **)&source_str, (const size_t *)&source_size, &ret);
-
+                                                 (const char **)&source_str,
+                                                 (const size_t *)&source_size,
+                                                 &ret);
   // Build the program
   ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
 
