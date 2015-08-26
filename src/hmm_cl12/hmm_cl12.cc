@@ -437,7 +437,7 @@ void HMM::CleanUpKernels() {
   checkOpenCLErrors(clReleaseKernel(kernel_EM_gamma_obs),
                     "Failed to release kernel kernel_EM_gamma_obs");
 
-  checkOpenCLErrors(clReleaseKernel(kernel_EM_expect_mu)
+  checkOpenCLErrors(clReleaseKernel(kernel_EM_expect_mu),
                     "Failed to release kernel kernel_EM_expect_mu");
 
   checkOpenCLErrors(clReleaseKernel(kernel_EM_sigma_dev),
