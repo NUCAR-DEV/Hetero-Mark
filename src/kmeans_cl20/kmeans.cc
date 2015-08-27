@@ -739,7 +739,7 @@ void KMEANS::Display_results_svm() {
       //         cluster_timing / nloops);
       if (isRMSE) {
         // if calculated RMSE
-        printf("Number of trials to approach the best RMSE of
+        printf("Number of trials to approach the best RMSE of \
                         %.3f is %d\n", min_rmse_1, index_1 + 1);
       }
     } else {
