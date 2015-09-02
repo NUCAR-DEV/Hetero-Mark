@@ -21,7 +21,9 @@ expansion schedule.
 #### Usage
 
     <exec> <mode> <plain text file> <keyfile> <encrypted text file>
-    mode is either h or a
+    mode:
+    h = input in hex
+    a = input in ascii
 
 ### Finite Impulse Response (FIR)
 
