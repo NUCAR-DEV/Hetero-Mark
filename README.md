@@ -105,11 +105,17 @@ Shallow water is a physics simulation engine that depicts complex behavior of fl
     To run each application, the executables are in
         <app folder>/bin/x86_64/Release/
 
+## Development guide
+
+   The skeleton code for new benchmark is available in src/template directory.
+
+   Make sure to add new benchmark dir to CmakeList.txt file in src/, otherwise new benchmark won't be compiled with others.
+
 ## Credits
 
 Northeastern University Computer Architecture Research Group,
-
 Northeastern University
+http://www.ece.neu.edu/groups/nucar/
 
 
 
