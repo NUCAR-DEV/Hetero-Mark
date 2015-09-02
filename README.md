@@ -107,9 +107,12 @@ Shallow water is a physics simulation engine that depicts complex behavior of fl
 
 ## Development guide
 
-   The skeleton code for new benchmark is available in src/template directory.
+    The skeleton code for new benchmark is available
+    in src/template directory.
 
-   Make sure to add new benchmark dir to CmakeList.txt file in src/, otherwise new benchmark won't be compiled with others.
+    Make sure to add new benchmark dir to CmakeList.txt
+    file in src/, otherwise new benchmark won't be
+    compiled with others.
 
 ## Credits
 
