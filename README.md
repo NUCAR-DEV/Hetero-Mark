@@ -1,5 +1,6 @@
 Hetero-Mark
-HSA benchmarks
+
+A Benchmark Suite for Heterogeneous System Computation
 
 Compilation guide
 

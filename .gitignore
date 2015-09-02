@@ -39,3 +39,8 @@ bin
 
 #editor tmp
 *.swp
+
+# temp files
+temp~
+temp
+#temp#
