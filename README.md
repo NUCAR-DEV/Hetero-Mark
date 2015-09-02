@@ -4,19 +4,11 @@ A Benchmark Suite for Heterogeneous System Computation
 
 ## Applications in the suite
 
-The suite is in development. All outputs show the time it takes to run
-the application without the data transfer time etc.
+The suite is in development. All outputs show the time it takes to run the application without the data transfer time etc.
 
 ### Advanced Encryption Standard (AES)
 
-The program takes plaintext as input and encrypts it using a given
-encryption key. Our implementation uses a key size of 256 bits.
-The AES algorithm is comprised of
-many rounds, that ultimately turn
-plaintext into cipher-text. Each round has multiple processing
-steps that include AddRoundKey, SubBytes, ShiftRows and
-MixColumns. Key bits must be expanded using a precise key
-expansion schedule.
+The program takes plaintext as input and encrypts it using a given encryption key. Our implementation uses a key size of 256 bits. The AES algorithm is comprised of many rounds, that ultimately turn plaintext into cipher-text. Each round has multiple processing steps that include AddRoundKey, SubBytes, ShiftRows and MixColumns. Key bits must be expanded using a precise key expansion schedule.
 
 #### Usage
 
@@ -27,12 +19,7 @@ expansion schedule.
 
 ### Finite Impulse Response (FIR)
 
-FIR filter produces an impulse
-response of finite duration [6]. The impulse response is the
-response to any finite length input. The FIR filtering program
-is designed to have the host send array data to the FIR kernel
-on the OpenCL device. Then the FIR filter is calculated on
-the device, and the result is transferred back to the host.
+FIR filter produces an impulse response of finite duration [6]. The impulse response is the response to any finite length input. The FIR filtering program is designed to have the host send array data to the FIR kernel on the OpenCL device. Then the FIR filter is calculated on the device, and the result is transferred back to the host.
 
 #### Usage
 
