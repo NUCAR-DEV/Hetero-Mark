@@ -1,19 +1,19 @@
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
 
-# Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-
-set( FOLDER_NAME fir_cl20 )
+set( FOLDER_NAME HiddenMarkovModelHSA )
 set( SUBDIRECTORIES )
 set( SRC_FILES 
   main.cc
-  FirBenchmark.h
-  FirBenchmark.cc
+  HmmBenchmark.h
+  HmmBenchmark.cc
 )
 set( HEADER_FILES )
 set( TEST_FILES )
+
+# Group samples by folder
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
 file(COPY kernels.cl DESTINATION .)
 
 # Check if snack is available
@@ -48,10 +48,10 @@ if (have_snack AND HSA_RUNTIME)
     WORKING_DIRECTORY ""
     VERBATIM
   )
-  add_executable(fir_hsa_cl20 kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
-  target_link_libraries(fir_hsa_cl20 
+add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
+target_link_libraries(${FOLDER_NAME}
     Timer CommandLineOption Benchmark ${HSA_RUNTIME})
 else (have_snack AND HSA_RUNTIME)
-  message(WARNING "Skipping fir_hsa_cl20, snack.sh is not found")
+  message(WARNING "Skipping hmm_hsa, snack.sh or HSA runtime is not found")
 endif (have_snack AND HSA_RUNTIME)
 

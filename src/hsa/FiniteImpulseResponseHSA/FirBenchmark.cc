@@ -38,31 +38,59 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HSA_FIR_CL20_FIRBENCHMARK_H_
-#define SRC_HSA_FIR_CL20_FIRBENCHMARK_H_
+#include <cstdlib>
+#include <cstdio>
+#include "src/hsa/FiniteImpulseResponseHSA/kernels.h"
+#include "src/hsa/FiniteImpulseResponseHSA/FirBenchmark.h"
 
-#include "src/common/Benchmark/Benchmark.h"
+void FirBenchmark::initialize() {
+  numTap = 1024;
+  numTotalData = numData * numBlocks;
+  local = 64;
 
-class FirBenchmark : public Benchmark {
- private:
-  unsigned int numTap = 1024;
-  unsigned int numData = 0;
-  unsigned int numTotalData = 0;
-  unsigned int numBlocks = 0;
-  int local;
-  float *input = nullptr;
-  float *output = nullptr;
-  float *coeff = nullptr;
-  float *temp_output = nullptr;
- public:
-  void initialize() override;
-  void run() override;
-  void verify() override;
-  void summarize() override;
-  void cleanup() override;
+  input = new float[numTotalData];
+  output = new float[numTotalData];
+  coeff = new float[numTap];
+  temp_output = new float[numData + numTap - 1];
 
-  void setNumBlocks(unsigned int numBlocks) { this->numBlocks = numBlocks; }
-  void setNumData(unsigned int numData) { this->numData = numData; }
-};
+  // Initialize input data
+  for (unsigned int i = 0; i < numTotalData; i++) {
+    input[i] = i;
+  }
 
-#endif  // SRC_HSA_FIR_CL20_FIRBENCHMARK_H_
+  // Initialize coefficient
+  for (unsigned int i = 0; i < numTap; i++) {
+    coeff[i] = 1.0 / numTap;
+  }
+
+  // Initialize temp output
+  for (unsigned int i = 0; i < (numData + numTap - 1); i++) {
+    temp_output[i] = 0.0;
+  }
+}
+
+void FirBenchmark::run() {
+  for (unsigned int i = 0; i < numBlocks; i++) {
+    SNK_INIT_LPARM(lparm, 0);
+    lparm->ndim = 1;
+    lparm->gdims[0] = numData;
+    lparm->ldims[0] = 128;
+    FIR(output, coeff, temp_output, numTap, lparm);
+  }
+}
+
+void FirBenchmark::verify() {
+  for (unsigned int i = 0; i < numTotalData; i++) {
+    printf("output[i] = %f\n", output[i]);
+  }
+}
+
+void FirBenchmark::summarize() {
+}
+
+void FirBenchmark::cleanup() {
+  delete[] input;
+  delete[] output;
+  delete[] coeff;
+  delete[] temp_output;
+}

@@ -8,7 +8,8 @@ set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
 
 set( FOLDER_NAME hsa )
 set( SUBDIRECTORIES 
-    fir_cl20
+  FiniteImpulseResponseHSA
+  HiddenMarkovModelHSA
 )
 
 set( check_target ${FOLDER_NAME}_check )
