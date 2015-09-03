@@ -18,7 +18,7 @@ that include AddRoundKey, SubBytes, ShiftRows and MixColumns. Key bits
 
 #### Usage
 
-    <exec> <mode> <plain text file> <keyfile> <encrypted text file>
+   ./ <exec> <mode> <plain text file> <keyfile> <encrypted text file>
     mode:
     h = input in hex
     a = input in ascii
