@@ -35,7 +35,7 @@ FIR filter produces an impulse response of finite duration. The impulse
 
     ./<exec> <numBlocks> <numData>
 
-### Hidden Markov Model
+### Hidden Markov Model (HMM)
 
 HMM is a static Markov model that can generate probabilistic meaning
  without knowing the hidden states. The implementation
