@@ -1,3 +1,44 @@
+/*
+ * Hetero-Mark
+ *
+ * Copyright (c) 2015 Northeastern University
+ * All rights reserved.
+ *
+ * Developed by:Northeastern University Computer Architecture Research (NUCAR)
+ * Group, Northeastern University, http://www.ece.neu.edu/groups/nucar/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ *  with the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/
+ * or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ *   Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimers. Redistributions in binary
+ *   form must reproduce the above copyright notice, this list of conditions and
+ *   the following disclaimers in the documentation and/or other materials
+ *   provided with the distribution. Neither the names of NUCAR, Northeastern
+ *   University, nor the names of its contributors may be used to endorse or
+ *   promote products derived from this Software without specific prior written
+ *   permission.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ *   DEALINGS WITH THE SOFTWARE.
+ *
+ * Microbenchmark to measure how long it takes to launch a kernel
+ * in async way or sync way
+ *
+ * It takes a plain text or hex file and encrypts it with a given key
+ *
+ */
+
+
 #define __NO_STD_VECTOR
 #define MAX_SOURCE_SIZE (0x100000)
 #include <stdio.h>/* for printf */
@@ -10,9 +51,7 @@
 
 #define BILLION 1000000000L
 
-int main(int argc, const char * argv[])
-{
-
+int main(int argc, const char * argv[]) {
   if (argc != 2) {
     printf("Missing the length of max ints!\nUsage: ./<exec> int#\n");
     exit(EXIT_FAILURE);
@@ -22,7 +61,7 @@ int main(int argc, const char * argv[])
 
   uint64_t diff;
   struct timespec start, end;
-  
+
   FILE *cl_code = fopen("kernel.cl", "r");
   if (cl_code == NULL) { printf("\nerror: clfile\n"); return(1); }
   char *source_str = (char *)malloc(MAX_SOURCE_SIZE);
@@ -49,18 +88,36 @@ int main(int argc, const char * argv[])
   queue = clCreateCommandQueueWithProperties(context, device, NULL, &err);
   if (err != CL_SUCCESS) { printf("commandqueue %i", err); return 1; }
 
-  program = clCreateProgramWithSource(context, 1, (const char**)&source_str, &source_length, &err);
-  if (err != CL_SUCCESS) { printf("createprogram %i", err); return 1; }
+  program = clCreateProgramWithSource(context,
+                                      1,
+                                      (const char**)&source_str,
+                                      &source_length, &err);
 
-  
+  if (err != CL_SUCCESS) {
+    printf("createprogram %i", err); return 1;
+  }
   err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
-  if (err != CL_SUCCESS) { printf("buildprogram ocl12 %i", err); }
-  
+  if (err != CL_SUCCESS) {
+    printf("buildprogram ocl12 %i", err);
+  }
+
   if (err == CL_BUILD_PROGRAM_FAILURE) {
     size_t log_size;
-    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+    clGetProgramBuildInfo(program,
+                          device,
+                          CL_PROGRAM_BUILD_LOG,
+                          0,
+                          NULL,
+                          &log_size);
+
     char *log = (char *) malloc(log_size);
-    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+    clGetProgramBuildInfo(program,
+                          device,
+                          CL_PROGRAM_BUILD_LOG,
+                          log_size,
+                          log,
+                          NULL);
+
     printf("%s\n", log);
     return 1;
   }
@@ -70,49 +127,47 @@ int main(int argc, const char * argv[])
   cl_event event;
   const size_t local = 1;
   const size_t global = 1;
-  
-  err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0 \
-			       , NULL, NULL);
+
+  err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global,
+                               &local, 0, NULL, NULL);
   if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
   clFinish(queue);
 
-  //  for (int xx = 1; xx < 11; xx++) { 
+  //  for (int xx = 1; xx < 11; xx++) {
 
   //  maxnum = xx * 100;
 
-    printf ("\nNumber of kernels = %i\n", maxnum);
-   
-    clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
-  
-    for (int i = 0; i < maxnum; i++)
-      {
-	err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
-	if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
-	clFinish(queue);
-      }
+  printf("\nNumber of kernels = %i\n", maxnum);
+  clock_gettime(CLOCK_MONOTONIC, &start);
+    for (int i = 0; i < maxnum; i++) {
+      err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global,
+                                   &local, 0, NULL, NULL);
+      if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
+      clFinish(queue);
+    }
 
-    clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
-  
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
     diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-    printf("\n\tTest-1: 'sync' done, time: %llu nanoseconds\n", (long long unsigned int) diff);
-  
+    printf("\n\tTest-1: 'sync' done, time: %llu nanoseconds\n",
+           (long long unsigned int) diff);
+
     // async
-    clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
-    
-    for (int i = 0; i < maxnum; i++)
-      {
-	err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
-	if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
-      }
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    for (int i = 0; i < maxnum; i++) {
+      err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global,
+                                   &local, 0, NULL, NULL);
+      if (err != CL_SUCCESS) { printf("enqueuendrangekernel %i", err); }
+    }
     clFinish(queue);
-    
-    clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
-    
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
     diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-    printf("\n\tTest-2: 'async' done, time: %llu nanoseconds\n", (long long unsigned int) diff);
-    //  }
+    printf("\n\tTest-2: 'async' done, time: %llu nanoseconds\n",
+           (long long unsigned int) diff);
+
   clReleaseContext(context);
   clReleaseCommandQueue(queue);
   printf("\n");
 }
-

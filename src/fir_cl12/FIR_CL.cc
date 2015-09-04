@@ -25,7 +25,7 @@
  *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  *   CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  *   DEALINGS WITH THE SOFTWARE.
  *
  * Calculate a FIR filter with OpenCL 1.2
@@ -76,7 +76,6 @@ cl_float* temp_output = NULL;
 int main(int argc , char** argv) {
   uint64_t diff;
   struct timespec start, end;
-  clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
 
   /** Define Custom Variables */
   int i, count;
@@ -263,6 +262,9 @@ int main(int argc , char** argv) {
   size_t localThreads[1]={128};
   cl_command_type cmdType;
   count = 0;
+
+  clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
+
   while (count < numBlocks) {
     /* fill in the temp_input buffer object */
     ret = clEnqueueWriteBuffer(command_queue,
@@ -304,6 +306,7 @@ int main(int argc , char** argv) {
     // #endif
     //
     // Execute the OpenCL kernel on the list
+
     ret = clEnqueueNDRangeKernel(command_queue,
                                  kernel,
                                  1,
@@ -315,10 +318,10 @@ int main(int argc , char** argv) {
                                  &event);
 
     CHECK_STATUS(ret, "Error: Range kernel. (clCreateKernel)\n");
-    ret = clWaitForEvents(1, &event);
-    ret = clWaitForEvents(1, &event);
+//    ret = clWaitForEvents(1, &event);
+//    ret = clWaitForEvents(1, &event);
 
-    // #if GPUPROF
+    // #If GPUPROF
     // // End Profile session
     // GPA_EndSample();
     // GPA_EndPass();
@@ -368,6 +371,8 @@ int main(int argc , char** argv) {
     count++;
   }
 
+  clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
+
   /* Uncomment to print output */
   // printf("\n The Output:\n");
   // i = 0;
@@ -403,7 +408,6 @@ int main(int argc , char** argv) {
   eventList->dumpEvents((char *)"eventDumps");
   delete eventList;
 
-  clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
   diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
   printf("elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
 

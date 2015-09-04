@@ -25,7 +25,7 @@
  *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  *   CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  *   DEALINGS WITH THE SOFTWARE.
  *
  * Calculate a FIR filter with OpenCL 2.0
@@ -70,9 +70,6 @@ cl_float* temp_output = NULL;
 int main(int argc , char** argv) {
   uint64_t diff;
   struct timespec start, end;
-
-  /* measure monotonic time */
-  clock_gettime(CLOCK_MONOTONIC, &start);
 
   // Define custom variables
   int i, count;
@@ -263,6 +260,10 @@ int main(int argc , char** argv) {
   // FIR Loop
   uint64_t execTimeMs = 0.0;
   //  double execTimeMs = 0.0f;
+
+  /* measure monotonic time */
+  clock_gettime(CLOCK_MONOTONIC, &start);
+
   while (count < numBlocks) {
     // Custom item size based on current algorithm
     size_t global_item_size = numData;

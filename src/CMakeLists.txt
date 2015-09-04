@@ -1,15 +1,15 @@
 set( FOLDER_NAME src )
-set( SUBDIRECTORIES 
+set( SUBDIRECTORIES
   # Applications
         # Advanced Encryption Standard
 	aes_cl12
-	aes_cl20 
+	aes_cl20
 	# Finite Impulse Filte
 	fir_cl12
 	fir_cl20
 	# Hidden Markov Model
 	hmm_cl12
-	hmm_cl20 
+	hmm_cl20
 	# Infinite Impulse Filter
 	iir_cl12
 	iir_cl20
@@ -24,12 +24,7 @@ set( SUBDIRECTORIES
 	sw_cl20
    # Microbenchmark
         micro-benchmark/kerneloverhead_cl20
-        micro-benchmark/memcopy_cl12
-        micro-benchmark/memcopy_cl20
-        micro-benchmark/maxmem_cl12
-        micro-benchmark/maxmem_cl20
         micro-benchmark/svmCPUcaching
-        micro-benchmark/svmGPUcaching
 	)
 
 ###############################################################
