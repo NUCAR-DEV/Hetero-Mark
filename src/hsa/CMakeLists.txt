@@ -10,6 +10,7 @@ set( FOLDER_NAME hsa )
 set( SUBDIRECTORIES 
   FiniteImpulseResponseHSA
   HiddenMarkovModelHSA
+  iir_cl12_hsa
 )
 
 set( check_target ${FOLDER_NAME}_check )

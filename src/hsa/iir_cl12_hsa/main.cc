@@ -42,39 +42,37 @@
 #include "src/common/Timer/TimeMeasurement.h"
 #include "src/common/Timer/TimeMeasurementImpl.h"
 #include "src/common/CommandLineOption/CommandLineOption.h"
-#include "src/hsa/FiniteImpulseResponseHSA/FirBenchmark.h"
+#include "src/hsa/iir_cl12_hsa/iir_benchmark.h"
 
 int main(int argc, const char **argv) {
   // Setup command line option
-  CommandLineOption commandLineOption(
-    "====== Hetero-Mark FIR Benchmarks (HSA mode) ======",
+  CommandLineOption command_line_option(
+    "====== Hetero-Mark Infinite Impulse Response Filter Benchmark "
+    "(HSA host with OpenCL 1.2 Kernel) ======",
     "This benchmarks runs Finite Impulse Response (FIR) filter.");
-  commandLineOption.addArgument("Help", "bool", "false",
+  command_line_option.addArgument("Help", "bool", "false",
       "-h", "--help", "Dump help information");
-  commandLineOption.addArgument("NumData", "integer", "1024",
-      "-n", "--num-data",
-      "Number of data elements in each data block");
-  commandLineOption.addArgument("NumBlock", "integer", "1024",
-      "-b", "--num-block",
-      "Number of data blocks, each data block is process in one kernel "
-      "launching");
+  command_line_option.addArgument("Length", "integer", "1024",
+      "-x", "--length",
+      "Length of data");
+  command_line_option.addArgument("Verify", "bool", "false",
+      "-v", "--verify",
+      "Verify the calculation result");
 
-  commandLineOption.parse(argc, argv);
-  if (commandLineOption.getArgumentValue("Help")->asBool()) {
-    commandLineOption.help();
+  command_line_option.parse(argc, argv);
+  if (command_line_option.getArgumentValue("Help")->asBool()) {
+    command_line_option.help();
     return 0;
   }
-  uint32_t numData = commandLineOption.getArgumentValue("NumData")
-    ->asUInt32();
-  uint32_t numBlock = commandLineOption.getArgumentValue("NumBlock")
-    ->asUInt32();
+
+  uint32_t length = command_line_option.getArgumentValue("Length")->asUInt32();
+  bool verify = command_line_option.getArgumentValue("Verify")->asBool();
 
   // Create and run benchmarks
-  std::unique_ptr<FirBenchmark> benchmark(new FirBenchmark());
-  benchmark->setNumData(numData);
-  benchmark->setNumBlocks(numBlock);
+  std::unique_ptr<IirBenchmark> benchmark(new IirBenchmark(length));
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
+  runner.setVerificationMode(verify);
   runner.run();
   runner.summarize();
 }
