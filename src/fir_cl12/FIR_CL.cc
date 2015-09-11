@@ -125,7 +125,7 @@ int main(int argc , char** argv) {
   // Read the input file
   FILE *fip;
   i = 0;
-  fip = fopen("temp.dat", "r");
+  fip = fopen("data/temp.dat", "r");
   while (i < numTotalData) {
     int res = fscanf(fip, "%f", &input[i]);
     i++;
