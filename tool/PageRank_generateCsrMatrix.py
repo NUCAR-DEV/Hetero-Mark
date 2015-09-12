@@ -9,7 +9,8 @@ def genCsrFile(numRows, numCols, density):
     stoMatrix = np.divide(a, np.sum(a, axis=0))
     stoMatrix = csr_matrix(stoMatrix)
 
-    fileName = './csrMatrix/' + 'csr_'+str(numRows)+'_'+str(int(density*100))+'.txt'
+#    fileName = './csrMatrix/' + 'csr_'+str(numRows)+'_'+str(int(density*100))+'.txt'
+    fileName = 'csr_'+str(numRows)+'_'+str(int(density*100))+'.txt'
     f = open(fileName, 'w')
     print >> f, "{:d}".format(stoMatrix.nnz), "{:d}".format(stoMatrix.shape[0])
     for number in stoMatrix.indptr.tolist():
