@@ -53,7 +53,7 @@ IirBenchmark::IirBenchmark(int len) {
   this->len = len;
 }
 
-void IirBenchmark::cleanup() {
+void IirBenchmark::Cleanup() {
   delete[] X;
   delete[] gpu_Y;
   delete[] cpu_y;
@@ -61,7 +61,7 @@ void IirBenchmark::cleanup() {
   delete[] dsec;
 }
 
-void IirBenchmark::initialize() {
+void IirBenchmark::Initialize() {
   // Create the input and output arrays in device memory for our calculation
   X = new float[len];
   gpu_Y = new float[len * channels];
@@ -82,7 +82,7 @@ void IirBenchmark::initialize() {
   }
 }
 
-void IirBenchmark::run() {
+void IirBenchmark::Run() {
   SNK_INIT_LPARM(lparm, 0);
   lparm->ndim = 1;
   lparm->ldims[0] = rows;
@@ -91,7 +91,7 @@ void IirBenchmark::run() {
   IIR(len, c, nsec, dsec, sizeof(float) * 512, X, gpu_Y, lparm);
 }
 
-void IirBenchmark::verify() {
+void IirBenchmark::Verify() {
   //  Compute CPU results
   float *ds = new float[rows * 2];
   float *ns = new float[rows * 2];
@@ -122,7 +122,7 @@ void IirBenchmark::verify() {
     cpu_y[i] = out;
   }
 
-  //	Compare CPU and GPU results
+  // Compare CPU and GPU results
   bool success = true;
 
   int chn;

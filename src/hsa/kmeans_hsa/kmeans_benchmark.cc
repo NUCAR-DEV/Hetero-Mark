@@ -9,184 +9,60 @@
 #include <cassert>
 #include <memory>
 
-#include "kmeans.h"
+#include "src/hsa/kmeans_hsa/kmeans_benchmark.h"
 
 #define BILLION 1000000000L
 
 using namespace std;
 
-KMEANS::KMEANS() {}
+KmeansBenchmark::KmeansBenchmark() {}
 
-KMEANS::~KMEANS() {}
+KmeansBenchmark::~KmeansBenchmark() {}
 
-void KMEANS::Usage(char *argv0) {
-  const char *help =
-      "\nUsage: %s [switches] -i filename\n\n"
-      "    -i filename      :file containing data to be clustered\n"
-      "    -m max_nclusters :maximum number of clusters allowed    "
-      "[default=5]\n"
-      "    -n min_nclusters :minimum number of clusters allowed    "
-      "[default=5]\n"
-      "    -t threshold     :threshold value                       "
-      "[default=0.001]\n"
-      "    -l nloops        :iteration for each number of clusters "
-      "[default=1]\n"
-      "    -b               :input file is in binary format\n"
-      "    -r               :calculate RMSE                        "
-      "[default=off]\n"
-      "    -o               :output cluster center coordinates     "
-      "[default=off]\n";
-  fprintf(stderr, help, argv0);
-  exit(-1);
-}
-
-void KMEANS::Read(int argc, char **argv) {
-  // ------------------------- command line options -----------------------//
-  int opt;
-  extern char *optarg;
-  isBinaryFile = 0;
-  threshold = 0.001;  // default value
-  max_nclusters = 5;  // default value
-  min_nclusters = 5;  // default value
-  isRMSE = 0;
-  isOutput = 0;
-  nloops = 1;  // default value
-
+void KmeansBenchmark::Read() {
   char line[1024];
-  ssize_t ret;  // add return value for read
-
   float *buf;
-  npoints = 0;
-  nfeatures = 0;
+  FILE *infile;
+  if ((infile = fopen(filename, "r")) == NULL) {
+    fprintf(stderr, "Error: no such file (%s)\n", filename);
+    exit(1);
+  }
 
-  best_nclusters = 0;
+  while (fgets(line, 1024, infile) != NULL) {
+    if (strtok(line, " \t\n") != 0) npoints++;
+  }
 
-  int i, j;
+  rewind(infile);
 
-  // obtain command line arguments and change appropriate options
-  while ((opt = getopt(argc, argv, "i:t:m:n:l:bro")) != EOF) {
-    switch (opt) {
-      case 'i':
-        filename = optarg;
-        break;
-      case 'b':
-        isBinaryFile = 1;
-        break;
-      case 't':
-        threshold = atof(optarg);
-        break;
-      case 'm':
-        max_nclusters = atoi(optarg);
-        break;
-      case 'n':
-        min_nclusters = atoi(optarg);
-        break;
-      case 'r':
-        isRMSE = 1;
-        break;
-      case 'o':
-        isOutput = 1;
-        break;
-      case 'l':
-        nloops = atoi(optarg);
-        break;
-      case '?':
-        Usage(argv[0]);
-        break;
-      default:
-        Usage(argv[0]);
-        break;
+  while (fgets(line, 1024, infile) != NULL) {
+    if (strtok(line, " \t\n") != 0) {
+      // ignore the id (first attribute): nfeatures = 1;
+      while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
+      break;
     }
   }
 
-  if (filename == 0) Usage(argv[0]);
+  // allocate space for features[] and read attributes of all objects
+  buf = (float *)malloc(npoints * nfeatures * sizeof(float));
+  feature = (float **)malloc(npoints * sizeof(float *));
+  feature[0] = (float *)malloc(npoints * nfeatures * sizeof(float));
 
-  // ============== I/O begin ==============//
+  // fixme : svm buffer
+  for (int i = 1; i < npoints; i++) feature[i] = feature[i - 1] + nfeatures;
 
-  // io_timing = omp_get_wtime();
-  if (isBinaryFile) {  // Binary file input
-    int infile;
-    if ((infile = open(filename, O_RDONLY, "0600")) == -1) {
-      fprintf(stderr, "Error: no such file (%s)\n", filename);
-      exit(1);
+  rewind(infile);
+
+  int i = 0;
+  while (fgets(line, 1024, infile) != NULL) {
+    if (strtok(line, " \t\n") == NULL) continue;
+
+    for (int j = 0; j < nfeatures; j++) {
+      buf[i] = atof(strtok(NULL, " ,\t\n"));
+      i++;
     }
-
-    ret = read(infile, &npoints, sizeof(int));
-
-    if (ret == -1) {
-      fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__,
-              __LINE__);
-    }
-
-    ret = read(infile, &nfeatures, sizeof(int));
-    if (ret == -1) {
-      fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__,
-              __LINE__);
-    }
-
-    // allocate space for features[][] and read attributes of all objects
-    // defined in header file
-    buf = (float *)malloc(npoints * nfeatures * sizeof(float));
-    feature = (float **)malloc(npoints * sizeof(float *));
-    feature[0] = (float *)malloc(npoints * nfeatures * sizeof(float));
-
-    // fixme: svm buffer
-    for (i = 1; i < npoints; i++) feature[i] = feature[i - 1] + nfeatures;
-
-    ret = read(infile, buf, npoints * nfeatures * sizeof(float));
-
-    if (ret == -1) {
-      fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__,
-              __LINE__);
-    }
-
-    close(infile);
-  } else {
-    FILE *infile;
-    if ((infile = fopen(filename, "r")) == NULL) {
-      fprintf(stderr, "Error: no such file (%s)\n", filename);
-      exit(1);
-    }
-
-    while (fgets(line, 1024, infile) != NULL) {
-      if (strtok(line, " \t\n") != 0) npoints++;
-    }
-
-    rewind(infile);
-
-    while (fgets(line, 1024, infile) != NULL) {
-      if (strtok(line, " \t\n") != 0) {
-        // ignore the id (first attribute): nfeatures = 1;
-        while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
-        break;
-      }
-    }
-
-    // allocate space for features[] and read attributes of all objects
-    buf = (float *)malloc(npoints * nfeatures * sizeof(float));
-    feature = (float **)malloc(npoints * sizeof(float *));
-    feature[0] = (float *)malloc(npoints * nfeatures * sizeof(float));
-
-    // fixme : svm buffer
-    for (i = 1; i < npoints; i++) feature[i] = feature[i - 1] + nfeatures;
-
-    rewind(infile);
-
-    i = 0;
-
-    while (fgets(line, 1024, infile) != NULL) {
-      if (strtok(line, " \t\n") == NULL) continue;
-
-      for (j = 0; j < nfeatures; j++) {
-        buf[i] = atof(strtok(NULL, " ,\t\n"));
-        i++;
-      }
-    }
-
-    fclose(infile);
   }
 
-  // io_timing = omp_get_wtime() - io_timing;
+  fclose(infile);
 
   printf("\nI/O completed\n");
   printf("\nNumber of objects: %d\n", npoints);
@@ -204,7 +80,7 @@ void KMEANS::Read(int argc, char **argv) {
   free(buf);
 }
 
-void KMEANS::Create_mem() {
+void KmeansBenchmark::Create_mem() {
   // Create buffers
   d_feature = (float *)malloc(npoints * nfeatures * sizeof(float));
   d_feature_swap = (float *)malloc(npoints * nfeatures * sizeof(float));
@@ -213,7 +89,7 @@ void KMEANS::Create_mem() {
   membership_OCL = (int *)malloc(npoints * sizeof(int));
 }
 
-void KMEANS::Swap_features() {
+void KmeansBenchmark::Swap_features() {
   size_t global_work = (size_t)npoints;
   size_t local_work_size = BLOCK_SIZE;
   if (global_work % local_work_size != 0)
@@ -225,7 +101,7 @@ void KMEANS::Swap_features() {
   kmeans_swap(feature[0], d_feature_swap, npoints, nfeatures, lparm);
 }
 
-void KMEANS::Free_mem() {
+void KmeansBenchmark::Free_mem() {
   /*
   free(d_feature);
   free(d_feature_swap);
@@ -236,8 +112,8 @@ void KMEANS::Free_mem() {
   */
 }
 
-void KMEANS::Kmeans_ocl() {
-  int i, j, k;
+void KmeansBenchmark::Kmeans_ocl() {
+  int i, j;
 
   // Ke Wang adjustable local group size 2013/08/07 10:37:33
   // work group size is defined by RD_WG_SIZE_1 or RD_WG_SIZE_1_0 2014/06/10
@@ -274,7 +150,7 @@ void KMEANS::Kmeans_ocl() {
   delta = (float)delta_tmp;
 }
 
-void KMEANS::Kmeans_clustering() {
+void KmeansBenchmark::Kmeans_clustering() {
   int i, j, n = 0;  // counters
   int loop = 0, temp;
   int initial_points = npoints;
@@ -363,7 +239,7 @@ void KMEANS::Kmeans_clustering() {
   tmp_cluster_centres = clusters;
 }
 
-void KMEANS::Clustering() {
+void KmeansBenchmark::Clustering() {
   cluster_centres = NULL;
   index = 0;  // number of iteration to reach the best RMSE
 
@@ -415,7 +291,7 @@ void KMEANS::Clustering() {
 }
 
 // multi-dimensional spatial Euclid distance square
-float KMEANS::euclid_dist_2(float *pt1, float *pt2) {
+float KmeansBenchmark::euclid_dist_2(float *pt1, float *pt2) {
   int i;
   float ans = 0.0;
 
@@ -424,7 +300,7 @@ float KMEANS::euclid_dist_2(float *pt1, float *pt2) {
   return (ans);
 }
 
-int KMEANS::find_nearest_point(float *pt,    // [nfeatures]
+int KmeansBenchmark::find_nearest_point(float *pt,    // [nfeatures]
                                float **pts)  // [npts][nfeatures]
 {
   int index_local, i;
@@ -442,23 +318,17 @@ int KMEANS::find_nearest_point(float *pt,    // [nfeatures]
   return (index_local);
 }
 
-void KMEANS::RMS_err() {
+void KmeansBenchmark::RMS_err() {
   int i;
   int nearest_cluster_index;  // cluster center id with min distance to pt
   float sum_euclid = 0.0;     // sum of Euclidean distance squares
-  float ret;                  // return value
 
   // pass data pointers
   float **feature_loc, **cluster_centres_loc;
   feature_loc = feature;
   cluster_centres_loc = tmp_cluster_centres;
 
-// calculate and sum the sqaure of euclidean distance
-#pragma omp parallel for shared(feature_loc,                       \
-                                cluster_centres_loc) firstprivate( \
-    npoints, nfeatures,                                            \
-    nclusters) private(i, nearest_cluster_index) schedule(static)
-
+  // calculate and sum the sqaure of euclidean distance
   for (i = 0; i < npoints; i++) {
     nearest_cluster_index =
         find_nearest_point(feature_loc[i], cluster_centres_loc);
@@ -471,7 +341,7 @@ void KMEANS::RMS_err() {
   rmse = sqrt(sum_euclid / npoints);
 }
 
-void KMEANS::Display_results() {
+void KmeansBenchmark::Display_results() {
   int i, j;
 
   // cluster center coordinates : displayed only for when k=1
@@ -486,7 +356,7 @@ void KMEANS::Display_results() {
     }
   }
 
-  float len = (float)((max_nclusters - min_nclusters + 1) * nloops);
+  //float len = (float)((max_nclusters - min_nclusters + 1) * nloops);
 
   printf("Number of Iteration: %d\n", nloops);
   // printf("Time for I/O: %.5fsec\n", io_timing);
@@ -523,42 +393,19 @@ void KMEANS::Display_results() {
   }
 }
 
-void KMEANS::Run(int argc, char **argv) {
-  // ----------------- Read input file and allocate features --------------//
-  Read(argc, argv);
-
-  // ----------------- Clustering -------------------------- --------------//
-  // cluster_timing = omp_get_wtime();		// Total clustering time
-  Clustering();
-  // cluster_timing = omp_get_wtime() - cluster_timing;
-
-  //
-  Display_results();
-}
-
-KmeansBenchmark::KmeansBenchmark() {
-}
-
-void KmeansBenchmark::initialize() {
+void KmeansBenchmark::Initialize() {
   Read();
 }
 
-int main(int argc, char **argv) {
-  uint64_t diff;
-  struct timespec start, end;
-
-  clock_gettime(CLOCK_MONOTONIC, &start); /* mark start time */
-  std::unique_ptr<KMEANS> kmeans(new KMEANS);
-
-  printf("WG size of kernel_swap = %d, WG size of kernel_kmeans = %d \n",
-         BLOCK_SIZE, BLOCK_SIZE2);
-
-  kmeans->Run(argc, argv);
-  clock_gettime(CLOCK_MONOTONIC, &end); /* mark the end time */
-
-  diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  printf("Total elapsed time = %llu nanoseconds\n",
-         (long long unsigned int)diff);
-
-  return 0;
+void KmeansBenchmark::Run() {
+  Clustering();
 }
+
+void KmeansBenchmark::Summarize() {
+  Display_results();
+}
+
+void KmeansBenchmark::Verify() {
+}
+
+void KmeansBenchmark::Cleanup() {}

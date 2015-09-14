@@ -54,13 +54,8 @@
 #include <pthread.h>
 #include <sys/time.h>
 
+#include "src/common/benchmark/benchmark.h"
 #include "src/hsa/kmeans_hsa/kernels.h"
-
-double gettime() {
-  struct timeval t;
-  gettimeofday(&t, NULL);
-  return t.tv_sec + t.tv_usec * 1e-6;
-}
 
 #ifndef FLT_MAX
 #define FLT_MAX 3.40282347e+38
@@ -91,18 +86,16 @@ double gettime() {
 
 extern double wtime(void);
 
-class KmeansBenchmark : public Benchmark{
+class KmeansBenchmark : public Benchmark {
  public:
   KmeansBenchmark();
   ~KmeansBenchmark();
 
-  void initialize() override;
-  void run() override;
-  void verify() override;
-  void cleanup() override;
-  void summarize() override;
-
-  void Run(int, char **);
+  void Initialize() override;
+  void Run() override;
+  void Verify() override;
+  void Cleanup() override;
+  void Summarize() override;
 
  private:
   //-----------------------------------------------------------------------//
@@ -157,14 +150,9 @@ class KmeansBenchmark : public Benchmark{
   int *d_membership;
 
   //-----------------------------------------------------------------------//
-  // Usage function
-  //-----------------------------------------------------------------------//
-  void Usage(char *argv0);
-
-  //-----------------------------------------------------------------------//
   // I/O function
   //-----------------------------------------------------------------------//
-  void Read(int argc, char **argv);
+  void Read();
 
   //-----------------------------------------------------------------------//
   // Cluster function

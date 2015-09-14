@@ -55,7 +55,7 @@ HmmBenchmark::HmmBenchmark(int N) {
   }
 }
 
-void HmmBenchmark::initialize() {
+void HmmBenchmark::Initialize() {
   InitParam();
   InitBuffers();
 }
@@ -151,7 +151,7 @@ void HmmBenchmark::InitBuffers() {
   }
 }
 
-void HmmBenchmark::cleanup() { CleanUpBuffers(); }
+void HmmBenchmark::Cleanup() { CleanUpBuffers(); }
 
 void HmmBenchmark::CleanUpBuffers() {
   // CPU buffers
@@ -566,7 +566,7 @@ void HmmBenchmark::EM_expect_sigma(size_t pos) {
 }
 
 //                                      Run HmmBenchmark
-void HmmBenchmark::run() {
+void HmmBenchmark::Run() {
   // Forward Algorithm on GPU
   printf("\n");
   printf("      >> Start  Forward Algorithm on GPU.\n");

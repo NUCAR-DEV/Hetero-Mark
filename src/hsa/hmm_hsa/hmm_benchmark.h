@@ -38,11 +38,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HSA_HIDDENMARKOVMODELHSA_HMMBENCHMARK_H_
-#define SRC_HSA_HIDDENMARKOVMODELHSA_HMMBENCHMARK_H_
+#ifndef SRC_HSA_HMM_HSA_HMMBENCHMARK_H_
+#define SRC_HSA_HMM_HSA_HMMBENCHMARK_H_
 
 #include <cstring>
-#include "src/common/Benchmark/Benchmark.h"
+#include "src/common/benchmark/benchmark.h"
 
 #define __constant const
 
@@ -149,11 +149,11 @@ class HmmBenchmark : public Benchmark {
  public:
   explicit HmmBenchmark(int N);
 
-  void initialize() override;
-  void run() override;
-  void verify() override {}
-  void summarize() override {}
-  void cleanup() override;
+  void Initialize() override;
+  void Run() override;
+  void Verify() override {}
+  void Summarize() override {}
+  void Cleanup() override;
 };
 
-#endif  // SRC_HSA_HIDDENMARKOVMODELHSA_HMMBENCHMARK_H_
+#endif  // SRC_HSA_HMM_HSA_HMMBENCHMARK_H_

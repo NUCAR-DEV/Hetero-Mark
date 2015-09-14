@@ -39,7 +39,7 @@
 #ifndef SRC_HSA_IIR_CL12_HSA_IIR_BENCHMARK_H_
 #define SRC_HSA_IIR_CL12_HSA_IIR_BENCHMARK_H_
 
-#include "src/common/Benchmark/Benchmark.h"
+#include "src/common/benchmark/benchmark.h"
 
 class IirBenchmark : public Benchmark {
   int len;
@@ -60,11 +60,11 @@ class IirBenchmark : public Benchmark {
  public:
   explicit IirBenchmark(int len);
 
-  void initialize() override;
-  void run() override;
-  void verify() override;
-  void cleanup() override;
-  void summarize() override {}
+  void Initialize() override;
+  void Run() override;
+  void Verify() override;
+  void Cleanup() override;
+  void Summarize() override {}
 };
 
 #endif  // SRC_HSA_IIR_CL12_HSA_IIR_BENCHMARK_H_

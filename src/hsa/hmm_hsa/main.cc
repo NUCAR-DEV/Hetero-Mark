@@ -38,35 +38,35 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/Benchmark/BenchmarkRunner.h"
-#include "src/common/Timer/TimeMeasurement.h"
-#include "src/common/Timer/TimeMeasurementImpl.h"
-#include "src/common/CommandLineOption/CommandLineOption.h"
+#include "src/common/benchmark/benchmark_runner.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/common/command_line_option/command_line_option.h"
 #include "src/hsa/hmm_hsa/hmm_benchmark.h"
 
 int main(int argc, const char **argv) {
   // Setup command line option
-  CommandLineOption commandLineOption(
+  CommandLineOption command_line_option(
     "====== Hetero-Mark Hidden Markov Model Benchmark (HSA mode) ======",
     "This benchmarks runs Finite Impulse Response (FIR) filter.");
-  commandLineOption.addArgument("Help", "bool", "false",
+  command_line_option.AddArgument("Help", "bool", "false",
       "-h", "--help", "Dump help information");
-  commandLineOption.addArgument("NumHiddenStates", "integer", "1024",
+  command_line_option.AddArgument("NumHiddenStates", "integer", "1024",
       "-x", "--num-hidden-states",
       "Number of hidden states");
 
-  commandLineOption.parse(argc, argv);
-  if (commandLineOption.getArgumentValue("Help")->asBool()) {
-    commandLineOption.help();
+  command_line_option.Parse(argc, argv);
+  if (command_line_option.GetArgumentValue("Help")->AsBool()) {
+    command_line_option.Help();
     return 0;
   }
-  uint32_t numHiddenStates = commandLineOption
-    .getArgumentValue("NumHiddenStates")->asUInt32();
+  uint32_t num_hidden_states = command_line_option
+    .GetArgumentValue("NumHiddenStates")->AsUInt32();
 
   // Create and run benchmarks
-  std::unique_ptr<HmmBenchmark> benchmark(new HmmBenchmark(numHiddenStates));
+  std::unique_ptr<HmmBenchmark> benchmark(new HmmBenchmark(num_hidden_states));
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
-  runner.run();
-  runner.summarize();
+  runner.Run();
+  runner.Summarize();
 }

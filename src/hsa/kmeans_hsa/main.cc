@@ -38,10 +38,10 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/Benchmark/BenchmarkRunner.h"
-#include "src/common/Timer/TimeMeasurement.h"
-#include "src/common/Timer/TimeMeasurementImpl.h"
-#include "src/common/CommandLineOption/CommandLineOption.h"
+#include "src/common/benchmark/benchmark_runner.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/common/command_line_option/command_line_option.h"
 #include "src/hsa/kmeans_hsa/kmeans_benchmark.h"
 
 int main(int argc, const char **argv) {
@@ -50,29 +50,41 @@ int main(int argc, const char **argv) {
     "====== Hetero-Mark KMEANS Benchmark "
     "(HSA mode) ======",
     "This benchmarks runs kmeans algorithm.");
-  command_line_option.addArgument("Help", "bool", "false",
+  command_line_option.AddArgument("Help", "bool", "false",
       "-h", "--help", "Dump help information");
-  command_line_option.addArgument("Length", "integer", "1024",
-      "-x", "--length",
-      "Length of data");
-  command_line_option.addArgument("Verify", "bool", "false",
+  command_line_option.AddArgument("Length", "string", "input.txt",
+      "-i", "--input-file",
+      "The file that containing data to be clustered");
+  command_line_option.AddArgument("Maximum Clusters", "integer", 
+      "5",
+      "-m", "--max-clusters",
+      "Maximum number of clusters allowed");
+  command_line_option.AddArgument("Minimum Clusters", "integer", 
+      "5",
+      "-n", "--min-clusters",
+      "Minimum number of clusters allowed");
+  command_line_option.AddArgument("Threshold", "float", 
+      "0.001",
+      "-t", "--threshold",
+      "Threshold value");
+  command_line_option.AddArgument("Verify", "bool", "false",
       "-v", "--verify",
       "Verify the calculation result");
 
-  command_line_option.parse(argc, argv);
-  if (command_line_option.getArgumentValue("Help")->asBool()) {
-    command_line_option.help();
+  command_line_option.Parse(argc, argv);
+  if (command_line_option.GetArgumentValue("Help")->AsBool()) {
+    command_line_option.Help();
     return 0;
   }
 
   //uint32_t length = command_line_option.getArgumentValue("Length")->asUInt32();
-  bool verify = command_line_option.getArgumentValue("Verify")->asBool();
+  bool verify = command_line_option.GetArgumentValue("Verify")->AsBool();
 
   // Create and run benchmarks
   std::unique_ptr<KmeansBenchmark> benchmark(new KmeansBenchmark());
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
-  runner.setVerificationMode(verify);
-  runner.run();
-  runner.summarize();
+  runner.set_verification_mode(verify);
+  runner.Run();
+  runner.Summarize();
 }
