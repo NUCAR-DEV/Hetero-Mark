@@ -68,7 +68,7 @@ int main(int argc, const char **argv) {
   bool verify = command_line_option.GetArgumentValue("Verify")->AsBool();
   std::string input = command_line_option.GetArgumentValue("Input File")
     ->AsString();
-  
+
   // Create and setup benchmarks
   std::unique_ptr<PageRankBenchmark> benchmark(new PageRankBenchmark());
   benchmark->SetMatrixInputFile(input.c_str());

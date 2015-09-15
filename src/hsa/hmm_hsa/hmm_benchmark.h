@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HSA_HMM_HSA_HMMBENCHMARK_H_
-#define SRC_HSA_HMM_HSA_HMMBENCHMARK_H_
+#ifndef SRC_HSA_HMM_HSA_HMM_BENCHMARK_H_
+#define SRC_HSA_HMM_HSA_HMM_BENCHMARK_H_
 
 #include <cstring>
 #include "src/common/benchmark/benchmark.h"
@@ -156,4 +156,4 @@ class HmmBenchmark : public Benchmark {
   void Cleanup() override;
 };
 
-#endif  // SRC_HSA_HMM_HSA_HMMBENCHMARK_H_
+#endif  // SRC_HSA_HMM_HSA_HMM_BENCHMARK_H_
