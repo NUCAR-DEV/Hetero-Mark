@@ -9,7 +9,8 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
+ * Author: Xiangyu Li (xili@ece.neu.edu)
+ * Modified by: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -38,84 +39,82 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_H_
+#ifndef PageRank_H
+#define PageRank_H
 
+#include <stdio.h>/* for printf */
+#include <stdint.h>/* for uint64 definition */
+#include <stdlib.h>/* for exit() definition */
+#include <time.h>/* for clock_gettime */
+#include <iostream>
+#include <fstream>
 #include <string>
+#include <cstring>
+#include <sstream>
+#include <time.h>
 
-class ArgumentValue {
- protected:
-  // The value of the argument. It is always stored as an string. Users need
-  // to convert is explicitly into desired types with as<Type> functions
-  std::string value_;
+#include "src/common/benchmark/benchmark.h"
+#include "kernels.h"
 
- public:
-  /**
-   * Constructor. The value of the newly created instance will be set to
-   * empty at the beginning
-   */
-  ArgumentValue() : value_() {
-  }
+class PageRankBenchmark : public Benchmark {
+private:
+	void InitBuffer();
+	void FillBuffer();
+	void FillBufferCpu();
+	void FillBufferGpu();
+	void ExecKernel();
 
-  /**
-   * Set the value in string format
-   */
-  virtual void set_value(const char *value) { value_ = value; }
+	void FreeBuffer();
+	void ReadBuffer();
 
-  /**
-   * Return the value in type of string
-   */
-  virtual const std::string AsString() {
-    return value_;
-  }
+	void ReadCsrMatrix();
+	void ReadDenseVector();
+	void PageRankCpu();
 
-  /**
-   * Return the value in type of int32_t
-   * This function may throw error. The caller should catch the error
-   */
-  virtual int32_t AsInt32() {
-    int32_t integer;
-    integer = stoi(value_);
-    return integer;
-  }
+	std::string fileName1;
+	std::string fileName2;
+	int nnz;
+	int nr;
 
-  /**
-   * Return the value in type of uint32_t
-   */
-  virtual uint32_t AsUInt32() {
-    uint32_t integer;
-    integer = stoi(value_);
-    return integer;
-  }
+	int* rowOffset;
+	int* rowOffset_cpu;
+	int* col;
+	int* col_cpu;
+	float* val;
+	float* val_cpu;
+	float* vector;
+	float* vector_cpu;
+	float* eigenV;
+	float* eigenv_cpu;
 
-  virtual bool AsBool() {
-    if (value_ == "true") {
-      return true;
-    } else if (value_ == "false") {
-      return false;
-    } else {
-      throw std::runtime_error(std::string("Value ") + value_ + " cannot be"
-          "interpreted as bool");
-    }
-  }
+	std::ifstream csrMatrix;
+	std::ifstream denseVector;
+	size_t global_work_size[1];
+	size_t local_work_size[1];
+	int workGroupSize;
+	int maxIter;
+	int isVectorGiven;
 
-  virtual int64_t AsInt64() {
-    int64_t integer;
-    integer = stol(value_);
-    return integer;
-  }
+public:
+	PageRankBenchmark();
 
-  virtual uint64_t AsUInt64() {
-    uint64_t integer;
-    integer = stoul(value_);
-    return integer;
-  }
+        void SetMatrixInputFile(const char *matrix_file) {
+          fileName1 = matrix_file;
+        }
 
-  virtual double AsDouble() {
-    double value;
-    value = stod(value_);
-    return value;
-  }
+        void Initialize() override;
+	void Run() override;
+        void Cleanup() override;
+        void Verify() override;
+        void Summarize() override;
+
+	void CpuRun();
+	float* GetEigenV();
+	void Print();
+	void PrintOutput();
+	int GetLength();
+	float abs(float);
+	
 };
 
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_H_
+#endif

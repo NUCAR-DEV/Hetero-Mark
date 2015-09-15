@@ -9,7 +9,7 @@ include(ExternalProject)
 include(CppLint.cmake)
 set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
-set( CMAKE_CXX_FLAGS "-Wall -Werror -pthread" )
+set( CMAKE_CXX_FLAGS "-Wall -Werror -pthread -g" )
 add_definitions(
   -std=c++11
 )

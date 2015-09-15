@@ -38,84 +38,45 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_H_
+#include "src/common/benchmark/benchmark_runner.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/common/command_line_option/command_line_option.h"
+#include "src/hsa/page_rank_hsa/page_rank_benchmark.h"
 
-#include <string>
+int main(int argc, const char **argv) {
+  // Setup command line option
+  CommandLineOption command_line_option(
+    "====== Hetero-Mark Page Rank Benchmark "
+    "(HSA mode) ======",
+    "This benchmarks runs page rank algorithm.");
+  command_line_option.AddArgument("Help", "bool", "false",
+      "-h", "--help", "Dump help information");
+  command_line_option.AddArgument("Input File", "string", "input.txt",
+      "-i", "--input-file",
+      "The file that containing the input vector");
+  command_line_option.AddArgument("Verify", "bool", "false",
+      "-v", "--verify",
+      "Verify the calculation result");
 
-class ArgumentValue {
- protected:
-  // The value of the argument. It is always stored as an string. Users need
-  // to convert is explicitly into desired types with as<Type> functions
-  std::string value_;
-
- public:
-  /**
-   * Constructor. The value of the newly created instance will be set to
-   * empty at the beginning
-   */
-  ArgumentValue() : value_() {
+  command_line_option.Parse(argc, argv);
+  if (command_line_option.GetArgumentValue("Help")->AsBool()) {
+    command_line_option.Help();
+    return 0;
   }
 
-  /**
-   * Set the value in string format
-   */
-  virtual void set_value(const char *value) { value_ = value; }
+  bool verify = command_line_option.GetArgumentValue("Verify")->AsBool();
+  std::string input = command_line_option.GetArgumentValue("Input File")
+    ->AsString();
+  
+  // Create and setup benchmarks
+  std::unique_ptr<PageRankBenchmark> benchmark(new PageRankBenchmark());
+  benchmark->SetMatrixInputFile(input.c_str());
 
-  /**
-   * Return the value in type of string
-   */
-  virtual const std::string AsString() {
-    return value_;
-  }
-
-  /**
-   * Return the value in type of int32_t
-   * This function may throw error. The caller should catch the error
-   */
-  virtual int32_t AsInt32() {
-    int32_t integer;
-    integer = stoi(value_);
-    return integer;
-  }
-
-  /**
-   * Return the value in type of uint32_t
-   */
-  virtual uint32_t AsUInt32() {
-    uint32_t integer;
-    integer = stoi(value_);
-    return integer;
-  }
-
-  virtual bool AsBool() {
-    if (value_ == "true") {
-      return true;
-    } else if (value_ == "false") {
-      return false;
-    } else {
-      throw std::runtime_error(std::string("Value ") + value_ + " cannot be"
-          "interpreted as bool");
-    }
-  }
-
-  virtual int64_t AsInt64() {
-    int64_t integer;
-    integer = stol(value_);
-    return integer;
-  }
-
-  virtual uint64_t AsUInt64() {
-    uint64_t integer;
-    integer = stoul(value_);
-    return integer;
-  }
-
-  virtual double AsDouble() {
-    double value;
-    value = stod(value_);
-    return value;
-  }
-};
-
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_H_
+  // Run benchmark
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
+  runner.set_verification_mode(verify);
+  runner.Run();
+  runner.Summarize();
+}

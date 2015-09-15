@@ -52,21 +52,25 @@ int main(int argc, const char **argv) {
     "This benchmarks runs kmeans algorithm.");
   command_line_option.AddArgument("Help", "bool", "false",
       "-h", "--help", "Dump help information");
-  command_line_option.AddArgument("Length", "string", "input.txt",
+  command_line_option.AddArgument("Input File", "string", "input.txt",
       "-i", "--input-file",
       "The file that containing data to be clustered");
-  command_line_option.AddArgument("Maximum Clusters", "integer", 
+  command_line_option.AddArgument("Maximum Clusters", "integer",
       "5",
       "-m", "--max-clusters",
       "Maximum number of clusters allowed");
-  command_line_option.AddArgument("Minimum Clusters", "integer", 
+  command_line_option.AddArgument("Minimum Clusters", "integer",
       "5",
       "-n", "--min-clusters",
       "Minimum number of clusters allowed");
-  command_line_option.AddArgument("Threshold", "float", 
+  command_line_option.AddArgument("Threshold", "float",
       "0.001",
       "-t", "--threshold",
       "Threshold value");
+  command_line_option.AddArgument("Number Loops", "integer",
+      "1",
+      "-l", "--loops",
+      "Number of loops");
   command_line_option.AddArgument("Verify", "bool", "false",
       "-v", "--verify",
       "Verify the calculation result");
@@ -77,11 +81,27 @@ int main(int argc, const char **argv) {
     return 0;
   }
 
-  //uint32_t length = command_line_option.getArgumentValue("Length")->asUInt32();
   bool verify = command_line_option.GetArgumentValue("Verify")->AsBool();
+  std::string input = command_line_option.GetArgumentValue("Input File")
+    ->AsString();
+  uint32_t n_loops = command_line_option.GetArgumentValue("Number Loops")
+    ->AsUInt32();
+  double threshold = command_line_option.GetArgumentValue("Threshold")
+    ->AsDouble();
+  uint32_t max_clusters = command_line_option.GetArgumentValue(
+    "Maximum Clusters")->AsUInt32();
+  uint32_t min_clusters = command_line_option.GetArgumentValue(
+    "Minimum Clusters")->AsUInt32();
 
-  // Create and run benchmarks
+  // Create and setup benchmarks
   std::unique_ptr<KmeansBenchmark> benchmark(new KmeansBenchmark());
+  benchmark->SetInputFileName(input.c_str());
+  benchmark->SetNLoops(n_loops);
+  benchmark->SetThreshold(threshold);
+  benchmark->SetMaxClusters(max_clusters);
+  benchmark->SetMinClusters(min_clusters);
+
+  // Run benchmark
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
   runner.set_verification_mode(verify);

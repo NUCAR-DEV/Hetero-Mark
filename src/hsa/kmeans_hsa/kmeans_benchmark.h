@@ -1,41 +1,45 @@
+/*****************************************************************************/
+/*IMPORTANT:  READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.         */
+/*By downloading, copying, installing or using the software you agree        */
+/*to this license.  If you do not agree to this license, do not download,    */
+/*install, copy or use the software.                                         */
+/*                                                                           */
+/*                                                                           */
+/*Copyright (c) 2005 Northwestern University                                 */
+/*All rights reserved.                                                       */
+
+/*Redistribution of the software in source and binary forms,                 */
+/*with or without modification, is permitted provided that the               */
+/*following conditions are met:                                              */
+/*                                                                           */
+/*1       Redistributions of source code must retain the above copyright     */
+/*        notice, this list of conditions and the following disclaimer.      */
+/*                                                                           */
+/*2       Redistributions in binary form must reproduce the above copyright   */
+/*        notice, this list of conditions and the following disclaimer in the */
+/*        documentation and/or other materials provided with the distribution.*/
+/*                                                                            */
+/*3       Neither the name of Northwestern University nor the names of its    */
+/*        contributors may be used to endorse or promote products derived     */
+/*        from this software without specific prior written permission.       */
+/*                                                                            */
+/*THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS    */
+/*IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED      */
+/*TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT AND         */
+/*FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL          */
+/*NORTHWESTERN UNIVERSITY OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT,       */
+/*INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES          */
+/*(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR          */
+/*SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)          */
+/*HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,         */
+/*STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN    */
+/*ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE             */
+/*POSSIBILITY OF SUCH DAMAGE.                                                 */
+/******************************************************************************/
+
 /*
- * Hetero-mark
- *
- * Copyright (c) 2015 Northeastern University
- * All rights reserved.
- *
- * Developed by:
- *   Northeastern University Computer Architecture Research (NUCAR) Group
- *   Northeastern University
- *   http://www.ece.neu.edu/groups/nucar/
- *
- * Modified by: Leiming Yu (ylm@ece.neu.edu)
- *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
- * to deal with the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
- * Software is furnished to do so, subject to the following conditions:
- * 
- *   Redistributions of source code must retain the above copyright notice, 
- *   this list of conditions and the following disclaimers.
- *
- *   Redistributions in binary form must reproduce the above copyright 
- *   notice, this list of conditions and the following disclaimers in the 
- *   documentation and/or other materials provided with the distribution.
- *
- *   Neither the names of NUCAR, Northeastern University, nor the names of 
- *   its contributors may be used to endorse or promote products derived 
- *   from this Software without specific prior written permission.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS WITH THE SOFTWARE.
+ * Mofified by: Leiming Yu (ylm@ece.neu.edu)
+ * Mofified by: Yifan Sun (yifansun@coe.neu.edu)
  */
 
 #ifndef SRC_HSA_KMEANS_HSA_KMEANS_BENCHMARK_H_
@@ -97,13 +101,33 @@ class KmeansBenchmark : public Benchmark {
   void Cleanup() override;
   void Summarize() override;
 
+  void SetInputFileName(const char *filename) {
+    filename_ = filename;
+  }
+
+  void SetNLoops(int n_loops) {
+    this->nloops = n_loops;
+  }
+
+  void SetThreshold(float threshold) {
+    this->threshold = threshold;
+  }
+
+  void SetMaxClusters(int max_clusters) {
+    max_nclusters = max_clusters;
+  }
+
+  void SetMinClusters(int min_clusters) {
+    min_nclusters = min_clusters;
+  }
+
  private:
   //-----------------------------------------------------------------------//
   // Host Parameters
   //-----------------------------------------------------------------------//
 
   // command line options
-  char *filename;
+  std::string filename_;
   int isBinaryFile;
   int isOutput;
   int npoints;
@@ -111,17 +135,18 @@ class KmeansBenchmark : public Benchmark {
   int max_nclusters;
   int min_nclusters;
   int isRMSE;
-  int nloops; // number of iterations for each cluster
-  int index;  // number of iteration to reach the best RMSE
+  int nloops;
+  // number of iteration to reach the best RMSE;
+  int index;
   float threshold;
 
-  float **feature; // host feature
+  float **feature;  // host feature
 
   //-----------------  Clustering parameters ------------------------------//
   int nclusters;   // number of clusters
-  int *membership; // which cluster a data point belongs to
+  int *membership;  // which cluster a data point belongs to
   // hold coordinates of cluster centers
-  float **tmp_cluster_centres; // pointer to the clusters
+  float **tmp_cluster_centres;  // pointer to the clusters
   float **cluster_centres;     // pointer to the clusters
 
   //-----------------  Create_mem -----------------------------------------//
@@ -130,12 +155,12 @@ class KmeansBenchmark : public Benchmark {
   //----------------- Kmeans_clustering parameters ------------------------//
   float **clusters;     // out: [nclusters][nfeatures]
   int *initial;         // used to hold the index of points not yet selected
-  int *new_centers_len; // [nclusters]: no. of points in each cluster
+  int *new_centers_len;  // [nclusters]: no. of points in each cluster
   float **new_centers;  // [nclusters][nfeatures]
   float delta;          // if the point moved
 
   //----------------- rms_err parameters ----------------------------------//
-  float rmse; // RMSE for each clustering
+  float rmse;  // RMSE for each clustering
   float min_rmse;
   float min_rmse_ref;
   int best_nclusters;
@@ -144,9 +169,9 @@ class KmeansBenchmark : public Benchmark {
   // Device Parameters
   //-----------------------------------------------------------------------//
   // device memory
-  float *d_feature; // device feature
+  float *d_feature;  // device feature
   float *d_feature_swap;
-  float *d_cluster; // cluster
+  float *d_cluster;  // cluster
   int *d_membership;
 
   //-----------------------------------------------------------------------//

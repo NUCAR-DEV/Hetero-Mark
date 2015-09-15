@@ -1,7 +1,51 @@
-#include <stdio.h> /* for printf */
-#include <stdint.h>/* for uint64 definition */
-#include <stdlib.h>/* for exit() definition */
-#include <time.h>  /* for clock_gettime */
+/*****************************************************************************/
+/*IMPORTANT:  READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.         */
+/*By downloading, copying, installing or using the software you agree        */
+/*to this license.  If you do not agree to this license, do not download,    */
+/*install, copy or use the software.                                         */
+/*                                                                           */
+/*                                                                           */
+/*Copyright (c) 2005 Northwestern University                                 */
+/*All rights reserved.                                                       */
+
+/*Redistribution of the software in source and binary forms,                 */
+/*with or without modification, is permitted provided that the               */
+/*following conditions are met:                                              */
+/*                                                                           */
+/*1       Redistributions of source code must retain the above copyright     */
+/*        notice, this list of conditions and the following disclaimer.      */
+/*                                                                           */
+/*2       Redistributions in binary form must reproduce the above copyright   */
+/*        notice, this list of conditions and the following disclaimer in the */
+/*        documentation and/or other materials provided with the distribution.*/
+/*                                                                            */
+/*3       Neither the name of Northwestern University nor the names of its    */
+/*        contributors may be used to endorse or promote products derived     */
+/*        from this software without specific prior written permission.       */
+/*                                                                            */
+/*THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS    */
+/*IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED      */
+/*TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT AND         */
+/*FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL          */
+/*NORTHWESTERN UNIVERSITY OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT,       */
+/*INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES          */
+/*(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR          */
+/*SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)          */
+/*HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,         */
+/*STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN    */
+/*ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE             */
+/*POSSIBILITY OF SUCH DAMAGE.                                                 */
+/******************************************************************************/
+
+/*
+ * Mofified by: Leiming Yu (ylm@ece.neu.edu)
+ * Mofified by: Yifan Sun (yifansun@coe.neu.edu)
+ */
+
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
 #include <string.h>
 #include <math.h>
 #include <iostream>
@@ -11,41 +55,39 @@
 
 #include "src/hsa/kmeans_hsa/kmeans_benchmark.h"
 
-#define BILLION 1000000000L
-
-using namespace std;
-
-KmeansBenchmark::KmeansBenchmark() {}
+KmeansBenchmark::KmeansBenchmark() {
+}
 
 KmeansBenchmark::~KmeansBenchmark() {}
 
 void KmeansBenchmark::Read() {
   char line[1024];
+  char *save_line;
   float *buf;
   FILE *infile;
-  if ((infile = fopen(filename, "r")) == NULL) {
-    fprintf(stderr, "Error: no such file (%s)\n", filename);
+  if ((infile = fopen(filename_.c_str(), "r")) == NULL) {
+    fprintf(stderr, "Error: no such file (%s)\n", filename_.c_str());
     exit(1);
   }
 
   while (fgets(line, 1024, infile) != NULL) {
-    if (strtok(line, " \t\n") != 0) npoints++;
+    if (strtok_r(line, " \t\n", &save_line) != 0) npoints++;
   }
 
   rewind(infile);
 
   while (fgets(line, 1024, infile) != NULL) {
-    if (strtok(line, " \t\n") != 0) {
+    if (strtok_r(line, " \t\n", &save_line) != 0) {
       // ignore the id (first attribute): nfeatures = 1;
-      while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
+      while (strtok_r(NULL, " ,\t\n", &save_line) != NULL) nfeatures++;
       break;
     }
   }
 
   // allocate space for features[] and read attributes of all objects
-  buf = (float *)malloc(npoints * nfeatures * sizeof(float));
-  feature = (float **)malloc(npoints * sizeof(float *));
-  feature[0] = (float *)malloc(npoints * nfeatures * sizeof(float));
+  buf = new float[npoints * nfeatures];
+  feature = new float*[npoints];
+  feature[0] = new float[npoints * nfeatures];
 
   // fixme : svm buffer
   for (int i = 1; i < npoints; i++) feature[i] = feature[i - 1] + nfeatures;
@@ -54,10 +96,10 @@ void KmeansBenchmark::Read() {
 
   int i = 0;
   while (fgets(line, 1024, infile) != NULL) {
-    if (strtok(line, " \t\n") == NULL) continue;
+    if (strtok_r(line, " \t\n", &save_line) == NULL) continue;
 
     for (int j = 0; j < nfeatures; j++) {
-      buf[i] = atof(strtok(NULL, " ,\t\n"));
+      buf[i] = atof(strtok_r(NULL, " ,\t\n", &save_line));
       i++;
     }
   }
@@ -82,11 +124,11 @@ void KmeansBenchmark::Read() {
 
 void KmeansBenchmark::Create_mem() {
   // Create buffers
-  d_feature = (float *)malloc(npoints * nfeatures * sizeof(float));
-  d_feature_swap = (float *)malloc(npoints * nfeatures * sizeof(float));
-  d_membership = (int *)malloc(npoints * sizeof(int));
-  d_cluster = (float *)malloc(nclusters * nfeatures * sizeof(float));
-  membership_OCL = (int *)malloc(npoints * sizeof(int));
+  d_feature = new float[npoints * nfeatures];
+  d_feature_swap = new float[npoints * nfeatures];
+  d_membership = new int[npoints];
+  d_cluster = new float[nclusters * nfeatures];
+  membership_OCL = new int[npoints];
 }
 
 void KmeansBenchmark::Swap_features() {
@@ -103,16 +145,16 @@ void KmeansBenchmark::Swap_features() {
 
 void KmeansBenchmark::Free_mem() {
   /*
-  free(d_feature);
-  free(d_feature_swap);
-  free(d_cluster);
-  free(d_membership);
-
-  free(membership_OCL);
+  delete[] d_feature;
+  delete[] d_feature_swap;
+  delete[] d_cluster;
+  delete[] d_membership;
+  delete[] membership_OCL;
   */
 }
 
 void KmeansBenchmark::Kmeans_ocl() {
+  printf("iterating\n");
   int i, j;
 
   // Ke Wang adjustable local group size 2013/08/07 10:37:33
@@ -147,10 +189,11 @@ void KmeansBenchmark::Kmeans_ocl() {
     }
   }
 
-  delta = (float)delta_tmp;
+  delta = static_cast<float>(delta_tmp);
 }
 
 void KmeansBenchmark::Kmeans_clustering() {
+  printf("Running\n");
   int i, j, n = 0;  // counters
   int loop = 0, temp;
   int initial_points = npoints;
@@ -162,21 +205,19 @@ void KmeansBenchmark::Kmeans_clustering() {
     nclusters = npoints;
   }
 
-  // fixme : use svm
   // allocate space for and initialize returning variable clusters[]
-  clusters = (float **)malloc(nclusters * sizeof(float *));
-  clusters[0] = (float *)malloc(nclusters * nfeatures * sizeof(float));
+  clusters = new float*[nclusters];
+  clusters[0] = new float[nclusters * nfeatures];
   for (i = 1; i < nclusters; i++) {
     clusters[i] = clusters[i - 1] + nfeatures;
   }
 
   // initialize the random clusters
-  initial = (int *)malloc(npoints * sizeof(int));
+  initial = new int[npoints];
   for (i = 0; i < npoints; i++) {
     initial[i] = i;
   }
 
-  // fixme
   // randomly pick cluster centers
   for (i = 0; i < nclusters && initial_points >= 0; i++) {
     // n = (int)rand() % initial_points;
@@ -194,16 +235,15 @@ void KmeansBenchmark::Kmeans_clustering() {
   }
 
   // initialize the membership to -1 for all
-  // fixme: use svm
   for (i = 0; i < npoints; i++) {
     membership[i] = -1;
   }
 
   // allocate space for and initialize new_centers_len and new_centers
-  new_centers_len = (int *)calloc(nclusters, sizeof(int));
+  new_centers_len = new int[nclusters]();
+  new_centers = new float*[nclusters];
+  new_centers[0] = new float[nclusters * nfeatures]();
 
-  new_centers = (float **)malloc(nclusters * sizeof(float *));
-  new_centers[0] = (float *)calloc(nclusters * nfeatures, sizeof(float));
   for (i = 1; i < nclusters; i++)
     new_centers[i] = new_centers[i - 1] + nfeatures;
 
@@ -224,15 +264,13 @@ void KmeansBenchmark::Kmeans_clustering() {
     }
 
     c++;
-
-  } while ((delta > threshold) &&
-           (loop++ < 500));  // makes sure loop terminates
+  } while ((delta > threshold) && (loop++ < 500));
 
   printf("iterated %d times\n", c);
 
-  free(new_centers[0]);
-  free(new_centers);
-  free(new_centers_len);
+  delete[] new_centers[0];
+  delete[] new_centers;
+  delete[] new_centers_len;
 
   // clusters is pointed to tmp_cluster_centres
   // return clusters;
@@ -244,12 +282,11 @@ void KmeansBenchmark::Clustering() {
   index = 0;  // number of iteration to reach the best RMSE
 
   // fixme
-  membership = (int *)malloc(npoints * sizeof(int));
+  membership = new int[npoints];
 
   min_rmse_ref = FLT_MAX;
 
   int i;
-  // int	nclusters;			    // number of clusters
 
   // sweep k from min to max_nclusters to find the best number of clusters
   for (nclusters = min_nclusters; nclusters <= max_nclusters; nclusters++) {
@@ -283,11 +320,9 @@ void KmeansBenchmark::Clustering() {
         }
       }
     }
-
-    Free_mem();  // free device memory
   }
 
-  free(membership);
+  delete[] membership;
 }
 
 // multi-dimensional spatial Euclid distance square
@@ -300,9 +335,7 @@ float KmeansBenchmark::euclid_dist_2(float *pt1, float *pt2) {
   return (ans);
 }
 
-int KmeansBenchmark::find_nearest_point(float *pt,    // [nfeatures]
-                               float **pts)  // [npts][nfeatures]
-{
+int KmeansBenchmark::find_nearest_point(float *pt, float **pts) {
   int index_local, i;
   float max_dist = FLT_MAX;
 
@@ -356,7 +389,7 @@ void KmeansBenchmark::Display_results() {
     }
   }
 
-  //float len = (float)((max_nclusters - min_nclusters + 1) * nloops);
+  // float len = (float)((max_nclusters - min_nclusters + 1) * nloops);
 
   printf("Number of Iteration: %d\n", nloops);
   // printf("Time for I/O: %.5fsec\n", io_timing);
@@ -408,4 +441,6 @@ void KmeansBenchmark::Summarize() {
 void KmeansBenchmark::Verify() {
 }
 
-void KmeansBenchmark::Cleanup() {}
+void KmeansBenchmark::Cleanup() {
+    Free_mem();  // free device memory
+}
