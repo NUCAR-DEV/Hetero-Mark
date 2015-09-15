@@ -1,9 +1,9 @@
 set( FOLDER_NAME common )
 set( SUBDIRECTORIES 
-  Benchmark
-  Timer
+  benchmark
+  command_line_option
+  time_measurement
   clUtil
-  CommandLineOption
 )
 
 set( check_target ${FOLDER_NAME}_check )
