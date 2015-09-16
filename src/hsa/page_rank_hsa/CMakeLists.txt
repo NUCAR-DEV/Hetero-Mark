@@ -45,11 +45,11 @@ if (have_snack AND HSA_RUNTIME)
     COMMAND snack.sh -c kernels.cl
     DEPENDS kernels.cl
     COMMENT "Using snack to generate kernel library"
-    WORKING_DIRECTORY ""
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     VERBATIM
   )
-add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
-target_link_libraries(${FOLDER_NAME}
+  add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
+  target_link_libraries(${FOLDER_NAME}
     time_measurement command_line_option benchmark ${HSA_RUNTIME})
 else (have_snack AND HSA_RUNTIME)
   message(WARNING "Skipping ${FOLDER_NAME}, snack.sh or HSA runtime is not found")
