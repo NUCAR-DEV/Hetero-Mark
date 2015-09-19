@@ -1,5 +1,5 @@
 set( FOLDER_NAME common )
-set( SUBDIRECTORIES 
+set( SUBDIRECTORIES
   benchmark
   command_line_option
   time_measurement

@@ -1,3 +1,4 @@
+include(CppLint.cmake)
 set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
 

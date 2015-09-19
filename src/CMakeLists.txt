@@ -1,5 +1,6 @@
 set( FOLDER_NAME src )
 set( SUBDIRECTORIES
+  common
   # Applications
         # Advanced Encryption Standard
 	aes_cl12
