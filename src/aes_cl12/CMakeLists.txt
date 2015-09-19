@@ -1,5 +1,5 @@
 set( BENCHMARK_NAME aes_cl12 )
-set( SOURCE_FILES aes_cl12.cc )
+set( SOURCE_FILES main.cc)
 set( EXTRA_FILES aes_cl12_Kernels.cl in.txt keyfile.txt)
 
 ############################################################################

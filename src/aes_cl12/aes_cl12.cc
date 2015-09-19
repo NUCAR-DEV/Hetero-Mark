@@ -34,7 +34,7 @@
  *
  */
 
-#include "include/aes_cl12.h"
+#include "aes_cl12.h"
 
 #include <string.h>
 #include <inttypes.h>
@@ -61,16 +61,14 @@ AES::~AES() {
   FreeKernel();
 }
 
-int AES::InitFiles(int argc, char const *argv[]) {
-  if (argc != 5) {
-    printf("Usage: aes h/a(hex mode) infile keyfile outfile\n");
-    exit(-1);
-  }
+int AES::InitFiles() {
+  //Note: fp is a struct defined in the header and set using
+  //setInitialParameters(FilePackage filepackage)
 
   // The first argument is the hexMode
-  if (strcmp(argv[1], "h") == 0) {
+  if (strcmp(fp.mode, "h") == 0) {
     hexMode = true;
-  } else if (strcmp(argv[1], "a") == 0) {
+  } else if (strcmp(fp.mode, "a") == 0) {
     hexMode = false;
   } else {
     printf("error: first argument must be \'a\' for ASCII interpretation");
@@ -79,7 +77,7 @@ int AES::InitFiles(int argc, char const *argv[]) {
   }
 
   // The second argument is the infile
-  infile = fopen(argv[2], "r");
+  infile = fopen(fp.in, "r");
   if (!infile) {
     printf("error_in\n");
     exit(-1);
@@ -87,14 +85,14 @@ int AES::InitFiles(int argc, char const *argv[]) {
 
   // The third argument is the keyfile, it must be in hex
   // and broken into two charactor parts (eg. AA BB CC ...)
-  keyfile = fopen(argv[3], "rb");
+  keyfile = fopen(fp.key, "rb");
   if (!keyfile) {
     printf("error_key\n");
     exit(-1);
   }
 
   // The outfile, the encrypted results will be written here
-  outfile = fopen(argv[4], "w");
+  outfile = fopen(fp.out, "w");
   if (!outfile) {
     printf("error (permission error: run with sudo or");
     printf(" in directory the user owns)\n");
@@ -252,12 +250,22 @@ void AES::InitKeys() {
   // results warning
   // Expand key
   KeyExpansion(key);
+
+  //Copy key to GPU
+  cl_int err;
+  clKey = clCreateBuffer(context,
+   CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 
+   60*sizeof(uint32_t), 
+   expanded_key, 
+   &err);
+  if (err != CL_SUCCESS)
+    printf("Error copying key to GPU");
 }
 
-void AES::Run(int argc, char const *argv[]) {
+void AES::Run() {
   cl_int err;
 
-  InitFiles(argc, argv);
+  InitFiles();
   InitKeys();
   InitKernel();
 
@@ -336,7 +344,10 @@ void AES::Run(int argc, char const *argv[]) {
                CL_MEM_COPY_HOST_PTR, 16*spawn*sizeof(uint8_t), states, &status);
 
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &dev_states);
-    checkOpenCLErrors(status, "clSetKernelArg\n");
+    checkOpenCLErrors(status, "clSetKernelArg(data)\n");
+
+    status = clSetKernelArg(kernel, 1, sizeof(cl_mem), &clKey);
+    checkOpenCLErrors(status, "clSetKernelArg(key)\n");
 
     // Calculations to optimize the execution of the kernel
     size_t local_ws;
@@ -376,12 +387,4 @@ void AES::Run(int argc, char const *argv[]) {
   }  // while
 
   fflush(outfile);
-}
-
-int main(int argc, char const *argv[]) {
-  std::unique_ptr<AES> aes(new AES());
-
-  aes->Run(argc, argv);
-
-  return 0;
 }
