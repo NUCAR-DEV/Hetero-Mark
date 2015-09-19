@@ -2,6 +2,9 @@ include(CppLint.cmake)
 set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
 
+include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_BINARY_DIR})
+
 ############################################################################
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
