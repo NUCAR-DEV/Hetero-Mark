@@ -13,6 +13,7 @@ set( SUBDIRECTORIES
   iir_cl12_hsa
   kmeans_hsa
   page_rank_hsa
+  search_and_use
 )
 
 set( check_target ${FOLDER_NAME}_check )
