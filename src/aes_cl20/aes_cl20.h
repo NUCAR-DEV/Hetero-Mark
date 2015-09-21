@@ -1,8 +1,8 @@
 #ifndef AES_H
 #define AES_H
 
-#include <clUtil.h>
-#include "../common/benchmark/benchmark.h"
+#include "src/common/cl_util/cl_util.h"
+#include "src/common/benchmark/benchmark.h"
 
 using namespace clHelper;
 
@@ -115,7 +115,7 @@ public:
         ~AES();
 
         void SetInitialParameters(FilePackage filepackage) { fp = filepackage; }
-        void Initialize() override;
+        void Initialize() override {};
     void Run() override;
     void Verify() override {}
     void Cleanup() override {}

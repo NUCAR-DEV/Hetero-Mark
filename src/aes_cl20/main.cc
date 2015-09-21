@@ -38,15 +38,14 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-
-#include "aes_cl20.h"
-#include "../common/benchmark/benchmark_runner.h"
-#include "../common/time_measurement/time_measurement.h"
-#include "../common/time_measurement/time_measurement_impl.h"
-#include "../common/command_line_option/command_line_option.h"
-
 #include <cstdlib>
 #include <string>
+
+#include "aes_cl20.h"
+#include "src/common/benchmark/benchmark_runner.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/common/command_line_option/command_line_option.h"
 
 int main(int argc, char const *argv[])
 {

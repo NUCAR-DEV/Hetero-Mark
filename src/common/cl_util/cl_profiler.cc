@@ -38,49 +38,10 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_CLUTIL_CLPROFILER_H_
-#define SRC_COMMON_CLUTIL_CLPROFILER_H_
-
-#include <sys/time.h>
-#include <map>
-#include <memory>
-#include <iomanip>
-#include <iostream>
-#include <string>
-#include <utility>
-#include <vector>
+#include <CL/cl.h>
+#include "src/common/cl_util/cl_profiler.h"
 
 namespace clHelper {
-
-class clProfilerMeta {
-  std::string name;
-  double totalTime;
-
-  int limit;
-
-  std::vector<std::unique_ptr<std::pair<double, double>>> timeTable;
-
- public:
-  explicit clProfilerMeta(std::string nm);
-  ~clProfilerMeta();
-
-  /// Getters
-  const std::string getName() const { return name; }
-
-  const double getTotalTime() const { return totalTime; }
-
-  /// Record a profiling information
-  void insert(double st, double ed);
-
-  /// Operator \c << invoking the function Dump on an output stream
-  friend std::ostream &operator<<(std::ostream &os,
-                                  const clProfilerMeta &clProfMeta) {
-    clProfMeta.Dump(os);
-    return os;
-  }
-
-  void Dump(const std::ostream &os) const;
-};
 
 clProfilerMeta::clProfilerMeta(std::string nm)
     : name(nm), totalTime(0.0f), limit(10) {}
@@ -113,38 +74,6 @@ void clProfilerMeta::Dump(std::ostream &os) const {
     }
   }
 }
-
-class clProfiler {
-  // Instance of the singleton
-  static std::unique_ptr<clProfiler> instance;
-
-  // Private constructor for singleton
-  clProfiler();
-
-  // Contains profiling data
-  std::vector<std::unique_ptr<clProfilerMeta>> profilingData;
-
-  // String length
-  size_t strLen;
-
- public:
-  ~clProfiler();
-
-  // Get singleton
-  static clProfiler *getInstance();
-
-  // Get number of record
-  int getNumRecord() const { return profilingData.size(); }
-
-  // Dump kernel profiling time
-  void getExecTime(std::string name = "");
-
-  // Add profiling info
-  void addExecTime(std::string name, double st, double ed);
-
-  // Set max string length
-  void setStringLen(size_t strLen) { this->strLen = strLen; }
-};
 
 // Singleton instance
 std::unique_ptr<clProfiler> clProfiler::instance;
@@ -279,6 +208,5 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ, cl_kernel kernel, cl_uint wd,
 
   return enqueueErr;
 }
-}  // namespace clHelper
 
-#endif  // SRC_COMMON_CLUTIL_CLPROFILER_H_
+}

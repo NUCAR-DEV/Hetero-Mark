@@ -3,7 +3,7 @@ set( SUBDIRECTORIES
   benchmark
   command_line_option
   time_measurement
-  clUtil
+  cl_util
 )
 
 set( check_target ${FOLDER_NAME}_check )

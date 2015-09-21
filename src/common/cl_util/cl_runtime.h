@@ -37,28 +37,78 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS WITH THE SOFTWARE.
  */
+#ifndef SRC_COMMON_CLUTIL_CLRUNTIME_H_
+#define SRC_COMMON_CLUTIL_CLRUNTIME_H_
 
-#ifndef SRC_COMMON_CLUTIL_CLUTIL_H_
-#define SRC_COMMON_CLUTIL_CLUTIL_H_
+#include <CL/cl.h>
+#include <memory>
+#include <string>
+#include <vector>
 
-#include "clError.h"
-#include "clFile.h"
-#include "clRuntime.h"
-#include "clProfiler.h"
+#include "src/common/cl_util/cl_error.h"
 
 namespace clHelper {
 
-#ifndef clSVMFreeSafe
-#define clSVMFreeSafe(ctx, ptr) \
-  if (ptr) clSVMFree(ctx, ptr)
-#endif
+enum clSVMLevel { SVM_COARSE, SVM_FINE, SVM_SYSTEM, SVM_ATOMIC };
 
-#define ENABLE_PROFILE 1
+// OpenCL runtime contains objects don't change much during execution
+// These objects are automatically freed in the destructor
+class clRuntime {
+ private:
+  cl_platform_id platform;
+  cl_device_id device;
+  cl_context context;
 
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clTimeNDRangeKernel
-#endif
+  std::vector<cl_command_queue> cmdQueueRepo;
+
+  // Instance of the singleton
+  static std::unique_ptr<clRuntime> instance;
+
+  // Private constructor for singleton
+  clRuntime();
+
+  int displayPlatformInfo(cl_platform_id plt_id, cl_platform_info plt_info);
+
+  int displayContextInfo(cl_context ctx, cl_context_info ctx_info);
+
+  int displayDeviceInfo(cl_context ctx, cl_context_info device_info);
+
+  void requireCL20();
+
+ public:
+  // Destructor
+  ~clRuntime();
+
+  // Get singleton
+  static clRuntime *getInstance();
+
+  /// Getters
+  cl_platform_id getPlatformID() const { return platform; }
+
+  cl_device_id getDevice() const { return device; }
+
+  cl_context getContext() const { return context; }
+
+  // Get a command queue by index, create it if doesn't exist
+  cl_command_queue getCmdQueue(unsigned index,
+                               cl_command_queue_properties properties = 0);
+
+  // Get number of compute units of current device
+  cl_uint getNumComputeUnit() const;
+
+  // Device SVM support
+  bool isSVMavail(enum clSVMLevel level);
+
+  // Print information of the platform
+  int displayPlatformInfo();
+
+  int displayDeviceInfo();
+
+  int displayContextInfo();
+
+  int displayAllInfo();
+};
 
 }  // namespace clHelper
 
-#endif  // SRC_COMMON_CLUTIL_CLUTIL_H_
+#endif  // SRC_COMMON_CLUTIL_CLRUNTIME_H_
