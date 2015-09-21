@@ -40,6 +40,7 @@
 #include <time.h>/* for clock_gettime */
 #include <string.h>
 #include <CL/cl.h>
+#include "FIR_CL.h"
 // #ifdef GPUPROF
 // #include "inc/GPUPerfAPI.h"
 // #include <dlfcn.h>
@@ -51,38 +52,20 @@
   if (status != CL_SUCCESS) {         \
       printf(message);                \
       printf("\n");                   \
-      return 1;                       \
   }
 
 /** Define custom constants*/
 #define MAX_SOURCE_SIZE (0x100000)
 
 cl_int err;
-cl_uint numTap = 0;
-cl_uint numData = 0;  // Block size
-cl_uint numTotalData = 0;
-cl_uint numBlocks = 0;  // Number of blocks
-cl_float* input = NULL;
-cl_float* output = NULL;
-cl_float* coeff = NULL;
-cl_float* temp_output = NULL;
 
-int main(int argc , char** argv) {
+int FIR::Run() {
   uint64_t diff;
   struct timespec start, end;
 
   // Define custom variables
   int i, count;
   int local;
-
-  if (argc < 3) {  // Inavlid arguments
-    printf(" Usage : ./auto_exec.sh <numBlocks> <numData>\n");
-    exit(0);
-  }
-  if (argc > 1) {  // Read arguments into value
-    numBlocks = atoi(argv[1]);
-    numData = atoi(argv[2]);
-  }
 
   /** Declare the Filter Properties */
   numTap = 1024;
