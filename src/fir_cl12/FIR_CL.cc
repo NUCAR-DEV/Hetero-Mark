@@ -41,6 +41,7 @@
 #include <stdint.h>/* for uint64 definition */
 #include <stdlib.h>/* for exit() definition */
 #include <CL/cl.h>
+#include "FIR_CL.h"
 
 // #ifdef GPUPROF
 // #include "inc/GPUPerfAPI.h"
@@ -53,7 +54,6 @@
   if (status != CL_SUCCESS) {                   \
     printf(message);                            \
     printf("\n");                               \
-    return 1;                                   \
   }
 
 // #ifdef GPUPROF
@@ -64,31 +64,13 @@
 /** Define custom constants*/
 #define MAX_SOURCE_SIZE (0x100000)
 
-cl_uint numTap = 0;
-cl_uint numData = 0;  // Block size
-cl_uint numTotalData = 0;
-cl_uint numBlocks = 0;
-cl_float* input = NULL;
-cl_float* output = NULL;
-cl_float* coeff = NULL;
-cl_float* temp_output = NULL;
-
-int main(int argc , char** argv) {
+void FIR::Run() {
   uint64_t diff;
   struct timespec start, end;
 
   /** Define Custom Variables */
   int i, count;
   int local;
-
-  if (argc < 3) {
-    printf(" Usage : ./auto_exec.sh <numBlocks> <numData>\n");
-    exit(0);
-  }
-  if (argc > 1) {
-    numBlocks = atoi(argv[1]);
-    numData = atoi(argv[2]);
-  }
 
   /** Declare the Filter Properties */
   numTap = 1024;
@@ -410,8 +392,6 @@ int main(int argc , char** argv) {
 
   diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
   printf("elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
-
-  return 0;
 }
 
 // #ifdef GPUPROF

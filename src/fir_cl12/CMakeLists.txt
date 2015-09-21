@@ -1,5 +1,5 @@
 set( BENCHMARK_NAME fir_cl12 )
-set( SOURCE_FILES FIR_CL.cc eventlist.cpp )
+set( SOURCE_FILES FIR_CL.cc eventlist.cpp main.cc FIR_CL.h )
 set( EXTRA_FILES FIR.cl )
 
 ############################################################################
