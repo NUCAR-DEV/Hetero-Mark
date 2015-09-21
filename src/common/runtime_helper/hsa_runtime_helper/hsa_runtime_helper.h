@@ -41,9 +41,11 @@
 #ifndef SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_RUNTIME_HELPER_H_
 #define SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_RUNTIME_HELPER_H_
 
+#include <memory>
 #include <hsa.h>
 
 #include "src/common/runtime_helper/runtime_helper.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_agent.h"
 
 class HsaRuntimeHelper : public RuntimeHelper {
  public:
@@ -51,10 +53,17 @@ class HsaRuntimeHelper : public RuntimeHelper {
   virtual ~HsaRuntimeHelper() {}
 
   void InitializeOrDie() override;
+  HsaAgent *FindGpuOrDie() override;
+  //HsaExecutable *CreateProgramFromSourceOrDie();
+ 
+ protected:
   void SucceedOrDie(const char *message) override;
 
  private:
   hsa_status_t status_;
+  std::unique_ptr<HsaAgent> gpu_;
+
+  static hsa_status_t GetGpuIterateCallback(hsa_agent_t agent, void *data);
 
 };
 

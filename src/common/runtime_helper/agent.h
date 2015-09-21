@@ -38,30 +38,18 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/hsa/search_and_use/search_and_use_benchmark.h"
+#ifndef SRC_COMMON_RUNTIME_HELPER_AGENT_H_
+#define SRC_COMMON_RUNTIME_HELPER_AGENT_H_
 
-#include <iostream>
+#include <string>
 
-SearchAndUseBenchmark::SearchAndUseBenchmark(
-  HsaRuntimeHelper *runtime_helper) :
-  runtime_helper_(runtime_helper){
-}
+#include "src/common/runtime_helper/queue.h"
 
-void SearchAndUseBenchmark::Initialize() {
-  runtime_helper_->InitializeOrDie();
-  HsaAgent *agent = runtime_helper_->FindGpuOrDie();
-  std::cout << agent->GetNameOrDie() << "\n";
-}
+class Agent {
+ public:
+  virtual ~Agent() {}
+  virtual const std::string GetNameOrDie() = 0;
+  virtual Queue *CreateQueueOrDie() = 0;
+};
 
-void SearchAndUseBenchmark::Run() {
-}
-
-void SearchAndUseBenchmark::Verify() {
-}
-
-void SearchAndUseBenchmark::Summarize() {
-}
-
-void SearchAndUseBenchmark::Cleanup() {
-}
-
+#endif  // SRC_COMMON_RUNTIME_HELPER_AGENT_H_

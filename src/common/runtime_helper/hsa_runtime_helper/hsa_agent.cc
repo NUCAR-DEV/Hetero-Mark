@@ -38,30 +38,25 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/hsa/search_and_use/search_and_use_benchmark.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_agent.h"
 
-#include <iostream>
-
-SearchAndUseBenchmark::SearchAndUseBenchmark(
-  HsaRuntimeHelper *runtime_helper) :
-  runtime_helper_(runtime_helper){
+HsaAgent::HsaAgent(hsa_agent_t agent) :
+  agent_(agent) {
 }
 
-void SearchAndUseBenchmark::Initialize() {
-  runtime_helper_->InitializeOrDie();
-  HsaAgent *agent = runtime_helper_->FindGpuOrDie();
-  std::cout << agent->GetNameOrDie() << "\n";
+const std::string HsaAgent::GetNameOrDie() {
+  char name[64] = {0};
+  hsa_agent_get_info(agent_, HSA_AGENT_INFO_NAME, name);
+  return std::string(name);
 }
 
-void SearchAndUseBenchmark::Run() {
-}
+AqlQueue *HsaAgent::CreateQueueOrDie() {
+  hsa_queue_t *queue;
+  hsa_queue_create(agent_, 100, HSA_QUEUE_TYPE_SINGLE, NULL, NULL, 
+      UINT32_MAX, UINT32_MAX, &queue);
 
-void SearchAndUseBenchmark::Verify() {
+  auto aql_queue_unique = std::unique_ptr<AqlQueue>(new AqlQueue(queue));
+  AqlQueue *aql_queue_ptr = aql_queue_unique.get();
+  queues_.push_back(std::move(aql_queue_unique));
+  return aql_queue_ptr;
 }
-
-void SearchAndUseBenchmark::Summarize() {
-}
-
-void SearchAndUseBenchmark::Cleanup() {
-}
-

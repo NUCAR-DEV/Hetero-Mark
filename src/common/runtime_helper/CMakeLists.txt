@@ -1,6 +1,7 @@
 set( FOLDER_NAME runtime_helper )
 set( SRC_FILES )
 set( HEADER_FILES 
+  agent.h
   runtime_helper.h
 )
 set( SUBDIRECTORIES 

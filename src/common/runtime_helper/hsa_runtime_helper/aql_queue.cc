@@ -38,30 +38,7 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/hsa/search_and_use/search_and_use_benchmark.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/aql_queue.h"
 
-#include <iostream>
-
-SearchAndUseBenchmark::SearchAndUseBenchmark(
-  HsaRuntimeHelper *runtime_helper) :
-  runtime_helper_(runtime_helper){
+AqlQueue::AqlQueue(hsa_queue_t *queue) : queue_(queue){
 }
-
-void SearchAndUseBenchmark::Initialize() {
-  runtime_helper_->InitializeOrDie();
-  HsaAgent *agent = runtime_helper_->FindGpuOrDie();
-  std::cout << agent->GetNameOrDie() << "\n";
-}
-
-void SearchAndUseBenchmark::Run() {
-}
-
-void SearchAndUseBenchmark::Verify() {
-}
-
-void SearchAndUseBenchmark::Summarize() {
-}
-
-void SearchAndUseBenchmark::Cleanup() {
-}
-

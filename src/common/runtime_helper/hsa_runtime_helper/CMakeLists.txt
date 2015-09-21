@@ -1,9 +1,13 @@
 set( FOLDER_NAME hsa_runtime_helper )
 set( SRC_FILES 
+  aql_queue.cc
   hsa_runtime_helper.cc
+  hsa_agent.cc
 )
 set( HEADER_FILES 
+  aql_queue.h
   hsa_runtime_helper.h
+  hsa_agent.h
 )
 set( TEST_FILES )
 

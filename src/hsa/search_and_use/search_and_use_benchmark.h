@@ -41,17 +41,17 @@
 #ifndef SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
 #define SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
 
-#include "src/common/benchmark/benchmark.h"
-#include "src/common/runtime_helper/runtime_helper.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <hsa.h>
 #include <hsa_ext_finalize.h>
 
+#include "src/common/benchmark/benchmark.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_runtime_helper.h"
+
 class SearchAndUseBenchmark : public Benchmark {
  public:
-  SearchAndUseBenchmark(RuntimeHelper *runtime_helper);
+  SearchAndUseBenchmark(HsaRuntimeHelper *runtime_helper);
   void Initialize() override;
   void Run() override;
   void Verify() override;
@@ -59,8 +59,7 @@ class SearchAndUseBenchmark : public Benchmark {
   void Cleanup() override;
 
  private:
-  RuntimeHelper *runtime_helper_;
-
+  HsaRuntimeHelper *runtime_helper_;
 };
 
 #endif  // SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_

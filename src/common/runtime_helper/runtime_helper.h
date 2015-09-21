@@ -41,11 +41,14 @@
 #ifndef SRC_COMMON_RUNTIME_HELPER_RUNTIME_HELPER_H_
 #define SRC_COMMON_RUNTIME_HELPER_RUNTIME_HELPER_H_
 
+#include "src/common/runtime_helper/agent.h"
+
 class RuntimeHelper {
  public:
   virtual ~RuntimeHelper() {}
 
   virtual void InitializeOrDie() = 0;
+  virtual Agent *FindGpuOrDie() = 0;
   virtual void SucceedOrDie(const char *message) = 0;
 };
 

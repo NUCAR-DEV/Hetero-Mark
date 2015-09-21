@@ -58,3 +58,30 @@ void HsaRuntimeHelper::InitializeOrDie() {
   SucceedOrDie("Initialize hsa runtime environment");
 }
 
+HsaAgent *HsaRuntimeHelper::FindGpuOrDie() {
+  if (!gpu_.get()){
+    hsa_agent_t agent;
+    status_ = hsa_iterate_agents(HsaRuntimeHelper::GetGpuIterateCallback, 
+        &agent);
+    if (status_ == HSA_STATUS_INFO_BREAK) { status_ = HSA_STATUS_SUCCESS; }
+    SucceedOrDie("Find GPU agent");
+
+    gpu_.reset(new HsaAgent(agent));
+  }
+
+  return gpu_.get();
+}
+
+hsa_status_t HsaRuntimeHelper::GetGpuIterateCallback(
+  hsa_agent_t agent, void *data) {
+  hsa_status_t status;
+  hsa_device_type_t device_type;
+  status = hsa_agent_get_info(agent, HSA_AGENT_INFO_DEVICE, &device_type);
+  if (HSA_STATUS_SUCCESS == status && HSA_DEVICE_TYPE_GPU == device_type) {
+    hsa_agent_t* ret = (hsa_agent_t*)data;
+    *ret = agent;
+    return HSA_STATUS_INFO_BREAK;
+  }
+  return HSA_STATUS_SUCCESS;
+}
+

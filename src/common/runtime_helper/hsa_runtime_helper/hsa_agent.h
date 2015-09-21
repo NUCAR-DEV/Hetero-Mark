@@ -38,30 +38,26 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/hsa/search_and_use/search_and_use_benchmark.h"
+#ifndef SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_AGENT_H_
+#define SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_AGENT_H_
 
-#include <iostream>
+#include <vector>
+#include <memory>
+#include <hsa.h>
 
-SearchAndUseBenchmark::SearchAndUseBenchmark(
-  HsaRuntimeHelper *runtime_helper) :
-  runtime_helper_(runtime_helper){
-}
+#include "src/common/runtime_helper/agent.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/aql_queue.h"
 
-void SearchAndUseBenchmark::Initialize() {
-  runtime_helper_->InitializeOrDie();
-  HsaAgent *agent = runtime_helper_->FindGpuOrDie();
-  std::cout << agent->GetNameOrDie() << "\n";
-}
+class HsaAgent : public Agent {
+ public:
+  HsaAgent(hsa_agent_t agent_);
+  virtual ~HsaAgent() {}
+  const std::string GetNameOrDie() override;
+  AqlQueue *CreateQueueOrDie() override;
 
-void SearchAndUseBenchmark::Run() {
-}
+ private:
+  hsa_agent_t agent_;
+  std::vector<std::unique_ptr<AqlQueue>> queues_;
+};
 
-void SearchAndUseBenchmark::Verify() {
-}
-
-void SearchAndUseBenchmark::Summarize() {
-}
-
-void SearchAndUseBenchmark::Cleanup() {
-}
-
+#endif  // SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_AGENT_H_
