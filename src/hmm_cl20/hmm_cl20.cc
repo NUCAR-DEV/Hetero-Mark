@@ -34,7 +34,7 @@
  *
  */
 
-#include "include/hmm.h"
+#include "hmm_cl20.h"
 #include <stdint.h>/* for uint64 definition */
 #include <time.h>/* for clock_gettime */
 #include <string.h>
@@ -56,8 +56,7 @@ HMM::HMM(int N) {
 }
 
 HMM::~HMM() {
-  // Some cleanup
-  CleanUp();
+   // Cleanup auto-called
 }
 
 void HMM::Init() {
@@ -358,7 +357,7 @@ void HMM::InitBuffers() {
   //}
 }
 
-void HMM::CleanUp() {
+void HMM::Cleanup() {
   CleanUpKernels();
   CleanUpBuffers();
 }
@@ -1323,32 +1322,4 @@ void HMM::Run() {
   printf("      >> Finish EM Algorithm on GPU.\n");
 
   printf("<=End program.\n");
-}
-
-int main(int argc, char const *argv[]) {
-  uint64_t diff;
-  struct timespec start, end;
-  if (argc != 2) {
-    puts("Please specify the number of hidden states N. ");
-    puts("(e.g., $./gpuhmmsr N)\nExit Program!");
-    exit(1);
-  }
-
-  printf("=>Start program.\n");
-
-  int N = atoi(argv[1]);
-
-  // Smart pointer, auto cleanup in destructor
-  std::unique_ptr<HMM> hmm(new HMM(N));
-
-  //      double start = time_stamp();
-  clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
-  hmm->Run();
-  clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
-
-  diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  printf("Total elapsed time = %llu nanoseconds\n",
-         (long long unsigned int) diff);
-
-  return 0;
 }

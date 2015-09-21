@@ -2,10 +2,11 @@
 #define HMM_H
 
 #include "clUtil.h"
+#include "../common/benchmark/benchmark.h"
 
 using namespace clHelper;
 
-class HMM
+class HMM : public Benchmark
 {
 	// Helper objects
 	clRuntime *runtime;
@@ -20,8 +21,6 @@ class HMM
 	cl_context context;
 	cl_program program;
 	cl_command_queue cmdQueue_0;
-	//cl_command_queue cmdQueue_1;
-
 
 	// User managed kernels, no auto release
 	// Forward
@@ -47,16 +46,14 @@ class HMM
 	cl_kernel kernel_EM_sigma_dev;
 	cl_kernel kernel_EM_expect_sigma;	
 
-
-
 	// Parameters
 	static const int TILE = 16;
 	static const int SIZE = 4096;
 	static const int BLOCKSIZE = 256;
 
 	int N;
-	const int T = 64;	// number of (overlapping) windows 
-	const int D = 64;	// number of features
+	int T = 64;	// number of (overlapping) windows 
+	int D = 64;	// number of features
 
 	int bytes_nn; 
 	int bytes_nt; 
@@ -76,49 +73,49 @@ class HMM
 	int blk_rows;
 	int blknum;
 
-
-	// SVM buffers, no auto release
+	// OCL 1.2 buffers
 	// Prepare
-	float *a;          // state transition probability matrix
-	float *b;          // emission probability matrix
-	float *alpha;      // forward probability matrix
-	float *prior;      // prior probability
-	float *observations; // D x T
+	cl_mem a;            // state transition probability matrix
+	cl_mem b;            // emission probability matrix
+	cl_mem alpha;        // forward probability matrix
+	cl_mem prior;        // prior probability
+	cl_mem observations; // D x T
 
 	// Forward
-	float *lll;        // log likelihood
-	float *aT;         // transpose of a
+	cl_mem lll;        // log likelihood
+	cl_mem aT;         // transpose of a
 
 	// Backward 
-	float *beta;
-	float *betaB;
+	cl_mem beta;
+	cl_mem betaB;
 
 	// EM
-	float *xi_sum;        // N x N
-	float *alpha_beta;    // N
-	float *gamma;         // T x N
-	float *alpha_betaB;   // N x N
-	float *xi_sum_tmp;    // N x N
-	float *blk_result;    // intermediate blk results
+	cl_mem xi_sum;          // N x N
+	cl_mem alpha_beta;      // N
+	cl_mem gamma;           // T x N
+	cl_mem alpha_betaB;     // N x N
+	cl_mem xi_sum_tmp;      // N x N
+	cl_mem blk_result;      // intermediate blk results
 
-	float *expect_prior;  // N
-	float *expect_A;      // N xN
-	float *expect_mu;     // N x D
-	float *expect_sigma;  // N x D x D
+	cl_mem expect_prior;    // N
+	cl_mem expect_A;        // N xN
+	cl_mem expect_mu;       // N x D
+	cl_mem expect_sigma;    // N x D x D
 
-	float *gamma_state_sum; // N
-	float *gamma_obs;       // D x T
-	float *sigma_dev;       // D x D
+	cl_mem gamma_state_sum; // N
+	cl_mem gamma_obs;       // D x T
+	cl_mem sigma_dev;       // D x D
 
 	// Constant
-	float *constMem;
+	cl_mem constMem;
 
 
 
 	//-------------------------------------------------------------------------------------------//
 	// Initialize functions
 	//-------------------------------------------------------------------------------------------//
-	void Init();
+    void Initialize() override { Init(); }
+    void Init();
 	void InitParam();
 	void InitCL();
 	void InitKernels();
@@ -127,7 +124,7 @@ class HMM
 	//-------------------------------------------------------------------------------------------//
 	// Clean functions
 	//-------------------------------------------------------------------------------------------//
-	void CleanUp();
+	void Cleanup() override;
 	void CleanUpKernels();
 	void CleanUpBuffers();
 
@@ -137,7 +134,7 @@ class HMM
 	void Forward();
 	void ForwardInitAlpha();
 	void ForwardNormAlpha(int startpos);
-	void TransposeSym(float *a, float *aT, int size);
+	void TransposeSym(int size);
 	void ForwardUpdateAlpha(int pos);
 
 	//-------------------------------------------------------------------------------------------//
@@ -165,14 +162,22 @@ class HMM
 	void EM_sigma_dev(int currentstate);
 	void EM_expect_sigma(size_t pos);
 
-
-
 public:
 	HMM(int N);
 	~HMM();
 
-	void Run();
-
+    void SetInitialParameters(int hidden_states)
+    {
+        if (N >= TILE) {
+            this->N = N;
+        } else {
+            std::cout << "N < " << TILE << std::endl;
+            exit(-1);
+        }
+    }
+	void Run() override;
+    void Verify() override {}
+    void Summarize() override {}
 };
 
 #endif
