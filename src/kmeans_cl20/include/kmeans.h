@@ -56,19 +56,14 @@
 #include <unistd.h>
 #include <float.h>
 
-#include <clUtil.h>
-
+#include "src/common/cl_util/cl_util.h"
+#include "src/common/benchmark/benchmark.h"
 
 #ifdef WIN
 	#include <windows.h>
 #else
 	#include <pthread.h>
 	#include <sys/time.h>
-	double gettime() {
-		struct timeval t;
-		gettimeofday(&t,NULL);
-		return t.tv_sec+t.tv_usec*1e-6;
-	}
 #endif
 
 
@@ -112,12 +107,29 @@ extern double wtime(void);
 
 using namespace clHelper;
 
-class KMEANS
+struct FilePackage
+        {
+        	char* filename;
+        	int binary;
+        	double threshold;
+        	int max_cl;
+        	int min_cl;
+        	int RMSE;
+        	int output;
+        	int nloops;
+        };
+
+class KMEANS : public Benchmark
 {
 public:
 	KMEANS();
 	~KMEANS();
-	void Run(int, char **);
+	void Initialize() override {};
+	void Run() override;
+	void Verify() override {}
+	void Cleanup() override { CleanUpKernels(); }
+	void Summarize() override {}
+	void SetInitialParameters(FilePackage parameters);
 
 private:
 	//-----------------------------------------------------------------------//
@@ -224,12 +236,6 @@ private:
 	void unmap_feature_swap_svm();
 	void unmap_cluster_svm();
 	void unmap_membership_svm();
-
-
-	//-----------------------------------------------------------------------//
-	// Usage function
-	//-----------------------------------------------------------------------//
-	void Usage(char *argv0);
 
 	//-----------------------------------------------------------------------//
 	// I/O function

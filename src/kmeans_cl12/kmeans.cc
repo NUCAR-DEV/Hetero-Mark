@@ -41,7 +41,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-#include <clUtil.h>
+#include "src/common/cl_util/cl_util.h"
 
 #include "include/kmeans.h"
 
@@ -53,7 +53,7 @@ KMEANS::KMEANS() {
 }
 
 KMEANS::~KMEANS() {
-  CleanUpKernels();
+  //Managed by benchmarks
   // Free_mem()
 }
 
@@ -65,23 +65,7 @@ void KMEANS::CleanUpKernels() {
                     "Failed to release kernel kernel2");
 }
 
-
-void KMEANS::Usage(char *argv0) {
-  const char *help =
-    "\nUsage: %s [switches] -i filename\n\n"
-    "    -i filename      :file containing data to be clustered\n"
-    "    -m max_nclusters :maximum number of clusters allowed    [default=5]\n"
-    "    -n min_nclusters :minimum number of clusters allowed    [default=5]\n"
-    "    -t threshold     :threshold value                       [default=0.001]\n"
-    "    -l nloops        :iteration for each number of clusters [default=1]\n"
-    "    -b               :input file is in binary format\n"
-    "    -r               :calculate RMSE                        [default=off]\n"
-    "    -o               :output cluster center coordinates     [default=off]\n";
-  fprintf(stderr, help, argv0);
-  exit(-1);
-}
-
-void KMEANS::Read(int argc, char **argv) {
+void KMEANS::SetInitialParameters(FilePackage parameters) {
   // ------------------------- command line options -----------------------//
   int     opt;
   extern char   *optarg;
@@ -104,33 +88,15 @@ void KMEANS::Read(int argc, char **argv) {
 
   int i, j;
 
-  // obtain command line arguments and change appropriate options
-  while ((opt=getopt(argc, argv, "i:t:m:n:l:bro"))!= EOF) {
-    switch (opt) {
-    case 'i': filename = optarg;
-      break;
-    case 'b': isBinaryFile = 1;
-      break;
-    case 't': threshold = atof(optarg);
-      break;
-    case 'm': max_nclusters = atoi(optarg);
-      break;
-    case 'n': min_nclusters = atoi(optarg);
-      break;
-    case 'r': isRMSE = 1;
-      break;
-    case 'o': isOutput = 1;
-      break;
-    case 'l': nloops = atoi(optarg);
-      break;
-    case '?': Usage(argv[0]);
-      break;
-    default: Usage(argv[0]);
-      break;
-    }
-  }
+filename = parameters.filename;
+isBinaryFile = parameters.binary;
+threshold = parameters.threshold;
+max_nclusters = parameters.max_cl;
+min_nclusters = parameters.min_cl;
+isRMSE = parameters.RMSE;
+isOutput = parameters.output;
+nloops = parameters.nloops;
 
-  if (filename == 0) Usage(argv[0]);
   // ============== I/O begin ==============//
 
   // io_timing = omp_get_wtime();
@@ -674,9 +640,9 @@ void KMEANS::Display_results() {
   }
 }
 
-void KMEANS::Run(int argc, char **argv) {
+void KMEANS::Run() {
   // ----------------- Read input file and allocate features --------------//
-  Read(argc, argv);
+  //Read already started...
 
   // ----------------- Clustering -------------------------- --------------//
   // cluster_timing = omp_get_wtime();  // Total clustering time
@@ -684,24 +650,4 @@ void KMEANS::Run(int argc, char **argv) {
   // cluster_timing = omp_get_wtime() - cluster_timing;
 
   Display_results();
-}
-
-int main(int argc, char** argv) {
-  uint64_t diff;
-  struct timespec start, end;
-
-  clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
-  std::unique_ptr<KMEANS> kmeans(new KMEANS);
-
-  printf("WG size of kernel_swap = %d, WG size of kernel_kmeans = %d \n",
-         BLOCK_SIZE, BLOCK_SIZE2);
-
-  kmeans->Run(argc, argv);
-  clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
-
-  diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  printf("Total elapsed time = %llu nanoseconds\n",
-         (long long unsigned int) diff);
-
-  return 0;
 }
