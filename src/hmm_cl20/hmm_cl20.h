@@ -1,8 +1,8 @@
 #ifndef HMM_H
 #define HMM_H
 
-#include "clUtil.h"
-#include "../common/benchmark/benchmark.h"
+#include "src/common/cl_util/cl_util.h"
+#include "src/common/benchmark/benchmark.h"
 
 using namespace clHelper;
 
@@ -170,7 +170,7 @@ class HMM : public Benchmark
 
 
 public:
-	HMM(int N);
+	HMM();
 	~HMM();
 
     void SetInitialParameters(int hidden_states)

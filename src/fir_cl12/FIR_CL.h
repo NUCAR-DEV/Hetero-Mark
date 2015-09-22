@@ -1,9 +1,9 @@
 #ifndef AES_H
 #define AES_H
 
-#include <clUtil.h>
+#include "src/common/cl_util/cl_util.h"
 #include <CL/cl.h>
-#include "../common/benchmark/benchmark.h"
+#include "src/common/benchmark/benchmark.h"
 
 using namespace clHelper;
 
@@ -20,11 +20,11 @@ private:
     cl_float* temp_output = NULL;
     
 public:
-        FIR();
-        ~FIR();
+        FIR() {};
+        ~FIR() {};
 
     void SetInitialParameters(int data, int blocks) { numBlocks = blocks; numData = data; }
-    void Initialize() override;
+    	void Initialize() override {}
 	void Run() override;
 	void Verify() override {}
 	void Cleanup() override {}

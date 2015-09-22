@@ -41,19 +41,13 @@
 #include <math.h>
 #include <string.h>
 #include <iostream>
-#include <clUtil.h>
+#include "src/common/cl_util/cl_util.h"
 
 using namespace std;
 
 #define BILLION 1000000000L
 
-HMM::HMM(int N) {
-  if (N >= TILE) {
-    this->N = N;
-  } else {
-    std::cout << "N < " << TILE << std::endl;
-    exit(-1);
-  }
+HMM::HMM() {
 }
 
 HMM::~HMM() {

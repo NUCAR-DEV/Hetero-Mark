@@ -59,7 +59,7 @@
 
 cl_int err;
 
-int FIR::Run() {
+void FIR::Run() {
   uint64_t diff;
   struct timespec start, end;
 
@@ -303,6 +303,4 @@ int FIR::Run() {
   clock_gettime(CLOCK_MONOTONIC, &end);
   diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
   printf("elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
-
-  return 0;
 }
