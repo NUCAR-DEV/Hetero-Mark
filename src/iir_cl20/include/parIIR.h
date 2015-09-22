@@ -1,13 +1,14 @@
 #ifndef PARIIR_H
 #define PARIIR_H
 
-#include <clUtil.h>
+#include "src/common/cl_util/cl_util.h"
+#include "src/common/benchmark/benchmark.h"
 
 #define ROWS 256  // num of parallel subfilters
 
 using namespace clHelper;
 
-class ParIIR
+class ParIIR : public Benchmark
 {
 	// Helper objects
 	clRuntime *runtime;
@@ -51,7 +52,7 @@ class ParIIR
 	//-------------------------------------------------------------------------------------------//
 	// Initialize functions
 	//-------------------------------------------------------------------------------------------//
-	void Init();
+	void Initialize() override;
 	void InitParam();
 	void InitCL();
 	void InitKernels();
@@ -60,7 +61,7 @@ class ParIIR
 	//-------------------------------------------------------------------------------------------//
 	// Clear functions
 	//-------------------------------------------------------------------------------------------//
-	void CleanUp();
+	void Cleanup() override;
 	void CleanUpBuffers();
 	void CleanUpKernels();
 
@@ -71,10 +72,13 @@ class ParIIR
 	void compare();
 
 public:
-	ParIIR(int len);
+	void SetInitialParameters(int l) { len = l; }
+	ParIIR();
 	~ParIIR();
 
-	void Run();
+	void Run() override;
+	void Verify() override {}
+	void Summarize() override {}
 };
 
 #endif

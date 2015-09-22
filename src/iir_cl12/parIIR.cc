@@ -40,7 +40,7 @@
 #include <stdlib.h>          /* for exit() definition */
 #include <time.h>            /* for clock_gettime */
 #include <string.h>
-#include <clUtil.h>
+#include "src/common/cl_util/cl_util.h"
 
 #include "include/parIIR.h"
 
@@ -48,20 +48,19 @@
 
 void cpu_pariir(float *x, float *y, float *ns, float *dsec, float c, int len);
 
-ParIIR::ParIIR(int len) {
-  this->len = len;
+ParIIR::ParIIR() {
 }
 
 ParIIR::~ParIIR() {
-  CleanUp();
+  //Auto called
 }
 
-void ParIIR::CleanUp() {
+void ParIIR::Cleanup() {
   CleanUpBuffers();
   CleanUpKernels();
 }
 
-void ParIIR::Init() {
+void ParIIR::Initialize() {
   InitParam();
   InitCL();
   InitKernels();
@@ -279,7 +278,7 @@ void ParIIR::compare() {
 
 void ParIIR::Run() {
   printf("=>Initialize parameters.\n");
-  Init();
+  Initialize();
 
   printf("      >> Start IIR on GPU.\n");
 
@@ -292,36 +291,3 @@ void ParIIR::Run() {
 
   printf("<=End program.\n");
 }
-
-// Main Function
-int main(int argc, char *argv[]) {
-  uint64_t diff;
-  struct timespec start, end;
-  if (argc != 2) {
-    printf("Missing the length of input!\nUsage: ./parIIR Len\n");
-    exit(EXIT_FAILURE);
-  }
-
-  int len = atoi(argv[1]);
-
-  // compute the cpu results
-  // cpu_pariir(x, cpu_y, nsec, dsec, c, len);
-
-  // opencl 1.2
-  std::unique_ptr<ParIIR> parIIR(new ParIIR(len));
-
-  clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
-
-  parIIR->Run();
-
-  clock_gettime(CLOCK_MONOTONIC, &end);/* mark the end time */
-
-  diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  printf("Total elapsed time = %llu nanoseconds\n",
-         (long long unsigned int) diff);
-
-  return 0;
-}
-
-
-
