@@ -5,21 +5,21 @@
 #include <stdint.h>/* for uint64 definition */
 #include <time.h>/* for clock_gettime */
 
-#include <clUtil.h>
+#include "src/common/cl_util/cl_util.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <cstring>
 #include <sstream>
-#include <time.h>
 #include <cmath>
+#include "src/common/benchmark/benchmark.h"
 
 #define BILLION 1000000000L
 
 using namespace clHelper;
 //using namespace std;
 
-class PageRank
+class PageRank : public Benchmark
 {
 private:
 	clRuntime *runtime;
@@ -75,11 +75,16 @@ private:
 
 public:
 	PageRank();
-	PageRank(std::string, std::string);
-	PageRank(std::string);
-	~PageRank();
 
-	void Run();
+	~PageRank();
+	void SetInitialParameters(std::string fName1, std::string fName2);
+	void SetInitialParameters(std::string fName1);
+	void Initialize() override {}
+	void Run() override;
+	void Verify() override {}
+	void Cleanup() override {}
+	void Summarize() override {}
+
 	void CpuRun();
 	void Test();
 	float* GetEigenV();
