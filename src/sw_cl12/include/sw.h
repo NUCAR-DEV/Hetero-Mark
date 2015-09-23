@@ -1,11 +1,12 @@
 #ifndef SHALLOW_WATER_H
 #define SHALLOW_WATER_H
 
-#include <clUtil.h>
+#include "src/common/cl_util/cl_util.h"
+#include "src/common/benchmark/benchmark.h"
 
 using namespace clHelper;
 
-class ShallowWater
+class ShallowWater : public Benchmark
 {
         clRuntime *runtime;
         clFile    *file;
@@ -77,7 +78,11 @@ public:
         ShallowWater(unsigned _M = 2048, unsigned _N = 2048);
         ~ShallowWater();
 
-        void Run();
+        void Initialize() override {};
+        void Run() override;
+        void Verify() override {}
+        void Cleanup() override {}
+        void Summarize() override {}
         
 };
 
