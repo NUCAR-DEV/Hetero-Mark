@@ -60,3 +60,9 @@ AqlQueue *HsaAgent::CreateQueueOrDie() {
   queues_.push_back(std::move(aql_queue_unique));
   return aql_queue_ptr;
 }
+
+hsa_isa_t HsaAgent::GetIsa() {
+  hsa_isa_t isa;
+  hsa_agent_get_info(agent_, HSA_AGENT_INFO_ISA, &isa);
+  return isa;
+}

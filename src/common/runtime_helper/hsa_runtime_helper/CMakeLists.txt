@@ -3,11 +3,13 @@ set( SRC_FILES
   aql_queue.cc
   hsa_runtime_helper.cc
   hsa_agent.cc
+  hsa_executable.cc
 )
 set( HEADER_FILES 
   aql_queue.h
   hsa_runtime_helper.h
   hsa_agent.h
+  hsa_executable.cc
 )
 set( TEST_FILES )
 

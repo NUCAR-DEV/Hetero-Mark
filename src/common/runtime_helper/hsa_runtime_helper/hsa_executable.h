@@ -38,29 +38,18 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
-#define SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
+#ifndef SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_EXECUTABLE_H_
+#define SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_EXECUTABLE_H_
 
-#include <cstdio>
-#include <cstdlib>
 #include <hsa.h>
-#include <hsa_ext_finalize.h>
 
-#include "src/common/benchmark/benchmark.h"
-#include "src/common/runtime_helper/hsa_runtime_helper/hsa_runtime_helper.h"
-#include "src/common/runtime_helper/hsa_runtime_helper/hsa_executable.h"
-
-class SearchAndUseBenchmark : public Benchmark {
+class HsaExecutable {
  public:
-  SearchAndUseBenchmark(HsaRuntimeHelper *runtime_helper);
-  void Initialize() override;
-  void Run() override;
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
+  HsaExecutable(hsa_executable_t executable);
+  virtual ~HsaExecutable() {}
 
  private:
-  HsaRuntimeHelper *runtime_helper_;
+  hsa_executable_t executable_;
 };
 
-#endif  // SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
+#endif  // SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_EXECUTABLE_H_

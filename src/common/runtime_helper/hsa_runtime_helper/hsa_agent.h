@@ -54,6 +54,8 @@ class HsaAgent : public Agent {
   virtual ~HsaAgent() {}
   const std::string GetNameOrDie() override;
   AqlQueue *CreateQueueOrDie() override;
+  hsa_agent_t *GetNative() { return &agent_; }
+  hsa_isa_t GetIsa();
 
  private:
   hsa_agent_t agent_;

@@ -48,9 +48,18 @@ SearchAndUseBenchmark::SearchAndUseBenchmark(
 }
 
 void SearchAndUseBenchmark::Initialize() {
+  // Initialize runtime
   runtime_helper_->InitializeOrDie();
+
+  // Find GPU device
   HsaAgent *agent = runtime_helper_->FindGpuOrDie();
   std::cout << agent->GetNameOrDie() << "\n";
+
+  // Create program from source
+  runtime_helper_->CreateProgramFromSourceOrDie(
+      "kernels.brig", agent);
+ 
+
 }
 
 void SearchAndUseBenchmark::Run() {

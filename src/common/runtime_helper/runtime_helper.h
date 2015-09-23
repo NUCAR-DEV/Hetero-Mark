@@ -49,7 +49,6 @@ class RuntimeHelper {
 
   virtual void InitializeOrDie() = 0;
   virtual Agent *FindGpuOrDie() = 0;
-  virtual void SucceedOrDie(const char *message) = 0;
 };
 
 #endif  // SRC_COMMON_RUNTIME_HELPER_RUNTIME_HELPER_H_

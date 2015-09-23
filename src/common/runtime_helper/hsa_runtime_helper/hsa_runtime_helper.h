@@ -42,10 +42,14 @@
 #define SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_RUNTIME_HELPER_H_
 
 #include <memory>
+#include <vector>
 #include <hsa.h>
+#include <hsa_ext_finalize.h>
 
 #include "src/common/runtime_helper/runtime_helper.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_agent.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_error_checker.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_executable.h"
 
 class HsaRuntimeHelper : public RuntimeHelper {
  public:
@@ -54,16 +58,28 @@ class HsaRuntimeHelper : public RuntimeHelper {
 
   void InitializeOrDie() override;
   HsaAgent *FindGpuOrDie() override;
-  //HsaExecutable *CreateProgramFromSourceOrDie();
+  HsaExecutable *CreateProgramFromSourceOrDie(const char *filename,
+      HsaAgent *agent);
  
- protected:
-  void SucceedOrDie(const char *message) override;
-
  private:
   hsa_status_t status_;
+  HsaErrorChecker error_checker_;
   std::unique_ptr<HsaAgent> gpu_;
+  std::vector<std::unique_ptr<HsaExecutable>> executables_;
 
   static hsa_status_t GetGpuIterateCallback(hsa_agent_t agent, void *data);
+
+  int LoadBrigModuleFromFile(const char *filename, hsa_ext_module_t *module);
+  hsa_ext_program_t CreateProgram();
+  void AddModuleToProgram(
+      hsa_ext_program_t program, hsa_ext_module_t module);
+  hsa_code_object_t FinalizeProgram(hsa_ext_program_t program, hsa_isa_t isa);
+  void DestroyProgram(hsa_ext_program_t program);
+  hsa_executable_t CreateExecutable();
+  void ExecutableLoadCodeObject(
+      hsa_executable_t executable, hsa_agent_t agent, 
+      hsa_code_object_t code_object);
+  void FreezeExecutable(hsa_executable_t executable);
 
 };
 
