@@ -40,7 +40,7 @@
 #include <time.h>/* for clock_gettime */
 #include <string.h>
 #include <CL/cl.h>
-#include "FIR_CL.h"
+#include "include/FIR_CL.h"
 // #ifdef GPUPROF
 // #include "inc/GPUPerfAPI.h"
 // #include <dlfcn.h>

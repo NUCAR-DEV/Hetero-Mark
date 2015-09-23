@@ -33,7 +33,7 @@
  * It takes a plain text or hex file and encrypts it with a given key
  *
  */
-#include "aes_cl20.h"
+#include "include/aes_cl20.h"
 
 #include <string.h>
 #include <inttypes.h>

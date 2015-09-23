@@ -39,7 +39,7 @@
  */
 
 
-#include "aes_cl12.h"
+#include "include/aes_cl12.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"

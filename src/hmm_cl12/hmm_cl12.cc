@@ -34,7 +34,7 @@
  *
  */
 
-#include "hmm_cl12.h"
+#include "include/hmm_cl12.h"
 
 #include <stdint.h>/* for uint64 definition */
 #include <time.h>/* for clock_gettime */

@@ -34,7 +34,7 @@
  *
  */
 
-#include "aes_cl12.h"
+#include "include/aes_cl12.h"
 
 #include <string.h>
 #include <inttypes.h>

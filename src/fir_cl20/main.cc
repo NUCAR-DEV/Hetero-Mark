@@ -39,7 +39,7 @@
  */
 
 
-#include "FIR_CL.h"
+#include "include/FIR_CL.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
