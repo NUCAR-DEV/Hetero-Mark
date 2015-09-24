@@ -37,8 +37,8 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS WITH THE SOFTWARE.
  */
-#ifndef SRC_COMMON_CLUTIL_CLFILE_H_
-#define SRC_COMMON_CLUTIL_CLFILE_H_
+#ifndef SRC_COMMON_CL_UTIL_CL_FILE_H_
+#define SRC_COMMON_CL_UTIL_CL_FILE_H_
 
 #include <stdio.h>
 #include <memory>
@@ -81,4 +81,4 @@ class clFile {
 
 }  // namespace clHelper
 
-#endif  // SRC_COMMON_CLUTIL_CLFILE_H_
+#endif  // SRC_COMMON_CL_UTIL_CL_FILE_H_

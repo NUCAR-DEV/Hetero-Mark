@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_CLUTIL_CLUTIL_H_
-#define SRC_COMMON_CLUTIL_CLUTIL_H_
+#ifndef SRC_COMMON_CL_UTIL_CL_UTIL_H_
+#define SRC_COMMON_CL_UTIL_CL_UTIL_H_
 
 #include "src/common/cl_util/cl_error.h"
 #include "src/common/cl_util/cl_file.h"
@@ -61,4 +61,4 @@ namespace clHelper {
 
 }  // namespace clHelper
 
-#endif  // SRC_COMMON_CLUTIL_CLUTIL_H_
+#endif  // SRC_COMMON_CL_UTIL_CL_UTIL_H_

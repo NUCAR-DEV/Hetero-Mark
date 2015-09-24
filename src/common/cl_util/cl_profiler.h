@@ -38,10 +38,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_CLUTIL_CLPROFILER_H_
-#define SRC_COMMON_CLUTIL_CLPROFILER_H_
+#ifndef SRC_COMMON_CL_UTIL_CL_PROFILER_H_
+#define SRC_COMMON_CL_UTIL_CL_PROFILER_H_
 
 #include <sys/time.h>
+#include <CL/cl.h>
 #include <map>
 #include <memory>
 #include <iomanip>
@@ -49,7 +50,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <CL/cl.h>
 
 #include "src/common/cl_util/cl_runtime.h"
 
@@ -78,11 +78,11 @@ class clProfilerMeta {
   /// Operator \c << invoking the function Dump on an output stream
   friend std::ostream &operator<<(std::ostream &os,
                                   const clProfilerMeta &clProfMeta) {
-    clProfMeta.Dump(os);
+    clProfMeta.Dump(&os);
     return os;
   }
 
-  void Dump(std::ostream &os) const;
+  void Dump(std::ostream *os) const;
 };
 
 class clProfiler {
@@ -127,9 +127,6 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ, cl_kernel kernel, cl_uint wd,
                            const size_t *glbOs, const size_t *glbSz,
                            const size_t *locSz, cl_uint numEvt,
                            const cl_event *evtLst, cl_event *evt);
- 
- 
-
 }  // namespace clHelper
 
-#endif  // SRC_COMMON_CLUTIL_CLPROFILER_H_
+#endif  // SRC_COMMON_CL_UTIL_CL_PROFILER_H_

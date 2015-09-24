@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_CLUTIL_CLERROR_H_
-#define SRC_COMMON_CLUTIL_CLERROR_H_
+#ifndef SRC_COMMON_CL_UTIL_CL_ERROR_H_
+#define SRC_COMMON_CL_UTIL_CL_ERROR_H_
 
 #include <CL/cl.h>
 #include <string>
@@ -217,4 +217,4 @@ static int checkVal(T input, T reference, std::string message,
   }
 }
 
-#endif  // SRC_COMMON_CLUTIL_CLERROR_H_
+#endif  // SRC_COMMON_CL_UTIL_CL_ERROR_H_

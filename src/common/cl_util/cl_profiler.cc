@@ -53,8 +53,8 @@ void clProfilerMeta::insert(double st, double ed) {
   totalTime += (ed - st);
 }
 
-void clProfilerMeta::Dump(std::ostream &os) const {
-  os << "\t" << name << " : " << totalTime << " ms" << std::endl;
+void clProfilerMeta::Dump(std::ostream *os) const {
+  (*os) << "\t" << name << " : " << totalTime << " ms" << std::endl;
 
   // Only dump detailed data when size is not too large
   int count = 0;
@@ -62,13 +62,13 @@ void clProfilerMeta::Dump(std::ostream &os) const {
     double st = elem.get()->first;
     double ed = elem.get()->second;
     double lt = ed - st;
-    os << "\t\t" << std::setprecision(32) << st << " - "
+    (*os) << "\t\t" << std::setprecision(32) << st << " - "
        << std::setprecision(32) << ed << ": " << std::setprecision(20) << lt
        << " ms, #" << count << std::endl;
 
     count++;
     if (count > limit) {
-      os << "\t\t......" << timeTable.size() - count << " more, "
+      (*os) << "\t\t......" << timeTable.size() - count << " more, "
          << timeTable.size() << " records in total\n";
       break;
     }

@@ -37,8 +37,8 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS WITH THE SOFTWARE.
  */
-#ifndef SRC_COMMON_CLUTIL_CLRUNTIME_H_
-#define SRC_COMMON_CLUTIL_CLRUNTIME_H_
+#ifndef SRC_COMMON_CL_UTIL_CL_RUNTIME_H_
+#define SRC_COMMON_CL_UTIL_CL_RUNTIME_H_
 
 #include <CL/cl.h>
 #include <memory>
@@ -111,4 +111,4 @@ class clRuntime {
 
 }  // namespace clHelper
 
-#endif  // SRC_COMMON_CLUTIL_CLRUNTIME_H_
+#endif  // SRC_COMMON_CL_UTIL_CL_RUNTIME_H_
