@@ -41,15 +41,27 @@
 #ifndef SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_EXECUTABLE_H_
 #define SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_EXECUTABLE_H_
 
+#include <memory>
+#include <vector>
 #include <hsa.h>
+
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_kernel.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_error_checker.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_agent.h"
 
 class HsaExecutable {
  public:
-  HsaExecutable(hsa_executable_t executable);
+  HsaExecutable(hsa_executable_t executable, 
+      HsaErrorChecker *error_checker);
   virtual ~HsaExecutable() {}
 
+  HsaKernel *GetKernel(const char *name, HsaAgent *agent);
+
  private:
+  hsa_status_t status_;
   hsa_executable_t executable_;
+  HsaErrorChecker *error_checker_;
+  std::vector<std::unique_ptr<HsaKernel>> kernels_;
 };
 
 #endif  // SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_EXECUTABLE_H_

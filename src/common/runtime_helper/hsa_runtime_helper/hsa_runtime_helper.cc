@@ -43,11 +43,12 @@
 #include <cstring>
 #include <iostream>
 
-HsaRuntimeHelper::HsaRuntimeHelper() {}
+HsaRuntimeHelper::HsaRuntimeHelper(HsaErrorChecker *error_checker) :
+  error_checker_(error_checker) {}
 
 void HsaRuntimeHelper::InitializeOrDie() {
   status_ = hsa_init();
-  error_checker_.SucceedOrDie("Initialize hsa runtime environment", status_);
+  error_checker_->SucceedOrDie("Initialize hsa runtime environment", status_);
 }
 
 HsaAgent *HsaRuntimeHelper::FindGpuOrDie() {
@@ -56,9 +57,8 @@ HsaAgent *HsaRuntimeHelper::FindGpuOrDie() {
     status_ = hsa_iterate_agents(HsaRuntimeHelper::GetGpuIterateCallback, 
         &agent);
     if (status_ == HSA_STATUS_INFO_BREAK) { status_ = HSA_STATUS_SUCCESS; }
-    error_checker_.SucceedOrDie("Find GPU agent", status_);
-
-    gpu_.reset(new HsaAgent(agent));
+    error_checker_->SucceedOrDie("Find GPU agent", status_);
+    gpu_.reset(new HsaAgent(agent, error_checker_));
   }
 
   return gpu_.get();
@@ -108,7 +108,7 @@ HsaExecutable *HsaRuntimeHelper::CreateProgramFromSourceOrDie(
 
   // Create executable object
   auto executable_unique = std::unique_ptr<HsaExecutable>(
-      new HsaExecutable(executable));
+      new HsaExecutable(executable, error_checker_));
   HsaExecutable *executable_ptr = executable_unique.get();
   executables_.push_back(std::move(executable_unique));
 
@@ -145,14 +145,14 @@ hsa_ext_program_t HsaRuntimeHelper::CreateProgram() {
   memset(&program, 0, sizeof(hsa_ext_program_t));
   status_ = hsa_ext_program_create(HSA_MACHINE_MODEL_LARGE, HSA_PROFILE_FULL, 
       HSA_DEFAULT_FLOAT_ROUNDING_MODE_DEFAULT, NULL, &program);
-  error_checker_.SucceedOrDie("Create the program", status_);
+  error_checker_->SucceedOrDie("Create the program", status_);
   return program;
 }
 
 void HsaRuntimeHelper::AddModuleToProgram(hsa_ext_program_t program, 
       hsa_ext_module_t module) {
   status_ = hsa_ext_program_add_module(program, module);
-  error_checker_.SucceedOrDie("Adding the brig module to the program", 
+  error_checker_->SucceedOrDie("Adding the brig module to the program", 
       status_);
 }
 
@@ -169,7 +169,7 @@ hsa_code_object_t HsaRuntimeHelper::FinalizeProgram(
   // Finalize
   status_ = hsa_ext_program_finalize(program, isa, 0, control_directives, "", 
       HSA_CODE_OBJECT_TYPE_PROGRAM, &code_object);
-  error_checker_.SucceedOrDie("Finalizing the program", status_);
+  error_checker_->SucceedOrDie("Finalizing the program", status_);
 
   // Return code object
   return code_object;
@@ -177,14 +177,14 @@ hsa_code_object_t HsaRuntimeHelper::FinalizeProgram(
 
 void HsaRuntimeHelper::DestroyProgram(hsa_ext_program_t program) {
   status_ = hsa_ext_program_destroy(program);
-  error_checker_.SucceedOrDie("Destroying the program", status_);
+  error_checker_->SucceedOrDie("Destroying the program", status_);
 }
 
 hsa_executable_t HsaRuntimeHelper::CreateExecutable() {
   hsa_executable_t executable;
   status_ = hsa_executable_create(HSA_PROFILE_FULL, 
       HSA_EXECUTABLE_STATE_UNFROZEN, "", &executable);
-  error_checker_.SucceedOrDie("Create the executable", status_);
+  error_checker_->SucceedOrDie("Create the executable", status_);
   return executable;
 }
 
@@ -192,10 +192,10 @@ void HsaRuntimeHelper::ExecutableLoadCodeObject(hsa_executable_t executable,
     hsa_agent_t agent, hsa_code_object_t code_object) {
   status_ = hsa_executable_load_code_object(executable, agent, 
       code_object, "");
-  error_checker_.SucceedOrDie("Loading the code object", status_);
+  error_checker_->SucceedOrDie("Loading the code object", status_);
 }
 
 void HsaRuntimeHelper::FreezeExecutable(hsa_executable_t executable) {
   status_ = hsa_executable_freeze(executable, "");
-  error_checker_.SucceedOrDie("Freeze the executable", status_);
+  error_checker_->SucceedOrDie("Freeze the executable", status_);
 }

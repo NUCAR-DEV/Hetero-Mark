@@ -40,5 +40,23 @@
 
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_executable.h"
 
-HsaExecutable::HsaExecutable(hsa_executable_t executable) : 
-  executable_(executable) {}
+HsaExecutable::HsaExecutable(hsa_executable_t executable,
+    HsaErrorChecker *error_checker) : 
+  executable_(executable),
+  error_checker_(error_checker) {}
+
+HsaKernel *HsaExecutable::GetKernel(const char *name, HsaAgent *agent) {
+  hsa_executable_symbol_t symbol;
+  status_ = hsa_executable_get_symbol(executable_, NULL, name, 
+      *(hsa_agent_t *)agent->GetNative(), 0, &symbol);
+  error_checker_->SucceedOrDie("Extract the symbol from the executable", status_);
+
+  // Create the kernel object
+  auto kernel_unique = std::unique_ptr<HsaKernel>(
+      new HsaKernel(symbol, error_checker_));
+  HsaKernel *kernel_ptr = kernel_unique.get();
+  kernels_.push_back(std::move(kernel_unique));
+
+  // return the kernel
+  return kernel_ptr;
+}

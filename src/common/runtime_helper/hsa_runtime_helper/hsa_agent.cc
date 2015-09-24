@@ -40,20 +40,23 @@
 
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_agent.h"
 
-HsaAgent::HsaAgent(hsa_agent_t agent) :
-  agent_(agent) {
+HsaAgent::HsaAgent(hsa_agent_t agent, HsaErrorChecker *error_checker) :
+  agent_(agent), 
+  error_checker_(error_checker){
 }
 
 const std::string HsaAgent::GetNameOrDie() {
   char name[64] = {0};
-  hsa_agent_get_info(agent_, HSA_AGENT_INFO_NAME, name);
+  status_ = hsa_agent_get_info(agent_, HSA_AGENT_INFO_NAME, name);
+  error_checker_->SucceedOrDie("Get agent name", status_);
   return std::string(name);
 }
 
 AqlQueue *HsaAgent::CreateQueueOrDie() {
   hsa_queue_t *queue;
-  hsa_queue_create(agent_, 100, HSA_QUEUE_TYPE_SINGLE, NULL, NULL, 
+  status_ = hsa_queue_create(agent_, 1024, HSA_QUEUE_TYPE_SINGLE, NULL, NULL, 
       UINT32_MAX, UINT32_MAX, &queue);
+  error_checker_->SucceedOrDie("CreateQueue", status_);
 
   auto aql_queue_unique = std::unique_ptr<AqlQueue>(new AqlQueue(queue));
   AqlQueue *aql_queue_ptr = aql_queue_unique.get();
@@ -63,6 +66,7 @@ AqlQueue *HsaAgent::CreateQueueOrDie() {
 
 hsa_isa_t HsaAgent::GetIsa() {
   hsa_isa_t isa;
-  hsa_agent_get_info(agent_, HSA_AGENT_INFO_ISA, &isa);
+  status_ = hsa_agent_get_info(agent_, HSA_AGENT_INFO_ISA, &isa);
+  error_checker_->SucceedOrDie("Get device isa", status_);
   return isa;
 }

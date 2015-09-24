@@ -14,7 +14,7 @@ set( TEST_FILES )
 # Group samples by folder
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-file( COPY kernels.hsail DESTINATION . )
+#file( COPY kernels.hsail DESTINATION . )
 
 # Check if snack is available
 find_file(have_snack NAMES snack.sh DOC "snack.sh file") 

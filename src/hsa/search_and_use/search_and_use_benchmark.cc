@@ -52,25 +52,50 @@ void SearchAndUseBenchmark::Initialize() {
   runtime_helper_->InitializeOrDie();
 
   // Find GPU device
-  HsaAgent *agent = runtime_helper_->FindGpuOrDie();
-  std::cout << agent->GetNameOrDie() << "\n";
+  agent_ = runtime_helper_->FindGpuOrDie();
+  std::cout << agent_->GetNameOrDie() << "\n";
 
   // Create program from source
-  runtime_helper_->CreateProgramFromSourceOrDie(
-      "kernels.brig", agent);
- 
+  executable_ = runtime_helper_->CreateProgramFromSourceOrDie(
+      "kernels.brig", agent_);
 
+  // Get Kernel
+  kernel_ = executable_->GetKernel("&__OpenCL_vector_copy_kernel", 
+      agent_);
+  
+  // Create a queue
+  queue_ = agent_->CreateQueueOrDie();
+
+  // Prepare buffers 
+  in_ = new float[1024];
+  for (unsigned int i = 0; i < 1024; i++) {
+    in_[i] = (float)i;
+  }
+  out_ = new float[1024];
+
+  // Prepare to launch kernel
+  kernel_->SetDimension(1);
+  kernel_->SetLocalSize(1, 256);
+  kernel_->SetGlobalSize(1, 1024);
+  kernel_->SetKernelArgument(1, sizeof(in_), &in_);
+  kernel_->SetKernelArgument(2, sizeof(out_), &out_);
 }
 
 void SearchAndUseBenchmark::Run() {
+  kernel_->ExecuteKernel(agent_, queue_);
 }
 
 void SearchAndUseBenchmark::Verify() {
 }
 
 void SearchAndUseBenchmark::Summarize() {
+  for (int i = 0; i < 1024; i++) {
+    std::cout << "Index: " << i << ", value: " << out_[i] << ".\n";
+  }
 }
 
 void SearchAndUseBenchmark::Cleanup() {
+  delete[] in_;
+  delete[] out_;
 }
 

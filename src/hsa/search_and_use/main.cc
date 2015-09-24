@@ -43,6 +43,7 @@
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/runtime_helper/runtime_helper.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_runtime_helper.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_error_checker.h"
 #include "src/common/command_line_option/command_line_option.h"
 #include "src/hsa/search_and_use/search_and_use_benchmark.h"
 
@@ -64,8 +65,9 @@ int main(int argc, const char **argv) {
   }
 
   // Runtime helper
+  HsaErrorChecker error_checker;
   auto hsa_runtime_helper = std::unique_ptr<HsaRuntimeHelper>(
-      new HsaRuntimeHelper());
+      new HsaRuntimeHelper(&error_checker));
 
   // Create and run benchmarks
   std::unique_ptr<SearchAndUseBenchmark> benchmark(

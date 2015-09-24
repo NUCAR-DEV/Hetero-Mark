@@ -60,7 +60,14 @@ class SearchAndUseBenchmark : public Benchmark {
   void Cleanup() override;
 
  private:
+  float *in_;
+  float *out_;
+
   HsaRuntimeHelper *runtime_helper_;
+  HsaAgent *agent_;
+  HsaExecutable *executable_;
+  HsaKernel *kernel_;
+  AqlQueue *queue_;
 };
 
 #endif  // SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_

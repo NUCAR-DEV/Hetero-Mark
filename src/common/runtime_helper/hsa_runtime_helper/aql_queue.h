@@ -49,6 +49,7 @@ class AqlQueue : public Queue {
  public:
   AqlQueue(hsa_queue_t *queue);
   virtual ~AqlQueue() {}
+  void *GetNative() { return (void *)queue_; }
 
  private:
   hsa_queue_t *queue_;

@@ -48,7 +48,9 @@ class HsaErrorChecker {
  public:
    void SucceedOrDie(const char *message, hsa_status_t status) {
     if (status != HSA_STATUS_SUCCESS) {
-      std::cerr << message << " failed.\n";
+      std::cerr << message << " failed( " << std::hex << status << 
+        std::dec << " ).\n";
+      exit(status);
     } else {
       std::cerr << message << " suceeded.\n";
   }

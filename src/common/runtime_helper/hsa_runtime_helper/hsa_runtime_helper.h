@@ -53,7 +53,7 @@
 
 class HsaRuntimeHelper : public RuntimeHelper {
  public:
-  HsaRuntimeHelper();
+  HsaRuntimeHelper(HsaErrorChecker *error_checker);
   virtual ~HsaRuntimeHelper() {}
 
   void InitializeOrDie() override;
@@ -63,7 +63,7 @@ class HsaRuntimeHelper : public RuntimeHelper {
  
  private:
   hsa_status_t status_;
-  HsaErrorChecker error_checker_;
+  HsaErrorChecker *error_checker_;
   std::unique_ptr<HsaAgent> gpu_;
   std::vector<std::unique_ptr<HsaExecutable>> executables_;
 

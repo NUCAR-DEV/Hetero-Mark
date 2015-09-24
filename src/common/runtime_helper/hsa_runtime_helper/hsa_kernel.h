@@ -38,31 +38,63 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_AGENT_H_
-#define SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_AGENT_H_
+#ifndef SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_KERNEL_H_
+#define SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_KERNEL_H_
 
 #include <vector>
 #include <memory>
+#include <map>
 #include <hsa.h>
 
-#include "src/common/runtime_helper/agent.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/aql_queue.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_agent.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_error_checker.h"
 
-class HsaAgent : public Agent {
+class HsaKernel {
  public:
-  HsaAgent(hsa_agent_t agent, HsaErrorChecker *error_checker);
-  virtual ~HsaAgent() {}
-  const std::string GetNameOrDie() override;
-  AqlQueue *CreateQueueOrDie() override;
-  hsa_agent_t *GetNative() { return &agent_; }
-  hsa_isa_t GetIsa();
+  HsaKernel(hsa_executable_symbol_t symbol, HsaErrorChecker *error_checker);
+  virtual ~HsaKernel() {}
+
+  void SetKernelArgument(unsigned int index, unsigned int size_in_byte, 
+      const void *value);
+  void ExecuteKernel(HsaAgent *agent, AqlQueue *queue);
+  void QueueKernel(HsaAgent *agent, AqlQueue *queue);
+  void WaitKernel();
+
+  void SetDimension(unsigned int dimension);
+  void SetLocalSize(unsigned int dimension, unsigned int local_size);
+  void SetGlobalSize(unsigned int dimension, unsigned int global_size);
 
  private:
-  hsa_agent_t agent_;
+  hsa_executable_symbol_t symbol_;
   HsaErrorChecker *error_checker_;
   hsa_status_t status_;
-  std::vector<std::unique_ptr<AqlQueue>> queues_;
+
+  uint64_t kernel_object_;
+  uint32_t kernarg_segment_size_;
+  uint32_t group_segment_size_;
+  uint32_t private_segment_size_;
+
+  // Maps from the index of an argument to its offset in kernarg memory
+  std::vector<int> kernarg_index_to_offset_map_;
+  std::unique_ptr<char> kernel_argument_value_;
+
+  hsa_signal_t completion_signal_;
+  // FIXME:Yifan This variable prevents kernel from running two instances 
+  // at the same time. However, this should be allowed
+  bool kernel_running_ = false;
+
+  unsigned int dimension_ = 1;
+  unsigned int global_size_[3] = {1, 1, 1};
+  unsigned int local_size_[3] = {1, 1, 1};
+
+  uint64_t GetKernelObjectFromSymbol();
+  uint32_t GetKernargSegmentSizeFromSymbol();
+  uint32_t GetPrivateSegmentSizeFromSymbol();
+  uint32_t GetGroupSegmentSizeFromSymbol();
+
+  void *AllocateKernargMemory(HsaAgent *agent, unsigned int size);
+  static hsa_status_t GetKernargMemoryRegion(hsa_region_t region, void *data);
 };
 
-#endif  // SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_AGENT_H_
+#endif  // SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_KERNEL_H_
