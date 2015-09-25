@@ -53,10 +53,10 @@ int main(int argc, char const *argv[])
     // Setup command line option
     CommandLineOption command_line_option(
       "====== Hetero-Mark HMM Benchmarks (OpenCL 1.2) ======",
-      "This benchmarks runs the FIR-Filter Algorithm.");
+      "This benchmark runs the Hidden Markov Model.");
     command_line_option.AddArgument("Help", "bool", "false",
         "-h", "--help", "Dump help information");
-    command_line_option.AddArgument("HiddenStates", "int", "100",
+    command_line_option.AddArgument("HiddenStates", "int", "16",
         "-s", "--states",
         "Number of hidden states");
 
@@ -66,13 +66,23 @@ int main(int argc, char const *argv[])
       return 0;
     }
 
+	// Initialize HMM class
     std::unique_ptr<HMM> hmm(new HMM());
+
+	// Initialize hidden states
     hmm->SetInitialParameters(command_line_option.GetArgumentValue("HiddenStates")->AsInt32());
 
+	// Set up the timmer
     std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+
+	// Obtain HMM class and configure the time measurement
     BenchmarkRunner runner(hmm.get(), timer.get());
+
+	// Run the HMM benchmark
     runner.Run();
-    runner.Summarize();    
+
+	// Obtain the runtime performance
+    //runner.Summarize();    
     
     return 0;
 }
