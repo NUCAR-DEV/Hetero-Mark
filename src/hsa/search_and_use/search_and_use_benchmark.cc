@@ -72,6 +72,7 @@ void SearchAndUseBenchmark::Initialize() {
     in_[i] = (float)i;
   }
   out_ = new float[1024];
+  signal_ = runtime_helper_->CreateSignal(0);
 
   // Prepare to launch kernel
   kernel_->SetDimension(1);

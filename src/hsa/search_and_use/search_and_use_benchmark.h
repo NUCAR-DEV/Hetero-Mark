@@ -68,6 +68,8 @@ class SearchAndUseBenchmark : public Benchmark {
   HsaExecutable *executable_;
   HsaKernel *kernel_;
   AqlQueue *queue_;
+  HsaSignal *signal_;
+
 };
 
 #endif  // SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
