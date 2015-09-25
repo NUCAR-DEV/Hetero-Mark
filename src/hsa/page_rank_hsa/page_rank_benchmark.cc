@@ -45,7 +45,7 @@
 
 PageRankBenchmark::PageRankBenchmark() {
   workGroupSize = 64;
-  maxIter = 1000;
+  maxIter = 300;
 }
 
 void PageRankBenchmark::InitBuffer() {
@@ -238,48 +238,3 @@ float PageRankBenchmark::abs(float num) {
   return num;
 }
 
-/*
-   int main(int argc, char const *argv[])
-   {
-   uint64_t diff;
-   struct timespec start, end;
-   if (argc < 2) {
-   std::cout << "Usage: pagerank input_matrix [input_vector]" << std::endl;
-   exit(-1);
-   }
-   clock_gettime(CLOCK_MONOTONIC, &start);
-
-   std::unique_ptr<PageRankBenchmark> pr;
-   std::unique_ptr<PageRankBenchmark> prCpu;
-   if (argc == 2) {
-   pr.reset(new PageRankBenchmark(argv[1]));
-   prCpu.reset(new PageRankBenchmark(argv[1]));
-   pr->Run();
-   prCpu->CpuRun();
-   }
-   else if (argc == 3) {
-   pr.reset(new PageRankBenchmark(argv[1], argv[2]));
-   prCpu.reset(new PageRankBenchmark(argv[1], argv[2]));
-   pr->Run();
-   prCpu->CpuRun();
-   }
-   float* eigenGpu = pr->GetEigenV();
-   float* eigenCpu = prCpu->GetEigenV();
-   for(int i = 0; i < pr->GetLength(); i++) {
-//		if( eigenGpu[i] != eigenCpu[i] ) {
-if( pr->abs(eigenGpu[i] - eigenCpu[i]) >= 1e-5 ) {
-std::cout << "Not Correct!" << std::endl;
-std::cout.precision(20);
-std::cout << pr->abs(eigenGpu[i] - eigenCpu[i]) << std::endl;
-//std::cout << std::abs(1.23f) << std::endl;
-//std::cout << eigenGpu[i] << "\t" << eigenCpu[i] << std::endl;
-}
-}
-clock_gettime(CLOCK_MONOTONIC, &end);
-
-diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-printf("Total elapsed time = %llu nanoseconds\n", (long long unsigned int)
-diff);
-return 0;
-}
-*/

@@ -5,10 +5,11 @@ set( FOLDER_NAME page_rank_hsa )
 set( SUBDIRECTORIES )
 set( SRC_FILES 
   main.cc
-  page_rank_benchmark.h
   page_rank_benchmark.cc
 )
-set( HEADER_FILES )
+set( HEADER_FILES 
+  page_rank_benchmark.h
+)
 set( TEST_FILES )
 
 # Group samples by folder
