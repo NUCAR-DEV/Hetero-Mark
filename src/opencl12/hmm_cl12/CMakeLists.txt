@@ -1,6 +1,6 @@
 set( BENCHMARK_NAME hmm_cl12 )
 set( SOURCE_FILES main.cc hmm_cl12.cc )
-set( EXTRA_FILES hmm_cl12_Kernels.cl )
+set( EXTRA_FILES hmm_cl12_kernels.cl )
 
 ############################################################################
 
@@ -43,7 +43,7 @@ endif()
 # Find OpenCL include and libs
 find_path( OPENCL_INCLUDE_DIRS 
     NAMES OpenCL/cl.h CL/cl.h
-    HINTS ../../include $ENV{AMDAPPSDKROOT}/include
+    HINTS ../../../  .  $ENV{AMDAPPSDKROOT}/include
 )
 mark_as_advanced(OPENCL_INCLUDE_DIRS)
 
@@ -65,7 +65,7 @@ set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 
 # clUtil includes
-set( CLUTIL_INCLUDE_DIRS "../../include/clUtil" )
+set( CLUTIL_INCLUDE_DIRS "../../../" )
 
 file(GLOB INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp" "${CMAKE_CURRENT_SOURCE_DIR}/*.h" )
 include_directories( ${OPENCL_INCLUDE_DIRS} ${CLUTIL_INCLUDE_DIRS} )
