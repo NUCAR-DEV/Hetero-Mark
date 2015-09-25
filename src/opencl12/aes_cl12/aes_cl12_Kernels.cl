@@ -1,4 +1,7 @@
-//System auto-inserts expanded key and headers into source code above !! do not append above without consulting host code!
+#pragma OPENCL EXTENSION cl_khr_byte_addressable_store : enable
+#define Nb 4
+#define Nr 14
+#define Nk 8
 
 __constant uchar s[256] = {
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -84,7 +87,7 @@ __kernel void sr(__local uchar* in)
     in[15] = state[15];
 }
 
-__kernel void ark(__local uchar* state, int strD)
+__kernel void ark(__local uchar* state, __global uint* eK, int strD)
 {
     union {
         uint word;
@@ -117,7 +120,7 @@ __kernel void ark(__local uchar* state, int strD)
     state[15] = state[15] ^ kb[3].bytes[0];
 }
 
-__kernel void CLRunnerntrl(__global uchar *in)
+__kernel void CLRunnerntrl(__global uchar *in, __global uint *eK)
 {
     __local uchar state[16];
 
@@ -128,23 +131,23 @@ __kernel void CLRunnerntrl(__global uchar *in)
     state[12] = in[12];state[13] = in[13];state[14] = in[14];
     state[15] = in[15];
 
-    ark(state, 0);
+    ark(state, eK, 0);
 
-    sb_st(state);sr(state);mc(state);ark(state, 4);
-    sb_st(state);sr(state);mc(state);ark(state, 8);
-    sb_st(state);sr(state);mc(state);ark(state, 12);
-    sb_st(state);sr(state);mc(state);ark(state, 16);
-    sb_st(state);sr(state);mc(state);ark(state, 20);
-    sb_st(state);sr(state);mc(state);ark(state, 24);
-    sb_st(state);sr(state);mc(state);ark(state, 28);
-    sb_st(state);sr(state);mc(state);ark(state, 32);
-    sb_st(state);sr(state);mc(state);ark(state, 36);
-    sb_st(state);sr(state);mc(state);ark(state, 40);
-    sb_st(state);sr(state);mc(state);ark(state, 44);
-    sb_st(state);sr(state);mc(state);ark(state, 48);
-    sb_st(state);sr(state);mc(state);ark(state, 52);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 4);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 8);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 12);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 16);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 20);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 24);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 28);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 32);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 36);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 40);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 44);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 48);
+    sb_st(state);sr(state);mc(state);ark(state, eK, 52);
 
-    sb_st(state);sr(state);ark(state, Nr*Nb);
+    sb_st(state);sr(state);ark(state, eK, Nr*Nb);
 
     in[0] = state[0];in[1] = state[1];in[2] = state[2];
     in[3] = state[3];in[4] = state[4];in[5] = state[5];

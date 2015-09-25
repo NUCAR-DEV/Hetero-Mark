@@ -1,5 +1,5 @@
 set( BENCHMARK_NAME fir_cl12 )
-set( SOURCE_FILES FIR_CL.cc eventlist.cpp )
+set( SOURCE_FILES FIR_CL.cc eventlist.cpp main.cc)
 set( EXTRA_FILES FIR.cl )
 
 ############################################################################
@@ -101,7 +101,7 @@ set_target_properties( ${BENCHMARK_NAME} PROPERTIES
                         COMPILE_FLAGS ${COMPILER_FLAGS}
                         LINK_FLAGS ${LINKER_FLAGS}
                      )
-target_link_libraries( ${BENCHMARK_NAME} ${OPENCL_LIBRARIES} ${ADDITIONAL_LIBRARIES} ${CLUTIL_LIBRARY})
+target_link_libraries( ${BENCHMARK_NAME} cl_util time_measurement command_line_option benchmark ${OPENCL_LIBRARIES} ${ADDITIONAL_LIBRARIES} ${CLUTIL_LIBRARY})
 
 # Set output directory to bin
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BITNESS_SUFFIX}/${CMAKE_BUILD_TYPE})

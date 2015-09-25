@@ -2,8 +2,8 @@ include(../CppLint.cmake)
 set( FOLDER_NAME src )
 set( SUBDIRECTORIES 
   common
-#opencl12
-#opencl20
+  opencl12
+  opencl20
   hsa
 )
 

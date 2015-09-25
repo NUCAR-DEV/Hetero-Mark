@@ -52,6 +52,6 @@ if (have_snack AND HSA_RUNTIME)
   target_link_libraries(${FOLDER_NAME}
       time_measurement command_line_option benchmark ${HSA_RUNTIME})
 else (have_snack AND HSA_RUNTIME)
-  message(WARNING "Skipping ${FOLDER_NAME}, snack.sh is not found")
+  message(WARNING "Skipping fir_hsa, snack.sh is not found")
 endif (have_snack AND HSA_RUNTIME)
 
