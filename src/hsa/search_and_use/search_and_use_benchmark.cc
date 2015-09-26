@@ -80,7 +80,7 @@ void SearchAndUseBenchmark::Initialize() {
   // Prepare to launch kernel
   kernel_->SetDimension(1);
   kernel_->SetLocalSize(1, 256);
-  kernel_->SetGlobalSize(1, 1024);
+  kernel_->SetGlobalSize(1, 256 * 20);
   kernel_->SetKernelArgument(1, sizeof(in_), &in_);
   kernel_->SetKernelArgument(2, sizeof(out_), &out_);
   kernel_->SetKernelArgument(3, 8, signal_->GetNative());
@@ -89,8 +89,8 @@ void SearchAndUseBenchmark::Initialize() {
 void SearchAndUseBenchmark::Run() {
   std::thread signal_waiting_thread = 
     std::thread( [this] { WaitForSignal(); } );
-  kernel_->QueueKernel(agent_, queue_);
-  kernel_->WaitKernel();
+  kernel_->ExecuteKernel(agent_, queue_);
+  std::cout << "Kernel stopped: " << timer_->GetTimeInSec() << "\n";
   kernel_stopped_ = true;
   signal_waiting_thread.join();
 }
@@ -100,7 +100,8 @@ void SearchAndUseBenchmark::WaitForSignal() {
   std::cout << "Waiting thread started: " << timer_->GetTimeInSec() << "\n";
   while (!kernel_stopped_) {
     signal_value = signal_->WaitForCondition("NE", signal_value);
-    std::cout << "Return: " << timer_->GetTimeInSec() << "\n";
+    std::cout << "Return: " << timer_->GetTimeInSec() << 
+      ", value: " << signal_value <<"\n";
   }
 }
 
@@ -108,9 +109,6 @@ void SearchAndUseBenchmark::Verify() {
 }
 
 void SearchAndUseBenchmark::Summarize() {
-  for (int i = 0; i < 1024; i++) {
-    std::cout << "Index: " << i << ", value: " << out_[i] << ".\n";
-  }
 }
 
 void SearchAndUseBenchmark::Cleanup() {

@@ -68,7 +68,7 @@ int main(int argc, const char **argv) {
 
   // Runtime helper
   HsaErrorChecker error_checker;
-  auto timer = std::unique_ptr<TimerImpl>();
+  auto timer = std::unique_ptr<TimerImpl>(new TimerImpl());
   auto hsa_runtime_helper = std::unique_ptr<HsaRuntimeHelper>(
       new HsaRuntimeHelper(&error_checker));
 
