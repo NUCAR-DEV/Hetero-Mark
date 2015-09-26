@@ -41,6 +41,8 @@
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/common/time_measurement/timer.h"
+#include "src/common/time_measurement/timer_impl.h"
 #include "src/common/runtime_helper/runtime_helper.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_runtime_helper.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_error_checker.h"
@@ -66,14 +68,15 @@ int main(int argc, const char **argv) {
 
   // Runtime helper
   HsaErrorChecker error_checker;
+  auto timer = std::unique_ptr<TimerImpl>();
   auto hsa_runtime_helper = std::unique_ptr<HsaRuntimeHelper>(
       new HsaRuntimeHelper(&error_checker));
 
   // Create and run benchmarks
   std::unique_ptr<SearchAndUseBenchmark> benchmark(
-    new SearchAndUseBenchmark(hsa_runtime_helper.get()));
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
+    new SearchAndUseBenchmark(hsa_runtime_helper.get(), timer.get()));
+  std::unique_ptr<TimeMeasurement> time_measurement(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), time_measurement.get());
   runner.Run();
   runner.Summarize();
 }

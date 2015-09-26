@@ -38,45 +38,34 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
-#define SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
-
-#include <cstdio>
-#include <cstdlib>
-#include <hsa.h>
-#include <hsa_ext_finalize.h>
-
-#include "src/common/benchmark/benchmark.h"
-#include "src/common/time_measurement/timer.h"
-#include "src/common/runtime_helper/hsa_runtime_helper/hsa_runtime_helper.h"
-#include "src/common/runtime_helper/hsa_runtime_helper/hsa_executable.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_signal.h"
 
-class SearchAndUseBenchmark : public Benchmark {
- public:
-  SearchAndUseBenchmark(HsaRuntimeHelper *runtime_helper, Timer *timer);
-  void Initialize() override;
-  void Run() override;
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
+#include <cstring>
+#include <iostream>
 
- private:
-  float *in_;
-  float *out_;
+HsaSignal::HsaSignal(hsa_signal_t signal) : signal_(signal) {
+}
 
-  HsaRuntimeHelper *runtime_helper_;
-  HsaAgent *agent_;
-  HsaExecutable *executable_;
-  HsaKernel *kernel_;
-  AqlQueue *queue_;
-  HsaSignal *signal_;
+int64_t HsaSignal::WaitForCondition(const char *condition, int64_t value) {
+  hsa_signal_condition_t signal_condition = HSA_SIGNAL_CONDITION_EQ;
+  
+  // Translate signal condition
+  if (strcmp(condition, "EQ") == 0) {
+    signal_condition = HSA_SIGNAL_CONDITION_EQ;
+  } else if (strcmp(condition, "NE") == 0) {
+    signal_condition = HSA_SIGNAL_CONDITION_NE;
+  } else if (strcmp(condition, "LT") == 0) {
+    signal_condition = HSA_SIGNAL_CONDITION_LT;
+  } else if (strcmp(condition, "GTE") == 0) {
+    signal_condition = HSA_SIGNAL_CONDITION_GTE;
+  } else {
+    std::cerr << "Unsupported HSA signal condition " << condition << "\n";
+    exit(1);
+  }
 
-  Timer *timer_;
+  // Wait for signal value
+  int64_t signal_value = hsa_signal_wait_acquire(signal_, signal_condition, 
+      value, UINT64_MAX, HSA_WAIT_STATE_ACTIVE);
+  return signal_value;
+}
 
-  bool kernel_stopped_ = false;
-  void WaitForSignal();
-
-};
-
-#endif  // SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_

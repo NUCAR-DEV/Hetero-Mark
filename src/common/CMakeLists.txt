@@ -4,7 +4,7 @@ set( SUBDIRECTORIES
   command_line_option
   time_measurement
   runtime_helper
-  clUtil
+  cl_util
 )
 
 set( check_target ${FOLDER_NAME}_check )

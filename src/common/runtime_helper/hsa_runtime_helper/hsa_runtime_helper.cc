@@ -199,3 +199,14 @@ void HsaRuntimeHelper::FreezeExecutable(hsa_executable_t executable) {
   status_ = hsa_executable_freeze(executable, "");
   error_checker_->SucceedOrDie("Freeze the executable", status_);
 }
+
+HsaSignal *HsaRuntimeHelper::CreateSignal(int64_t initial_value) {
+  hsa_signal_t signal;
+  status_ = hsa_signal_create(initial_value, 0, NULL, &signal);
+  error_checker_->SucceedOrDie("Creating HSA signal.", status_);
+
+  auto signal_unique = std::unique_ptr<HsaSignal>(new HsaSignal(signal));
+  HsaSignal *signal_ptr = signal_unique.get();
+  signals_.push_back(std::move(signal_unique));
+  return signal_ptr;
+}

@@ -41,10 +41,13 @@
 #include "src/hsa/search_and_use/search_and_use_benchmark.h"
 
 #include <iostream>
+#include <thread>
 
 SearchAndUseBenchmark::SearchAndUseBenchmark(
-  HsaRuntimeHelper *runtime_helper) :
-  runtime_helper_(runtime_helper){
+    HsaRuntimeHelper *runtime_helper, 
+    Timer *timer) :
+  runtime_helper_(runtime_helper),
+  timer_(timer) {
 }
 
 void SearchAndUseBenchmark::Initialize() {
@@ -80,10 +83,25 @@ void SearchAndUseBenchmark::Initialize() {
   kernel_->SetGlobalSize(1, 1024);
   kernel_->SetKernelArgument(1, sizeof(in_), &in_);
   kernel_->SetKernelArgument(2, sizeof(out_), &out_);
+  kernel_->SetKernelArgument(3, 8, signal_->GetNative());
 }
 
 void SearchAndUseBenchmark::Run() {
-  kernel_->ExecuteKernel(agent_, queue_);
+  std::thread signal_waiting_thread = 
+    std::thread( [this] { WaitForSignal(); } );
+  kernel_->QueueKernel(agent_, queue_);
+  kernel_->WaitKernel();
+  kernel_stopped_ = true;
+  signal_waiting_thread.join();
+}
+
+void SearchAndUseBenchmark::WaitForSignal() {
+  int64_t signal_value = 0;
+  std::cout << "Waiting thread started: " << timer_->GetTimeInSec() << "\n";
+  while (!kernel_stopped_) {
+    signal_value = signal_->WaitForCondition("NE", signal_value);
+    std::cout << "Return: " << timer_->GetTimeInSec() << "\n";
+  }
 }
 
 void SearchAndUseBenchmark::Verify() {

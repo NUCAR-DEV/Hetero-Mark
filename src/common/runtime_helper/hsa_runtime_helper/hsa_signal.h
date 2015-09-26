@@ -38,45 +38,20 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
-#define SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
+#ifndef SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_SIGNAL_H_
+#define SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_SIGNAL_H_
 
-#include <cstdio>
-#include <cstdlib>
 #include <hsa.h>
-#include <hsa_ext_finalize.h>
 
-#include "src/common/benchmark/benchmark.h"
-#include "src/common/time_measurement/timer.h"
-#include "src/common/runtime_helper/hsa_runtime_helper/hsa_runtime_helper.h"
-#include "src/common/runtime_helper/hsa_runtime_helper/hsa_executable.h"
-#include "src/common/runtime_helper/hsa_runtime_helper/hsa_signal.h"
-
-class SearchAndUseBenchmark : public Benchmark {
+class HsaSignal {
  public:
-  SearchAndUseBenchmark(HsaRuntimeHelper *runtime_helper, Timer *timer);
-  void Initialize() override;
-  void Run() override;
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
+  HsaSignal(hsa_signal_t signal);
+  virtual ~HsaSignal() {}
+  void *GetNative() { return (void *)&signal_; }
+  int64_t WaitForCondition(const char *condition, int64_t value);
 
  private:
-  float *in_;
-  float *out_;
-
-  HsaRuntimeHelper *runtime_helper_;
-  HsaAgent *agent_;
-  HsaExecutable *executable_;
-  HsaKernel *kernel_;
-  AqlQueue *queue_;
-  HsaSignal *signal_;
-
-  Timer *timer_;
-
-  bool kernel_stopped_ = false;
-  void WaitForSignal();
-
+  hsa_signal_t signal_;
 };
 
-#endif  // SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
+#endif  // SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_HSA_SIGNAL_H_

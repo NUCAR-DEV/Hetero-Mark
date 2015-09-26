@@ -50,6 +50,7 @@
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_agent.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_error_checker.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_executable.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_signal.h"
 
 class HsaRuntimeHelper : public RuntimeHelper {
  public:
@@ -60,12 +61,14 @@ class HsaRuntimeHelper : public RuntimeHelper {
   HsaAgent *FindGpuOrDie() override;
   HsaExecutable *CreateProgramFromSourceOrDie(const char *filename,
       HsaAgent *agent);
+  HsaSignal *CreateSignal(int64_t initial_value);
  
  private:
   hsa_status_t status_;
   HsaErrorChecker *error_checker_;
   std::unique_ptr<HsaAgent> gpu_;
   std::vector<std::unique_ptr<HsaExecutable>> executables_;
+  std::vector<std::unique_ptr<HsaSignal>> signals_;
 
   static hsa_status_t GetGpuIterateCallback(hsa_agent_t agent, void *data);
 

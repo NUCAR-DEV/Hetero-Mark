@@ -42,7 +42,7 @@
 #ifndef SRC_HSA_PAGE_RANK_HSA_PAGE_RANK_BENCHMARK_H_
 #define SRC_HSA_PAGE_RANK_HSA_PAGE_RANK_BENCHMARK_H_
 
-#include <stdio.h>
+#include <stdio.h>    
 #include <stdint.h>
 #include <stdlib.h>
 #include <iostream>

@@ -5,13 +5,15 @@ set( SRC_FILES
   hsa_agent.cc
   hsa_executable.cc
   hsa_kernel.cc
+  hsa_signal.cc
 )
 set( HEADER_FILES 
   aql_queue.h
   hsa_runtime_helper.h
   hsa_agent.h
-  hsa_executable.cc
-  hsa_kernel.cc
+  hsa_executable.h
+  hsa_kernel.h
+  hsa_signal.h
 )
 set( TEST_FILES )
 

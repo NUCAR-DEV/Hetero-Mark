@@ -47,9 +47,9 @@
 int main(int argc, const char **argv) {
   // Setup command line option
   CommandLineOption command_line_option(
-    "====== Hetero-Mark Page Rank Benchmark "
-    "(HSA mode) ======",
-    "This benchmarks runs page rank algorithm.");
+      "====== Hetero-Mark Page Rank Benchmark "
+      "(HSA mode) ======",
+      "This benchmarks runs page rank algorithm.");
   command_line_option.AddArgument("Help", "bool", "false",
       "-h", "--help", "Dump help information");
   command_line_option.AddArgument("Input File", "string", "input.txt",
@@ -66,8 +66,8 @@ int main(int argc, const char **argv) {
   }
 
   bool verify = command_line_option.GetArgumentValue("Verify")->AsBool();
-  std::string input = command_line_option.GetArgumentValue("Input File")
-    ->AsString();
+  std::string input = command_line_option.GetArgumentValue("Input File")->
+    AsString();
 
   // Create and setup benchmarks
   std::unique_ptr<PageRankBenchmark> benchmark(new PageRankBenchmark());
