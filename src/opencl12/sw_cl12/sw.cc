@@ -146,7 +146,27 @@ void ShallowWater::InitBuffer() {
   checkOpenCLErrors(err, "Failed to create buffer: psi_");
 }
 
-void ShallowWater::FreeKernel() {}
+void ShallowWater::FreeKernel() {
+  cl_int err;
+
+  err = clReleaseKernel(kernel_sw_init_psi_p_);
+  checkOpenCLErrors(err, "Failed to release cl kernel: kernel_sw_init_psi_p_");
+
+  err = clReleaseKernel(kernel_sw_init_velocities_);
+  checkOpenCLErrors(err,
+                    "Failed to release cl kernel: kernel_sw_init_velocities_");
+
+  err = clReleaseKernel(kernel_sw_compute0_);
+  checkOpenCLErrors(err, "Failed to release cl kernel: kernel_sw_compute0_");
+  err = clReleaseKernel(kernel_sw_update0_);
+  checkOpenCLErrors(err, "Failed to release cl kernel: kernel_sw_update0_");
+  err = clReleaseKernel(kernel_sw_compute1_);
+  checkOpenCLErrors(err, "Failed to release cl kernel: kernel_sw_compute1_");
+  err = clReleaseKernel(kernel_sw_update1_);
+  checkOpenCLErrors(err, "Failed to release cl kernel: kernel_sw_update1_");
+  err = clReleaseKernel(kernel_sw_time_smooth_);
+  checkOpenCLErrors(err, "Failed to release cl kernel: kernel_sw_time_smooth_");
+}
 
 #define clFreeBuffer(buf)                                                      \
   err = clReleaseMemObject(buf);                                               \
