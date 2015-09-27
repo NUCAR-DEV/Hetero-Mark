@@ -25,7 +25,7 @@
  *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  *   CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  *   DEALINGS WITH THE SOFTWARE.
  *
  * KMeans clustering
@@ -67,8 +67,8 @@ void KMEANS::CleanUpKernels() {
 
 void KMEANS::SetInitialParameters(FilePackage parameters) {
   // ------------------------- command line options -----------------------//
-  int     opt;
-  extern char   *optarg;
+  //int     opt;
+  //extern char   *optarg;
   isBinaryFile = 0;
   threshold = 0.001;          // default value
   max_nclusters = 5;            // default value
@@ -317,7 +317,7 @@ void KMEANS::Free_mem() {
 }
 
 void KMEANS::Kmeans_ocl() {
-  int i, j, k;
+  int i, j;
 
   cl_int err;
 
@@ -545,7 +545,7 @@ float KMEANS::euclid_dist_2(float *pt1,
 
 int KMEANS::find_nearest_point(float  *pt,           // [nfeatures]
                                float  **pts) {       // [npts][nfeatures]
-  int index_local, i;
+  int index_local = 0, i;
   float max_dist = FLT_MAX;
 
   // find the cluster center id with min distance to pt
@@ -564,7 +564,7 @@ void KMEANS::RMS_err() {
   int    i;
   int   nearest_cluster_index;    // cluster center id with min distance to pt
   float  sum_euclid = 0.0;        // sum of Euclidean distance squares
-  float  ret;                     // return value
+  //float  ret;                     // return value
 
   // pass data pointers
   float **feature_loc, **cluster_centres_loc;
@@ -572,11 +572,12 @@ void KMEANS::RMS_err() {
   cluster_centres_loc = tmp_cluster_centres;
 
   // calculate and sum the sqaure of euclidean distance
-#pragma omp parallel for                        \
+/* #pragma omp parallel for                      \
   shared(feature_loc, cluster_centres_loc)      \
   firstprivate(npoints, nfeatures, nclusters)   \
   private(i, nearest_cluster_index)             \
   schedule(static)
+*/
 
   for (i = 0; i < npoints; i++) {
       nearest_cluster_index = find_nearest_point(feature_loc[i],
@@ -604,7 +605,7 @@ void KMEANS::Display_results() {
       }
     }
 
-  float len = (float) ((max_nclusters - min_nclusters + 1)*nloops);
+  // float len = (float) ((max_nclusters - min_nclusters + 1)*nloops);
   printf("Number of Iteration: %d\n", nloops);
   // printf("Time for I/O: %.5fsec\n", io_timing);
   // printf("Time for Entire Clustering: %.5fsec\n", cluster_timing);

@@ -338,7 +338,7 @@ void KMEANS::Free_mem_svm() {
 }
 
 void KMEANS::Kmeans_ocl_svm() {
-  int i, j, k;
+  int i, j;
 
   size_t global_work     = (size_t) npoints;
   size_t local_work_size = BLOCK_SIZE2;
@@ -583,7 +583,7 @@ float KMEANS::euclid_dist_2_1(float *pt1,
 
 int KMEANS::find_nearest_point(float  *pt,           // [nfeatures]
                                float  **pts) {       // [npts][nfeatures]
-  int index_local, i;
+  int index_local = 0, i;
   float max_dist = FLT_MAX;
 
   // find the cluster center id with min distance to pt
@@ -600,7 +600,7 @@ int KMEANS::find_nearest_point(float  *pt,           // [nfeatures]
 
 int KMEANS::find_nearest_point_1(float  *pt,           // [nfeatures]
                                  float  *pts) {        // [npts][nfeatures]
-  int index_local, i;
+  int index_local = 0, i;
   float max_dist = FLT_MAX;
 
   // find the cluster center id with min distance to pt
@@ -619,7 +619,7 @@ void KMEANS::RMS_err() {
   int    i;
   int   nearest_cluster_index;    // cluster center id with min distance to pt
   float  sum_euclid = 0.0;        // sum of Euclidean distance squares
-  float  ret;                     // return value
+//  float  ret;                     // return value
 
   // pass data pointers
   float **feature_loc, **cluster_centres_loc;
@@ -627,11 +627,12 @@ void KMEANS::RMS_err() {
   cluster_centres_loc = tmp_cluster_centres;
 
   // calculate and sum the sqaure of euclidean distance
-#pragma omp parallel for                        \
-  shared(feature_loc, cluster_centres_loc)      \
-  firstprivate(npoints, nfeatures, nclusters)   \
-  private(i, nearest_cluster_index)             \
-  schedule(static)
+/* #pragma omp parallel for                        \
+   shared(feature_loc, cluster_centres_loc)        \
+   firstprivate(npoints, nfeatures, nclusters)     \
+   private(i, nearest_cluster_index)               \
+   schedule(static)
+*/
 
   for (i = 0; i < npoints; i++) {
     nearest_cluster_index = find_nearest_point(feature_loc[i],
@@ -651,7 +652,7 @@ void KMEANS::RMS_err_svm() {
   int    i;
   int   nearest_cluster_index;    // cluster center id with min distance to pt
   float  sum_euclid = 0.0;        // sum of Euclidean distance squares
-  float  ret;                     // return value
+  //float  ret;                     // return value
 
   // pass data pointers
   float *feature_loc, *cluster_centres_loc;
@@ -663,11 +664,12 @@ void KMEANS::RMS_err_svm() {
   cluster_centres_loc = tmp_cluster_centres_1;
 
   // calculate and sum the sqaure of euclidean distance
-#pragma omp parallel for                        \
-  shared(feature_loc, cluster_centres_loc)      \
-  firstprivate(npoints, nfeatures, nclusters)   \
-  private(i, nearest_cluster_index)             \
-  schedule (static)
+/* #pragma omp parallel for                     \
+   shared(feature_loc, cluster_centres_loc)     \
+   firstprivate(npoints, nfeatures, nclusters)  \
+   private(i, nearest_cluster_index)            \
+   schedule (static)
+*/
 
   for (i=0; i<npoints; i++) {
     nearest_cluster_index =
@@ -699,7 +701,7 @@ void KMEANS::Display_results_svm() {
     }
   }
 
-  float	len = (float) ((max_nclusters - min_nclusters + 1)*nloops);
+  //float len = (float) ((max_nclusters - min_nclusters + 1)*nloops);
 
   printf("Number of Iteration: %d\n", nloops);
   // printf("Time for I/O: %.5fsec\n", io_timing);
@@ -822,8 +824,8 @@ void KMEANS::Clustering() {
 
 void KMEANS::SetInitialParameters(FilePackage parameters) {
   // ------------------------- command line options -----------------------//
-  int     opt;
-  extern char   *optarg;
+  //int     opt;
+  //extern char   *optarg;
   isBinaryFile = 0;
   threshold = 0.001;          // default value
   max_nclusters = 5;            // default value

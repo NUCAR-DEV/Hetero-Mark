@@ -1,5 +1,6 @@
 set( BENCHMARK_NAME aes_cl20 )
 set( SOURCE_FILES aes_cl20.cc main.cc)
+set( HEADER_FILES include/aes_cl20.h )
 set( EXTRA_FILES aes_Kernels.cl in.txt keyfile.txt)
 
 ############################################################################
@@ -61,9 +62,9 @@ endif( )
 ############################################################################
 
 # Style check
-set( check_target ${FOLDER_NAME}_check )
-set( check_target_src ${SRC_FILES} ${HEADER_FILES} ${TEST_FILES})
-add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}")
+set( check_target ${BENCHMARK_NAME}_check )
+set( check_target_src ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
+add_style_check_target(${check_target} "${check_target_src}" "")
 
 ############################################################################
 

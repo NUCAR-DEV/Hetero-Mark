@@ -1,5 +1,6 @@
 set( BENCHMARK_NAME parIIR )
 set( SOURCE_FILES main.cc parIIR.cc )
+set( HEADER_FILES include/parIIR.h )
 set( EXTRA_FILES kernel.cl )
 
 ############################################################################
@@ -41,7 +42,7 @@ endif()
 ############################################################################
 
 # Find OpenCL include and libs
-find_path( OPENCL_INCLUDE_DIRS 
+find_path( OPENCL_INCLUDE_DIRS
     NAMES OpenCL/cl.h CL/cl.h
     HINTS ../../include/ $ENV{AMDAPPSDKROOT}/include
 )
@@ -61,9 +62,9 @@ endif( )
 ############################################################################
 
 # Style check
-set( check_target ${FOLDER_NAME}_check )
-set( check_target_src ${SRC_FILES} ${HEADER_FILES} ${TEST_FILES})
-add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}")
+set( check_target ${BENCHMARK_NAME}_check )
+set( check_target_src ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
+add_style_check_target(${check_target} "${check_target_src}" "")
 
 ############################################################################
 
@@ -82,7 +83,7 @@ add_executable( ${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES
 # gcc/g++ specific compile options
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set( COMPILER_FLAGS "${COMPILER_FLAGS} -msse2 " )
-    
+
     # Note: "rt" is not present on mingw
     if( UNIX )
 		if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
@@ -90,7 +91,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 		endif( )
         set( ADDITIONAL_LIBRARIES ${ADDITIONAL_LIBRARIES} "rt" )
     endif( )
-    
+
     if( BITNESS EQUAL 32 )
         set( COMPILER_FLAGS "${COMPILER_FLAGS} -m32 " )
         set( LINKER_FLAGS "${LINKER_FLAGS} -m32 " )
@@ -98,7 +99,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
         set( COMPILER_FLAGS "${COMPILER_FLAGS} -m64 " )
         set( LINKER_FLAGS "${LINKER_FLAGS} -m64 " )
     endif( )
-    
+
     set( COMPILER_FLAGS "${COMPILER_FLAGS} ${EXTRA_COMPILER_FLAGS_GXX} " )
     set( LINKER_FLAGS "${LINKER_FLAGS} ${EXTRA_LINKER_FLAGS_GXX} " )
     set( ADDITIONAL_LIBRARIES ${ADDITIONAL_LIBRARIES} ${EXTRA_LIBRARIES_GXX} )
