@@ -59,11 +59,11 @@ if( OPENCL_INCLUDE_DIRS STREQUAL "" OR OPENCL_LIBRARIES STREQUAL "")
 endif( )
 
 ############################################################################
-
+  
 # Style check
-set( check_target ${FOLDER_NAME}_check )
-set( check_target_src ${SRC_FILES} ${HEADER_FILES} ${TEST_FILES})
-add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}")
+set( check_target ${BENCHMARK_NAME}_check )
+set( check_target_src ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
+add_style_check_target(${check_target} "${check_target_src}" "")
 
 ############################################################################
 
