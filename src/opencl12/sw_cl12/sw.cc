@@ -44,16 +44,6 @@
 
 #define BILLION 1000000000L
 
-void advance_spinner() {
-  static char bars[] = {'/', '-', '\\', '|'};
-  static int nbars = sizeof(bars) / sizeof(char);
-  static int pos = 0;
-
-  printf("%c\b", bars[pos]);
-  fflush(stdout);
-  pos = (pos + 1) % nbars;
-}
-
 ShallowWater::ShallowWater(unsigned m, unsigned n)
     : m_(m), n_(n), m_len_(m + 1), n_len_(n + 1), itmax_(250), dt_(90.),
       tdt_(dt_), dx_(100000.), dy_(100000.), a_(1000000.), alpha_(.001),
@@ -183,18 +173,22 @@ void ShallowWater::FreeBuffer() {
 void ShallowWater::InitPsiP() {
   cl_int err;
 
-  err = clSetKernelArg(kernel_sw_init_psi_p_, 0, sizeof(double), (void *)&a_);
-  err |= clSetKernelArg(kernel_sw_init_psi_p_, 1, sizeof(double), (void *)&di_);
-  err |= clSetKernelArg(kernel_sw_init_psi_p_, 2, sizeof(double), (void *)&dj_);
-  err |=
-      clSetKernelArg(kernel_sw_init_psi_p_, 3, sizeof(double), (void *)&pcf_);
+  err = clSetKernelArg(kernel_sw_init_psi_p_, 0, sizeof(double),
+                       reinterpret_cast<void *>(&a_));
+  err |= clSetKernelArg(kernel_sw_init_psi_p_, 1, sizeof(double),
+                        reinterpret_cast<void *>(&di_));
+  err |= clSetKernelArg(kernel_sw_init_psi_p_, 2, sizeof(double),
+                        reinterpret_cast<void *>(&dj_));
+  err |= clSetKernelArg(kernel_sw_init_psi_p_, 3, sizeof(double),
+                        reinterpret_cast<void *>(&pcf_));
   err |= clSetKernelArg(kernel_sw_init_psi_p_, 4, sizeof(unsigned),
-                        (void *)&m_len_);
+                        reinterpret_cast<void *>(&m_len_));
   err |= clSetKernelArg(kernel_sw_init_psi_p_, 5, sizeof(unsigned),
-                        (void *)&m_len_);
-  err |= clSetKernelArg(kernel_sw_init_psi_p_, 6, sizeof(cl_mem), (void *)&p_);
-  err |=
-      clSetKernelArg(kernel_sw_init_psi_p_, 7, sizeof(cl_mem), (void *)&psi_);
+                        reinterpret_cast<void *>(&m_len_));
+  err |= clSetKernelArg(kernel_sw_init_psi_p_, 6, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&p_));
+  err |= clSetKernelArg(kernel_sw_init_psi_p_, 7, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&psi_));
   checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_init_psi_p_");
 
   const size_t globalSize[2] = {m_len_, n_len_};
@@ -202,10 +196,8 @@ void ShallowWater::InitPsiP() {
 
   err = clEnqueueNDRangeKernel(cmdQueue_, kernel_sw_init_psi_p_, 2, NULL,
                                globalSize, localSize, 0, NULL, NULL);
-  checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel \
-                          kernel_sw_init_psi_p_");
-
-  advance_spinner();
+  checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel                     "
+                         "     kernel_sw_init_psi_p_");
 }
 
 void ShallowWater::InitVelocities() {
@@ -215,28 +207,26 @@ void ShallowWater::InitVelocities() {
   const size_t localSize[2] = {16, 16};
 
   err = clSetKernelArg(kernel_sw_init_velocities_, 0, sizeof(double),
-                       (void *)&dx_);
+                       reinterpret_cast<void *>(&dx_));
   err |= clSetKernelArg(kernel_sw_init_velocities_, 1, sizeof(double),
-                        (void *)&dy_);
+                        reinterpret_cast<void *>(&dy_));
   err |= clSetKernelArg(kernel_sw_init_velocities_, 2, sizeof(unsigned),
-                        (void *)&m_);
+                        reinterpret_cast<void *>(&m_));
   err |= clSetKernelArg(kernel_sw_init_velocities_, 3, sizeof(unsigned),
-                        (void *)&n_);
+                        reinterpret_cast<void *>(&n_));
   err |= clSetKernelArg(kernel_sw_init_velocities_, 4, sizeof(cl_mem),
-                        (void *)&psi_);
+                        reinterpret_cast<void *>(&psi_));
   err |= clSetKernelArg(kernel_sw_init_velocities_, 5, sizeof(cl_mem),
-                        (void *)&u_);
+                        reinterpret_cast<void *>(&u_));
   err |= clSetKernelArg(kernel_sw_init_velocities_, 6, sizeof(cl_mem),
-                        (void *)&v_);
-  checkOpenCLErrors(err, "Failed to set kernel args: \
-                          kernel_sw_init_velocities_");
+                        reinterpret_cast<void *>(&v_));
+  checkOpenCLErrors(err,
+                    "Failed to set kernel args: kernel_sw_init_velocities_");
 
   err = clEnqueueNDRangeKernel(cmdQueue_, kernel_sw_init_velocities_, 2, NULL,
                                globalSize, localSize, 0, NULL, NULL);
-  checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel \
-                          kernel_sw_init_psi_p_");
-
-  advance_spinner();
+  checkOpenCLErrors(err,
+                    "Failed to clEnqueueNDRangeKernel kernel_sw_init_psi_p_");
 }
 
 void ShallowWater::Compute0() {
@@ -245,25 +235,32 @@ void ShallowWater::Compute0() {
   const size_t globalSize[2] = {m_len_, n_len_};
   const size_t localSize[2] = {16, 16};
 
-  err = clSetKernelArg(kernel_sw_compute0_, 0, sizeof(double), (void *)&fsdx_);
-  err |= clSetKernelArg(kernel_sw_compute0_, 1, sizeof(double), (void *)&fsdy_);
-  err |=
-      clSetKernelArg(kernel_sw_compute0_, 2, sizeof(unsigned), (void *)&m_len_);
-  err |= clSetKernelArg(kernel_sw_compute0_, 3, sizeof(cl_mem), (void *)&u_);
-  err |= clSetKernelArg(kernel_sw_compute0_, 4, sizeof(cl_mem), (void *)&v_);
-  err |= clSetKernelArg(kernel_sw_compute0_, 5, sizeof(cl_mem), (void *)&p_);
-  err |= clSetKernelArg(kernel_sw_compute0_, 6, sizeof(cl_mem), (void *)&cu_);
-  err |= clSetKernelArg(kernel_sw_compute0_, 7, sizeof(cl_mem), (void *)&cv_);
-  err |= clSetKernelArg(kernel_sw_compute0_, 8, sizeof(cl_mem), (void *)&z_);
-  err |= clSetKernelArg(kernel_sw_compute0_, 9, sizeof(cl_mem), (void *)&h_);
+  err = clSetKernelArg(kernel_sw_compute0_, 0, sizeof(double),
+                       reinterpret_cast<void *>(&fsdx_));
+  err |= clSetKernelArg(kernel_sw_compute0_, 1, sizeof(double),
+                        reinterpret_cast<void *>(&fsdy_));
+  err |= clSetKernelArg(kernel_sw_compute0_, 2, sizeof(unsigned),
+                        reinterpret_cast<void *>(&m_len_));
+  err |= clSetKernelArg(kernel_sw_compute0_, 3, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&u_));
+  err |= clSetKernelArg(kernel_sw_compute0_, 4, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&v_));
+  err |= clSetKernelArg(kernel_sw_compute0_, 5, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&p_));
+  err |= clSetKernelArg(kernel_sw_compute0_, 6, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&cu_));
+  err |= clSetKernelArg(kernel_sw_compute0_, 7, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&cv_));
+  err |= clSetKernelArg(kernel_sw_compute0_, 8, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&z_));
+  err |= clSetKernelArg(kernel_sw_compute0_, 9, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&h_));
   checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_compute0_");
 
   err = clEnqueueNDRangeKernel(cmdQueue_, kernel_sw_compute0_, 2, NULL,
                                globalSize, localSize, 0, NULL, NULL);
   checkOpenCLErrors(err,
                     "Failed to clEnqueueNDRangeKernel kernel_sw_compute0_");
-
-  advance_spinner();
 }
 
 void ShallowWater::PeriodicUpdate0() {
@@ -272,21 +269,25 @@ void ShallowWater::PeriodicUpdate0() {
   const size_t globalSize[2] = {m_, n_};
   const size_t localSize[2] = {16, 16};
 
-  err = clSetKernelArg(kernel_sw_update0_, 0, sizeof(unsigned), (void *)&m_);
-  err |= clSetKernelArg(kernel_sw_update0_, 1, sizeof(unsigned), (void *)&n_);
-  err |=
-      clSetKernelArg(kernel_sw_update0_, 2, sizeof(unsigned), (void *)&m_len_);
-  err |= clSetKernelArg(kernel_sw_update0_, 3, sizeof(cl_mem), (void *)&cu_);
-  err |= clSetKernelArg(kernel_sw_update0_, 4, sizeof(cl_mem), (void *)&cv_);
-  err |= clSetKernelArg(kernel_sw_update0_, 5, sizeof(cl_mem), (void *)&z_);
-  err |= clSetKernelArg(kernel_sw_update0_, 6, sizeof(cl_mem), (void *)&h_);
+  err = clSetKernelArg(kernel_sw_update0_, 0, sizeof(unsigned),
+                       reinterpret_cast<void *>(&m_));
+  err |= clSetKernelArg(kernel_sw_update0_, 1, sizeof(unsigned),
+                        reinterpret_cast<void *>(&n_));
+  err |= clSetKernelArg(kernel_sw_update0_, 2, sizeof(unsigned),
+                        reinterpret_cast<void *>(&m_len_));
+  err |= clSetKernelArg(kernel_sw_update0_, 3, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&cu_));
+  err |= clSetKernelArg(kernel_sw_update0_, 4, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&cv_));
+  err |= clSetKernelArg(kernel_sw_update0_, 5, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&z_));
+  err |= clSetKernelArg(kernel_sw_update0_, 6, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&h_));
   checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_update0_");
 
   err = clEnqueueNDRangeKernel(cmdQueue_, kernel_sw_update0_, 2, NULL,
                                globalSize, localSize, 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel kernel_sw_update0_");
-
-  advance_spinner();
 }
 
 void ShallowWater::Compute1() {
@@ -299,37 +300,40 @@ void ShallowWater::Compute1() {
   const size_t globalSize[2] = {m_len_, n_len_};
   const size_t localSize[2] = {16, 16};
 
-  err = clSetKernelArg(kernel_sw_compute1_, 0, sizeof(double), (void *)&tdts8_);
-  err |=
-      clSetKernelArg(kernel_sw_compute1_, 1, sizeof(double), (void *)&tdtsdx_);
-  err |=
-      clSetKernelArg(kernel_sw_compute1_, 2, sizeof(double), (void *)&tdtsdy_);
-  err |=
-      clSetKernelArg(kernel_sw_compute1_, 3, sizeof(unsigned), (void *)&m_len_);
-  err |= clSetKernelArg(kernel_sw_compute1_, 4, sizeof(cl_mem), (void *)&cu_);
-  err |= clSetKernelArg(kernel_sw_compute1_, 5, sizeof(cl_mem), (void *)&cv_);
-  err |= clSetKernelArg(kernel_sw_compute1_, 6, sizeof(cl_mem), (void *)&z_);
-  err |= clSetKernelArg(kernel_sw_compute1_, 7, sizeof(cl_mem), (void *)&h_);
-  err |=
-      clSetKernelArg(kernel_sw_compute1_, 8, sizeof(cl_mem), (void *)&u_curr_);
-  err |=
-      clSetKernelArg(kernel_sw_compute1_, 9, sizeof(cl_mem), (void *)&v_curr_);
-  err |=
-      clSetKernelArg(kernel_sw_compute1_, 10, sizeof(cl_mem), (void *)&p_curr_);
-  err |=
-      clSetKernelArg(kernel_sw_compute1_, 11, sizeof(cl_mem), (void *)&u_next_);
-  err |=
-      clSetKernelArg(kernel_sw_compute1_, 12, sizeof(cl_mem), (void *)&v_next_);
-  err |=
-      clSetKernelArg(kernel_sw_compute1_, 13, sizeof(cl_mem), (void *)&p_next_);
+  err = clSetKernelArg(kernel_sw_compute1_, 0, sizeof(double),
+                       reinterpret_cast<void *>(&tdts8_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 1, sizeof(double),
+                        reinterpret_cast<void *>(&tdtsdx_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 2, sizeof(double),
+                        reinterpret_cast<void *>(&tdtsdy_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 3, sizeof(unsigned),
+                        reinterpret_cast<void *>(&m_len_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 4, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&cu_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 5, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&cv_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 6, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&z_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 7, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&h_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 8, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&u_curr_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 9, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&v_curr_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 10, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&p_curr_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 11, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&u_next_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 12, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&v_next_));
+  err |= clSetKernelArg(kernel_sw_compute1_, 13, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&p_next_));
   checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_compute1_");
 
   err = clEnqueueNDRangeKernel(cmdQueue_, kernel_sw_compute1_, 2, NULL,
                                globalSize, localSize, 0, NULL, NULL);
   checkOpenCLErrors(err,
                     "Failed to clEnqueueNDRangeKernel kernel_sw_compute1_");
-
-  advance_spinner();
 }
 
 void ShallowWater::PeriodicUpdate1() {
@@ -338,23 +342,23 @@ void ShallowWater::PeriodicUpdate1() {
   const size_t globalSize[2] = {m_, n_};
   const size_t localSize[2] = {16, 16};
 
-  err = clSetKernelArg(kernel_sw_update1_, 0, sizeof(unsigned), (void *)&m_);
-  err |= clSetKernelArg(kernel_sw_update1_, 1, sizeof(unsigned), (void *)&n_);
-  err |=
-      clSetKernelArg(kernel_sw_update1_, 2, sizeof(unsigned), (void *)&m_len_);
-  err |=
-      clSetKernelArg(kernel_sw_update1_, 3, sizeof(cl_mem), (void *)&u_next_);
-  err |=
-      clSetKernelArg(kernel_sw_update1_, 4, sizeof(cl_mem), (void *)&v_next_);
-  err |=
-      clSetKernelArg(kernel_sw_update1_, 5, sizeof(cl_mem), (void *)&p_next_);
+  err = clSetKernelArg(kernel_sw_update1_, 0, sizeof(unsigned),
+                       reinterpret_cast<void *>(&m_));
+  err |= clSetKernelArg(kernel_sw_update1_, 1, sizeof(unsigned),
+                        reinterpret_cast<void *>(&n_));
+  err |= clSetKernelArg(kernel_sw_update1_, 2, sizeof(unsigned),
+                        reinterpret_cast<void *>(&m_len_));
+  err |= clSetKernelArg(kernel_sw_update1_, 3, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&u_next_));
+  err |= clSetKernelArg(kernel_sw_update1_, 4, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&v_next_));
+  err |= clSetKernelArg(kernel_sw_update1_, 5, sizeof(cl_mem),
+                        reinterpret_cast<void *>(&p_next_));
   checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_update1_");
 
   err = clEnqueueNDRangeKernel(cmdQueue_, kernel_sw_update1_, 2, NULL,
                                globalSize, localSize, 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel kernel_sw_update1_");
-
-  advance_spinner();
 }
 
 void ShallowWater::TimeSmooth(int ncycle) {
@@ -365,39 +369,38 @@ void ShallowWater::TimeSmooth(int ncycle) {
     const size_t localSize[2] = {16, 16};
 
     err = clSetKernelArg(kernel_sw_time_smooth_, 0, sizeof(unsigned),
-                         (void *)&m_);
+                         reinterpret_cast<void *>(&m_));
     err |= clSetKernelArg(kernel_sw_time_smooth_, 1, sizeof(unsigned),
-                          (void *)&n_);
+                          reinterpret_cast<void *>(&n_));
     err |= clSetKernelArg(kernel_sw_time_smooth_, 2, sizeof(unsigned),
-                          (void *)&m_len_);
+                          reinterpret_cast<void *>(&m_len_));
     err |= clSetKernelArg(kernel_sw_time_smooth_, 3, sizeof(double),
-                          (void *)&alpha_);
-    err |=
-        clSetKernelArg(kernel_sw_time_smooth_, 4, sizeof(cl_mem), (void *)&u_);
-    err |=
-        clSetKernelArg(kernel_sw_time_smooth_, 5, sizeof(cl_mem), (void *)&v_);
-    err |=
-        clSetKernelArg(kernel_sw_time_smooth_, 6, sizeof(cl_mem), (void *)&p_);
+                          reinterpret_cast<void *>(&alpha_));
+    err |= clSetKernelArg(kernel_sw_time_smooth_, 4, sizeof(cl_mem),
+                          reinterpret_cast<void *>(&u_));
+    err |= clSetKernelArg(kernel_sw_time_smooth_, 5, sizeof(cl_mem),
+                          reinterpret_cast<void *>(&v_));
+    err |= clSetKernelArg(kernel_sw_time_smooth_, 6, sizeof(cl_mem),
+                          reinterpret_cast<void *>(&p_));
     err |= clSetKernelArg(kernel_sw_time_smooth_, 7, sizeof(cl_mem),
-                          (void *)&u_curr_);
+                          reinterpret_cast<void *>(&u_curr_));
     err |= clSetKernelArg(kernel_sw_time_smooth_, 8, sizeof(cl_mem),
-                          (void *)&v_curr_);
+                          reinterpret_cast<void *>(&v_curr_));
     err |= clSetKernelArg(kernel_sw_time_smooth_, 9, sizeof(cl_mem),
-                          (void *)&p_curr_);
+                          reinterpret_cast<void *>(&p_curr_));
     err |= clSetKernelArg(kernel_sw_time_smooth_, 10, sizeof(cl_mem),
-                          (void *)&u_next_);
+                          reinterpret_cast<void *>(&u_next_));
     err |= clSetKernelArg(kernel_sw_time_smooth_, 11, sizeof(cl_mem),
-                          (void *)&v_next_);
+                          reinterpret_cast<void *>(&v_next_));
     err |= clSetKernelArg(kernel_sw_time_smooth_, 12, sizeof(cl_mem),
-                          (void *)&p_next_);
+                          reinterpret_cast<void *>(&p_next_));
     checkOpenCLErrors(err, "Failed to set kernel args: kernel_sw_time_smooth_");
 
     err = clEnqueueNDRangeKernel(cmdQueue_, kernel_sw_time_smooth_, 2, NULL,
                                  globalSize, localSize, 0, NULL, NULL);
-    checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel \
-                            kernel_sw_time_smooth_");
+    checkOpenCLErrors(
+        err, "Failed to clEnqueueNDRangeKernel kernel_sw_time_smooth_");
 
-    advance_spinner();
   } else {
     cl_int err;
 
