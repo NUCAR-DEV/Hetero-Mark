@@ -59,10 +59,7 @@ ShallowWater::ShallowWater(unsigned m, unsigned n)
   cmdQueue_ = runtime_->getCmdQueue(0);
 }
 
-ShallowWater::~ShallowWater() {
-  FreeKernel();
-  FreeBuffer();
-}
+ShallowWater::~ShallowWater() {}
 
 void ShallowWater::InitKernel() {
   cl_int err;
