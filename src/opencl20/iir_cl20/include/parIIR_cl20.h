@@ -1,5 +1,5 @@
-#ifndef PARIIR_H
-#define PARIIR_H
+#ifndef PARIIR_CL20_H
+#define PARIIR_CL20_H
 
 #include "src/common/cl_util/cl_util.h"
 #include "src/common/benchmark/benchmark.h"
