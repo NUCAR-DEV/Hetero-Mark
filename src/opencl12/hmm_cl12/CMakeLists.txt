@@ -1,5 +1,6 @@
 set( BENCHMARK_NAME hmm_cl12 )
 set( SOURCE_FILES main.cc hmm_cl12.cc )
+set( HEADER_FILES include/hmm_cl12.h )
 set( EXTRA_FILES hmm_cl12_kernels.cl )
 
 ###############################################################################
@@ -44,7 +45,7 @@ endif()
 ###############################################################################
 
 # Find OpenCL include and libs
-find_path( OPENCL_INCLUDE_DIRS 
+find_path( OPENCL_INCLUDE_DIRS
     NAMES OpenCL/cl.h CL/cl.h
     HINTS ../../../  .  $ENV{AMDAPPSDKROOT}/include
 )
@@ -85,7 +86,7 @@ add_executable( ${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES
 # gcc/g++ specific compile options
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set( COMPILER_FLAGS "${COMPILER_FLAGS} -msse2 " )
-    
+
     # Note: "rt" is not present on mingw
     if( UNIX )
 		if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
@@ -93,7 +94,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 		endif( )
         set( ADDITIONAL_LIBRARIES ${ADDITIONAL_LIBRARIES} "rt" )
     endif( )
-    
+
     if( BITNESS EQUAL 32 )
         set( COMPILER_FLAGS "${COMPILER_FLAGS} -m32 " )
         set( LINKER_FLAGS "${LINKER_FLAGS} -m32 " )
@@ -101,7 +102,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
         set( COMPILER_FLAGS "${COMPILER_FLAGS} -m64 " )
         set( LINKER_FLAGS "${LINKER_FLAGS} -m64 " )
     endif( )
-    
+
     set( COMPILER_FLAGS "${COMPILER_FLAGS} ${EXTRA_COMPILER_FLAGS_GXX} " )
     set( LINKER_FLAGS "${LINKER_FLAGS} ${EXTRA_LINKER_FLAGS_GXX} " )
     set( ADDITIONAL_LIBRARIES ${ADDITIONAL_LIBRARIES} ${EXTRA_LIBRARIES_GXX} )

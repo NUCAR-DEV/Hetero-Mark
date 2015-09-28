@@ -43,11 +43,6 @@
 #include <CL/cl.h>
 #include "FIR_CL.h"
 
-// #ifdef GPUPROF
-// #include "inc/GPUPerfAPI.h"
-// #include <dlfcn.h>
-// #endif
-
 #define BILLION 1000000000L
 
 #define CHECK_STATUS(status, message)           \
@@ -55,11 +50,6 @@
     printf(message);                            \
     printf("\n");                               \
   }
-
-// #ifdef GPUPROF
-// char* createFilenameWithTimestamp();
-// void WriteSession( gpa_uint32 currentWaitSessionID, char* filename );
-// #endif
 
 /** Define custom constants*/
 #define MAX_SOURCE_SIZE (0x100000)
@@ -88,15 +78,15 @@ void FIR::Run() {
   temp_output = (cl_float *) malloc( (numData+numTap-1) * sizeof(cl_float) );
 
   /** Initialize the input data */
-  for (i = 0; i < numTotalData; i++) {
+  for (i = 0; (unsigned)i < numTotalData; i++) {
     input[i] = 8;
     output[i] = 99;
   }
 
-  for (i = 0; i < numTap; i++)
+  for (i = 0; (unsigned)i < numTap; i++)
     coeff[i] = 1.0/numTap;
 
-  for (i = 0; i < (numData+numTap-1); i++ )
+  for (i = 0; (unsigned)i < (numData+numTap-1); i++ )
     temp_output[i] = 0.0;
 
   // Event Creation
@@ -108,8 +98,8 @@ void FIR::Run() {
   FILE *fip;
   i = 0;
   fip = fopen("data/temp.dat", "r");
-  while (i < numTotalData) {
-    int res = fscanf(fip, "%f", &input[i]);
+  while ((unsigned)i < numTotalData) {
+    //int res = fscanf(fip, "%f", &input[i]);
     i++;
   }
   fclose(fip);
@@ -174,13 +164,6 @@ void FIR::Run() {
   // Create Eventlist for Timestamps
   eventList = new EventList(context, command_queue, device_id, true);
 
-  // #ifdef GPUPROF
-  // // Create performance counter Init
-  // GPA_Initialize();
-  // GPA_OpenContext( command_queue );
-  // GPA_EnableAllCounters();
-  // #endif
-
   // Create memory buffers on the device for each vector
   cl_mem inputBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                       sizeof(cl_float) * numData, NULL, &ret);
@@ -242,12 +225,12 @@ void FIR::Run() {
   // Decide the local group formation
   size_t globalThreads[1]={numData};
   size_t localThreads[1]={128};
-  cl_command_type cmdType;
+  //cl_command_type cmdType;
   count = 0;
 
   clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
 
-  while (count < numBlocks) {
+  while ((unsigned)count < numBlocks) {
     /* fill in the temp_input buffer object */
     ret = clEnqueueWriteBuffer(command_queue,
                                temp_outputBuffer,
@@ -262,33 +245,13 @@ void FIR::Run() {
     // (numTap-1)*sizeof(cl_float)
     eventList->add(event);
 
-    size_t global_item_size = numData;
+    //size_t global_item_size = numData;
     // GLOBAL ITEMSIZE IS CUSTOM BASED ON COMPUTAION ALGO
-    size_t local_item_size = numData;
+    //size_t local_item_size = numData;
     // size_t local_item_size[4] = {numData/4,numData/4,numData/4,numData/4};
     // LOCAL ITEM SIZE IS CUSTOM BASED ON COMPUTATION ALGO
 
-    // #if GPUPROF
-    //
-    //
-    // //Session Creation
-    // static gpa_uint32 currentWaitSessionID = 1;
-    // gpa_uint32 sessionID;
-    // GPA_BeginSession( &sessionID );
-    //
-    // // Required number of passes can be custom
-    // gpa_uint32 numRequiredPasses = 1;
-    //
-    // GPA_GetPassCount( &numRequiredPasses );
-    // for ( gpa_uint32 i = 0; i < numRequiredPasses; i++ )
-    // {
-    // GPA_BeginPass();
-    // GPA_BeginSample( 0 );
-    //
-    // #endif
-    //
     // Execute the OpenCL kernel on the list
-
     ret = clEnqueueNDRangeKernel(command_queue,
                                  kernel,
                                  1,
@@ -302,40 +265,6 @@ void FIR::Run() {
     CHECK_STATUS(ret, "Error: Range kernel. (clCreateKernel)\n");
 //    ret = clWaitForEvents(1, &event);
 //    ret = clWaitForEvents(1, &event);
-
-    // #If GPUPROF
-    // // End Profile session
-    // GPA_EndSample();
-    // GPA_EndPass();
-    //
-    // eventList->add(event);
-    // }
-    // GPA_EndSession();
-    //
-    // bool readyResult = true;
-    // if (sessionID != currentWaitSessionID)
-    // {
-    // GPA_Status sessionStatus;
-    // sessionStatus = GPA_IsSessionReady(&readyResult,
-    //                                    currentWaitSessionID );
-    // while ( sessionStatus == GPA_STATUS_ERROR_SESSION_NOT_FOUND )
-    // {
-    // // skipping a session which got overwritten
-    // currentWaitSessionID++;
-    // sessionStatus = GPA_IsSessionReady(&readyResult,
-    //                                    currentWaitSessionID );
-    // }
-    // }
-    // if ( readyResult )
-    // {
-    // WriteSession(currentWaitSessionID,
-    //              "Results1.log" );
-    // currentWaitSessionID++;
-    // }
-    // //Cleanup
-    // GPA_CloseContext();
-    //
-    // #endif
 
     eventList->add(event);
 
@@ -381,10 +310,6 @@ void FIR::Run() {
   free(coeff);
   free(temp_output);
 
-  // #ifdef GPUPROF
-  //   GPA_Destroy();
-  // #endif
-
   /* comment to hide timing events */
   eventList->printEvents();
   eventList->dumpEvents((char *)"eventDumps");
@@ -393,70 +318,3 @@ void FIR::Run() {
   diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
   printf("elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
 }
-
-// #ifdef GPUPROF
-// // Perfoemance API write function
-// void WriteSession( gpa_uint32 currentWaitSessionID,  char* filename )
-// {
-//   static bool doneHeadings = false;
-//   gpa_uint32 count;
-//   GPA_GetEnabledCount( &count );
-//   FILE* f;
-//   if ( !doneHeadings ) {
-//     const char* name;
-//     f = fopen( filename, "w+" );
-//     assert( f );
-//     fprintf(f, "Identifier, ");
-//     for (gpa_uint32 counter = 0 ; counter < count ; counter++) {
-//       gpa_uint32 enabledCounterIndex;
-//       GPA_GetEnabledIndex(counter, &enabledCounterIndex);
-//       GPA_GetCounterName(enabledCounterIndex, &name);
-//       fprintf(f, "%s, ", name);
-//     }
-//     fprintf(f, "\n");
-//     fclose(f);
-//     doneHeadings = true;
-//     }
-//     f = fopen(filename, "a+");
-//     assert(f);
-//     gpa_uint32 sampleCount;
-//     GPA_GetSampleCount(currentWaitSessionID, &sampleCount);
-//     for (gpa_uint32 sample = 0 ; sample < sampleCount ; sample++) {
-//       fprintf( f, "session: %d; sample: %d, ", currentWaitSessionID, sample);
-//       for (gpa_uint32 counter = 0 ; counter < count; counter++) {
-//         gpa_uint32 enabledCounterIndex;
-//         GPA_GetEnabledIndex( counter, &enabledCounterIndex );
-//     GPA_Type type;
-//     GPA_GetCounterDataType( enabledCounterIndex, &type );
-//     if ( type == GPA_TYPE_UINT32 ) {
-//     gpa_uint32 value;
-//     GPA_GetSampleUInt32(currentWaitSessionID, sample, \
-//                         enabledCounterIndex, &value );
-//     fprintf( f, "%u,", value );
-//   }
-//   else if ( type == GPA_TYPE_UINT64 ) {
-//     gpa_uint64 value;
-//     GPA_GetSampleUInt64(currentWaitSessionID,
-//                         sample, enabledCounterIndex, &value);
-//     fprintf(f, "%I64u,", value);
-//   }
-//   else if ( type == GPA_TYPE_FLOAT32 ) {
-//     gpa_float32 value;
-//     GPA_GetSampleFloat32(currentWaitSessionID,
-//                          sample, enabledCounterIndex, &value);
-//     fprintf(f, "%f,", value);
-//   } else if (type == GPA_TYPE_FLOAT64) {
-//     gpa_float64 value;
-//     GPA_GetSampleFloat64( currentWaitSessionID,
-//     sample, enabledCounterIndex, &value );
-//     fprintf( f, "%f,", value );
-//   } else {
-//     assert(false);
-//   }
-// }
-// fprintf( f, "\n" );
-// }
-// fclose( f );
-// }
-// #endif
-

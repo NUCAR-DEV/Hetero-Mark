@@ -1,5 +1,6 @@
 set( BENCHMARK_NAME fir20 )
 set( SOURCE_FILES FIR_CL.cc main.cc )
+set( HEADER_FILES include/FIR_CL.h )
 set( EXTRA_FILES fir_Kernels.cl )
 
 ############################################################################

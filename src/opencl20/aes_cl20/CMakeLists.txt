@@ -1,5 +1,6 @@
 set( BENCHMARK_NAME aes_cl20 )
 set( SOURCE_FILES aes_cl20.cc main.cc)
+set( HEADER_FILES include/aes_cl20.h )
 set( EXTRA_FILES aes_Kernels.cl in.txt keyfile.txt)
 
 ############################################################################

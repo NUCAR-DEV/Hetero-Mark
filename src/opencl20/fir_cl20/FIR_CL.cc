@@ -159,15 +159,15 @@ void FIR::Run() {
   }
 
   // Initialize the input data
-  for (i = 0; i < numTotalData; i++) {
+  for (i = 0; (unsigned)i < numTotalData; i++) {
     input[i] = 8;
     output[i] = 99;
   }
 
-  for (i = 0; i < numTap; i++)
+  for (i = 0; (unsigned)i < numTap; i++)
     coeff[i] = 1.0/numTap;
 
-  for (i=0; i < (numData+numTap-1); i++)
+  for (i=0; (unsigned)i < (numData+numTap-1); i++)
     temp_output[i] = 0.0;
 
 #if 1
@@ -175,8 +175,8 @@ void FIR::Run() {
   FILE *fip;
   i = 0;
   fip = fopen("data/temp.dat", "r");
-  while (i < numTotalData) {
-      int res = fscanf(fip, "%f", &input[i]);
+  while ((unsigned)i < numTotalData) {
+    //int res = fscanf(fip, "%f", &input[i]);
       i++;
     }
   fclose(fip);
@@ -237,7 +237,7 @@ void FIR::Run() {
   // Decide the local group size formation
   size_t globalThreads[1]={numData};
   size_t localThreads[1]={128};
-  cl_command_type cmdType;
+  //cl_command_type cmdType;
   count = 0;
 
   // FIR Loop
@@ -247,10 +247,10 @@ void FIR::Run() {
   /* measure monotonic time */
   clock_gettime(CLOCK_MONOTONIC, &start);
 
-  while (count < numBlocks) {
+  while ((unsigned)count < numBlocks) {
     // Custom item size based on current algorithm
-    size_t global_item_size = numData;
-    size_t local_item_size = numData;
+    //size_t global_item_size = numData;
+    //size_t local_item_size = numData;
     // Execute the OpenCL kernel on the list
     cl_event event;
     ret = clEnqueueNDRangeKernel(queue,
@@ -267,7 +267,7 @@ void FIR::Run() {
     ret = clWaitForEvents(1, &event);
 
     /* Kernel Profiling */
-    uint64_t kernel_diff;
+    //uint64_t kernel_diff;
     struct timespec kernel_start, kernel_end;
 
     clock_gettime(CLOCK_MONOTONIC, &kernel_start);
