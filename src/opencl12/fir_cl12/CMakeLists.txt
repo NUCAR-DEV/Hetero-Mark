@@ -1,6 +1,6 @@
 set( BENCHMARK_NAME fir_cl12 )
 set( SOURCE_FILES FIR_CL.cc eventlist.cpp main.cc )
-set( HEADER_FILES include/ eventlist.h )
+set( HEADER_FILES include/eventlist.h )
 set( EXTRA_FILES FIR.cl )
 
 ############################################################################
@@ -60,7 +60,7 @@ if( OPENCL_INCLUDE_DIRS STREQUAL "" OR OPENCL_LIBRARIES STREQUAL "")
 endif( )
 
 ############################################################################
-  
+
 # Style check
 set( check_target ${BENCHMARK_NAME}_check )
 set( check_target_src ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
