@@ -1,6 +1,6 @@
 set( BENCHMARK_NAME parIIR_cl12 )
 set( SOURCE_FILES main.cc parIIR_cl12.cc )
-set( HEADER_FILES include/parIIR_cl12.h )
+set( HEADER_FILES include/parIIR.h )
 set( EXTRA_FILES parIIR_cl12_kernel.cl )
 
 ############################################################################
