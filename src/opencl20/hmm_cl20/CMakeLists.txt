@@ -1,6 +1,6 @@
-set( BENCHMARK_NAME hmm )
+set( BENCHMARK_NAME hmm_cl20 )
 set( SOURCE_FILES hmm_cl20.cc main.cc )
-set( EXTRA_FILES hmm_Kernels.cl )
+set( EXTRA_FILES hmm_cl20_kernels.cl )
 
 ############################################################################
 
