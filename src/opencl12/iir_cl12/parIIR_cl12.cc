@@ -42,7 +42,7 @@
 #include <string.h>
 
 #include "src/common/cl_util/cl_util.h"
-#include "include/parIIR.h"
+#include "include/parIIR_cl12.h"
 
 #define BILLION 1000000000L
 

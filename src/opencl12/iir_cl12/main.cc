@@ -42,7 +42,7 @@
 #include <cstdlib>
 #include <string>
 
-#include "include/parIIR.h"
+#include "include/parIIR_cl12.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
@@ -76,7 +76,7 @@ int main(int argc, char const *argv[]) {
 
   runner.Run();
 
-  // runner.Summarize();    
+  // runner.Summarize();
 
   return 0;
 }
