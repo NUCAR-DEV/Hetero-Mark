@@ -1,7 +1,7 @@
-set( BENCHMARK_NAME parIIR_20 )
-set( SOURCE_FILES parIIR.cc main.cc )
+set( BENCHMARK_NAME parIIR_cl20 )
+set( SOURCE_FILES main.cc parIIR_cl20.cc )
 set( HEADER_FILES include/parIIR.h )
-set( EXTRA_FILES kernel.cl )
+set( EXTRA_FILES parIIR_cl20_kernel.cl )
 
 ############################################################################
 
