@@ -9,7 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Carter McCardwell (cmccardw@coe.neu.edu)
+ * Author: Leiming Yu (ylm@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -38,6 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include <cstdlib>
+#include <string>
 
 #include "include/hmm_cl12.h"
 #include "src/common/benchmark/benchmark_runner.h"
@@ -45,44 +47,42 @@
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/command_line_option/command_line_option.h"
 
-#include <cstdlib>
-#include <string>
 
-int main(int argc, char const *argv[])
-{
-    // Setup command line option
-    CommandLineOption command_line_option(
+int main(int argc, char const *argv[]) {
+  // Setup command line option
+  CommandLineOption command_line_option(
       "====== Hetero-Mark HMM Benchmarks (OpenCL 1.2) ======",
       "This benchmark runs the Hidden Markov Model.");
-    command_line_option.AddArgument("Help", "bool", "false",
-        "-h", "--help", "Dump help information");
-    command_line_option.AddArgument("HiddenStates", "int", "16",
-        "-s", "--states",
-        "Number of hidden states");
+  command_line_option.AddArgument("Help", "bool", "false",
+      "-h", "--help", "Dump help information");
+  command_line_option.AddArgument("HiddenStates", "int", "16",
+      "-s", "--states",
+      "Number of hidden states");
 
-    command_line_option.Parse(argc, argv);
-    if (command_line_option.GetArgumentValue("Help")->AsBool()) {
-      command_line_option.Help();
-      return 0;
-    }
-
-	// Initialize HMM class
-    std::unique_ptr<HMM> hmm(new HMM());
-
-	// Initialize hidden states
-    hmm->SetInitialParameters(command_line_option.GetArgumentValue("HiddenStates")->AsInt32());
-
-	// Set up the timmer
-    std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-
-	// Obtain HMM class and configure the time measurement
-    BenchmarkRunner runner(hmm.get(), timer.get());
-
-	// Run the HMM benchmark
-    runner.Run();
-
-	// Obtain the runtime performance
-    //runner.Summarize();    
-    
+  command_line_option.Parse(argc, argv);
+  if (command_line_option.GetArgumentValue("Help")->AsBool()) {
+    command_line_option.Help();
     return 0;
+  }
+
+  // Initialize HMM class
+  std::unique_ptr<HMM> hmm(new HMM());
+
+  // Initialize hidden states
+  hmm->SetInitialParameters(
+              command_line_option.GetArgumentValue("HiddenStates")->AsInt32());
+
+  // Set up the timmer
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+
+  // Obtain HMM class and configure the time measurement
+  BenchmarkRunner runner(hmm.get(), timer.get());
+
+  // Run the HMM benchmark
+  runner.Run();
+
+  // Obtain the runtime performance
+  // runner.Summarize();
+
+  return 0;
 }
