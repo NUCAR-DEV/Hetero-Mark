@@ -40,8 +40,8 @@
 #include <stdlib.h>          /* for exit() definition */
 #include <time.h>            /* for clock_gettime */
 #include <string.h>
-#include "src/common/cl_util/cl_util.h"
 
+#include "src/common/cl_util/cl_util.h"
 #include "include/parIIR.h"
 
 #define BILLION 1000000000L
@@ -52,7 +52,6 @@ ParIIR::ParIIR() {
 }
 
 ParIIR::~ParIIR() {
-  //Auto called
 }
 
 void ParIIR::Cleanup() {
@@ -61,6 +60,8 @@ void ParIIR::Cleanup() {
 }
 
 void ParIIR::Initialize() {
+  printf("=>Initialize parameters.\n");
+
   InitParam();
   InitCL();
   InitKernels();
@@ -68,7 +69,6 @@ void ParIIR::Initialize() {
 }
 
 void ParIIR::InitParam() {
-  // empty
   channels = 64;
   c = 3.f;
 }
@@ -93,16 +93,16 @@ void ParIIR::InitCL() {
 void ParIIR::InitKernels() {
   cl_int err;
 
-  file->open("kernel.cl");
+  file->open("parIIR_cl12_kernel.cl");
 
   // Create program
   const char *source = file->getSourceChar();
 
   program = clCreateProgramWithSource(context,
-                                      1,
-                                      (const char **)&source,
-                                      NULL,
-                                      &err);
+      1,
+      (const char **)&source,
+      NULL,
+      &err);
   checkOpenCLErrors(err, "Failed to create Program with source...\n");
 
   // Build program
@@ -116,19 +116,19 @@ void ParIIR::InitKernels() {
 void ParIIR::InitBuffers() {
   cl_int err;
 
-  int i, j;
-
   // Create the input and output arrays in device memory for our calculation
   d_X = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                         sizeof(float)*len, NULL, NULL);
+      sizeof(float)*len, NULL, NULL);
   d_Y = clCreateBuffer(context, CL_MEM_READ_WRITE,
-                         sizeof(float)*len*channels, NULL, NULL);
+      sizeof(float)*len*channels, NULL, NULL);
   d_nsec = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                         sizeof(cl_float2)*ROWS, NULL, NULL);
+      sizeof(cl_float2)*ROWS, NULL, NULL);
   d_dsec = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                          sizeof(cl_float2)*ROWS, NULL, NULL);
+      sizeof(cl_float2)*ROWS, NULL, NULL);
 
   size_t bytes = sizeof(float) * len;
+
+  int i;
 
   // input
   h_X = (float*) malloc(bytes);
@@ -157,16 +157,34 @@ void ParIIR::InitBuffers() {
   //                            sizeof(float)*row*2, nsec, 0, NULL, NULL);
   // checkOpenCLErrors(err, "Faile to write d_nsec to device.\n");
 
-  err = clEnqueueWriteBuffer(cmdQueue, d_X, CL_TRUE, 0, bytes, h_X, 0,
-                             NULL, NULL);
+  err = clEnqueueWriteBuffer(cmdQueue,
+      d_X,
+      CL_TRUE,
+      0,
+      bytes,
+      h_X,
+      0, NULL, NULL);
+
   checkOpenCLErrors(err, "Faile to write h_X to device.\n");
 
-  err = clEnqueueWriteBuffer(cmdQueue, d_nsec, CL_TRUE, 0,
-                             sizeof(cl_float2)*ROWS, nsec, 0, NULL, NULL);
+  err = clEnqueueWriteBuffer(cmdQueue,
+      d_nsec,
+      CL_TRUE,
+      0,
+      sizeof(cl_float2)*ROWS,
+      nsec,
+      0, NULL, NULL);
+
   checkOpenCLErrors(err, "Faile to write nsec to device.\n");
 
-  err = clEnqueueWriteBuffer(cmdQueue, d_dsec, CL_TRUE, 0,
-                             sizeof(cl_float2)*ROWS, dsec, 0, NULL, NULL);
+  err = clEnqueueWriteBuffer(cmdQueue,
+      d_dsec,
+      CL_TRUE,
+      0,
+      sizeof(cl_float2)*ROWS,
+      dsec,
+      0, NULL, NULL);
+
   checkOpenCLErrors(err, "Faile to write dsec to device.\n");
 }
 
@@ -182,7 +200,7 @@ void ParIIR::CleanUpKernels() {
 void ParIIR::multichannel_pariir() {
   cl_int err;
 
-  size_t localSize = ROWS;  // multiple of 64
+  size_t localSize = ROWS;  // multiple of 64: current fixed at 256
   size_t globalSize = channels * localSize;
 
   // Set the arguments to our compute kernel
@@ -198,6 +216,7 @@ void ParIIR::multichannel_pariir() {
   err  = clSetKernelArg(kernel_pariir, 3, sizeof(cl_mem), &d_dsec);
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
+  // local memory stores previous and current coefficients : 2 x 256
   err  = clSetKernelArg(kernel_pariir, 4, sizeof(float) * 512, NULL);
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
@@ -208,14 +227,14 @@ void ParIIR::multichannel_pariir() {
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clEnqueueNDRangeKernel(cmdQueue,
-                               kernel_pariir,
-                               1,
-                               NULL,
-                               &globalSize,
-                               &localSize,
-                               0,
-                               NULL,
-                               NULL);
+      kernel_pariir,
+      1,
+      NULL,
+      &globalSize,
+      &localSize,
+      0,
+      NULL,
+      NULL);
 
   checkOpenCLErrors(err, "Failed to execute kernel.\n");
 }
@@ -223,7 +242,7 @@ void ParIIR::multichannel_pariir() {
 void ParIIR::compare() {
   // copy gpu results back
   clEnqueueReadBuffer(cmdQueue, d_Y, CL_TRUE, 0,
-                      sizeof(float)*len*channels, h_Y, 0, NULL, NULL);
+      sizeof(float)*len*channels, h_Y, 0, NULL, NULL);
 
   // Compute CPU results
   float *ds = (float*) malloc(sizeof(float) * ROWS * 2);
@@ -277,9 +296,6 @@ void ParIIR::compare() {
 }
 
 void ParIIR::Run() {
-  printf("=>Initialize parameters.\n");
-  Initialize();
-
   printf("      >> Start IIR on GPU.\n");
 
   multichannel_pariir();
