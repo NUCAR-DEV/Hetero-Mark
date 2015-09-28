@@ -83,7 +83,6 @@ void HMM::InitCL() {
 }
 
 void HMM::InitParam() {
-  if (N) {
     bytes_nn       = sizeof(float) * N * N;
     bytes_nt       = sizeof(float) * N * T;
     bytes_n        = sizeof(float) * N;
@@ -102,10 +101,6 @@ void HMM::InitParam() {
 
     blk_rows       = D/16;
     blknum         = blk_rows * (blk_rows + 1) / 2;
-  } else {
-    std::cout << "Invalid N" << std::endl;
-    exit(-1);
-  }
 }
 
 void HMM::InitKernels() {
@@ -257,8 +252,10 @@ void HMM::InitBuffers() {
   xi_sum_tmp  = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_nn, 0);
 
   // intermediate blk results from the device
-  blk_result = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE,
-      bytes_tileblks, 0);
+  blk_result = (float *)clSVMAlloc(context, 
+    CL_MEM_READ_WRITE, 
+    bytes_tileblks, 
+    0);
 
   // Expected values
   expect_prior = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_n, 0);
@@ -504,10 +501,9 @@ void HMM::Forward() {
 
 //                                    Run Backward()
 void HMM::Backward() {
-  int j;
   int current, previous;
   // TODO(hmm): xi_sum and gamma update could be run concurrently
-  for (j = T-2; j >= 0; --j) {
+  for (int j = T-2; j >= 0; --j) {
     current = j * N;
     previous = current + N;
 
@@ -567,11 +563,19 @@ void HMM::EM() {
 
     sum = 0.f;
     // Map to host to finalized the summation
-    if (!this->svmFineGrainAvail) {
-      err = clEnqueueSVMMap(cmdQueue_0, CL_TRUE, CL_MAP_READ,
-          blk_result, bytes_tileblks, 0, NULL, NULL);
-      checkOpenCLErrors(err, "Failed to clEnqueueSVMMap");
-    }
+    // if (!this->svmFineGrainAvail) {
+    //   err = clEnqueueSVMMap(cmdQueue_0, CL_TRUE, CL_MAP_READ,
+    //       blk_result, bytes_tileblks, 0, NULL, NULL);
+    //   checkOpenCLErrors(err, "Failed to clEnqueueSVMMap");
+    // }
+    err = clEnqueueSVMMap(cmdQueue_0, 
+      CL_TRUE, 
+      CL_MAP_READ,
+      blk_result, 
+      bytes_tileblks, 
+      0, NULL, NULL);
+
+    checkOpenCLErrors(err, "Failed to clEnqueueSVMMap");
 
     // compute on cpu
     // #pragma unroll
@@ -579,10 +583,12 @@ void HMM::EM() {
       sum += blk_result[i];
     }
 
-    if (!this->svmFineGrainAvail) {
-      err = clEnqueueSVMUnmap(cmdQueue_0, blk_result, 0, NULL, NULL);
-      checkOpenCLErrors(err, "Failed to clEnqueueSVMUnmap");
-    }
+    // if (!this->svmFineGrainAvail) {
+    //   err = clEnqueueSVMUnmap(cmdQueue_0, blk_result, 0, NULL, NULL);
+    //   checkOpenCLErrors(err, "Failed to clEnqueueSVMUnmap");
+    // }
+    err = clEnqueueSVMUnmap(cmdQueue_0, blk_result, 0, NULL, NULL);
+    checkOpenCLErrors(err, "Failed to clEnqueueSVMUnmap");
 
     // cout << sum << endl;
 
