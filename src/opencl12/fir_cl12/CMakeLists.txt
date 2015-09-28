@@ -60,7 +60,7 @@ if( OPENCL_INCLUDE_DIRS STREQUAL "" OR OPENCL_LIBRARIES STREQUAL "")
 endif( )
 
 ############################################################################
-
+  
 # Style check
 set( check_target ${BENCHMARK_NAME}_check )
 set( check_target_src ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
