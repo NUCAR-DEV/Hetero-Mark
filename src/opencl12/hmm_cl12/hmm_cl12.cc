@@ -299,18 +299,18 @@ void HMM::InitBuffers() {
   std::unique_ptr<float[]> observations_host(new float[D*T]);
 
   for (i = 0; i < (N * N); i++)
-    a_host.get()[i] = 1.0f/static_cast<float>N;
+    a_host.get()[i] = 1.0f/static_cast<float>(N);
 
   for (i = 0; i < (N * T); i++)
-    b_host.get()[i] = 1.0f/static_cast<float>T;
+    b_host.get()[i] = 1.0f/static_cast<float>(T);
 
   for (i = 0; i < N; i++)
-    prior_host.get()[i] = 1.0f/static_cast<float>N;
+    prior_host.get()[i] = 1.0f/static_cast<float>(N);
 
   // D x T
   for (i = 0 ; i < D; ++i)
     for (j = 0 ; j< T; ++j)
-      observations_host.get()[i * T + j] = static_cast<float>j + 1.f;
+      observations_host.get()[i * T + j] = static_cast<float>(j) + 1.f;
 
   // OCL 1.2 needs explicit copy
   err = clEnqueueWriteBuffer(cmdQueue_0,
