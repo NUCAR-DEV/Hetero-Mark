@@ -59,3 +59,6 @@ isa.txt
 # Unit tests
 googletest-prefix
 *_unittest
+
+# Apple OS X operating system
+.DS_Store
