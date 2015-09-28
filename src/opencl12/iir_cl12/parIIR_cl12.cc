@@ -276,7 +276,7 @@ void ParIIR::compare() {
   }
 
   // Compare CPU and GPU results
-  int success;
+  int success = 1;
 
   int chn;
   for (chn = 0; chn < channels; chn++) {
@@ -284,7 +284,7 @@ void ParIIR::compare() {
 
     for (i = 0; i < len; i++) {
       if (abs(cpu_y[i] - h_Y[i + start]) > 0.001) {
-        puts("Failed!");
+        printf("Failed!\n");
         success = 0;
         break;
       }
@@ -292,7 +292,7 @@ void ParIIR::compare() {
   }
 
   if (success)
-    puts("Passed!");
+    printf("Passed the test!\n");
 }
 
 void ParIIR::Run() {
@@ -302,8 +302,8 @@ void ParIIR::Run() {
 
   printf("      >> End IIR on GPU.\n");
 
+  printf("<=End program.\n");
+
   // check results
   compare();
-
-  printf("<=End program.\n");
 }
