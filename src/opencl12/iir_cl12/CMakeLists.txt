@@ -1,6 +1,6 @@
-set( BENCHMARK_NAME parIIR )
-set( SOURCE_FILES main.cc parIIR.cc )
-set( EXTRA_FILES kernel.cl )
+set( BENCHMARK_NAME parIIR_cl12 )
+set( SOURCE_FILES main.cc parIIR_cl12.cc )
+set( EXTRA_FILES parIIR_cl12_kernel.cl )
 
 ############################################################################
 
