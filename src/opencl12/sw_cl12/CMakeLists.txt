@@ -1,7 +1,7 @@
-set( BENCHMARK_NAME sw_12 )
-set( SOURCE_FILES main.cc sw.cc )
-set( HEADER_FILES include/sw.h )
-set( EXTRA_FILES sw_Kernels.cl )
+set( BENCHMARK_NAME sw_cl12 )
+set( SOURCE_FILES main.cc sw_cl12.cc )
+set( HEADER_FILES sw_cl12.h )
+set( EXTRA_FILES sw_cl12_kernel.cl )
 
 ############################################################################
 

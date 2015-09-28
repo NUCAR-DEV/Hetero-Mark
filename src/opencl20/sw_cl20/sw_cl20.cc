@@ -32,7 +32,7 @@
  *
  */
 
-#include "include/sw.h"
+#include "src/opencl20/sw_cl20/sw_cl20.h"
 
 #include <stdio.h> /* for printf */
 #include <stdint.h>/* for uint64 definition */
