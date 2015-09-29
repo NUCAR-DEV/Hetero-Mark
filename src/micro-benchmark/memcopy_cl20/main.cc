@@ -129,9 +129,11 @@ int main(int argc, const char * argv[]) {
 
       clock_gettime(CLOCK_MONOTONIC, &start);
 
-      int *svm = (int *)clSVMAlloc(context, CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeof(int)*x*10000, 0);
+      int *svm = (int *)clSVMAlloc(context, CL_MEM_SVM_FINE_GRAIN_BUFFER,
+                                   sizeof(int)*x*10000, 0);
 
-      err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm, sizeof(int)*x*10000, 0, 0, 0);
+//      err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, svm,
+//      sizeof(int)*x*10000, 0, 0, 0);
 
       if (err != CL_SUCCESS) {
         printf("enqueuesvmmap ocl20 %i", err);
@@ -142,13 +144,14 @@ int main(int argc, const char * argv[]) {
       }
 
       //memcpy(&svm[0], &indata[0], sizeof(int)*x);
-      err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
+//      err = clEnqueueSVMUnmap(queue, svm, 0, 0, 0);
 
       if (err != CL_SUCCESS) {
         printf("enqueueunmap ocl20 %i", err);
       }
 
-      err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, svm, sizeof(int)*x*10000, 0, 0, 0);
+//      err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ,
+//      svm, sizeof(int)*x*10000, 0, 0, 0);
 
       if (err != CL_SUCCESS) {
         printf("enqueusvmmap2 ocl20 %i", err);
@@ -158,7 +161,6 @@ int main(int argc, const char * argv[]) {
         memcpy(&outdata[i], &svm[i], sizeof(int));
       }
 
-      //memcpy(&outdata[0], &svm[0], sizeof(int)*x);
       clock_gettime(CLOCK_MONOTONIC, &end);
 
       clSVMFree(context, svm);
