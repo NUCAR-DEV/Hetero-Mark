@@ -82,6 +82,7 @@ int main(int argc, char const *argv[])
 
     std::unique_ptr<AES> aes(new AES());
     aes->SetInitialParameters(fp);
+    aes->Initialize();
 
     std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
     BenchmarkRunner runner(aes.get(), timer.get());

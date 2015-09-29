@@ -4,6 +4,8 @@
  * Developed by:Northeastern University Computer Architecture Research (NUCAR)
  * Group, Northeastern University, http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Carter McCardwell (carter@mccardwell.net, cmccardw@ece.neu.edu)
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  *  with the Software without restriction, including without limitation
@@ -34,7 +36,7 @@
  *
  */
 
-#include "include/aes_cl12.h"
+#include "src/opencl12/aes_cl12/include/aes_cl12.h"
 
 #include <string.h>
 #include <inttypes.h>
@@ -49,27 +51,27 @@ AES::AES() {
   platform = runtime->getPlatformID();
   device   = runtime->getDevice();
   context  = runtime->getContext();
-  cmdQueue = runtime->getCmdQueue(0);
+  cmd_queue = runtime->getCmdQueue(0);
 
   // Init
   RUNNING_THREADS = MAX_WORK_ITEMS * BASIC_UNIT;
-  expanded_key[60] = { 0x00 };
-  hexMode = 1;
+  expanded_key[59] = { 0x00 };
+  hex_mode = 1;
 }
 
 AES::~AES() {
   FreeKernel();
 }
 
-int AES::InitFiles() {
+void AES::InitFiles() {
   //Note: fp is a struct defined in the header and set using
   //setInitialParameters(FilePackage filepackage)
 
-  // The first argument is the hexMode
+  // The first argument is the hex_mode
   if (strcmp(fp.mode, "h") == 0) {
-    hexMode = true;
+    hex_mode = true;
   } else if (strcmp(fp.mode, "a") == 0) {
-    hexMode = false;
+    hex_mode = false;
   } else {
     printf("error: first argument must be \'a\' for ASCII interpretation");
     printf(" or \'h\' for hex interpretation\n");
@@ -166,39 +168,39 @@ uint32_t AES::RotateWord(uint32_t word) {
   union {
     uint8_t bytes[4];
     uint32_t word;
-  } subWord  __attribute__((aligned));
+  } sub_word  __attribute__((aligned));
 
   // Note: The word is stored backwards, that is why the index
   // starts at 3 and goes to 0x00
-  subWord.word = word;
+  sub_word.word = word;
 
-  uint8_t B0 = subWord.bytes[3];
-  uint8_t B1 = subWord.bytes[2];
-  uint8_t B2 = subWord.bytes[1];
-  uint8_t B3 = subWord.bytes[0];
+  uint8_t B0 = sub_word.bytes[3];
+  uint8_t B1 = sub_word.bytes[2];
+  uint8_t B2 = sub_word.bytes[1];
+  uint8_t B3 = sub_word.bytes[0];
 
-  subWord.bytes[3] = B1;  // 0
-  subWord.bytes[2] = B2;  // 1
-  subWord.bytes[1] = B3;  // 2
-  subWord.bytes[0] = B0;  // 3
+  sub_word.bytes[3] = B1;  // 0
+  sub_word.bytes[2] = B2;  // 1
+  sub_word.bytes[1] = B3;  // 2
+  sub_word.bytes[0] = B0;  // 3
 
-  return subWord.word;
+  return sub_word.word;
 }
 
 uint32_t AES::SubWord(uint32_t word) {
   union {
     uint32_t word;
     uint8_t bytes[4];
-  } subWord  __attribute__((aligned));
+  } sub_word  __attribute__((aligned));
 
-  subWord.word = word;
+  sub_word.word = word;
 
-  subWord.bytes[3] = s[subWord.bytes[3]];
-  subWord.bytes[2] = s[subWord.bytes[2]];
-  subWord.bytes[1] = s[subWord.bytes[1]];
-  subWord.bytes[0] = s[subWord.bytes[0]];
+  sub_word.bytes[3] = s[sub_word.bytes[3]];
+  sub_word.bytes[2] = s[sub_word.bytes[2]];
+  sub_word.bytes[1] = s[sub_word.bytes[1]];
+  sub_word.bytes[0] = s[sub_word.bytes[0]];
 
-  return subWord.word;
+  return sub_word.word;
 }
 
 void AES::KeyExpansion(uint8_t *pk) {
@@ -245,15 +247,15 @@ void AES::KeyExpansion(uint8_t *pk) {
 void AES::InitKeys() {
   // Read the private key in
   for (int i = 0; i < 32; i++)
-    int res = fscanf(keyfile, "%02x", (int *)&key[i]);
-  // res is simply a variable to supress the "ignored"
+  if (fscanf(keyfile, "%02x", (int *)&key[i])) {}
+  // If statment exists to supress the "ignored"
   // results warning
   // Expand key
   KeyExpansion(key);
 
   //Copy key to GPU
   cl_int err;
-  clKey = clCreateBuffer(context,
+  cl_key = clCreateBuffer(context,
    CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 
    60*sizeof(uint32_t), 
    expanded_key, 
@@ -262,34 +264,34 @@ void AES::InitKeys() {
     printf("Error copying key to GPU");
 }
 
-void AES::Run() {
-  cl_int err;
-
+void AES::Initialize() {
   InitFiles();
   InitKeys();
   InitKernel();
+}
 
+void AES::Run() {
   int ch    = 0;  // The buffer for the data read in using ASCII/binary mode
   int spawn = 0;  // The number of compute units that will be enqueued per cycle
   int end   = 1;  // Changed to 0 when the end of the file is reached,
                   // terminates the infinite loop
-  unsigned int currentOffset = 0;  // Data is linearly dimensionalized
+  unsigned int current_offset = 0;  // Data is linearly dimensionalized
   uint8_t states[16 * RUNNING_THREADS];
   while (end) {
     spawn = 0;
     // Dispatch many control threads that will report back to main
     // (for now 5x) - 1 worker per state
     for (int i = 0; i < RUNNING_THREADS; i++) {
-      currentOffset = i*16;
+      current_offset = i*16;
       spawn++;
       for (int ix = 0; ix < 16; ix++) {
-        if (hexMode == 1) {
+        if (hex_mode == 1) {
           if (fscanf(infile, "%02x",
-                     (unsigned int *)&states[currentOffset+ix]) != EOF) {
+                     (unsigned int *)&states[current_offset+ix]) != EOF) {
           } else {
             if (ix > 0) {
               for (int ixx = ix; ixx < 16; ixx++) {
-                states[currentOffset+ixx] = 0x00;
+                states[current_offset+ixx] = 0x00;
               }
             } else { spawn--; }
             i = RUNNING_THREADS + 1;
@@ -298,10 +300,10 @@ void AES::Run() {
           }
         } else {
           ch = getc(infile);
-          if (ch != EOF) { states[currentOffset+ix] = ch;
+          if (ch != EOF) { states[current_offset+ix] = ch;
           } else {
             if (ix > 0) { for (int ixx = ix; ixx < 16; ixx++) {
-                states[currentOffset+ixx] = 0x00;
+                states[current_offset+ixx] = 0x00;
               }
             } else { spawn--; }
             i = RUNNING_THREADS + 1;
@@ -314,26 +316,26 @@ void AES::Run() {
     if (spawn == 0) { break; }
     // arrange data correctly
     for (int i = 0; i < spawn; i++) {
-      currentOffset = i*16;
+      current_offset = i*16;
       uint8_t temp[16];
-      memcpy(&temp[0], &states[currentOffset], sizeof(uint8_t));
-      memcpy(&temp[4], &states[currentOffset+1], sizeof(uint8_t));
-      memcpy(&temp[8], &states[currentOffset+2], sizeof(uint8_t));
-      memcpy(&temp[12], &states[currentOffset+3], sizeof(uint8_t));
-      memcpy(&temp[1], &states[currentOffset+4], sizeof(uint8_t));
-      memcpy(&temp[5], &states[currentOffset+5], sizeof(uint8_t));
-      memcpy(&temp[9], &states[currentOffset+6], sizeof(uint8_t));
-      memcpy(&temp[13], &states[currentOffset+7], sizeof(uint8_t));
-      memcpy(&temp[2], &states[currentOffset+8], sizeof(uint8_t));
-      memcpy(&temp[6], &states[currentOffset+9], sizeof(uint8_t));
-      memcpy(&temp[10], &states[currentOffset+10], sizeof(uint8_t));
-      memcpy(&temp[14], &states[currentOffset+11], sizeof(uint8_t));
-      memcpy(&temp[3], &states[currentOffset+12], sizeof(uint8_t));
-      memcpy(&temp[7], &states[currentOffset+13], sizeof(uint8_t));
-      memcpy(&temp[11], &states[currentOffset+14], sizeof(uint8_t));
-      memcpy(&temp[15], &states[currentOffset+15], sizeof(uint8_t));
+      memcpy(&temp[0], &states[current_offset], sizeof(uint8_t));
+      memcpy(&temp[4], &states[current_offset+1], sizeof(uint8_t));
+      memcpy(&temp[8], &states[current_offset+2], sizeof(uint8_t));
+      memcpy(&temp[12], &states[current_offset+3], sizeof(uint8_t));
+      memcpy(&temp[1], &states[current_offset+4], sizeof(uint8_t));
+      memcpy(&temp[5], &states[current_offset+5], sizeof(uint8_t));
+      memcpy(&temp[9], &states[current_offset+6], sizeof(uint8_t));
+      memcpy(&temp[13], &states[current_offset+7], sizeof(uint8_t));
+      memcpy(&temp[2], &states[current_offset+8], sizeof(uint8_t));
+      memcpy(&temp[6], &states[current_offset+9], sizeof(uint8_t));
+      memcpy(&temp[10], &states[current_offset+10], sizeof(uint8_t));
+      memcpy(&temp[14], &states[current_offset+11], sizeof(uint8_t));
+      memcpy(&temp[3], &states[current_offset+12], sizeof(uint8_t));
+      memcpy(&temp[7], &states[current_offset+13], sizeof(uint8_t));
+      memcpy(&temp[11], &states[current_offset+14], sizeof(uint8_t));
+      memcpy(&temp[15], &states[current_offset+15], sizeof(uint8_t));
       for (int c = 0; c < 16; c++) {
-        memcpy(&states[currentOffset+c], &temp[c], sizeof(uint8_t));
+        memcpy(&states[current_offset+c], &temp[c], sizeof(uint8_t));
       }
     }
     // Set data for workers----------
@@ -346,7 +348,7 @@ void AES::Run() {
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &dev_states);
     checkOpenCLErrors(status, "clSetKernelArg(data)\n");
 
-    status = clSetKernelArg(kernel, 1, sizeof(cl_mem), &clKey);
+    status = clSetKernelArg(kernel, 1, sizeof(cl_mem), &cl_key);
     checkOpenCLErrors(status, "clSetKernelArg(key)\n");
 
     // Calculations to optimize the execution of the kernel
@@ -357,13 +359,13 @@ void AES::Run() {
     } else { local_ws = (spawn/BASIC_UNIT); }
 
     cl_event event;
-    status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, \
+    status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, \
                                      &global_ws, &local_ws, 0, NULL, &event);
     checkOpenCLErrors(status, "clEnqueueNDRangeKernel\n");
 
-    clFinish(cmdQueue);
+    clFinish(cmd_queue);
 
-    status = clEnqueueReadBuffer(cmdQueue, dev_states, CL_TRUE, 0, \
+    status = clEnqueueReadBuffer(cmd_queue, dev_states, CL_TRUE, 0, \
                             16*spawn*sizeof(uint8_t), &states, 0, NULL, NULL);
 
     checkOpenCLErrors(status, "clEnqueueReadBuffer\n");
@@ -371,16 +373,16 @@ void AES::Run() {
     clReleaseMemObject(dev_states);
 
     for (int i = 0; i < spawn; i++) {
-      currentOffset = i*16;
+      current_offset = i*16;
       for (int ix = 0; ix < 4; ix++) {
         char hex[3];
-        sprintf(hex, "%02x", states[currentOffset+ix]);
+        sprintf(hex, "%02x", states[current_offset+ix]);
         for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-        sprintf(hex, "%02x", states[currentOffset+ix+4]);
+        sprintf(hex, "%02x", states[current_offset+ix+4]);
         for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-        sprintf(hex, "%02x", states[currentOffset+ix+8]);
+        sprintf(hex, "%02x", states[current_offset+ix+8]);
         for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
-        sprintf(hex, "%02x", states[currentOffset+ix+12]);
+        sprintf(hex, "%02x", states[current_offset+ix+12]);
         for (int i = 0; i < 3; i++) { putc(hex[i], outfile); }
       }
     }

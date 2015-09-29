@@ -1,5 +1,5 @@
-#ifndef AES_H
-#define AES_H
+#ifndef FIR_H
+#define FIR_H
 
 #include "src/common/cl_util/cl_util.h"
 #include <CL/cl.h>
@@ -10,10 +10,10 @@ using namespace clHelper;
 class FIR : public Benchmark
 {
 private:
-    cl_uint numTap = 0;
-    cl_uint numData = 0;  // Block size
-    cl_uint numTotalData = 0;
-    cl_uint numBlocks = 0;
+    cl_uint num_tap = 0;
+    cl_uint num_data = 0;  // Block size
+    cl_uint num_total_data = 0;
+    cl_uint num_blocks = 0;
     cl_float* input = NULL;
     cl_float* output = NULL;
     cl_float* coeff = NULL;
@@ -23,8 +23,8 @@ public:
         FIR() {};
         ~FIR() {};
 
-    void SetInitialParameters(int data, int blocks) { numBlocks = blocks; numData = data; }
-    	void Initialize() override {}
+    void SetInitialParameters(int data, int blocks) { num_blocks = blocks; num_data = data; }
+    void Initialize() override {}
 	void Run() override;
 	void Verify() override {}
 	void Cleanup() override {}

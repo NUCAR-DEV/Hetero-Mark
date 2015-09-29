@@ -24,12 +24,12 @@ class AES : public Benchmark
         cl_platform_id   platform;
         cl_device_id     device;
         cl_context       context;
-        cl_command_queue cmdQueue;
+        cl_command_queue cmd_queue;
 
         cl_program       program;
         cl_kernel        kernel;
         cl_mem           dev_states;
-        cl_mem           clKey;
+        cl_mem           cl_key;
 
         static const int MAX_SOURCE_SIZE = 0x100000;
 
@@ -43,8 +43,8 @@ class AES : public Benchmark
         //RUNNING_THREADS is the product of the two
         int BASIC_UNIT = 1024;
         int MAX_WORK_ITEMS = 256;
-        unsigned int RUNNING_THREADS;
-        bool hexMode;
+        int RUNNING_THREADS;
+        bool hex_mode;
 
         // Files
         FILE *infile;
@@ -104,7 +104,7 @@ class AES : public Benchmark
         // into 60 32-bit words that are stored in the array ek[]
         void KeyExpansion(uint8_t *pk);
 
-        int  InitFiles();
+        void InitFiles();
         void InitKeys();
         void InitKernel();
 
@@ -115,8 +115,8 @@ public:
         AES();
         ~AES();
 
-        void SetInitialParameters(FilePackage filepackage) { fp = filepackage; }
-        void Initialize() override {};
+    void SetInitialParameters(FilePackage filepackage) { fp = filepackage; }
+    void Initialize() override;
 	void Run() override;
 	void Verify() override {}
 	void Cleanup() override {}

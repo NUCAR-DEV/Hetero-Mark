@@ -7,12 +7,12 @@
 using namespace clHelper;
 
 struct FilePackage
-        {
-            char *in;
-            char *out;
-            char *key;
-            char *mode;
-        };
+{
+  char *in;
+  char *out;
+  char *key;
+  char *mode;
+};
 
 class AES : public Benchmark
 {
@@ -24,7 +24,7 @@ class AES : public Benchmark
         cl_platform_id   platform;
         cl_device_id     device;
         cl_context       context;
-        cl_command_queue cmdQueue;
+        cl_command_queue cmd_queue;
 
         cl_program       program;
         cl_kernel        kernel;
@@ -40,7 +40,7 @@ class AES : public Benchmark
         // can be launched on the GPU, 1 is a failsafe if the API does not 
         // return an approprate value
         int MAXIMUM_MEMORY_ALLOCATION;
-        bool hexMode;
+        bool hex_mode;
 
         // Files
         FILE *infile;
@@ -101,7 +101,7 @@ class AES : public Benchmark
         // into 60 32-bit words that are stored in the array ek[]
         void KeyExpansion(uint8_t *pk);
 
-        int  InitFiles();
+        void InitFiles();
         void InitKeys();
         void InitKernel();
         void InitBuffer();
@@ -111,11 +111,11 @@ class AES : public Benchmark
         void FreeBuffer();
         
 public:
-        AES();
-        ~AES();
+    AES();
+    ~AES();
 
-        void SetInitialParameters(FilePackage filepackage) { fp = filepackage; }
-        void Initialize() override {};
+    void SetInitialParameters(FilePackage filepackage) { fp = filepackage; }
+    void Initialize() override;
     void Run() override;
     void Verify() override {}
     void Cleanup() override {}
