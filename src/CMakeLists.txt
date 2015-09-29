@@ -1,10 +1,11 @@
 include(../CppLint.cmake)
 set( FOLDER_NAME src )
-set( SUBDIRECTORIES 
+set( SUBDIRECTORIES
   common
-#opencl12
-#opencl20
-  hsa
+  #opencl12
+  #opencl20
+  #  hsa
+  micro-benchmark
 )
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
@@ -13,7 +14,7 @@ project( ${FOLDER_NAME} )
 
 set( check_target ${FOLDER_NAME}_check )
 set( check_target_src )
-add_style_check_target( ${check_target} "${check_target_src}" 
+add_style_check_target( ${check_target} "${check_target_src}"
     "${SUBDIRECTORIES}" )
 
 ###############################################################
