@@ -40,7 +40,7 @@
 #include <time.h>/* for clock_gettime */
 #include <string.h>
 #include <CL/cl.h>
-#include "include/FIR_CL.h"
+#include "src/opencl20/fir_cl20/include/fir_cl.h"
 // #ifdef GPUPROF
 // #include "inc/GPUPerfAPI.h"
 // #include <dlfcn.h>
@@ -68,12 +68,12 @@ void FIR::Run() {
   int local;
 
   /** Declare the Filter Properties */
-  numTap = 1024;
-  numTotalData = numData * numBlocks;
+  num_tap = 1024;
+  num_total_data = num_data * num_blocks;
   local = 64;
 
-  printf("FIR Filter\n Data Samples : %d \n", numData);
-  printf("NumBlocks : %d \n", numBlocks);
+  printf("FIR Filter\n Data Samples : %d \n", num_data);
+  printf("num_blocks : %d \n", num_blocks);
   printf("Local Workgroups : %d\n", local);
 
   // Load the kernel source code into the array source_str
@@ -81,7 +81,8 @@ void FIR::Run() {
   char *source_str;
   size_t source_size;
 
-  fp = fopen("fir_Kernels.cl", "r");
+  fp = fopen("fir_kernel_20.cl", "r");
+  if (!fp) { fp = fopen("src/opencl20/fir_cl20/fir_kernel_20.cl", "r"); }
   if (!fp) {
     fprintf(stderr, "Failed to load kernel.\n");
     exit(1);
@@ -124,67 +125,67 @@ void FIR::Run() {
                                                               &ret);
   // Allocate SVM buffers
   input = (cl_float *)clSVMAlloc(context, CL_MEM_READ_ONLY,
-                                 numTotalData*sizeof(cl_float), 0);
+                                 num_total_data*sizeof(cl_float), 0);
   output = (cl_float *)clSVMAlloc(context, CL_MEM_READ_WRITE,
-                                  numTotalData*sizeof(cl_float), 0);
+                                  num_total_data*sizeof(cl_float), 0);
   coeff = (cl_float *)clSVMAlloc(context, CL_MEM_READ_ONLY,
-                                 numTap*sizeof(cl_float), 0);
+                                 num_tap*sizeof(cl_float), 0);
   temp_output = (cl_float *)clSVMAlloc(context, CL_MEM_READ_WRITE,
-                                       (numData+numTap-1)*sizeof(cl_float), 0);
+                                       (num_data+num_tap-1)*sizeof(cl_float), 0);
 
   // Map SVM buffers for writing
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, input,
-                        numTotalData*sizeof(cl_float), 0, 0, 0);
+                        num_total_data*sizeof(cl_float), 0, 0, 0);
   if (err != CL_SUCCESS) {
     printf("Error clEnqueueSVMMap input :: %i", err);
     exit(1);
   }
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, output,
-                        numTotalData*sizeof(cl_float), 0, 0, 0);
+                        num_total_data*sizeof(cl_float), 0, 0, 0);
   if (err != CL_SUCCESS) {
     printf("Error clEnqueueSVMMap output :: %i", err);
     exit(1);
   }
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, coeff,
-                        numTap*sizeof(cl_float), 0, 0, 0);
+                        num_tap*sizeof(cl_float), 0, 0, 0);
   if (err != CL_SUCCESS) {
     printf("Error clEnqueueSVMMap coeff :: %i", err);
     exit(1);
   }
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, temp_output,
-                        (numData+numTap-1)*sizeof(cl_float), 0, 0, 0);
+                        (num_data+num_tap-1)*sizeof(cl_float), 0, 0, 0);
   if (err != CL_SUCCESS) {
     printf("Error clEnqueueSVMMap temp_output :: %i", err);
     exit(1);
   }
 
   // Initialize the input data
-  for (i = 0; (unsigned)i < numTotalData; i++) {
+  for (i = 0; (unsigned)i < num_total_data; i++) {
     input[i] = 8;
     output[i] = 99;
   }
 
-  for (i = 0; (unsigned)i < numTap; i++)
-    coeff[i] = 1.0/numTap;
+  for (i = 0; (unsigned)i < num_tap; i++)
+    coeff[i] = 1.0/num_tap;
 
-  for (i=0; (unsigned)i < (numData+numTap-1); i++)
+  for (i=0; (unsigned)i < (num_data+num_tap-1); i++)
     temp_output[i] = 0.0;
-
 #if 1
   // Read the input file
   FILE *fip;
   i = 0;
-  fip = fopen("data/temp.dat", "r");
-  while ((unsigned)i < numTotalData) {
+  fip = fopen("temp.dat", "r");
+  if (!fip) { fip = fopen("src/opencl20/fir_cl20/input/temp.dat", "r"); }
+  if (!fip) { fprintf(stderr, "Unable to locate accessory file.\n"); exit(1);}
+  while ((unsigned)i < num_total_data) {
     //int res = fscanf(fip, "%f", &input[i]);
       i++;
     }
   fclose(fip);
-
 #if 0
   printf("\n The Input:\n");
   i = 0;
-  while (i < numTotalData) {
+  while (i < num_total_data) {
       printf("%f, ", input[i]);
       i++;
   }
@@ -231,12 +232,12 @@ void FIR::Run() {
   ret = clSetKernelArgSVMPointer(kernel, 0, output);
   ret = clSetKernelArgSVMPointer(kernel, 1, coeff);
   ret = clSetKernelArgSVMPointer(kernel, 2, temp_output);
-  ret = clSetKernelArg(kernel, 3, sizeof(cl_uint), (void *)&numTap);
+  ret = clSetKernelArg(kernel, 3, sizeof(cl_uint), (void *)&num_tap);
   // Not a SVM pointer
 
   // Decide the local group size formation
-  size_t globalThreads[1]={numData};
-  size_t localThreads[1]={128};
+  size_t global_threads[1]={num_data};
+  size_t local_threads[1]={128};
   //cl_command_type cmdType;
   count = 0;
 
@@ -247,27 +248,30 @@ void FIR::Run() {
   /* measure monotonic time */
   clock_gettime(CLOCK_MONOTONIC, &start);
 
-  while ((unsigned)count < numBlocks) {
+  while ((unsigned)count < num_blocks) {
     // Custom item size based on current algorithm
-    //size_t global_item_size = numData;
-    //size_t local_item_size = numData;
+    //size_t global_item_size = num_data;
+    //size_t local_item_size = num_data;
     // Execute the OpenCL kernel on the list
     cl_event event;
     ret = clEnqueueNDRangeKernel(queue,
                                  kernel,
                                  1,
                                  NULL,
-                                 globalThreads,
-                                 localThreads,
+                                 global_threads,
+                                 local_threads,
                                  0,
                                  NULL,
                                  &event);
 
     CHECK_STATUS(ret, "Error: Range kernel. (clCreateKernel)\n");
-    ret = clWaitForEvents(1, &event);
+    clFinish(queue);
 
     /* Kernel Profiling */
     //uint64_t kernel_diff;
+    
+    /* !NOTE: Profiling is not enabled, therefore this will cause a segmentation fault
+    
     struct timespec kernel_start, kernel_end;
 
     clock_gettime(CLOCK_MONOTONIC, &kernel_start);
@@ -277,11 +281,12 @@ void FIR::Run() {
     clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END,
                             sizeof(cl_ulong), &kernel_end, NULL);
 
-    clock_gettime(CLOCK_MONOTONIC, &kernel_end);/* mark the end time */
+    clock_gettime(CLOCK_MONOTONIC, &kernel_end);
 
       uint64_t tmp = BILLION * (kernel_end.tv_sec - kernel_start.tv_sec)
                         + kernel_end.tv_nsec - kernel_start.tv_nsec;
       execTimeMs += tmp;
+      */
 
       count++;
   }

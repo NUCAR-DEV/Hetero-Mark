@@ -34,14 +34,14 @@
  *
  */
 
-#include "include/eventlist.h"
+#include "src/opencl12/fir_cl12/include/eventlist.h"
 #include <string.h>
 #include <time.h>/* for clock_gettime */
 #include <stdio.h>
 #include <stdint.h>/* for uint64 definition */
 #include <stdlib.h>/* for exit() definition */
 #include <CL/cl.h>
-#include "FIR_CL.h"
+#include "src/opencl12/fir_cl12/include/fir_cl.h"
 
 #define BILLION 1000000000L
 
@@ -63,42 +63,44 @@ void FIR::Run() {
   int local;
 
   /** Declare the Filter Properties */
-  numTap = 1024;
-  numTotalData = numData * numBlocks;
+  num_tap = 1024;
+  num_total_data = num_data * num_blocks;
   local = 64;
 
-  printf("FIR Filter\n Data Samples : %d \n", numData);
-  printf("NumBlocks : %d \n", numBlocks);
+  printf("FIR Filter\n Data Samples : %d \n", num_data);
+  printf("num_blocks : %d \n", num_blocks);
   printf("Local Workgroups : %d\n", local);
   // exit(0);
   /** Define variables here */
-  input = (cl_float *) malloc( numTotalData* sizeof(cl_float) );
-  output = (cl_float *) malloc( numTotalData* sizeof(cl_float) );
-  coeff = (cl_float *) malloc( numTap* sizeof(cl_float) );
-  temp_output = (cl_float *) malloc( (numData+numTap-1) * sizeof(cl_float) );
+  input = (cl_float *) malloc( num_total_data* sizeof(cl_float) );
+  output = (cl_float *) malloc( num_total_data* sizeof(cl_float) );
+  coeff = (cl_float *) malloc( num_tap* sizeof(cl_float) );
+  temp_output = (cl_float *) malloc( (num_data+num_tap-1) * sizeof(cl_float) );
 
   /** Initialize the input data */
-  for (i = 0; (unsigned)i < numTotalData; i++) {
+  for (i = 0; (unsigned)i < num_total_data; i++) {
     input[i] = 8;
     output[i] = 99;
   }
 
-  for (i = 0; (unsigned)i < numTap; i++)
-    coeff[i] = 1.0/numTap;
+  for (i = 0; (unsigned)i < num_tap; i++)
+    coeff[i] = 1.0/num_tap;
 
-  for (i = 0; (unsigned)i < (numData+numTap-1); i++ )
+  for (i = 0; (unsigned)i < (num_data+num_tap-1); i++ )
     temp_output[i] = 0.0;
 
   // Event Creation
   cl_event event;
-  EventList* eventList;
+  EventList* event_list;
 
 #if 1
   // Read the input file
   FILE *fip;
   i = 0;
-  fip = fopen("data/temp.dat", "r");
-  while ((unsigned)i < numTotalData) {
+  fip = fopen("temp.dat", "r");
+  if (!fip) { fip = fopen("src/opencl12/fir_cl12/input/temp.dat", "r"); }
+  if (!fip) { fprintf(stderr, "Unable to locate accessory file.\n"); exit(1);}
+  while ((unsigned)i < num_total_data) {
     //int res = fscanf(fip, "%f", &input[i]);
     i++;
   }
@@ -107,19 +109,19 @@ void FIR::Run() {
 #if 0
   printf("\n The Input:\n");
   i = 0;
-  while (i < numTotalData) {
+  while (i < num_total_data) {
     printf("%f, ", input[i]);
     i++;
   }
 #endif
 #endif
-
   // Load the kernel source code into the array source_str
   FILE *fp;
   char *source_str;
   size_t source_size;
 
-  fp = fopen("FIR.cl", "r");
+  fp = fopen("fir_kernel_12.cl", "r");
+  if (!fp) { fp = fopen("src/opencl12/fir_cl12/fir_kernel_12.cl", "r"); }
   if (!fp) {
     fprintf(stderr, "Failed to load kernel.\n");
     exit(1);
@@ -161,19 +163,19 @@ void FIR::Run() {
                                  CL_QUEUE_PROFILING_ENABLE, 0};
   cl_command_queue command_queue = \
     clCreateCommandQueueWithProperties(context, device_id, props, &ret);
-  // Create Eventlist for Timestamps
-  eventList = new EventList(context, command_queue, device_id, true);
+  // Create event_list for Timestamps
+  event_list = new EventList(context, command_queue, device_id, true);
 
   // Create memory buffers on the device for each vector
   cl_mem inputBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                      sizeof(cl_float) * numData, NULL, &ret);
-  cl_mem outputBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE,
-                                       sizeof(cl_float) * numData, NULL, &ret);
+                                      sizeof(cl_float) * num_data, NULL, &ret);
+  cl_mem output_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE,
+                                       sizeof(cl_float) * num_data, NULL, &ret);
   cl_mem coeffBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                      sizeof(cl_float) * numTap, NULL, &ret);
-  cl_mem temp_outputBuffer = clCreateBuffer(context,
+                                      sizeof(cl_float) * num_tap, NULL, &ret);
+  cl_mem temp_output_buffer = clCreateBuffer(context,
                                             CL_MEM_READ_WRITE,
-                                            sizeof(cl_float)*(numData+numTap-1),
+                                            sizeof(cl_float)*(num_data+num_tap-1),
                                             NULL,
                                             &ret);
 
@@ -192,63 +194,63 @@ void FIR::Run() {
   CHECK_STATUS(ret, "Error: Create kernel. (clCreateKernel)\n");
 
   // Set the arguments of the kernel
-  ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&outputBuffer);
+  ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&output_buffer);
   ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&coeffBuffer);
-  ret = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&temp_outputBuffer);
-  ret = clSetKernelArg(kernel, 3, sizeof(cl_uint), (void *)&numTap);
+  ret = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&temp_output_buffer);
+  ret = clSetKernelArg(kernel, 3, sizeof(cl_uint), (void *)&num_tap);
 
   // Initialize Memory Buffer
   ret = clEnqueueWriteBuffer(command_queue,
                              coeffBuffer,
                              1,
                              0,
-                             numTap * sizeof(cl_float),
+                             num_tap * sizeof(cl_float),
                              coeff,
                              0,
                              0,
                              &event);
 
-  eventList->add(event);
+  event_list->add(event);
 
   ret = clEnqueueWriteBuffer(command_queue,
-                             temp_outputBuffer,
+                             temp_output_buffer,
                              1,
                              0,
-                             (numTap) *sizeof(cl_float),
+                             (num_tap) *sizeof(cl_float),
                              temp_output,
                              0,
                              0,
                              &event);
 
-  eventList->add(event);
+  event_list->add(event);
 
   // Decide the local group formation
-  size_t globalThreads[1]={numData};
+  size_t globalThreads[1]={num_data};
   size_t localThreads[1]={128};
   //cl_command_type cmdType;
   count = 0;
 
   clock_gettime(CLOCK_MONOTONIC, &start);/* mark start time */
 
-  while ((unsigned)count < numBlocks) {
+  while ((unsigned)count < num_blocks) {
     /* fill in the temp_input buffer object */
     ret = clEnqueueWriteBuffer(command_queue,
-                               temp_outputBuffer,
+                               temp_output_buffer,
                                1,
-                               (numTap-1)*sizeof(cl_float),
-                               numData * sizeof(cl_float),
-                               input + (count * numData),
+                               (num_tap-1)*sizeof(cl_float),
+                               num_data * sizeof(cl_float),
+                               input + (count * num_data),
                                0,
                                0,
                                &event);
 
-    // (numTap-1)*sizeof(cl_float)
-    eventList->add(event);
+    // (num_tap-1)*sizeof(cl_float)
+    event_list->add(event);
 
-    //size_t global_item_size = numData;
+    //size_t global_item_size = num_data;
     // GLOBAL ITEMSIZE IS CUSTOM BASED ON COMPUTAION ALGO
-    //size_t local_item_size = numData;
-    // size_t local_item_size[4] = {numData/4,numData/4,numData/4,numData/4};
+    //size_t local_item_size = num_data;
+    // size_t local_item_size[4] = {num_data/4,num_data/4,num_data/4,num_data/4};
     // LOCAL ITEM SIZE IS CUSTOM BASED ON COMPUTATION ALGO
 
     // Execute the OpenCL kernel on the list
@@ -263,22 +265,23 @@ void FIR::Run() {
                                  &event);
 
     CHECK_STATUS(ret, "Error: Range kernel. (clCreateKernel)\n");
+    clFinish(command_queue);
 //    ret = clWaitForEvents(1, &event);
 //    ret = clWaitForEvents(1, &event);
 
-    eventList->add(event);
+    event_list->add(event);
 
     /* Get the output buffer */
     ret = clEnqueueReadBuffer(command_queue,
-                              outputBuffer,
+                              output_buffer,
                               CL_TRUE,
                               0,
-                              numData * sizeof(cl_float),
-                              output + count * numData,
+                              num_data * sizeof(cl_float),
+                              output + count * num_data,
                               0,
                               NULL,
                               &event);
-    eventList->add(event);
+    event_list->add(event);
     count++;
   }
 
@@ -287,7 +290,7 @@ void FIR::Run() {
   /* Uncomment to print output */
   // printf("\n The Output:\n");
   // i = 0;
-  // while( i<numTotalData )
+  // while( i<num_total_data )
   // {
   //   printf( "%f ", output[i] );
 
@@ -299,9 +302,9 @@ void FIR::Run() {
   ret = clReleaseKernel(kernel);
   ret = clReleaseProgram(program);
   ret = clReleaseMemObject(inputBuffer);
-  ret = clReleaseMemObject(outputBuffer);
+  ret = clReleaseMemObject(output_buffer);
   ret = clReleaseMemObject(coeffBuffer);
-  ret = clReleaseMemObject(temp_outputBuffer);
+  ret = clReleaseMemObject(temp_output_buffer);
   ret = clReleaseCommandQueue(command_queue);
   ret = clReleaseContext(context);
 
@@ -311,9 +314,9 @@ void FIR::Run() {
   free(temp_output);
 
   /* comment to hide timing events */
-  eventList->printEvents();
-  eventList->dumpEvents((char *)"eventDumps");
-  delete eventList;
+  event_list->printEvents();
+  event_list->dumpEvents((char *)"eventDumps");
+  delete event_list;
 
   diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
   printf("elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
