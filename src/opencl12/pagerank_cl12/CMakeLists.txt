@@ -1,7 +1,7 @@
-set( BENCHMARK_NAME pagerank12 )
-set( SOURCE_FILES main.cc pagerank.cc )
-set( HEADER_FILES include/pagerank.h )
-set( EXTRA_FILES pagerank_Kernels.cl )
+set( BENCHMARK_NAME pagerank_cl12 )
+set( SOURCE_FILES main.cc pagerank_cl12.cc )
+set( HEADER_FILES include/pagerank_cl12.h )
+set( EXTRA_FILES pagerank_cl12_kernel.cl )
 
 ############################################################################
 

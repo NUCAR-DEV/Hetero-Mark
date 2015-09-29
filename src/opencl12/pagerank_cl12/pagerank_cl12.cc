@@ -52,7 +52,7 @@
  *
  */
 
-#include "include/pagerank.h"
+#include "include/pagerank_cl12.h"
 #include <memory>
 
 PageRank::PageRank() {
