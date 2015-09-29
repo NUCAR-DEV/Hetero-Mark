@@ -80,29 +80,23 @@ void SearchAndUseBenchmark::Initialize() {
 }
 
 void SearchAndUseBenchmark::Run() {
-  std::thread signal_waiting_thread = 
-    std::thread( [this] { WaitForSignal(); } );
   kernel_->QueueKernel(agent_, queue_);
   printf("Kernel started: %f\n", timer_->GetTimeInSec());
   kernel_->WaitKernel();
   printf("Kernel stopped: %f\n", timer_->GetTimeInSec());
   kernel_stopped_ = true;
+  std::thread signal_waiting_thread = 
+  std::thread( [this] { WaitForSignal(); } );
   signal_waiting_thread.join();
 }
 
 void SearchAndUseBenchmark::WaitForSignal() {
-  int64_t signal_value = 0;
-  int64_t prev_signal_value = 0;
   std::vector<std::unique_ptr<std::thread>> threads;
   printf("Waiting thread started: %f\n", timer_->GetTimeInSec());
-  while (!kernel_stopped_) {
-    signal_value = signal_->WaitForCondition("NE", signal_value);
-    for (; prev_signal_value <= signal_value; 
-        prev_signal_value++) {
-      auto signal_processing_thread = std::unique_ptr<std::thread> (
-        new std::thread( [this] {ProcessSignal();} ));
-      threads.push_back(std::move(signal_processing_thread));
-    }
+  for(int i = 0; i < 150; i++) {
+    auto signal_processing_thread = std::unique_ptr<std::thread> (
+      new std::thread( [this] {ProcessSignal();} ));
+    threads.push_back(std::move(signal_processing_thread));
   }
 
   // Wait all thread finish

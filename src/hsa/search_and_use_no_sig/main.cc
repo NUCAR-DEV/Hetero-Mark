@@ -38,46 +38,45 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
-#define SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
-
-#include <cstdio>
-#include <cstdlib>
-#include <hsa.h>
-#include <hsa_ext_finalize.h>
-
-#include "src/common/benchmark/benchmark.h"
+#include "src/common/benchmark/benchmark_runner.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/time_measurement/timer.h"
+#include "src/common/time_measurement/timer_impl.h"
+#include "src/common/runtime_helper/runtime_helper.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_runtime_helper.h"
-#include "src/common/runtime_helper/hsa_runtime_helper/hsa_executable.h"
-#include "src/common/runtime_helper/hsa_runtime_helper/hsa_signal.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_error_checker.h"
+#include "src/common/command_line_option/command_line_option.h"
+#include "src/hsa/search_and_use/search_and_use_benchmark.h"
 
-class SearchAndUseBenchmark : public Benchmark {
- public:
-  SearchAndUseBenchmark(HsaRuntimeHelper *runtime_helper, Timer *timer);
-  void Initialize() override;
-  void Run() override;
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
+int main(int argc, const char **argv) {
+  // Setup command line option
+  CommandLineOption command_line_option(
+    "====== Hetero-Mark Search and Use Benchmarks (HSA mode) ======",
+    "The Search and Use benchmark recreates the following scenario. When a "
+    "kernel do a search algorithm and all the results need some further "
+    "process by the CPU. Then, the GPU can send out the result to CPU, "
+    "whenever the result is ready");
+  command_line_option.AddArgument("Help", "bool", "false",
+      "-h", "--help", "Dump help information");
 
- private:
-  float *in_;
-  float *out_;
+  command_line_option.Parse(argc, argv);
+  if (command_line_option.GetArgumentValue("Help")->AsBool()) {
+    command_line_option.Help();
+    return 0;
+  }
 
-  HsaRuntimeHelper *runtime_helper_;
-  HsaAgent *agent_;
-  HsaExecutable *executable_;
-  HsaKernel *kernel_;
-  AqlQueue *queue_;
-  HsaSignal *signal_;
+  // Runtime helper
+  HsaErrorChecker error_checker;
+  auto timer = std::unique_ptr<TimerImpl>(new TimerImpl());
+  auto hsa_runtime_helper = std::unique_ptr<HsaRuntimeHelper>(
+      new HsaRuntimeHelper(&error_checker));
 
-  Timer *timer_;
-
-  bool kernel_stopped_ = false;
-  void WaitForSignal();
-  void ProcessSignal();
-
-};
-
-#endif  // SRC_HSA_SEARCH_AND_USE_SEARCH_AND_USE_BENCHMARK_H_
+  // Create and run benchmarks
+  std::unique_ptr<SearchAndUseBenchmark> benchmark(
+    new SearchAndUseBenchmark(hsa_runtime_helper.get(), timer.get()));
+  std::unique_ptr<TimeMeasurement> time_measurement(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), time_measurement.get());
+  runner.Run();
+  runner.Summarize();
+}

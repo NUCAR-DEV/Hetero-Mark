@@ -15,6 +15,7 @@ set( SUBDIRECTORIES
   page_rank_hsa
   memory_copy_hsa
   search_and_use
+  search_and_use_no_sig
 )
 
 set( check_target ${FOLDER_NAME}_check )
