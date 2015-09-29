@@ -4,6 +4,8 @@
  * Developed by:Northeastern University Computer Architecture Research (NUCAR)
  * Group, Northeastern University, http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Carter McCardwell (carter@mccardwell.net, cmccardw@ece.neu.edu)
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  *  with the Software without restriction, including without limitation
