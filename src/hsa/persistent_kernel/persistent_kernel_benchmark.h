@@ -38,38 +38,55 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#ifndef SRC_HSA_PERSISTENT_KERNEL_PERSISTENT_KERNEL_BENCHMARK_H_
+#define SRC_HSA_PERSISTENT_KERNEL_PERSISTENT_KERNEL_BENCHMARK_H_
+
+#include <cstdio>
+#include <cstdlib>
+#include <hsa.h>
+#include <hsa_ext_finalize.h>
+
+#include "src/common/benchmark/benchmark.h"
+#include "src/common/time_measurement/timer.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_runtime_helper.h"
+#include "src/common/runtime_helper/hsa_runtime_helper/hsa_executable.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_signal.h"
 
-#include <cstring>
-#include <iostream>
+class PersistentKernelBenchmark : public Benchmark {
+ public:
+  PersistentKernelBenchmark(HsaRuntimeHelper *runtime_helper, Timer *timer);
+  void Initialize() override;
+  void Run() override;
+  void Verify() override;
+  void Summarize() override;
+  void Cleanup() override;
 
-HsaSignal::HsaSignal(hsa_signal_t signal) : signal_(signal) {
-}
+ private:
+  float *in_;
+  float *out_;
 
-int64_t HsaSignal::WaitForCondition(const char *condition, int64_t value) {
-  hsa_signal_condition_t signal_condition = HSA_SIGNAL_CONDITION_EQ;
-  
-  // Translate signal condition
-  if (strcmp(condition, "EQ") == 0) {
-    signal_condition = HSA_SIGNAL_CONDITION_EQ;
-  } else if (strcmp(condition, "NE") == 0) {
-    signal_condition = HSA_SIGNAL_CONDITION_NE;
-  } else if (strcmp(condition, "LT") == 0) {
-    signal_condition = HSA_SIGNAL_CONDITION_LT;
-  } else if (strcmp(condition, "GTE") == 0) {
-    signal_condition = HSA_SIGNAL_CONDITION_GTE;
-  } else {
-    std::cerr << "Unsupported HSA signal condition " << condition << "\n";
-    exit(1);
-  }
+  int num_tasks_ = 100;
+  int task_scheduled_ = 0;
+  int task_started_ = 0;
+  uint64_t *time_diff_;
+  double *task_schedule_time_;
+  double *task_start_time_;
+  double *task_complete_time_;
 
-  // Wait for signal value
-  int64_t signal_value = hsa_signal_wait_relaxed(signal_, signal_condition, 
-      value, UINT64_MAX, HSA_WAIT_STATE_ACTIVE);
-  return signal_value;
-}
+  HsaRuntimeHelper *runtime_helper_;
+  HsaAgent *agent_;
+  HsaExecutable *executable_;
+  HsaKernel *kernel_;
+  AqlQueue *queue_;
+  HsaSignal *task_dispatch_signal_;
+  HsaSignal *task_return_signal_;
 
-void HsaSignal::SetValue(int64_t value) {
-  hsa_signal_store_relaxed(signal_, value);
-}
+  Timer *timer_;
 
+  bool kernel_stopped_ = false;
+
+  void GenerateTask();
+  void ScheduleTask();
+};
+
+#endif  // SRC_HSA_PERSISTENT_KERNEL_PERSISTENT_KERNEL_BENCHMARK_H_

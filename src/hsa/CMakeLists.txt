@@ -16,6 +16,7 @@ set( SUBDIRECTORIES
   memory_copy_hsa
   search_and_use
   search_and_use_no_sig
+  persistent_kernel
 )
 
 set( check_target ${FOLDER_NAME}_check )

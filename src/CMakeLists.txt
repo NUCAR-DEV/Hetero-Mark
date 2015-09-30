@@ -4,8 +4,8 @@ set( SUBDIRECTORIES
   common
   #opencl12
   #opencl20
-  #  hsa
-  micro-benchmark
+  hsa
+  # micro-benchmark
 )
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)

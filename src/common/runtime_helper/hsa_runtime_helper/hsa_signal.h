@@ -49,6 +49,7 @@ class HsaSignal {
   virtual ~HsaSignal() {}
   void *GetNative() { return (void *)&signal_; }
   int64_t WaitForCondition(const char *condition, int64_t value);
+  void SetValue(int64_t value);
 
  private:
   hsa_signal_t signal_;
