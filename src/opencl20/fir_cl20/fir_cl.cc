@@ -176,6 +176,7 @@ void FIR::Run() {
   i = 0;
   fip = fopen("temp.dat", "r");
   if (!fip) { fip = fopen("src/opencl20/fir_cl20/input/temp.dat", "r"); }
+  if (!fip) { fip = fopen("input/temp.dat", "r"); }
   if (!fip) { fprintf(stderr, "Unable to locate accessory file.\n"); exit(1);}
   while ((unsigned)i < num_total_data) {
     //int res = fscanf(fip, "%f", &input[i]);
