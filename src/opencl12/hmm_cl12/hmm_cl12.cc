@@ -58,7 +58,7 @@ HMM::~HMM() {
 void HMM::Init() {
   // HMM Parameters
   //        a,b,prior,alpha
-  printf("=>Initialize parameters.\n");
+  // printf("=>Initialize parameters.\n");
   InitParam();
   InitCL();
   InitKernels();
@@ -1335,22 +1335,22 @@ void HMM::EM_expect_sigma(size_t pos) {
 //                                      Run HMM
 void HMM::Run() {
   // Forward Algorithm on GPU
-  printf("\n");
-  printf("      >> Start  Forward Algorithm on GPU.\n");
+  // printf("\n");
+  // printf("      >> Start  Forward Algorithm on GPU.\n");
   Forward();
-  printf("      >> Finish Forward Algorithm on GPU.\n");
+  // printf("      >> Finish Forward Algorithm on GPU.\n");
 
   // Backward Algorithm on GPU
-  printf("\n");
-  printf("      >> Start  Backward Algorithm on GPU.\n");
+  // printf("\n");
+  // printf("      >> Start  Backward Algorithm on GPU.\n");
   Backward();
-  printf("      >> Finish Backward Algorithm on GPU.\n");
+  // printf("      >> Finish Backward Algorithm on GPU.\n");
 
   // EM Algorithm on GPU
-  printf("\n");
-  printf("      >> Start  EM Algorithm on GPU.\n");
+  // printf("\n");
+  // printf("      >> Start  EM Algorithm on GPU.\n");
   EM();
-  printf("      >> Finish EM Algorithm on GPU.\n");
+  // printf("      >> Finish EM Algorithm on GPU.\n");
 
-  printf("<=End program.\n");
+  // printf("<=End program.\n");
 }

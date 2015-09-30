@@ -25,7 +25,7 @@
  *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  *   CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  *   DEALINGS WITH THE SOFTWARE.
  *
  * Calculate IIR filter
@@ -60,7 +60,7 @@ void ParIIR::Cleanup() {
 }
 
 void ParIIR::Initialize() {
-  printf("=>Initialize parameters.\n");
+  // printf("=>Initialize parameters.\n");
 
   InitParam();
   InitCL();
@@ -276,7 +276,7 @@ void ParIIR::compare() {
   }
 
   // Compare CPU and GPU results
-  int success = 1;
+  // int success = 1;
 
   int chn;
   for (chn = 0; chn < channels; chn++) {
@@ -285,24 +285,24 @@ void ParIIR::compare() {
     for (i = 0; i < len; i++) {
       if (abs(cpu_y[i] - h_Y[i + start]) > 0.001) {
         printf("Failed!\n");
-        success = 0;
+        // success = 0;
         break;
       }
     }
   }
 
-  if (success)
-    printf("Passed the test!\n");
+  // if (success)
+    // printf("Passed the test!\n");
 }
 
 void ParIIR::Run() {
-  printf("      >> Start IIR on GPU.\n");
+  // printf("      >> Start IIR on GPU.\n");
 
   multichannel_pariir();
 
-  printf("      >> End IIR on GPU.\n");
+  // printf("      >> End IIR on GPU.\n");
 
-  printf("<=End program.\n");
+  // printf("<=End program.\n");
 
   // check results
   compare();
