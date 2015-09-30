@@ -33,15 +33,14 @@
  * It requires an input signal and number of blocks and number of data as args
  *
  */
-
-#include "src/opencl12/fir_cl12/include/eventlist.h"
 #include <string.h>
 #include <time.h>/* for clock_gettime */
 #include <stdio.h>
 #include <stdint.h>/* for uint64 definition */
 #include <stdlib.h>/* for exit() definition */
 #include <CL/cl.h>
-#include "src/opencl12/fir_cl12/include/fir_cl.h"
+#include "src/opencl12/fir_cl12/include/fir_cl12.h"
+#include "src/opencl12/fir_cl12/include/eventlist.h"
 
 #define BILLION 1000000000L
 
