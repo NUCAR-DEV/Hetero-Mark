@@ -6,7 +6,7 @@ Shallow water is a physics simulation engine that depicts complex
 ### Usage
 ====== Hetero-Mark Pagerank Benchmarks (OpenCL 2.0) ======
 
-This benchmarks runs the ParIIR Algorithm.
+This benchmarks runs the Shallow Water Algorithm.
 
 Help[bool]: -h --help (default = false)
   Dump help information
