@@ -8,9 +8,10 @@ k-means clustering is a method of vector quantization, originally from
  varied the number of objects of 34 features and put them into 5 clusters.
  The input file contains features and attributes.
 
-## Usage
+### Usage
 
 ====== Hetero-Mark KMeans Benchmarks (OpenCL 1.2) ======
+
 This benchmarks runs the KMeans Algorithm.
 
 FileName[string]: -f --file (default = )
