@@ -11,6 +11,11 @@ function(add_style_check_target TARGET_NAME SOURCES_LIST SUB_DIRS)
   if(NOT CPP_LINT_PY)
     message ("cpplint.py not found")
   endif()
+  
+  find_file(CLANG_FORMAT NAMES clang-format DOC "Clang format tool")
+  if(NOT CLANG_FORMAT)
+    message ("clang-format not found")
+  endif()
 
   if(NOT SOURCES_LIST)
     add_custom_target(${TARGET_NAME})
@@ -21,6 +26,10 @@ function(add_style_check_target TARGET_NAME SOURCES_LIST SUB_DIRS)
 #list(REMOVE_DUPLICATES SOURCE_LIST)
 #list(SORT SOURCES_LIST)
     add_custom_target(${TARGET_NAME}
+      COMMAND "${CMAKE_COMMAND}" -E chdir
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        clang-format -style=Google -i
+        ${SOURCES_LIST}
       COMMAND "${CMAKE_COMMAND}" -E chdir
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "cpplint.py"
