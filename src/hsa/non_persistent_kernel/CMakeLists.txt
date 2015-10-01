@@ -1,7 +1,7 @@
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
 
-set( FOLDER_NAME persistent_kernel )
+set( FOLDER_NAME non_persistent_kernel )
 set( SUBDIRECTORIES )
 set( SRC_FILES 
   main.cc

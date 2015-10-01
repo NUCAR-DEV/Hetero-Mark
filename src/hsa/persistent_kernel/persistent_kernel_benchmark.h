@@ -65,13 +65,15 @@ class PersistentKernelBenchmark : public Benchmark {
   float *in_;
   float *out_;
 
-  int num_tasks_ = 100;
+  int num_tasks_ = 10;
   int task_scheduled_ = 0;
   int task_started_ = 0;
   uint64_t *time_diff_;
   double *task_schedule_time_;
   double *task_start_time_;
   double *task_complete_time_;
+  double cpu_start_;
+  double cpu_end_;
 
   HsaRuntimeHelper *runtime_helper_;
   HsaAgent *agent_;

@@ -42,6 +42,7 @@
 
 #include <iostream>
 #include <thread>
+#include <chrono>
 
 PersistentKernelBenchmark::PersistentKernelBenchmark(
     HsaRuntimeHelper *runtime_helper, 
@@ -91,22 +92,23 @@ void PersistentKernelBenchmark::Run() {
   printf("Kernel started: %f\n", timer_->GetTimeInSec());
 
   // Start the task generator
+  sched_param sch;
+  sch.sched_priority = 99;
   std::thread task_generation_thread = 
     std::thread([this] {this->ScheduleTask();});
+  pthread_setschedparam(task_generation_thread.native_handle(), 
+      SCHED_FIFO, &sch);
 
   while(task_started_ < num_tasks_) {
     if (task_started_ < task_scheduled_) {
       task_started_++;
 
-      task_return_signal_->SetValue(1);
-      printf("Setting dispatch value %d\n", task_started_);
-      task_dispatch_signal_->SetValue(task_started_);
-      printf("Task started: %f\n", timer_->GetTimeInSec());
       task_start_time_[task_started_] = timer_->GetTimeInSec();
+      task_return_signal_->SetValue(1);
+      task_dispatch_signal_->SetValue(task_started_);
 
       // Wait kernel return 
       task_return_signal_->WaitForCondition("EQ", 0);
-      printf("Task completed: %f\n", timer_->GetTimeInSec());
       task_complete_time_[task_started_] = timer_->GetTimeInSec();
     }
   }
@@ -121,14 +123,14 @@ void PersistentKernelBenchmark::Run() {
 }
 
 void PersistentKernelBenchmark::ScheduleTask() {
+  cpu_start_ = timer_->GetTimeInSec();
   for(int i = 0; i < num_tasks_; i++) {
-    for (uint64_t j = 0; j < time_diff_[i]; j++) {
-    }
+    // for (uint64_t j = 0; j < time_diff_[i]; j++) {}
+    std::this_thread::sleep_for(std::chrono::nanoseconds(time_diff_[i]));
     task_schedule_time_[i+1] = timer_->GetTimeInSec();
     task_scheduled_++;
-    printf("Task scheduled: %d, time: %f\n", task_scheduled_, 
-        timer_->GetTimeInSec());
   } 
+  cpu_end_ = timer_->GetTimeInSec();
 }
 
 void PersistentKernelBenchmark::GenerateTask() {
@@ -139,7 +141,8 @@ void PersistentKernelBenchmark::GenerateTask() {
 
   srand(1);
   for (int i = 0; i < num_tasks_; i++) {
-    time_diff_[i] = rand() % 10000;
+    time_diff_[i] = rand() % 1000;
+    printf("time_diff_[i] = %ld\n", time_diff_[i]);
   }
 }
 
@@ -147,6 +150,7 @@ void PersistentKernelBenchmark::Verify() {
 }
 
 void PersistentKernelBenchmark::Summarize() {
+  printf("CPU: (%f, %f)\n", cpu_start_, cpu_end_);
   for (int i = 0; i < num_tasks_; i++) {
     printf("(%f, %f, %f),\n", 
         task_schedule_time_[i], 

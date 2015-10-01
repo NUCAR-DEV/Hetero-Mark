@@ -47,7 +47,7 @@
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_runtime_helper.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_error_checker.h"
 #include "src/common/command_line_option/command_line_option.h"
-#include "src/hsa/persistent_kernel/persistent_kernel_benchmark.h"
+#include "src/hsa/non_persistent_kernel/persistent_kernel_benchmark.h"
 
 int main(int argc, const char **argv) {
   // Setup command line option
