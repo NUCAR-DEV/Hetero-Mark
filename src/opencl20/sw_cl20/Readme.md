@@ -6,13 +6,13 @@ Shallow water is a physics simulation engine that depicts complex
 ### Usage
 ====== Hetero-Mark Pagerank Benchmarks (OpenCL 2.0) ======
 
-This benchmarks runs the Shallow Water Algorithm.
+This benchmarks runs the Shallow Water Benchmark.
 
 Help[bool]: -h --help (default = false)
   Dump help information
 
-InputMatrix[string]: -m --matrix (default = )
-  Input Matrix
+dimx[int]: -x --dimx (default = 2048)
+  X Dimension
 
-InputVector[string]: -v --vector (default = )
-  Input Vector
+dimy[int]: -y --dimy (default = 2048)
+  Y Dimension
