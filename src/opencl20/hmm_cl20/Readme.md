@@ -1,8 +1,4 @@
-# Hetero-Mark
-
-A Benchmark Suite for Heterogeneous System Computation
-
-## Decsription
+## HMM
 
 HMM is a static Markov model that can generate probabilistic meaning
  without knowing the hidden states. The implementation
@@ -10,7 +6,7 @@ targets isolated word recognition. In order to achieve the
 best performance on the GPU device, we express the data-level
 and thread-level parallelism in the HMM algorithm.
 
-## Usage
+### Usage
 
 ====== Hetero-Mark HMM Benchmarks (OpenCL 2.0) ======
 This benchmark runs the Hidden Markov Model.
