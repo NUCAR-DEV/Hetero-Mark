@@ -1,8 +1,4 @@
-# Hetero-Mark
-
-A Benchmark Suite for Heterogeneous System Computation
-
-## Description
+## AES
 
 The program takes plaintext as input and encrypts it using a given
 encryption key. Our implementation uses a key size of 256 bits. The
