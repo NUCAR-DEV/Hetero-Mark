@@ -8,7 +8,7 @@ PageRank is an algorithm used by Google Search to rank websites in their
  importance within the set. So the computations are representatives of graph
  based applications.
 
-## Usage
+### Usage
 
 ====== Hetero-Mark Pagerank Benchmarks (OpenCL 1.2) ======
 
