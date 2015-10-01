@@ -4,6 +4,7 @@ Shallow water is a physics simulation engine that depicts complex
  behavior of fluids, wave modeling for interactive systems. It predicts
  matters of practical interest, e.g. internal tides in strait of Gibraltar.
 
+### Usage
 
 ====== Hetero-Mark Shallow Water Benchmarks (OpenCL 1.2) ======
 
