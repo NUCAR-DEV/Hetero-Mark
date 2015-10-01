@@ -1,8 +1,4 @@
-# Hetero-Mark
-
-A Benchmark Suite for Heterogeneous System Computation
-
-## Description
+## HMM
 
 HMM is a static Markov model that can generate probabilistic meaning
  without knowing the hidden states. The implementation
