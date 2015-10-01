@@ -1,7 +1,7 @@
 set( BENCHMARK_NAME hmm_cl20 )
 set( SOURCE_FILES hmm_cl20.cc main.cc )
 set( HEADER_FILES include/hmm_cl20.h )
-set( EXTRA_FILES hmm_cl20_kernels.cl )
+set( EXTRA_FILES hmm_cl20_kernel.cl )
 
 ############################################################################
 

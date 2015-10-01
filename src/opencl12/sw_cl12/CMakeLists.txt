@@ -1,6 +1,6 @@
 set( BENCHMARK_NAME sw_cl12 )
 set( SOURCE_FILES main.cc sw_cl12.cc )
-set( HEADER_FILES sw_cl12.h )
+set( HEADER_FILES include/sw_cl12.h )
 set( EXTRA_FILES sw_cl12_kernel.cl )
 
 ############################################################################
