@@ -52,16 +52,16 @@
  *
  */
 
-#include "include/pagerank_cl12.h"
+#include "src/opencl12/pagerank_cl12/pagerank_cl12.h"
 #include <memory>
 
 PageRank::PageRank() {
-  runtime  = clRuntime::getInstance();
-  file     = clFile::getInstance();
+  runtime = clRuntime::getInstance();
+  file = clFile::getInstance();
 
   platform = runtime->getPlatformID();
-  device   = runtime->getDevice();
-  context  = runtime->getContext();
+  device = runtime->getDevice();
+  context = runtime->getContext();
   cmdQueue = runtime->getCmdQueue(0);
   workGroupSize = 64;
   maxIter = 10;
@@ -89,15 +89,11 @@ void PageRank::InitKernel() {
 
   // Create program
   const char *source = file->getSourceChar();
-  program = clCreateProgramWithSource(context, 1,
-                                      (const char **)&source, NULL, &err);
+  program =
+      clCreateProgramWithSource(context, 1, (const char **)&source, NULL, &err);
   if (err != CL_SUCCESS) {
     char buf[0x10000];
-    clGetProgramBuildInfo(program,
-                          device,
-                          CL_PROGRAM_BUILD_LOG,
-                          0x10000,
-                          buf,
+    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0x10000, buf,
                           NULL);
     printf("\n%s\n", buf);
     exit(-1);
@@ -118,19 +114,19 @@ void PageRank::InitBuffer() {
 
 void PageRank::InitBufferGpu() {
   d_rowOffset = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                               sizeof(int)*(nr+1), NULL, &err);
+                               sizeof(int) * (nr + 1), NULL, &err);
   checkOpenCLErrors(err, "Failed to create buffer d_rowOffset...\n");
-  d_col = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                         sizeof(int)*nnz, NULL, &err);
+  d_col =
+      clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * nnz, NULL, &err);
   checkOpenCLErrors(err, "Failed to create buffer d_col...\n");
-  d_val = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                         sizeof(float)*nnz, NULL, &err);
+  d_val = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float) * nnz, NULL,
+                         &err);
   checkOpenCLErrors(err, "Failed to create buffer d_val...\n");
-  d_vector = clCreateBuffer(context, CL_MEM_READ_WRITE,
-                            sizeof(float)*nr, NULL, &err);
+  d_vector = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * nr,
+                            NULL, &err);
   checkOpenCLErrors(err, "Failed to create buffer d_eigenV...\n");
-  d_eigenV = clCreateBuffer(context, CL_MEM_READ_WRITE,
-                            sizeof(float)*nr, NULL, &err);
+  d_eigenV = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * nr,
+                            NULL, &err);
   checkOpenCLErrors(err, "Failed to create buffer d_eigenV...\n");
 }
 
@@ -142,8 +138,7 @@ void PageRank::InitBufferCpu() {
   eigenV = new float[nr];
 }
 
-void PageRank::FreeKernel() {
-}
+void PageRank::FreeKernel() {}
 
 void PageRank::FreeBuffer() {
   csrMatrix.close();
@@ -157,27 +152,25 @@ void PageRank::FillBuffer() {
 
 void PageRank::FillBufferGpu() {
   err = clEnqueueWriteBuffer(cmdQueue, d_rowOffset, CL_TRUE, 0,
-                             sizeof(int)*(nr+1), rowOffset, 0, NULL, NULL);
+                             sizeof(int) * (nr + 1), rowOffset, 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to write buffer...\n");
-  err = clEnqueueWriteBuffer(cmdQueue, d_col, CL_TRUE, 0,
-                             sizeof(int)*nnz, col, 0, NULL, NULL);
+  err = clEnqueueWriteBuffer(cmdQueue, d_col, CL_TRUE, 0, sizeof(int) * nnz,
+                             col, 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to write buffer...\n");
-  err = clEnqueueWriteBuffer(cmdQueue, d_val, CL_TRUE, 0,
-                             sizeof(float)*nnz, val, 0, NULL, NULL);
+  err = clEnqueueWriteBuffer(cmdQueue, d_val, CL_TRUE, 0, sizeof(float) * nnz,
+                             val, 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to write buffer...\n");
-  err = clEnqueueWriteBuffer(cmdQueue, d_vector, CL_TRUE, 0,
-                             sizeof(float)*nr, vector, 0, NULL, NULL);
+  err = clEnqueueWriteBuffer(cmdQueue, d_vector, CL_TRUE, 0, sizeof(float) * nr,
+                             vector, 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to write buffer...\n");
   // err = clEnqueueWriteBuffer(cmdQueue, d_eigenV, CL_TRUE, 0,
   //                            sizeof(float)*nr, eigenV, NULL, NULL, NULL);
   // checkOpenCLErrors(err, "Failed to write buffer...\n");
 }
 
-
 void PageRank::FillBufferCpu() {
   while (!csrMatrix.eof()) {
-    for (int j = 0; j < nr+1; j++)
-      csrMatrix >> rowOffset[j];
+    for (int j = 0; j < nr + 1; j++) csrMatrix >> rowOffset[j];
 
     for (int j = 0; j < nnz; j++) {
       csrMatrix >> col[j];
@@ -185,7 +178,7 @@ void PageRank::FillBufferCpu() {
 
     for (int j = 0; j < nnz; j++) {
       csrMatrix >> val[j];
-      val[j] = (float)val[j];
+      val[j] = static_cast<float>(val[j]);
     }
   }
   if (isVectorGiven) {
@@ -197,7 +190,7 @@ void PageRank::FillBufferCpu() {
     }
   } else {
     for (int j = 0; j < nr; j++) {
-      vector[j] = (float)1/(float)nr;
+      vector[j] = 1.0 / static_cast<float>(nr);
       eigenV[j] = 0.0;
     }
   }
@@ -224,8 +217,7 @@ void PageRank::ReadDenseVector() {
 
 void PageRank::PrintOutput() {
   std::cout << std::endl << "Eigen Vector: " << std::endl;
-  for (int i = 0; i < nr; i++)
-    std::cout << eigenV[i] << "\t";
+  for (int i = 0; i < nr; i++) std::cout << eigenV[i] << "\t";
   std::cout << std::endl;
 }
 
@@ -233,20 +225,15 @@ void PageRank::Print() {
   std::cout << "nnz: " << nnz << std::endl;
   std::cout << "nr: " << nr << std::endl;
   std::cout << "Row Offset: " << std::endl;
-  for (int i = 0; i < nr+1; i++)
-    std::cout << rowOffset[i] << "\t";
+  for (int i = 0; i < nr + 1; i++) std::cout << rowOffset[i] << "\t";
   std::cout << std::endl << "Columns: " << std::endl;
-  for (int i = 0; i < nnz; i++)
-    std::cout << col[i] << "\t";
+  for (int i = 0; i < nnz; i++) std::cout << col[i] << "\t";
   std::cout << std::endl << "Values: " << std::endl;
-  for (int i = 0; i < nnz; i++)
-    std::cout << val[i] << "\t";
+  for (int i = 0; i < nnz; i++) std::cout << val[i] << "\t";
   std::cout << std::endl << "Vector: " << std::endl;
-  for (int i = 0; i < nr; i++)
-    std::cout << vector[i] << "\t";
+  for (int i = 0; i < nr; i++) std::cout << vector[i] << "\t";
   std::cout << std::endl << "Eigen Vector: " << std::endl;
-  for (int i = 0; i < nr; i++)
-    std::cout << eigenV[i] << "\t";
+  for (int i = 0; i < nr; i++) std::cout << eigenV[i] << "\t";
   std::cout << std::endl;
 }
 
@@ -258,16 +245,16 @@ void PageRank::ExecKernel() {
   err |= clSetKernelArg(kernel, i++, sizeof(cl_mem), &d_rowOffset);
   err |= clSetKernelArg(kernel, i++, sizeof(cl_mem), &d_col);
   err |= clSetKernelArg(kernel, i++, sizeof(cl_mem), &d_val);
-  err |= clSetKernelArg(kernel, i++, sizeof(float)*64, NULL);
+  err |= clSetKernelArg(kernel, i++, sizeof(float) * 64, NULL);
   checkOpenCLErrors(err, "Failed to setKernelArg...\n");
   for (int j = 0; j < maxIter; j++) {
     if (j % 2 == 0) {
       err |= clSetKernelArg(kernel, i, sizeof(cl_mem), &d_vector);
-      err |= clSetKernelArg(kernel, i+1, sizeof(cl_mem), &d_eigenV);
+      err |= clSetKernelArg(kernel, i + 1, sizeof(cl_mem), &d_eigenV);
       checkOpenCLErrors(err, "Failed to setKernelArg...\n");
     } else {
       err |= clSetKernelArg(kernel, i, sizeof(cl_mem), &d_eigenV);
-      err |= clSetKernelArg(kernel, i+1, sizeof(cl_mem), &d_vector);
+      err |= clSetKernelArg(kernel, i + 1, sizeof(cl_mem), &d_vector);
       checkOpenCLErrors(err, "Failed to setKernelArg...\n");
     }
     err = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, global_work_size,
@@ -277,11 +264,11 @@ void PageRank::ExecKernel() {
 
 void PageRank::ReadBuffer() {
   if (maxIter % 2 == 1)
-    clEnqueueReadBuffer(cmdQueue, d_eigenV, CL_TRUE, 0,
-                        sizeof(float)*nr, eigenV, 0, NULL, NULL);
+    clEnqueueReadBuffer(cmdQueue, d_eigenV, CL_TRUE, 0, sizeof(float) * nr,
+                        eigenV, 0, NULL, NULL);
   else
-    clEnqueueReadBuffer(cmdQueue, d_vector, CL_TRUE, 0,
-                        sizeof(float)*nr, eigenV, 0, NULL, NULL);
+    clEnqueueReadBuffer(cmdQueue, d_vector, CL_TRUE, 0, sizeof(float) * nr,
+                        eigenV, 0, NULL, NULL);
 }
 
 void PageRank::CpuRun() {
@@ -300,16 +287,14 @@ void PageRank::CpuRun() {
   }
 }
 
-float* PageRank::GetEigenV() {
-  return eigenV;
-}
+float *PageRank::GetEigenV() { return eigenV; }
 
 void PageRank::PageRankCpu() {
   for (int row = 0; row < nr; row++) {
     eigenV[row] = 0;
     float dot = 0;
     int row_start = rowOffset[row];
-    int row_end = rowOffset[row+1];
+    int row_end = rowOffset[row + 1];
 
     for (int jj = row_start; jj < row_end; jj++)
       dot += val[jj] * vector[col[jj]];
@@ -336,7 +321,7 @@ void PageRank::Run() {
   // Read the eigen vector back to host memory
   ReadBuffer();
 
-  CpuRun(); //NOTE CPU AFTER GPU
+  CpuRun();  // NOTE CPU AFTER GPU
 }
 
 void PageRank::Test() {
@@ -346,9 +331,7 @@ void PageRank::Test() {
   FillBufferCpu();
   Print();
 }
-int PageRank::GetLength() {
-  return nr;
-}
+int PageRank::GetLength() { return nr; }
 float PageRank::abs(float num) {
   if (num < 0) {
     num = -num;
