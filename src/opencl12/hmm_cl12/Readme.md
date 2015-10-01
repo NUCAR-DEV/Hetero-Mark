@@ -6,9 +6,10 @@ targets isolated word recognition. In order to achieve the
 best performance on the GPU device, we express the data-level
 and thread-level parallelism in the HMM algorithm.
 
-## Usage
+### Usage
 
 ====== Hetero-Mark HMM Benchmarks (OpenCL 1.2) ======
+
 This benchmark runs the Hidden Markov Model.
 
 Help[bool]: -h --help (default = false)
