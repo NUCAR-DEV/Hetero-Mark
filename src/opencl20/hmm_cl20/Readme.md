@@ -9,6 +9,7 @@ and thread-level parallelism in the HMM algorithm.
 ### Usage
 
 ====== Hetero-Mark HMM Benchmarks (OpenCL 2.0) ======
+
 This benchmark runs the Hidden Markov Model.
 
 Help[bool]: -h --help (default = false)
