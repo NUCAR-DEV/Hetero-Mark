@@ -39,7 +39,7 @@
  */
 
 
-#include "src/opencl20/fir_cl20/include/fir_cl.h"
+#include "src/opencl20/fir_cl20/include/fir_cl20.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"

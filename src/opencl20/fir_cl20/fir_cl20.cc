@@ -40,7 +40,7 @@
 #include <time.h>/* for clock_gettime */
 #include <string.h>
 #include <CL/cl.h>
-#include "src/opencl20/fir_cl20/include/fir_cl.h"
+#include "src/opencl20/fir_cl20/include/fir_cl20.h"
 // #ifdef GPUPROF
 // #include "inc/GPUPerfAPI.h"
 // #include <dlfcn.h>
@@ -270,9 +270,9 @@ void FIR::Run() {
 
     /* Kernel Profiling */
     //uint64_t kernel_diff;
-    
+
     /* !NOTE: Profiling is not enabled, therefore this will cause a segmentation fault
-    
+
     struct timespec kernel_start, kernel_end;
 
     clock_gettime(CLOCK_MONOTONIC, &kernel_start);
