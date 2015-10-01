@@ -1,24 +1,24 @@
 # Hetero-Mark
 
-## Description
-
 A Benchmark Suite for Heterogeneous System Computation
-PageRank is an algorithm used by Google Search to rank websites in their
- search engine results. It is a link analysis algorithm and it assigns a
- numerical weighting to each element of a hyperlinked set of documents,
- such as the World Wide Web, with the purpose of "measuring" its relative
- importance within the set. So the computations are representatives of graph
- based applications.
 
-### Usage
-====== Hetero-Mark Pagerank Benchmarks (OpenCL 1.2) ======
-This benchmarks runs the ParIIR Algorithm.
+## Shallow Water
+
+Shallow water is a physics simulation engine that depicts complex
+ behavior of fluids, wave modeling for interactive systems. It predicts
+ matters of practical interest, e.g. internal tides in strait of Gibraltar.
+
+## Usage
+
+====== Hetero-Mark Shallow Water Benchmarks (OpenCL 1.2) ======
+This benchmarks runs the Shallow Water Benchmark.
 
 Help[bool]: -h --help (default = false)
   Dump help information
 
-InputMatrix[string]: -m --matrix (default = )
-  Input Matrix
+dimx[int]: -x --dimx (default = 2048)
+  X Dimension
 
-InputVector[string]: -v --vector (default = )
-  Input Vector
+dimy[int]: -y --dimy (default = 2048)
+  Y Dimension
+
