@@ -1,6 +1,4 @@
-# Hetero-Mark
-
-## Description
+## PageRank
 
 A Benchmark Suite for Heterogeneous System Computation
 PageRank is an algorithm used by Google Search to rank websites in their
@@ -10,9 +8,10 @@ PageRank is an algorithm used by Google Search to rank websites in their
  importance within the set. So the computations are representatives of graph
  based applications.
 
-## Usage
+### Usage
 
 ====== Hetero-Mark Pagerank Benchmarks (OpenCL 2.0) ======
+
 This benchmarks runs the ParIIR Algorithm.
 
 Help[bool]: -h --help (default = false)

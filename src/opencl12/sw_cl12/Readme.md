@@ -1,16 +1,13 @@
-# Hetero-Mark
-
-A Benchmark Suite for Heterogeneous System Computation
-
-## Shallow Water
+## Shallow-Water
 
 Shallow water is a physics simulation engine that depicts complex
  behavior of fluids, wave modeling for interactive systems. It predicts
  matters of practical interest, e.g. internal tides in strait of Gibraltar.
 
-## Usage
+### Usage
 
 ====== Hetero-Mark Shallow Water Benchmarks (OpenCL 1.2) ======
+
 This benchmarks runs the Shallow Water Benchmark.
 
 Help[bool]: -h --help (default = false)

@@ -1,4 +1,6 @@
-k-means clustering is a method of vector quantization, originally from
+## K-Means
+
+K-means clustering is a method of vector quantization, originally from
  signal processing, that is popular for cluster analysis in data mining.
  k-means clustering aims to partition n observations into k clusters in
  which each observation belongs to the cluster with the nearest mean,
@@ -6,7 +8,10 @@ k-means clustering is a method of vector quantization, originally from
  varied the number of objects of 34 features and put them into 5 clusters.
  The input file contains features and attributes.
 
-====== Hetero-Mark KMeans Benchmarks (OpenCL 1.2) ======
+### Usage
+
+====== Hetero-Mark KMeans Benchmarks (OpenCL 2.0) ======
+
 This benchmarks runs the KMeans Algorithm.
 
 FileName[string]: -f --file (default = )
