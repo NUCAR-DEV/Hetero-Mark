@@ -1,8 +1,4 @@
-# Hetero-Mark
-
-A Benchmark Suite for Heterogeneous System Computation
-
-## Description
+## FIR
 
 FIR filter produces an impulse response of finite duration. The impulse
  response is the response to any finite length input. The FIR filtering
