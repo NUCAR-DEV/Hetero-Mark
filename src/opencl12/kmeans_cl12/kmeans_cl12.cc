@@ -43,7 +43,7 @@
 #include <cassert>
 #include "src/common/cl_util/cl_util.h"
 
-#include "include/kmeans.h"
+#include "include/kmeans_cl12.h"
 
 #define BILLION 1000000000L
 
