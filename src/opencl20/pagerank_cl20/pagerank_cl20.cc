@@ -53,7 +53,7 @@
  *
  */
 
-#include "include/pagerank.h"
+#include "include/pagerank_cl20.h"
 #include <memory>
 
 PageRank::PageRank() {

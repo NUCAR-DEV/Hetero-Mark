@@ -42,7 +42,7 @@
 #include <CL/cl_platform.h>  /* cl_float2             */
 
 #include "src/common/cl_util/cl_util.h"
-#include "include/parIIR_cl20.h"
+#include "include/iir_cl20.h"
 
 #define BILLION 1000000000L
 
