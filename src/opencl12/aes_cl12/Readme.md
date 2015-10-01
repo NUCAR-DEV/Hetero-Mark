@@ -7,9 +7,10 @@ plaintext into cipher-text. Each round has multiple processing steps
 that include AddRoundKey, SubBytes, ShiftRows and MixColumns. Key bits
  must be expanded using a precise key expansion schedule.
 
-## Usage
+### Usage
 
 ====== Hetero-Mark AES Benchmarks (OpenCL 1.2) ======
+
 This benchmarks runs the AES Algorithm.
 
 Help[bool]: -h --help (default = false)
