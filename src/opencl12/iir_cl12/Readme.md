@@ -1,8 +1,4 @@
-# Hetero-Mark
-
-A Benchmark Suite for Heterogeneous System Computation
-
-## Description
+## HMM
 
 An IIR filter requires less processing
 power than an FIR filter for
