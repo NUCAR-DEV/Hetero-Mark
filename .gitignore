@@ -62,3 +62,6 @@ googletest-prefix
 
 # Apple OS X operating system
 .DS_Store
+
+# Gedit files
+*~
