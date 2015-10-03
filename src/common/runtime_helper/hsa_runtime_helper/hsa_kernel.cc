@@ -61,12 +61,14 @@ HsaKernel::HsaKernel(hsa_executable_symbol_t symbol,
 
 void HsaKernel::SetKernelArgument(unsigned int index, 
     unsigned int size_in_byte, const void *value) {
+  /*
   std::cerr << "Setting argument " << index << ".\n";
   std::cerr << "Known offsets: \n";
   for (unsigned int i = 0; i < kernarg_index_to_offset_map_.size(); i++) {
     std::cerr << "Index: " << i << " , offset: " << 
       kernarg_index_to_offset_map_[i] << "\n";
   }
+  */
 
   // Prevent undefined result
   if (index > kernarg_index_to_offset_map_.size()) {

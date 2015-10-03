@@ -18,6 +18,7 @@ set( SUBDIRECTORIES
   search_and_use_no_sig
   persistent_kernel
   non_persistent_kernel
+  atomic_test
 )
 
 set( check_target ${FOLDER_NAME}_check )
