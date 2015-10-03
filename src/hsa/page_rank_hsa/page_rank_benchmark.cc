@@ -159,6 +159,7 @@ void PageRankBenchmark::ExecKernel() {
   local_work_size[0] = workGroupSize;
 
   SNK_INIT_LPARM(lparm, 0);
+  lparm->ndims = 1;
   lparm->ldims[0] = local_work_size[0];
   lparm->gdims[0] = nr * workGroupSize;
 

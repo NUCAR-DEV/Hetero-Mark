@@ -67,16 +67,16 @@ void MemoryCopyBenchmark::Initialize() {
   queue_ = agent_->CreateQueueOrDie();
 
   // Prepare buffers 
-  in_ = new float[1024];
-  for (unsigned int i = 0; i < 1024; i++) {
+  in_ = new float[size_];
+  for (int i = 0; i < size_; i++) {
     in_[i] = (float)i;
   }
-  out_ = new float[1024];
+  out_ = new float[size_];
 
   // Prepare to launch kernel
   kernel_->SetDimension(1);
   kernel_->SetLocalSize(1, 256);
-  kernel_->SetGlobalSize(1, 1024);
+  kernel_->SetGlobalSize(1, size_);
   kernel_->SetKernelArgument(1, sizeof(in_), &in_);
   kernel_->SetKernelArgument(2, sizeof(out_), &out_);
 }
@@ -89,9 +89,11 @@ void MemoryCopyBenchmark::Verify() {
 }
 
 void MemoryCopyBenchmark::Summarize() {
-  for (int i = 0; i < 1024; i++) {
-    std::cout << "Index: " << i << ", value: " << out_[i] << ".\n";
+  /*
+  for (int i = 0; i < size_; i++) {
+    printf("Index[%d]: %f\n", i, out_[i]);
   }
+  */
 }
 
 void MemoryCopyBenchmark::Cleanup() {

@@ -39,8 +39,7 @@
  */
 
 #include "src/common/benchmark/benchmark_runner.h"
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/common/time_measurement/timer_impl.h"
 #include "src/common/runtime_helper/runtime_helper.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_runtime_helper.h"
 #include "src/common/runtime_helper/hsa_runtime_helper/hsa_error_checker.h"
@@ -52,6 +51,8 @@ int main(int argc, const char **argv) {
   CommandLineOption command_line_option(
       "====== Hetero-Mark Memory Copy Benchmarks (HSA mode) ======",
       "This benchmark copies memory from a buffer to another using the GPU");
+  command_line_option.AddArgument("Help", "bool", "false",
+      "-h", "--help", "Dump help information");
   command_line_option.AddArgument("Help", "bool", "false",
       "-h", "--help", "Dump help information");
 
@@ -67,10 +68,27 @@ int main(int argc, const char **argv) {
       new HsaRuntimeHelper(&error_checker));
 
   // Create and run benchmarks
+  TimerImpl timer;
   std::unique_ptr<MemoryCopyBenchmark> benchmark(
     new MemoryCopyBenchmark(hsa_runtime_helper.get()));
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
-  runner.Run();
-  runner.Summarize();
+
+  for (int i = 10000; i <= 200000; i = i + 10000) {
+    benchmark->SetSize(i);
+    benchmark->Initialize();
+    double start_time[1000];
+    double end_time[1000];
+    for (int j = 0; j < 1000; j++) {
+      start_time[j] = timer.GetTimeInSec();
+      benchmark->Run();
+      end_time[j] = timer.GetTimeInSec();
+    }
+
+    // Average
+    double time_sum = 0.0f;
+    for (int j = 0; j < 1000; j++) {
+      time_sum += end_time[j] - start_time[j];
+    }
+    time_sum = time_sum / 1000.0;
+    printf("Average time copying %d integers is %.12f\n", i, time_sum);
+  }
 }

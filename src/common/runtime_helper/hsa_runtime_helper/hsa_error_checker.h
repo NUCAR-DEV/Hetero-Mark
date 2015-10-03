@@ -52,10 +52,10 @@ class HsaErrorChecker {
         std::dec << " ).\n";
       exit(status);
     } else {
-      std::cerr << message << " suceeded.\n";
-  }
+      // std::cerr << message << " suceeded.\n";
+    }
 
-   };
+  };
 };
 
 #endif  // SRC_COMMON_RUNTIME_HELPER_HSA_RUNTIME_HELPER_AQL_QUEUE_H_

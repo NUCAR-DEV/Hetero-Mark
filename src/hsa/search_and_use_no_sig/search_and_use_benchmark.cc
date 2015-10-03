@@ -107,7 +107,7 @@ void SearchAndUseBenchmark::WaitForSignal() {
 
 void SearchAndUseBenchmark::ProcessSignal() {
   double start = timer_->GetTimeInSec();
-  for (uint64_t i = 0; i < 100000000; i++) {}
+  for (uint64_t i = 0; i < 50000000; i++) {}
   double end = timer_->GetTimeInSec();
   printf("(%f, %f),\n", start, end); 
 }

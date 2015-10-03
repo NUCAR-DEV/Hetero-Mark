@@ -59,9 +59,12 @@ class MemoryCopyBenchmark : public Benchmark {
   void Summarize() override;
   void Cleanup() override;
 
+  void SetSize(int size) { this->size_ = size; }
+
  private:
   float *in_;
   float *out_;
+  int size_;
 
   HsaRuntimeHelper *runtime_helper_;
   HsaAgent *agent_;
