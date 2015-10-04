@@ -81,8 +81,8 @@ void FIR::Run() {
   char *source_str;
   size_t source_size;
 
-  fp = fopen("fir_kernel_20.cl", "r");
-  if (!fp) { fp = fopen("src/opencl20/fir_cl20/fir_kernel_20.cl", "r"); }
+  fp = fopen("fir_cl20_kernel.cl", "r");
+  if (!fp) { fp = fopen("src/opencl20/fir_cl20/fir_cl20_kernel.cl", "r"); }
   if (!fp) {
     fprintf(stderr, "Failed to load kernel.\n");
     exit(1);
