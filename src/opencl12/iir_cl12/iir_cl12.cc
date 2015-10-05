@@ -93,7 +93,7 @@ void ParIIR::InitCL() {
 void ParIIR::InitKernels() {
   cl_int err;
 
-  file->open("parIIR_cl12_kernel.cl");
+  file->open("iir_cl12_kernel.cl");
 
   // Create program
   const char *source = file->getSourceChar();
