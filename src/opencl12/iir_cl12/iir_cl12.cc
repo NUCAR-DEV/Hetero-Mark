@@ -117,7 +117,7 @@ void ParIIR::InitBuffers() {
   cl_int err;
 
   // Create the input and output arrays in device memory for our calculation
-  d_X = clCreateBuffer(context, CL_MEM_READ_ONLY,
+  d_X = clCreateBuffer(context, CL_MEM_READ_WRITE,
       sizeof(float)*len, NULL, NULL);
   d_Y = clCreateBuffer(context, CL_MEM_READ_WRITE,
       sizeof(float)*len*channels, NULL, NULL);
