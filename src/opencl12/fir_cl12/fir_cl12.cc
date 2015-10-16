@@ -39,6 +39,7 @@
 #include <stdint.h>/* for uint64 definition */
 #include <stdlib.h>/* for exit() definition */
 #include <CL/cl.h>
+#include <sys/stat.h>
 #include "src/opencl12/fir_cl12/include/fir_cl12.h"
 #include "src/opencl12/fir_cl12/include/eventlist.h"
 
@@ -313,6 +314,9 @@ void FIR::Run() {
   free(coeff);
   free(temp_output);
 
+  /* Ensure that eventDumps exists */
+  mkdir("eventDumps", 0700);
+    
   /* comment to hide timing events */
   event_list->printEvents();
   event_list->dumpEvents((char *)"eventDumps");
