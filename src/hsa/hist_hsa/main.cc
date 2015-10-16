@@ -54,7 +54,15 @@ int main(int argc, const char **argv) {
   command_line_option.AddArgument("Pixels", "integer", "65536", "-p",
                                   "--pixels",
                                   "Number of pixels in the image to process");
-
+	command_line_option.AddArgument("Colors", "integer", "256", "-c",
+                                  "--colors",
+                                  "Number of colors of the image to process. Max: 256");
+	command_line_option.AddArgument("Random", "bool", "false", "-r",
+                                  "--random",
+                                  "Generate a random image. Otherwise, gets optimal input");
+	command_line_option.AddArgument("Verify", "bool", "false", "-v",
+                                  "--verify",
+                                  "Print the results");
 
   command_line_option.Parse(argc, argv);
   if (command_line_option.GetArgumentValue("Help")->AsBool()) {
@@ -64,12 +72,23 @@ int main(int argc, const char **argv) {
   uint32_t pixels =
       command_line_option.GetArgumentValue("Pixels")->AsUInt32();
 
+  uint32_t colors =
+      command_line_option.GetArgumentValue("Colors")->AsUInt32();
 
+	bool random =
+			command_line_option.GetArgumentValue("Random")->AsBool();
+	
+	bool verify =
+			command_line_option.GetArgumentValue("Verify")->AsBool();
   // Create and run benchmarks
   std::unique_ptr<HistBenchmark> benchmark(new HistBenchmark());
-  benchmark->setNumPixels(numData);
+  benchmark->setNumPixels(pixels);
+	benchmark->setRandom(random);
+	benchmark->setColors(colors);
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
+  runner.set_verification_mode(verify);
   runner.Run();
   runner.Summarize();
+
 }

@@ -45,9 +45,11 @@
 
 class HistBenchmark : public Benchmark {
  private:
+	bool random_ = false;
   unsigned int local_size_ = 256;
-  unsigned int global_size_ = 2048;
+  unsigned int global_size_ = 256;
   unsigned int num_pixels_ = 65536;
+	unsigned int num_colors_ = 256;
   unsigned int* input_ = nullptr;
   unsigned int* output_ = nullptr;
  public:
@@ -58,7 +60,8 @@ class HistBenchmark : public Benchmark {
   void Cleanup() override;
 
   void setNumPixels(unsigned int pixels) { this->num_pixels_ = pixels; }
-
+	void setRandom(bool random) { this->random_ = random; }
+	void setColors(unsigned int colors) { this->num_colors_ = colors; }
 };
 
 #endif  // SRC_HSA_HIST_HSA_HIST_BENCHMARK_H_

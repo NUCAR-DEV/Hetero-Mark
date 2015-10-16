@@ -40,37 +40,55 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <ctime>  
 #include "src/hsa/hist_hsa/kernels.h"
 #include "src/hsa/hist_hsa/hist_benchmark.h"
 
 void HistBenchmark::Initialize() {
 
-  input_ = new int[num_pixels_];
-  output_ = new int[256];
+  input_ = new unsigned int[num_pixels_];
+  output_ = new unsigned int[num_colors_];
 
   // Initialize input data
-  for (unsigned int i = 0; i < num_pixels_; i++) {
-    input[i] = i%256;
-  }
+	if (!(this->random_))
+	{	
+		for (unsigned int i = 0; i < num_pixels_; i++) 
+		{    
+			input_[i] = i%num_colors_;
+		}
+	}
+	else
+	{
+		srand (time(NULL));	
+		for (unsigned int i = 0; i < num_pixels_; i++) 
+		{    
+				input_[i] = rand()%num_colors_;
+		}
+	}
 
-  // Initialize temp output
-  for (unsigned int i = 0; i < 256; i++) {
-    outpit[i] = 0;
+  // Initialize output
+  for (unsigned int i = 0; i < (this->num_colors_); i++) {
+    output_[i] = 0; 
   }
 }
 
 void HistBenchmark::Run() {
   SNK_INIT_LPARM(lparm, 0);
   lparm->ndim = 1;
-  lparm->gdims[0] = _global_size;
-  lparm->ldims[0] = _local_size;
-  HIST(input_, output_, numData, lparm);
+  lparm->gdims[0] = global_size_;
+  lparm->ldims[0] = local_size_;
+	printf("Calling HIST with %d colors and %d pixels\n", num_colors_ , num_pixels_);
+	printf("Calling HIST with %d local size and %d global size\n", (int)lparm->ldims[0] , (int)lparm->gdims[0]);
+  HIST(input_, output_, num_colors_, num_pixels_, lparm);
 }
 
 void HistBenchmark::Verify() {
-  for (unsigned int i = 0; i < num_pixels_; i++) {
-    printf("output[i] = %f\n", output[i]);
+
+	printf("output = \n");
+  for (unsigned int i = 0; i < num_colors_; i++) {
+    printf("%u ",output_[i]);
   }
+	printf("\n");
 }
 
 void HistBenchmark::Summarize() {
