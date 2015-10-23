@@ -77,8 +77,6 @@ void HistBenchmark::Run() {
   lparm->ndim = 1;
   lparm->gdims[0] = global_size_;
   lparm->ldims[0] = local_size_;
-	printf("Calling HIST with %d colors and %d pixels\n", num_colors_ , num_pixels_);
-	printf("Calling HIST with %d local size and %d global size\n", (int)lparm->ldims[0] , (int)lparm->gdims[0]);
   HIST(input_, output_, num_colors_, num_pixels_, lparm);
 }
 

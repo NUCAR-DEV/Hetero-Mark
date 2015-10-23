@@ -33,15 +33,17 @@ __kernel void HIST(
 			priv_hist[color]++;
 			index+=gsize;
     }
-    
-
+    	
+		//Barrier in case priv_hist is mapped to global memory
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
 
     //Copy to global memory
 	  for (i=0; i<colors; i++)
 	  {
-
-				atomic_add(&output[i], priv_hist[i]);
-
+				if (priv_hist[i] > 0)
+				{
+					atom_add(&output[i], priv_hist[i]);
+				}
 	  }
 
 #endif
