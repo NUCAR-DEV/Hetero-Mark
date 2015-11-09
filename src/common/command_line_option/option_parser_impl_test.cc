@@ -74,7 +74,7 @@ TEST(OptionParserImpl, parse) {
 
   // Configure user input
   int argc = 4;
-  const char *argv[] = {"run", "-n", "name", "--arg2"};
+  const char *argv[] = {"run", "--arg2", "-n", "name"};
 
   // Parse
   option_parser->Parse(argc, argv);
