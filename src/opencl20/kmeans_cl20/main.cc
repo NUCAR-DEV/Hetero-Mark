@@ -57,7 +57,7 @@ int main(int argc, char const *argv[])
     command_line_option.AddArgument("Help", "bool", "false",
         "-h", "--help", "Dump help information");
     command_line_option.AddArgument("FileName", "string", "",
-        "-f", "--file",
+        "-i", "--input",
         "File containing data to be clustered");
     command_line_option.AddArgument("max_nclusters", "int", "5",
         "-m", "--max",
