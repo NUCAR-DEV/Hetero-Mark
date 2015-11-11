@@ -39,7 +39,7 @@
  */
 
 
-#include "include/FIR_CL.h"
+#include "src/opencl20/fir_cl20/include/fir_cl20.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
@@ -70,8 +70,8 @@ int main(int argc, char const *argv[])
     }
 
     std::unique_ptr<FIR> fir(new FIR());
-    fir->SetInitialParameters(command_line_option.GetArgumentValue("NumData")->AsInt32(),\
-     command_line_option.GetArgumentValue("NumBlocks")->AsInt32());
+    fir->SetInitialParameters((unsigned int)command_line_option.GetArgumentValue("NumData")->AsInt32(),\
+     (unsigned int)command_line_option.GetArgumentValue("NumBlocks")->AsInt32());
 
     std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
     BenchmarkRunner runner(fir.get(), timer.get());

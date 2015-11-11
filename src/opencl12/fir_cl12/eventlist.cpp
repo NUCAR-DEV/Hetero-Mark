@@ -49,7 +49,7 @@
 #include <sys/time.h>
 #endif
 
-#include "include/eventlist.h"
+#include "src/opencl12/fir_cl12/include/eventlist.h"
 
 //! Constructor
 EventList::EventList(cl_context context, cl_command_queue commandQueue,

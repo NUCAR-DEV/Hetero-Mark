@@ -4,6 +4,8 @@
  * Developed by:Northeastern University Computer Architecture Research (NUCAR)
  * Group, Northeastern University, http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Carter McCardwell (carter@mccardwell.net, cmccardw@ece.neu.edu)
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  *  with the Software without restriction, including without limitation
@@ -54,12 +56,12 @@ AES::AES() {
   platform = runtime->getPlatformID();
   device   = runtime->getDevice();
   context  = runtime->getContext();
-  cmdQueue = runtime->getCmdQueue(0);
+  cmd_queue = runtime->getCmdQueue(0);
 
   // Init
   MAXIMUM_MEMORY_ALLOCATION = 1;
-  expanded_key[60] = { 0x00 };
-  hexMode = 1;
+  expanded_key[59] = { 0x00 };
+  hex_mode = 1;
 }
 
 AES::~AES() {
@@ -67,15 +69,15 @@ AES::~AES() {
   FreeBuffer();
 }
 
-int AES::InitFiles() {
+void AES::InitFiles() {
   //Note: fp is a struct defined in the header and set using
   //setInitialParameters(FilePackage filepackage)
 
-  // The first argument is the hexMode
+  // The first argument is the hex_mode
   if (strcmp(fp.mode, "h") == 0) {
-    hexMode = true;
+    hex_mode = true;
   } else if (strcmp(fp.mode, "a") == 0) {
-    hexMode = false;
+    hex_mode = false;
   } else {
     printf("error: first argument must be \'a\' for ASCII interpretation");
     printf(" or \'h\' for hex interpretation\n");
@@ -187,38 +189,38 @@ uint32_t AES::RotateWord(uint32_t word) {
   union {
     uint8_t bytes[4];
     uint32_t word;
-  } subWord  __attribute__((aligned));
+  } sub_word  __attribute__((aligned));
   // Note: The word is stored backwards, that is why the index
   // starts at 3 and goes to 0x00
-  subWord.word = word;
+  sub_word.word = word;
 
-  uint8_t B0 = subWord.bytes[3];
-  uint8_t B1 = subWord.bytes[2];
-  uint8_t B2 = subWord.bytes[1];
-  uint8_t B3 = subWord.bytes[0];
+  uint8_t B0 = sub_word.bytes[3];
+  uint8_t B1 = sub_word.bytes[2];
+  uint8_t B2 = sub_word.bytes[1];
+  uint8_t B3 = sub_word.bytes[0];
 
-  subWord.bytes[3] = B1;  // 0
-  subWord.bytes[2] = B2;  // 1
-  subWord.bytes[1] = B3;  // 2
-  subWord.bytes[0] = B0;  // 3
+  sub_word.bytes[3] = B1;  // 0
+  sub_word.bytes[2] = B2;  // 1
+  sub_word.bytes[1] = B3;  // 2
+  sub_word.bytes[0] = B0;  // 3
 
-  return subWord.word;
+  return sub_word.word;
 }
 
 uint32_t AES::SubWord(uint32_t word) {
   union {
     uint32_t word;
     uint8_t bytes[4];
-  } subWord  __attribute__((aligned));
+  } sub_word  __attribute__((aligned));
 
-  subWord.word = word;
+  sub_word.word = word;
 
-  subWord.bytes[3] = s[subWord.bytes[3]];
-  subWord.bytes[2] = s[subWord.bytes[2]];
-  subWord.bytes[1] = s[subWord.bytes[1]];
-  subWord.bytes[0] = s[subWord.bytes[0]];
+  sub_word.bytes[3] = s[sub_word.bytes[3]];
+  sub_word.bytes[2] = s[sub_word.bytes[2]];
+  sub_word.bytes[1] = s[sub_word.bytes[1]];
+  sub_word.bytes[0] = s[sub_word.bytes[0]];
 
-  return subWord.word;
+  return sub_word.word;
 }
 
 void AES::KeyExpansion(uint8_t *pk) {
@@ -268,21 +270,22 @@ void AES::KeyExpansion(uint8_t *pk) {
 void AES::InitKeys() {
   // Read the private key in
   for (int i = 0; i < 32; i++)
-    int res = fscanf(keyfile, "%02x", (int *)&key[i]);
-  // res is a dummy variable to suppress the "ignored"
+  if (fscanf(keyfile, "%02x", (int *)&key[i])) {}
+  // If statement to suppress the "ignored"
   // result warning
   // Expand key
   KeyExpansion(key);
 }
 
-void AES::Run() {
-  cl_int err;
-
+void AES::Initialize() {
   InitFiles();
   InitKeys();
   InitKernel();
   InitBuffer();
+}
 
+void AES::Run() {
+  cl_int err;
 
   int ch    = 0;  // The buffer for the data read in using ASCII/binary mode
   int spawn = 0;  // The number of compute units that will be enqueued per cycle
@@ -290,7 +293,7 @@ void AES::Run() {
                   // terminates the infinite loop
   while (end) {
       // Map memory location in GPU <Coarse SVM>
-      err = clEnqueueSVMMap(cmdQueue,
+      err = clEnqueueSVMMap(cmd_queue,
                             CL_TRUE,
                             CL_MAP_WRITE,
                             svm_ptr,
@@ -303,7 +306,7 @@ void AES::Run() {
         spawn++;  // Since another state is being filled,
                   // another comptute unit will be required
         for (int ix = 0; ix < 16; ix++) {
-          if (hexMode) {  // If hex mode
+          if (hex_mode) {  // If hex mode
             if (fscanf(infile, "%02x",
                  (unsigned int *)&svm_ptr[(i*16)+ix]) != EOF) {
             } else {  // Reads in hex
@@ -369,11 +372,11 @@ void AES::Run() {
 
       // All data loaded, unmap the state memory before launching kernel
       cl_event unmap;
-      err = clEnqueueSVMUnmap(cmdQueue, svm_ptr, 0, 0, &unmap);
+      err = clEnqueueSVMUnmap(cmd_queue, svm_ptr, 0, 0, &unmap);
       clWaitForEvents(1, &unmap);
       checkOpenCLErrors(err, "Failed to unmap SVM");
 
-      const size_t local_ws = 0;
+      //const size_t local_ws = 0;
       // For now, let the runtime decide on the local
       const size_t global_ws = spawn;  // One WU per state in this round
 
@@ -382,7 +385,7 @@ void AES::Run() {
       checkOpenCLErrors(err, "Failed to set kernel SVM arg ");
 
       // Start the kernel
-      err = clEnqueueNDRangeKernel(cmdQueue,
+      err = clEnqueueNDRangeKernel(cmd_queue,
                                    kernel,
                                    1,
                                    0,
@@ -392,7 +395,7 @@ void AES::Run() {
       checkOpenCLErrors(err, "Failed to execute kernel");
 
       // Write processed data back to out
-      err = clEnqueueSVMMap(cmdQueue,
+      err = clEnqueueSVMMap(cmd_queue,
                             CL_TRUE,
                             CL_MAP_READ,
                             svm_ptr,
@@ -417,7 +420,7 @@ void AES::Run() {
       }
 
       // Release the SVM buffer before the next cycle
-      err = clEnqueueSVMUnmap(cmdQueue, svm_ptr, 0, 0, 0);
+      err = clEnqueueSVMUnmap(cmd_queue, svm_ptr, 0, 0, 0);
       checkOpenCLErrors(err, "Failed at unmap SVM ptr");
     }  // While
 

@@ -1,11 +1,11 @@
 set( BENCHMARK_NAME hmm_cl12 )
 set( SOURCE_FILES main.cc hmm_cl12.cc )
 set( HEADER_FILES include/hmm_cl12.h )
-set( EXTRA_FILES hmm_cl12_kernels.cl )
+set( EXTRA_FILES hmm_cl12_kernel.cl )
 
 ###############################################################################
 
-include(../../../CppLint.cmake) 
+include(../../../CppLint.cmake)
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
@@ -24,7 +24,7 @@ if( NOT BITNESS )
   endif()
 endif()
 
-# Unset OPENCL_LIBRARIES, so that corresponding arch specific libs are found 
+# Unset OPENCL_LIBRARIES, so that corresponding arch specific libs are found
 # when bitness is changed
 unset(OPENCL_LIBRARIES CACHE)
 unset(OPENCL_INCLUDE_DIRS CACHE)

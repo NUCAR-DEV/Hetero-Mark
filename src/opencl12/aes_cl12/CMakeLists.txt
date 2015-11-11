@@ -1,7 +1,7 @@
 set( BENCHMARK_NAME aes_cl12 )
 set( SOURCE_FILES aes_cl12.cc main.cc )
 set( HEADER_FILES include/aes_cl12.h)
-set( EXTRA_FILES aes_cl12_Kernels.cl )
+set( EXTRA_FILES aes_cl12_kernel.cl )
 
 ############################################################################
 

@@ -1,7 +1,7 @@
 set( BENCHMARK_NAME fir_cl12 )
-set( SOURCE_FILES FIR_CL.cc eventlist.cpp main.cc )
-set( HEADER_FILES include/eventlist.h )
-set( EXTRA_FILES FIR.cl )
+set( SOURCE_FILES fir_cl12.cc eventlist.cpp main.cc )
+set( HEADER_FILES include/fir_cl12.h )
+set( EXTRA_FILES fir_cl12_kernel.cl input/temp.dat )
 
 ############################################################################
 

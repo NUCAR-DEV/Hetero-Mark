@@ -1,7 +1,7 @@
-set( BENCHMARK_NAME kmeans20)
-set( SOURCE_FILES main.cc kmeans.cc )
-set( HEADER_FILES include/kmeans.h )
-set( EXTRA_FILES kmeans.cl )
+set( BENCHMARK_NAME kmeans_cl20)
+set( SOURCE_FILES main.cc kmeans_cl20.cc )
+set( HEADER_FILES include/kmeans_cl20.h )
+set( EXTRA_FILES kmeans_cl20_kernel.cl )
 
 ############################################################################
 
