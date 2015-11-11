@@ -63,8 +63,7 @@ void OptionParserImpl::Parse(int argc, const char **argv) {
     if (arg.length() == 0) {
       throw std::runtime_error(std::string("Argument size is 0"));
     } else if (arg.length() == 1) {
-      throw std::invalid_argument((std::string("Invalid argument ") +
-            arg));
+      throw std::invalid_argument((std::string("Invalid argument ") + arg));
     }
 
     // Check if it is long or shor prompt
@@ -106,7 +105,6 @@ void OptionParserImpl::Parse(int argc, const char **argv) {
       // Create argument value
       auto argument_value = argument_values_.find(argument->get_name());
       argument_value->second->set_value("true");
-      return;
     } else {
       // Non-bool type prompt cannot be the last argument
       if (i == argc - 1) {

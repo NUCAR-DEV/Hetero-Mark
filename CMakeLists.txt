@@ -29,8 +29,8 @@ add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}"
 if (enable-test)
   enable_testing()
   ExternalProject_Add(googletest
-    GIT_REPOSITORY "https://github.com/google/googletest.git"
-    SOURCE_DIR "googletest-prefix/googletest/googletest/"
+    URL https://googletest.googlecode.com/files/gtest-1.7.0.zip
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest
     INSTALL_COMMAND ""
   )
   ExternalProject_Get_Property(googletest binary_dir)

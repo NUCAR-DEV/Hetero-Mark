@@ -32,7 +32,7 @@
  *
  */
 
-#include "src/opencl12/sw_cl12/sw_cl12.h"
+#include "src/opencl12/sw_cl12/include/sw_cl12.h"
 
 #include <stdio.h> /* for printf */
 #include <stdint.h>/* for uint64 definition */

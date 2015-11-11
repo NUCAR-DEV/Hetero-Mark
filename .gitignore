@@ -57,8 +57,11 @@ isa.txt
 *.snackwrap.c
 
 # Unit tests
-googletest-prefix
+gtest
 *_unittest
 
 # Apple OS X operating system
 .DS_Store
+
+# Gedit files
+*~
