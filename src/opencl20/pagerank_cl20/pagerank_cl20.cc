@@ -86,7 +86,7 @@ PageRank::~PageRank() {
 
 void PageRank::InitKernel() {
   // Open kernel file
-  file->open("pagerank_Kernels.cl");
+  file->open("pagerank_cl20_kernel.cl");
 
   // Create program
   const char *source = file->getSourceChar();
@@ -309,7 +309,7 @@ void PageRank::Run() {
   // Read the eigen vector back to host memory
   ReadBuffer();
 
-  CpuRun(); //NOTE CPU AFTER GPU
+  //CpuRun(); //NOTE CPU AFTER GPU
 }
 
 void PageRank::Test() {

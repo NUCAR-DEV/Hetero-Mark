@@ -59,9 +59,9 @@ int main(int argc, char const *argv[])
     command_line_option.AddArgument("InputMatrix", "string", "",
         "-m", "--matrix",
         "Input Matrix");
-    command_line_option.AddArgument("InputVector", "string", "",
-        "-v", "--vector",
-        "Input Vector");
+//    command_line_option.AddArgument("InputVector", "string", "",
+//        "-v", "--vector",
+//        "Input Vector");
 
 
     command_line_option.Parse(argc, argv);
@@ -71,13 +71,14 @@ int main(int argc, char const *argv[])
     }
 
     std::string matrix = command_line_option.GetArgumentValue("InputMatrix")->AsString();
-    std::string vector = command_line_option.GetArgumentValue("InputVector")->AsString();
+//    std::string vector = command_line_option.GetArgumentValue("InputVector")->AsString();
 
-    if (vector == "") { command_line_option.Help(); return 0;}
+    if (matrix == "") { command_line_option.Help(); return 0;}
 
     std::unique_ptr<PageRank> pr(new PageRank());
-    if (vector == "") { pr->SetInitialParameters(matrix); }
-    else { pr->SetInitialParameters(matrix, vector); }
+    //if (vector == "") { 
+    pr->SetInitialParameters(matrix);
+    //else { pr->SetInitialParameters(matrix, vector); }
 
     std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
     BenchmarkRunner runner(pr.get(), timer.get());
