@@ -75,7 +75,7 @@ performance.
 
 * To build the framework, please make the directory `common`.
 
-* To compile without debug
+* To compile without debug 
 
 `cmake .`
 
@@ -83,9 +83,16 @@ performance.
 
 `cmake -DCMAKE_BUILD_TYPE=Debug.`
 
+* To generate custom data in `data` folder
+  * AES - It generates custom size plain text file. Usage: `./<exec> <file size>` 
+  * KMeans - It generates the input file for KMeans. Usage:
+`g++ KMeans_datagen.cpp -o KMeans_datagen`
+`./KMeans_gen_dataset.sh`
+  * PageRank - It generates the input matrix for PageRank. Usage: `python PageRank_generateCsrMatrix.py`
+
 
 ####Running the code
-After compiling, the executables are located in
+After compiling, the executables are located in 
 `<app folder>/bin/x86_64/Release/`
 
 ####Note
