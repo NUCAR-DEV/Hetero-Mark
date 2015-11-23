@@ -83,6 +83,11 @@ performance.
 
 `cmake -DCMAKE_BUILD_TYPE=Debug.`
 
+####Running the code
+After compiling, the executables are located in 
+`<app folder>/bin/x86_64/Release/`
+
+####Input data generation
 * To generate custom data in `data` folder
   * AES - It generates custom size plain text file. Usage: `./<exec> <file size>` 
   * KMeans - It generates the input file for KMeans. Usage:
@@ -90,10 +95,6 @@ performance.
 `./KMeans_gen_dataset.sh`
   * PageRank - It generates the input matrix for PageRank. Usage: `python PageRank_generateCsrMatrix.py`
 
-
-####Running the code
-After compiling, the executables are located in 
-`<app folder>/bin/x86_64/Release/`
 
 ####Note
 If the system is missing HSA environment, it will throw some warnings such as `Skipping <application name>, snack.sh is not found`.
