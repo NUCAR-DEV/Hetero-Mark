@@ -106,7 +106,7 @@ void HMM::InitParam() {
 void HMM::InitKernels() {
   cl_int err;
 
-  file->open("hmm_cl20_kernels.cl");
+  file->open("hmm_cl20_kernel.cl");
 
   // Create program
   const char *source = file->getSourceChar();
