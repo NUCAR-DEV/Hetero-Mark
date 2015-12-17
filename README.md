@@ -4,7 +4,7 @@ A Benchmark Suite for Heterogeneous System Computation
 ####Requirements
 * [g++](https://gcc.gnu.org/onlinedocs/gcc-3.3.6/gcc/G_002b_002b-and-GCC.html) - The GNU C++ Compiler
 * [OpenCL 2.0](http://support.amd.com/en-us/kb-articles/Pages/OpenCL2-Driver.aspx) - The OpenCL 2.0 driver
-* [HSA]() - HSA driver
+* [HSA](https://github.com/HSAFoundation/HSA-Drivers-Linux-AMD) - HSA driver
 
 ####Applications
 The suite is in development. All outputs show the time it takes to run
