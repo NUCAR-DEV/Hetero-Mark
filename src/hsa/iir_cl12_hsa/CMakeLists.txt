@@ -25,11 +25,6 @@ find_library(HSA_RUNTIME
   PATHS $ENV{HSA_RUNTIME_PATH}/lib
   NO_DEFAULT_PATH)
 
-# Style check
-set( check_target ${FOLDER_NAME}_check )
-set( check_target_src ${SRC_FILES} ${HEADER_FILES} ${TEST_FILES})
-add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}")
-
 # Unit test
 if (${TEST_FILES})
   add_executable(${FOLDER_NAME}_unittest ${TEST_FILES} ${SRC_FILES} ${HEADER_FILES})

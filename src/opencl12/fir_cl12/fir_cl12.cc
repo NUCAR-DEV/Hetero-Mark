@@ -28,10 +28,6 @@
  *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  *   DEALINGS WITH THE SOFTWARE.
  *
- * Calculate a FIR filter with OpenCL 1.2
- *
- * It requires an input signal and number of blocks and number of data as args
- *
  */
 #include <string.h>
 #include <time.h>/* for clock_gettime */
@@ -40,10 +36,8 @@
 #include <stdlib.h>/* for exit() definition */
 #include <CL/cl.h>
 #include <sys/stat.h>
-#include "src/opencl12/fir_cl12/include/fir_cl12.h"
-#include "src/opencl12/fir_cl12/include/eventlist.h"
 
-#define BILLION 1000000000L
+#include "src/opencl12/fir_cl12/fir_cl12.h"
 
 #define CHECK_STATUS(status, message)           \
   if (status != CL_SUCCESS) {                   \
@@ -51,122 +45,69 @@
     printf("\n");                               \
   }
 
-/** Define custom constants*/
-#define MAX_SOURCE_SIZE (0x100000)
+void FIR::Initialize() {
+  num_total_data_ = num_data_ * num_blocks;
+
+  InitializeBuffer();
+  InitializeData();
+
+  InitCL();
+  InitKernels();
+}
+
+void FIR::InitCL() {
+  runtime_    = clRuntime::getInstance();
+
+  platform_   = runtime_->getPlatformID();
+  device_     = runtime_->getDevice();
+  context_    = runtime_->getContext();
+  cmd_queue_   = runtime_->getCmdQueue(0);
+
+  file_       = clFile::getInstance();
+}
+
+void FIR::InitKernels() {
+  cl_int err;
+  file->open("fir_cl12_kernel.cl");
+
+  const char *source = file->getSourceChar();
+  program = clCreateProgramWithSource(context, 
+      1, 
+      (const char **)&source,
+      NULL,
+      &err);
+  checkOpenCLErrors(err, "Failed to create program with source...\n");
+
+  err = clBuildProgram(program_, 0, NULL, NULL, NULL, NULL);
+  checkOpenCLErrors(err, "Failed to create program...\n");
+
+  kernel_fir_ = clCreateKernel(program_, "FIR". &err);
+  checkOpenCLErrors(err, "Failed to create kernel FIR\n");
+}
+
+void FIR::InitializeBuffers() {
+  input = (cl_float *) malloc(num_total_data_ * sizeof(cl_float));
+  output = (cl_float *) malloc(num_total_data_ * sizeof(cl_float));
+  coeff = (cl_float *) malloc(num_tap_ * sizeof(cl_float));
+  temp_output = (cl_float *) malloc(
+      (num_data + num_tap - 1) * sizeof(cl_float));
+}
+
+void FIR::InitializeData() {
+  for (unsigned i = 0; i < num_total_data; i++) {
+    input_[i] = 8;
+  }
+
+  for (unsigned i = 0; i < num_tap; i++) {
+    coeff_[i] = 1.0/num_tap;
+  }
+
+  for (unsigned i = 0; i < (num_data+num_tap-1); i++) {
+    temp_output_[i] = 0.0;
+  }
+}
 
 void FIR::Run() {
-  uint64_t diff;
-  struct timespec start, end;
-
-  /** Define Custom Variables */
-  int i, count;
-  int local;
-
-  /** Declare the Filter Properties */
-  num_tap = 1024;
-  num_total_data = num_data * num_blocks;
-  local = 64;
-
-  printf("FIR Filter\n Data Samples : %d \n", num_data);
-  printf("num_blocks : %d \n", num_blocks);
-  printf("Local Workgroups : %d\n", local);
-  // exit(0);
-  /** Define variables here */
-  input = (cl_float *) malloc( num_total_data* sizeof(cl_float) );
-  output = (cl_float *) malloc( num_total_data* sizeof(cl_float) );
-  coeff = (cl_float *) malloc( num_tap* sizeof(cl_float) );
-  temp_output = (cl_float *) malloc( (num_data+num_tap-1) * sizeof(cl_float) );
-
-  /** Initialize the input data */
-  for (i = 0; (unsigned)i < num_total_data; i++) {
-    input[i] = 8;
-    output[i] = 99;
-  }
-
-  for (i = 0; (unsigned)i < num_tap; i++)
-    coeff[i] = 1.0/num_tap;
-
-  for (i = 0; (unsigned)i < (num_data+num_tap-1); i++ )
-    temp_output[i] = 0.0;
-
-  // Event Creation
-  cl_event event;
-  EventList* event_list;
-
-#if 1
-  // Read the input file
-  FILE *fip;
-  i = 0;
-  fip = fopen("temp.dat", "r");
-  if (!fip) { fip = fopen("src/opencl12/fir_cl12/input/temp.dat", "r"); }
-  if (!fip) { fip = fopen("input/temp.dat", "r"); }
-  if (!fip) { fprintf(stderr, "Unable to locate accessory file.\n"); exit(1);}
-  while ((unsigned)i < num_total_data) {
-    //int res = fscanf(fip, "%f", &input[i]);
-    i++;
-  }
-  fclose(fip);
-
-#if 0
-  printf("\n The Input:\n");
-  i = 0;
-  while (i < num_total_data) {
-    printf("%f, ", input[i]);
-    i++;
-  }
-#endif
-#endif
-  // Load the kernel source code into the array source_str
-  FILE *fp;
-  char *source_str;
-  size_t source_size;
-
-  fp = fopen("fir_cl12_kernel.cl", "r");
-  if (!fp) { fp = fopen("src/opencl12/fir_cl12/fir_cl12_kernel.cl", "r"); }
-  if (!fp) {
-    fprintf(stderr, "Failed to load kernel.\n");
-    exit(1);
-  }
-  source_str = (char*)malloc(MAX_SOURCE_SIZE);
-  source_size = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
-  fclose(fp);
-
-  // Get platform and device information
-  cl_platform_id platform_id = NULL;
-  cl_device_id device_id = NULL;
-  cl_uint ret_num_devices;
-  cl_uint ret_num_platforms;
-  cl_int ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
-  ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, 1,
-                       &device_id, &ret_num_devices);
-
-  printf("/n No of Devices %d", ret_num_platforms);
-
-  char *platformVendor;
-  size_t platInfoSize;
-  clGetPlatformInfo(platform_id, CL_PLATFORM_VENDOR, 0, NULL,
-                    &platInfoSize);
-
-  platformVendor = (char*)malloc(platInfoSize);
-
-  clGetPlatformInfo(platform_id, CL_PLATFORM_VENDOR, platInfoSize,
-                    platformVendor, NULL);
-  printf("\tVendor: %s\n", platformVendor);
-  free(platformVendor);
-
-  // Create an OpenCL context
-  cl_context context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
-
-  // Create a command queue
-  /* cl_command_queue command_queue = clCreateCommandQueueWithProperties\
-     (context, device_id, NULL, &ret); */
-  cl_queue_properties props[] = {CL_QUEUE_PROPERTIES, \
-                                 CL_QUEUE_PROFILING_ENABLE, 0};
-  cl_command_queue command_queue = \
-    clCreateCommandQueueWithProperties(context, device_id, props, &ret);
-  // Create event_list for Timestamps
-  event_list = new EventList(context, command_queue, device_id, true);
-
   // Create memory buffers on the device for each vector
   cl_mem inputBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                       sizeof(cl_float) * num_data, NULL, &ret);
@@ -179,20 +120,6 @@ void FIR::Run() {
                                             sizeof(cl_float)*(num_data+num_tap-1),
                                             NULL,
                                             &ret);
-
-  // Create a program from the kernel source
-  cl_program program = clCreateProgramWithSource(context, 1,
-                                                 (const char **)&source_str,
-                                                 (const size_t *)&source_size,
-                                                 &ret);
-  // Build the program
-  ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
-
-  CHECK_STATUS(ret, "Error: Build Program\n");
-
-  // Create the OpenCL kernel
-  cl_kernel kernel = clCreateKernel(program, "FIR", &ret);
-  CHECK_STATUS(ret, "Error: Create kernel. (clCreateKernel)\n");
 
   // Set the arguments of the kernel
   ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&output_buffer);

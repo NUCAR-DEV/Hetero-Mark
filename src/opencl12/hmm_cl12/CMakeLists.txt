@@ -64,13 +64,6 @@ endif( )
 
 ############################################################################
 
-# Style check
-set( check_target ${BENCHMARK_NAME}_check )
-set( check_target_src ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
-add_style_check_target(${check_target} "${check_target_src}" "")
-
-############################################################################
-
 set( COMPILER_FLAGS "-std=c++0x" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )

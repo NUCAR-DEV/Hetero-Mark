@@ -16,11 +16,6 @@ set( SUBDIRECTORIES
   page_rank_hsa
 )
 
-set( check_target ${FOLDER_NAME}_check )
-set( check_target_src )
-add_style_check_target( ${check_target} "${check_target_src}" 
-  "${SUBDIRECTORIES}" )
-
 ###############################################################
 
 foreach( subdir ${SUBDIRECTORIES} )

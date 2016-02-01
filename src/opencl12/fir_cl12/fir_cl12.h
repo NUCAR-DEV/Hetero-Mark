@@ -30,31 +30,53 @@
 *   DEALINGS WITH THE SOFTWARE.
 */
 
+#ifndef FIR_H
+#define FIR_H
 
-__kernel void FIR( 
-  __global float * output,
-  __global float * coeff,
-  __global float * temp_input,
-  uint numTap){
-  uint tid = get_global_id(0);
-  uint numData = get_global_size(0);
-  uint xid = tid + numTap - 1;
+#include "src/common/cl_util/cl_util.h"
+#include "src/common/benchmark/benchmark.h"
 
-  float sum = 0;
-  uint i=0;
+using namespace clHelper;
 
-  for( i=0; i<numTap; i++ )
-  {
-      sum = sum + coeff[i] * temp_input[tid + i];
-   
+class FIR : public Benchmark {
+ private:
+  clRuntime *runtime_;
+  clFile *file_;
+
+  cl_platform_id platform_;
+  cl_device_id device_;
+  cl_context context_;
+  cl_program program_;
+  cl_command_queue cmd_queue_;
+  cl_kernel kernel_fir_;
+
+  cl_uint num_tap_ = 0;
+  cl_uint num_data_ = 0;  // Block size
+  cl_uint num_total_data_ = 0;
+  cl_uint num_blocks_ = 0;
+  cl_float* input_ = NULL;
+  cl_float* output_ = NULL;
+  cl_float* coeff_ = NULL;
+  cl_float* temp_output_ = NULL;
+
+  void InitializeData();
+  void LoadKernes();
+    
+ public:
+  FIR() {};
+  ~FIR() {};
+
+  void SetInitialParameters(int num_data, int num_blocks) { 
+    this.num_blocks_ = num_blocks; 
+    this.num_data_ = num_data; 
   }
-  output[tid] = sum;
 
-  barrier( CLK_GLOBAL_MEM_FENCE );
+  void Initialize() override;
+	void Run() override;
+	void Verify() override {}
+	void Cleanup() override {}
+	void Summarize() override {}
 
-  /* fill the history buffer */
-  if( tid >= numData - numTap + 1 )
-      temp_input[ tid - ( numData - numTap + 1 ) ] = temp_input[xid];
+};
 
-  barrier( CLK_GLOBAL_MEM_FENCE );
-}
+#endif
