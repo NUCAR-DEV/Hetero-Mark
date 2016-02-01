@@ -8,21 +8,20 @@
 
 using namespace clHelper;
 
-class ParIIR : public Benchmark
-{
+class ParIIR : public Benchmark {
   // Helper objects
   clRuntime *runtime;
-  clFile    *file;
+  clFile *file;
 
   // svm granuality
   bool svmCoarseGrainAvail;
   bool svmFineGrainAvail;
 
-  // OpenCL resources, auto release 
-  cl_platform_id   platform;
-  cl_device_id     device;
-  cl_context       context;
-  cl_program       program;
+  // OpenCL resources, auto release
+  cl_platform_id platform;
+  cl_device_id device;
+  cl_context context;
+  cl_program program;
   cl_command_queue cmdQueue;
 
   // Parameters
@@ -40,14 +39,14 @@ class ParIIR : public Benchmark
   float *cpu_y;
 
   // Memory objects
-  //cl_mem d_Mat; // Lenx16x2( 32 intermediate data to merge into 1 final data)
+  // cl_mem d_Mat; // Lenx16x2( 32 intermediate data to merge into 1 final data)
   cl_mem d_X;
   cl_mem d_Y;
   cl_mem d_nsec;
   cl_mem d_dsec;
 
   // User defined kernels
-  cl_kernel        kernel_pariir;
+  cl_kernel kernel_pariir;
 
   //--- ----------------------------------------------------------------------//
   // Initialize functions
@@ -71,12 +70,12 @@ class ParIIR : public Benchmark
   // check the results
   void compare();
 
-  public:
+ public:
   ParIIR();
   ~ParIIR();
 
-  void SetInitialParameters(int l) { 
-    if (l >= ROWS && ((l % ROWS)==0)) {
+  void SetInitialParameters(int l) {
+    if (l >= ROWS && ((l % ROWS) == 0)) {
       this->len = l;
     } else {
       std::cout << "Invalid value for signal length = " << l << ".\n";
@@ -84,9 +83,7 @@ class ParIIR : public Benchmark
       std::cout << ", and evenly divisible by " << ROWS << ".\n";
       exit(-1);
     }
-
   }
-
 
   void Run() override;
   void Verify() override {}

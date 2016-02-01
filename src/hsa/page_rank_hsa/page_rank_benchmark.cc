@@ -128,8 +128,7 @@ void PageRankBenchmark::ReadDenseVector() {
 }
 
 void PageRankBenchmark::PrintOutput() {
-  std::cout << std::endl
-            << "Eigen Vector: " << std::endl;
+  std::cout << std::endl << "Eigen Vector: " << std::endl;
   for (int i = 0; i < nr; i++) std::cout << eigenV[i] << "\t";
   std::cout << std::endl;
 }
@@ -139,17 +138,13 @@ void PageRankBenchmark::Print() {
   std::cout << "nr: " << nr << std::endl;
   std::cout << "Row Offset: " << std::endl;
   for (int i = 0; i < nr + 1; i++) std::cout << rowOffset[i] << "\t";
-  std::cout << std::endl
-            << "Columns: " << std::endl;
+  std::cout << std::endl << "Columns: " << std::endl;
   for (int i = 0; i < nnz; i++) std::cout << col[i] << "\t";
-  std::cout << std::endl
-            << "Values: " << std::endl;
+  std::cout << std::endl << "Values: " << std::endl;
   for (int i = 0; i < nnz; i++) std::cout << val[i] << "\t";
-  std::cout << std::endl
-            << "Vector: " << std::endl;
+  std::cout << std::endl << "Vector: " << std::endl;
   for (int i = 0; i < nr; i++) std::cout << vector[i] << "\t";
-  std::cout << std::endl
-            << "Eigen Vector: " << std::endl;
+  std::cout << std::endl << "Eigen Vector: " << std::endl;
   for (int i = 0; i < nr; i++) std::cout << eigenV[i] << "\t";
   std::cout << std::endl;
 }
@@ -237,4 +232,3 @@ float PageRankBenchmark::abs(float num) {
   }
   return num;
 }
-

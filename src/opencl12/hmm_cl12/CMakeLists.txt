@@ -5,8 +5,6 @@ set( EXTRA_FILES hmm_cl12_kernel.cl )
 
 ###############################################################################
 
-include(../../../CppLint.cmake)
-
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
 project( ${BENCHMARK_NAME} )

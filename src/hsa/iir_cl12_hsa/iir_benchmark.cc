@@ -49,9 +49,7 @@
 
 void cpu_pariir(float *x, float *y, float *ns, float *dsec, float c, int len);
 
-IirBenchmark::IirBenchmark(int len) {
-  this->len = len;
-}
+IirBenchmark::IirBenchmark(int len) { this->len = len; }
 
 void IirBenchmark::Cleanup() {
   delete[] X;
@@ -138,8 +136,7 @@ void IirBenchmark::Verify() {
     }
   }
 
-  if (success)
-    printf("Passed!\n");
+  if (success) printf("Passed!\n");
 
   delete[] ds;
   delete[] ns;

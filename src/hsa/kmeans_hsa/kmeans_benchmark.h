@@ -100,25 +100,15 @@ class KmeansBenchmark : public Benchmark {
   void Cleanup() override;
   void Summarize() override;
 
-  void SetInputFileName(const char *filename) {
-    filename_ = filename;
-  }
+  void SetInputFileName(const char *filename) { filename_ = filename; }
 
-  void SetNLoops(int n_loops) {
-    this->nloops = n_loops;
-  }
+  void SetNLoops(int n_loops) { this->nloops = n_loops; }
 
-  void SetThreshold(float threshold) {
-    this->threshold = threshold;
-  }
+  void SetThreshold(float threshold) { this->threshold = threshold; }
 
-  void SetMaxClusters(int max_clusters) {
-    max_nclusters = max_clusters;
-  }
+  void SetMaxClusters(int max_clusters) { max_nclusters = max_clusters; }
 
-  void SetMinClusters(int min_clusters) {
-    min_nclusters = min_clusters;
-  }
+  void SetMinClusters(int min_clusters) { min_nclusters = min_clusters; }
 
  private:
   //-----------------------------------------------------------------------//
@@ -142,21 +132,21 @@ class KmeansBenchmark : public Benchmark {
   float **feature;  // host feature
 
   //-----------------  Clustering parameters ------------------------------//
-  int nclusters;   // number of clusters
+  int nclusters;    // number of clusters
   int *membership;  // which cluster a data point belongs to
   // hold coordinates of cluster centers
   float **tmp_cluster_centres;  // pointer to the clusters
-  float **cluster_centres;     // pointer to the clusters
+  float **cluster_centres;      // pointer to the clusters
 
   //-----------------  Create_mem -----------------------------------------//
   int *membership_OCL;
 
   //----------------- Kmeans_clustering parameters ------------------------//
-  float **clusters;     // out: [nclusters][nfeatures]
-  int *initial;         // used to hold the index of points not yet selected
+  float **clusters;      // out: [nclusters][nfeatures]
+  int *initial;          // used to hold the index of points not yet selected
   int *new_centers_len;  // [nclusters]: no. of points in each cluster
-  float **new_centers;  // [nclusters][nfeatures]
-  float delta;          // if the point moved
+  float **new_centers;   // [nclusters][nfeatures]
+  float delta;           // if the point moved
 
   //----------------- rms_err parameters ----------------------------------//
   float rmse;  // RMSE for each clustering

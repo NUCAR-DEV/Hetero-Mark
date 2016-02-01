@@ -38,7 +38,6 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-
 #include <cstdlib>
 #include <string>
 
@@ -48,16 +47,15 @@
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/command_line_option/command_line_option.h"
 
-
 int main(int argc, char const *argv[]) {
   // Setup command line option
   CommandLineOption command_line_option(
       "====== Hetero-Mark IIR Benchmarks (OpenCL 1.2) ======",
       "This benchmarks runs the parallel IIR for multi-channel case.");
-  command_line_option.AddArgument("Help", "bool", "false",
-      "-h", "--help", "Dump help information");
-  command_line_option.AddArgument("Length", "int", "256",
-      "-l", "--length", "Length of input");
+  command_line_option.AddArgument("Help", "bool", "false", "-h", "--help",
+                                  "Dump help information");
+  command_line_option.AddArgument("Length", "int", "256", "-l", "--length",
+                                  "Length of input");
 
   command_line_option.Parse(argc, argv);
   if (command_line_option.GetArgumentValue("Help")->AsBool()) {

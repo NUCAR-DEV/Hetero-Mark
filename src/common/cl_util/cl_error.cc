@@ -39,5 +39,3 @@
  */
 
 #include "src/common/cl_util/cl_error.h"
-
-

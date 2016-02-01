@@ -1,4 +1,3 @@
-include(../../CppLint.cmake)
 set( FOLDER_NAME opencl20 )
 set( SUBDIRECTORIES 
     aes_cl20

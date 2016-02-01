@@ -45,10 +45,24 @@
 #define BILLION 1000000000L
 
 ShallowWater::ShallowWater(unsigned m, unsigned n)
-    : m_(m), n_(n), m_len_(m + 1), n_len_(n + 1), itmax_(250), dt_(90.),
-      tdt_(dt_), dx_(100000.), dy_(100000.), a_(1000000.), alpha_(.001),
-      el_(n_ * dx_), pi_(4. * atanf(1.)), tpi_(pi_ + pi_), di_(tpi_ / m_),
-      dj_(tpi_ / n_), pcf_(pi_ * pi_ * a_ * a_ / (el_ * el_)), fsdx_(4. / dx_),
+    : m_(m),
+      n_(n),
+      m_len_(m + 1),
+      n_len_(n + 1),
+      itmax_(250),
+      dt_(90.),
+      tdt_(dt_),
+      dx_(100000.),
+      dy_(100000.),
+      a_(1000000.),
+      alpha_(.001),
+      el_(n_ * dx_),
+      pi_(4. * atanf(1.)),
+      tpi_(pi_ + pi_),
+      di_(tpi_ / m_),
+      dj_(tpi_ / n_),
+      pcf_(pi_ * pi_ * a_ * a_ / (el_ * el_)),
+      fsdx_(4. / dx_),
       fsdy_(4. / dy_) {
   runtime_ = clRuntime::getInstance();
   file_ = clFile::getInstance();
@@ -168,8 +182,8 @@ void ShallowWater::FreeKernel() {
   checkOpenCLErrors(err, "Failed to release cl kernel: kernel_sw_time_smooth_");
 }
 
-#define clFreeBuffer(buf)                                                      \
-  err = clReleaseMemObject(buf);                                               \
+#define clFreeBuffer(buf)        \
+  err = clReleaseMemObject(buf); \
   checkOpenCLErrors(err, "Failed to release cl buffer");
 void ShallowWater::FreeBuffer() {
   cl_int err;
@@ -216,8 +230,9 @@ void ShallowWater::InitPsiP() {
 
   err = clEnqueueNDRangeKernel(cmdQueue_, kernel_sw_init_psi_p_, 2, NULL,
                                globalSize, localSize, 0, NULL, NULL);
-  checkOpenCLErrors(err, "Failed to clEnqueueNDRangeKernel                     "
-                         "     kernel_sw_init_psi_p_");
+  checkOpenCLErrors(err,
+                    "Failed to clEnqueueNDRangeKernel                     "
+                    "     kernel_sw_init_psi_p_");
 }
 
 void ShallowWater::InitVelocities() {

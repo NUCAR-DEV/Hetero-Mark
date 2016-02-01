@@ -199,7 +199,6 @@ static const char *getOCLErrorCodeStr(T input) {
   }
 }
 
-
 template <typename T>
 static int checkVal(T input, T reference, std::string message,
                     bool isAPIerror = true) {

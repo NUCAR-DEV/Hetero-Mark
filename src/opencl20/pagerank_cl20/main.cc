@@ -38,7 +38,6 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-
 #include "include/pagerank_cl20.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
@@ -48,42 +47,44 @@
 #include <cstdlib>
 #include <string>
 
-int main(int argc, char const *argv[])
-{
-    // Setup command line option
-    CommandLineOption command_line_option(
+int main(int argc, char const *argv[]) {
+  // Setup command line option
+  CommandLineOption command_line_option(
       "====== Hetero-Mark Pagerank Benchmarks (OpenCL 2.0) ======",
       "This benchmarks runs the ParIIR Algorithm.");
-    command_line_option.AddArgument("Help", "bool", "false",
-        "-h", "--help", "Dump help information");
-    command_line_option.AddArgument("InputMatrix", "string", "",
-        "-m", "--matrix",
-        "Input Matrix");
-//    command_line_option.AddArgument("InputVector", "string", "",
-//        "-v", "--vector",
-//        "Input Vector");
+  command_line_option.AddArgument("Help", "bool", "false", "-h", "--help",
+                                  "Dump help information");
+  command_line_option.AddArgument("InputMatrix", "string", "", "-m", "--matrix",
+                                  "Input Matrix");
+  //    command_line_option.AddArgument("InputVector", "string", "",
+  //        "-v", "--vector",
+  //        "Input Vector");
 
-
-    command_line_option.Parse(argc, argv);
-    if (command_line_option.GetArgumentValue("Help")->AsBool()) {
-      command_line_option.Help();
-      return 0;
-    }
-
-    std::string matrix = command_line_option.GetArgumentValue("InputMatrix")->AsString();
-//    std::string vector = command_line_option.GetArgumentValue("InputVector")->AsString();
-
-    if (matrix == "") { command_line_option.Help(); return 0;}
-
-    std::unique_ptr<PageRank> pr(new PageRank());
-    //if (vector == "") { 
-    pr->SetInitialParameters(matrix);
-    //else { pr->SetInitialParameters(matrix, vector); }
-
-    std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-    BenchmarkRunner runner(pr.get(), timer.get());
-    runner.Run();
-    runner.Summarize();
-
+  command_line_option.Parse(argc, argv);
+  if (command_line_option.GetArgumentValue("Help")->AsBool()) {
+    command_line_option.Help();
     return 0;
+  }
+
+  std::string matrix =
+      command_line_option.GetArgumentValue("InputMatrix")->AsString();
+  //    std::string vector =
+  //    command_line_option.GetArgumentValue("InputVector")->AsString();
+
+  if (matrix == "") {
+    command_line_option.Help();
+    return 0;
+  }
+
+  std::unique_ptr<PageRank> pr(new PageRank());
+  // if (vector == "") {
+  pr->SetInitialParameters(matrix);
+  // else { pr->SetInitialParameters(matrix, vector); }
+
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(pr.get(), timer.get());
+  runner.Run();
+  runner.Summarize();
+
+  return 0;
 }

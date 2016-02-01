@@ -34,10 +34,10 @@
  *
  */
 
-#include <stdio.h>/* for printf */
+#include <stdio.h> /* for printf */
 #include <stdint.h>/* for uint64 definition */
 #include <stdlib.h>/* for exit() definition */
-#include <time.h>/* for clock_gettime */
+#include <time.h>  /* for clock_gettime */
 #include <string.h>
 #include <CL/cl.h>
 #include "src/opencl20/fir_cl20/include/fir_cl20.h"
@@ -50,8 +50,8 @@
 
 #define CHECK_STATUS(status, message) \
   if (status != CL_SUCCESS) {         \
-      printf(message);                \
-      printf("\n");                   \
+    printf(message);                  \
+    printf("\n");                     \
   }
 
 /** Define custom constants*/
@@ -82,12 +82,14 @@ void FIR::Run() {
   size_t source_size;
 
   fp = fopen("fir_cl20_kernel.cl", "r");
-  if (!fp) { fp = fopen("src/opencl20/fir_cl20/fir_cl20_kernel.cl", "r"); }
+  if (!fp) {
+    fp = fopen("src/opencl20/fir_cl20/fir_cl20_kernel.cl", "r");
+  }
   if (!fp) {
     fprintf(stderr, "Failed to load kernel.\n");
     exit(1);
   }
-  source_str = (char*)malloc(MAX_SOURCE_SIZE);
+  source_str = (char *)malloc(MAX_SOURCE_SIZE);
   source_size = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
   fclose(fp);
 
@@ -97,18 +99,17 @@ void FIR::Run() {
   cl_uint ret_num_devices;
   cl_uint ret_num_platforms;
   cl_int ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
-  ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, 1,
-                       &device_id, &ret_num_devices);
+  ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, 1, &device_id,
+                       &ret_num_devices);
 
   printf("\n No of Devices %d", ret_num_platforms);
 
   // Get platform information
   char *platformVendor;
   size_t platInfoSize;
-  clGetPlatformInfo(platform_id, CL_PLATFORM_VENDOR, 0, NULL,
-                    &platInfoSize);
+  clGetPlatformInfo(platform_id, CL_PLATFORM_VENDOR, 0, NULL, &platInfoSize);
 
-  platformVendor = (char*)malloc(platInfoSize);
+  platformVendor = (char *)malloc(platInfoSize);
 
   clGetPlatformInfo(platform_id, CL_PLATFORM_VENDOR, platInfoSize,
                     platformVendor, NULL);
@@ -119,41 +120,40 @@ void FIR::Run() {
   cl_context context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
 
   // Create a command queue
-  cl_command_queue queue = clCreateCommandQueueWithProperties(context,
-                                                              device_id,
-                                                              NULL,
-                                                              &ret);
+  cl_command_queue queue =
+      clCreateCommandQueueWithProperties(context, device_id, NULL, &ret);
   // Allocate SVM buffers
   input = (cl_float *)clSVMAlloc(context, CL_MEM_READ_ONLY,
-                                 num_total_data*sizeof(cl_float), 0);
+                                 num_total_data * sizeof(cl_float), 0);
   output = (cl_float *)clSVMAlloc(context, CL_MEM_READ_WRITE,
-                                  num_total_data*sizeof(cl_float), 0);
+                                  num_total_data * sizeof(cl_float), 0);
   coeff = (cl_float *)clSVMAlloc(context, CL_MEM_READ_ONLY,
-                                 num_tap*sizeof(cl_float), 0);
-  temp_output = (cl_float *)clSVMAlloc(context, CL_MEM_READ_WRITE,
-                                       (num_data+num_tap-1)*sizeof(cl_float), 0);
+                                 num_tap * sizeof(cl_float), 0);
+  temp_output =
+      (cl_float *)clSVMAlloc(context, CL_MEM_READ_WRITE,
+                             (num_data + num_tap - 1) * sizeof(cl_float), 0);
 
   // Map SVM buffers for writing
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, input,
-                        num_total_data*sizeof(cl_float), 0, 0, 0);
+                        num_total_data * sizeof(cl_float), 0, 0, 0);
   if (err != CL_SUCCESS) {
     printf("Error clEnqueueSVMMap input :: %i", err);
     exit(1);
   }
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, output,
-                        num_total_data*sizeof(cl_float), 0, 0, 0);
+                        num_total_data * sizeof(cl_float), 0, 0, 0);
   if (err != CL_SUCCESS) {
     printf("Error clEnqueueSVMMap output :: %i", err);
     exit(1);
   }
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, coeff,
-                        num_tap*sizeof(cl_float), 0, 0, 0);
+                        num_tap * sizeof(cl_float), 0, 0, 0);
   if (err != CL_SUCCESS) {
     printf("Error clEnqueueSVMMap coeff :: %i", err);
     exit(1);
   }
   err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, temp_output,
-                        (num_data+num_tap-1)*sizeof(cl_float), 0, 0, 0);
+                        (num_data + num_tap - 1) * sizeof(cl_float), 0, 0, 0);
   if (err != CL_SUCCESS) {
     printf("Error clEnqueueSVMMap temp_output :: %i", err);
     exit(1);
@@ -165,23 +165,28 @@ void FIR::Run() {
     output[i] = 99;
   }
 
-  for (i = 0; (unsigned)i < num_tap; i++)
-    coeff[i] = 1.0/num_tap;
+  for (i = 0; (unsigned)i < num_tap; i++) coeff[i] = 1.0 / num_tap;
 
-  for (i=0; (unsigned)i < (num_data+num_tap-1); i++)
-    temp_output[i] = 0.0;
+  for (i = 0; (unsigned)i < (num_data + num_tap - 1); i++) temp_output[i] = 0.0;
 #if 1
   // Read the input file
   FILE *fip;
   i = 0;
   fip = fopen("temp.dat", "r");
-  if (!fip) { fip = fopen("src/opencl20/fir_cl20/input/temp.dat", "r"); }
-  if (!fip) { fip = fopen("input/temp.dat", "r"); }
-  if (!fip) { fprintf(stderr, "Unable to locate accessory file.\n"); exit(1);}
+  if (!fip) {
+    fip = fopen("src/opencl20/fir_cl20/input/temp.dat", "r");
+  }
+  if (!fip) {
+    fip = fopen("input/temp.dat", "r");
+  }
+  if (!fip) {
+    fprintf(stderr, "Unable to locate accessory file.\n");
+    exit(1);
+  }
   while ((unsigned)i < num_total_data) {
-    //int res = fscanf(fip, "%f", &input[i]);
-      i++;
-    }
+    // int res = fscanf(fip, "%f", &input[i]);
+    i++;
+  }
   fclose(fip);
 #if 0
   printf("\n The Input:\n");
@@ -213,14 +218,13 @@ void FIR::Run() {
   }
 
   // Create a program from the kernel source
-  cl_program program = clCreateProgramWithSource(context, 1,
-                                                 (const char **)&source_str,
-                                                 (const size_t *)&source_size,
-                                                 &ret);
+  cl_program program =
+      clCreateProgramWithSource(context, 1, (const char **)&source_str,
+                                (const size_t *)&source_size, &ret);
 
   // Build the program
-  ret = clBuildProgram(program, 1, &device_id,
-                       "-I ./ -cl-std=CL2.0", NULL, NULL);
+  ret =
+      clBuildProgram(program, 1, &device_id, "-I ./ -cl-std=CL2.0", NULL, NULL);
 
   CHECK_STATUS(ret, "Error: Build Program\n");
 
@@ -237,9 +241,9 @@ void FIR::Run() {
   // Not a SVM pointer
 
   // Decide the local group size formation
-  size_t global_threads[1]={num_data};
-  size_t local_threads[1]={128};
-  //cl_command_type cmdType;
+  size_t global_threads[1] = {num_data};
+  size_t local_threads[1] = {128};
+  // cl_command_type cmdType;
   count = 0;
 
   // FIR Loop
@@ -251,27 +255,21 @@ void FIR::Run() {
 
   while ((unsigned)count < num_blocks) {
     // Custom item size based on current algorithm
-    //size_t global_item_size = num_data;
-    //size_t local_item_size = num_data;
+    // size_t global_item_size = num_data;
+    // size_t local_item_size = num_data;
     // Execute the OpenCL kernel on the list
     cl_event event;
-    ret = clEnqueueNDRangeKernel(queue,
-                                 kernel,
-                                 1,
-                                 NULL,
-                                 global_threads,
-                                 local_threads,
-                                 0,
-                                 NULL,
-                                 &event);
+    ret = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, global_threads,
+                                 local_threads, 0, NULL, &event);
 
     CHECK_STATUS(ret, "Error: Range kernel. (clCreateKernel)\n");
     clFinish(queue);
 
     /* Kernel Profiling */
-    //uint64_t kernel_diff;
+    // uint64_t kernel_diff;
 
-    /* !NOTE: Profiling is not enabled, therefore this will cause a segmentation fault
+    /* !NOTE: Profiling is not enabled, therefore this will cause a segmentation
+    fault
 
     struct timespec kernel_start, kernel_end;
 
@@ -289,10 +287,10 @@ void FIR::Run() {
       execTimeMs += tmp;
       */
 
-      count++;
+    count++;
   }
   printf("\nKernel exec time: %llu nanoseconds\n",
-          (long long unsigned int)execTimeMs);
+         (long long unsigned int)execTimeMs);
 
   // Flush memory buffers
   ret = clFlush(queue);
@@ -308,5 +306,5 @@ void FIR::Run() {
 
   clock_gettime(CLOCK_MONOTONIC, &end);
   diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  printf("elapsed time = %llu nanoseconds\n", (long long unsigned int) diff);
+  printf("elapsed time = %llu nanoseconds\n", (long long unsigned int)diff);
 }

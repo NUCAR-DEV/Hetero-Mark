@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (c) 2015 Northeastern University
 * All rights reserved.
 *
@@ -40,8 +40,8 @@ using namespace clHelper;
 
 class FIR : public Benchmark {
  private:
-  clRuntime *runtime_;
-  clFile *file_;
+  clRuntime* runtime_;
+  clFile* file_;
 
   cl_platform_id platform_;
   cl_device_id device_;
@@ -61,22 +61,21 @@ class FIR : public Benchmark {
 
   void InitializeData();
   void LoadKernes();
-    
- public:
-  FIR() {};
-  ~FIR() {};
 
-  void SetInitialParameters(int num_data, int num_blocks) { 
-    this.num_blocks_ = num_blocks; 
-    this.num_data_ = num_data; 
+ public:
+  FIR(){};
+  ~FIR(){};
+
+  void SetInitialParameters(int num_data, int num_blocks) {
+    this.num_blocks_ = num_blocks;
+    this.num_data_ = num_data;
   }
 
   void Initialize() override;
-	void Run() override;
-	void Verify() override {}
-	void Cleanup() override {}
-	void Summarize() override {}
-
+  void Run() override;
+  void Verify() override {}
+  void Cleanup() override {}
+  void Summarize() override {}
 };
 
 #endif

@@ -52,10 +52,10 @@ int main(int argc, char const *argv[]) {
   CommandLineOption command_line_option(
       "====== Hetero-Mark IIR Benchmarks (OpenCL 2.0) ======",
       "This benchmarks runs the parallel IIR for multi-channel case.");
-  command_line_option.AddArgument("Help", "bool", "false",
-      "-h", "--help", "Dump help information");
-  command_line_option.AddArgument("Length", "int", "256",
-      "-l", "--length", "Length of input");
+  command_line_option.AddArgument("Help", "bool", "false", "-h", "--help",
+                                  "Dump help information");
+  command_line_option.AddArgument("Length", "int", "256", "-l", "--length",
+                                  "Length of input");
 
   command_line_option.Parse(argc, argv);
   if (command_line_option.GetArgumentValue("Help")->AsBool()) {

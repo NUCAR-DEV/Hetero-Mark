@@ -328,8 +328,8 @@ void PageRank::Run() {
   ReadBuffer();
   std::cout << "ReadBuffer()" << fileName1 << std::endl;
 
-  //CpuRun();  // NOTE CPU AFTER GPU
-  //std::cout << "CpuRun()" << fileName1 << std::endl;
+  // CpuRun();  // NOTE CPU AFTER GPU
+  // std::cout << "CpuRun()" << fileName1 << std::endl;
 }
 
 void PageRank::Test() {

@@ -87,5 +87,4 @@ bool clFile::open(const char *fileName) {
 
   return false;
 }
-
 }

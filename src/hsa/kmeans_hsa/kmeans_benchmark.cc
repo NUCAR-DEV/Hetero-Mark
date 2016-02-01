@@ -55,8 +55,7 @@
 
 #include "src/hsa/kmeans_hsa/kmeans_benchmark.h"
 
-KmeansBenchmark::KmeansBenchmark() {
-}
+KmeansBenchmark::KmeansBenchmark() {}
 
 KmeansBenchmark::~KmeansBenchmark() {}
 
@@ -86,7 +85,7 @@ void KmeansBenchmark::Read() {
 
   // allocate space for features[] and read attributes of all objects
   buf = new float[npoints * nfeatures];
-  feature = new float*[npoints];
+  feature = new float *[npoints];
   feature[0] = new float[npoints * nfeatures];
 
   // fixme : svm buffer
@@ -206,7 +205,7 @@ void KmeansBenchmark::Kmeans_clustering() {
   }
 
   // allocate space for and initialize returning variable clusters[]
-  clusters = new float*[nclusters];
+  clusters = new float *[nclusters];
   clusters[0] = new float[nclusters * nfeatures];
   for (i = 1; i < nclusters; i++) {
     clusters[i] = clusters[i - 1] + nfeatures;
@@ -241,7 +240,7 @@ void KmeansBenchmark::Kmeans_clustering() {
 
   // allocate space for and initialize new_centers_len and new_centers
   new_centers_len = new int[nclusters]();
-  new_centers = new float*[nclusters];
+  new_centers = new float *[nclusters];
   new_centers[0] = new float[nclusters * nfeatures]();
 
   for (i = 1; i < nclusters; i++)
@@ -313,8 +312,8 @@ void KmeansBenchmark::Clustering() {
         RMS_err();
 
         if (rmse < min_rmse_ref) {
-          min_rmse_ref = rmse;  // update reference min RMSE
-          min_rmse = min_rmse_ref;  // update return min RMSE
+          min_rmse_ref = rmse;         // update reference min RMSE
+          min_rmse = min_rmse_ref;     // update return min RMSE
           best_nclusters = nclusters;  // update optimum number of clusters
           index = i;  // update number of iteration to reach best RMSE
         }
@@ -426,21 +425,14 @@ void KmeansBenchmark::Display_results() {
   }
 }
 
-void KmeansBenchmark::Initialize() {
-  Read();
-}
+void KmeansBenchmark::Initialize() { Read(); }
 
-void KmeansBenchmark::Run() {
-  Clustering();
-}
+void KmeansBenchmark::Run() { Clustering(); }
 
-void KmeansBenchmark::Summarize() {
-  Display_results();
-}
+void KmeansBenchmark::Summarize() { Display_results(); }
 
-void KmeansBenchmark::Verify() {
-}
+void KmeansBenchmark::Verify() {}
 
 void KmeansBenchmark::Cleanup() {
-    Free_mem();  // free device memory
+  Free_mem();  // free device memory
 }

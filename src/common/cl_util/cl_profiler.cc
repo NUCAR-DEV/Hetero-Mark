@@ -63,13 +63,13 @@ void clProfilerMeta::Dump(std::ostream *os) const {
     double ed = elem.get()->second;
     double lt = ed - st;
     (*os) << "\t\t" << std::setprecision(32) << st << " - "
-       << std::setprecision(32) << ed << ": " << std::setprecision(20) << lt
-       << " ms, #" << count << std::endl;
+          << std::setprecision(32) << ed << ": " << std::setprecision(20) << lt
+          << " ms, #" << count << std::endl;
 
     count++;
     if (count > limit) {
       (*os) << "\t\t......" << timeTable.size() - count << " more, "
-         << timeTable.size() << " records in total\n";
+            << timeTable.size() << " records in total\n";
       break;
     }
   }
@@ -208,5 +208,4 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ, cl_kernel kernel, cl_uint wd,
 
   return enqueueErr;
 }
-
 }
