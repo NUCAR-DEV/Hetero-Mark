@@ -48,7 +48,7 @@ class FIR : public Benchmark {
   cl_context context_;
   cl_program program_;
   cl_command_queue cmd_queue_;
-  cl_kernel kernel_fir_;
+  cl_kernel fir_kernel_;
 
   cl_uint num_tap_ = 0;
   cl_uint num_data_ = 0;  // Block size
@@ -58,23 +58,29 @@ class FIR : public Benchmark {
   cl_float* output_ = NULL;
   cl_float* coeff_ = NULL;
   cl_float* temp_output_ = NULL;
+  cl_mem input_buffer_;
+  cl_mem output_buffer_;
+  cl_mem coeff_buffer_;
+  cl_mem temp_output_buffer_;
 
+  void InitializeCL();
   void InitializeData();
-  void LoadKernes();
+  void InitializeKernels();
+  void InitializeBuffers();
 
  public:
   FIR(){};
   ~FIR(){};
 
   void SetInitialParameters(int num_data, int num_blocks) {
-    this.num_blocks_ = num_blocks;
-    this.num_data_ = num_data;
+    this->num_blocks_ = num_blocks;
+    this->num_data_ = num_data;
   }
 
   void Initialize() override;
   void Run() override;
-  void Verify() override {}
-  void Cleanup() override {}
+  void Verify() override {};
+  void Cleanup() override;
   void Summarize() override {}
 };
 

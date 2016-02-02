@@ -111,11 +111,11 @@ target_link_libraries( ${BENCHMARK_NAME} cl_util time_measurement command_line_o
 foreach( extra_file ${EXTRA_FILES} )
     add_custom_command(
         TARGET ${BENCHMARK_NAME} POST_BUILD
+# COMMAND ${CMAKE_COMMAND} -E copy_if_different
+# ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ./
-        )
+          ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${CMAKE_CURRENT_BINARY_DIR}
+    )
 endforeach( extra_file )
 
 # Group sample based on FOLDER_GROUP defined in parent folder

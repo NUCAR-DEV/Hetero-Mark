@@ -38,7 +38,7 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/opencl12/fir_cl12/include/fir_cl12.h"
+#include "src/opencl12/fir_cl12/fir_cl12.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
