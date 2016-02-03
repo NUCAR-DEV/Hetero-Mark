@@ -50,15 +50,14 @@ class FIR : public Benchmark {
   cl_command_queue cmd_queue_;
   cl_kernel fir_kernel_;
 
-  cl_uint num_tap_ = 0;
-  cl_uint num_data_ = 0;  // Block size
+  cl_uint num_tap_ = 16;
+  cl_uint num_data_ = 0;
   cl_uint num_total_data_ = 0;
   cl_uint num_blocks_ = 0;
   cl_float* input_ = NULL;
   cl_float* output_ = NULL;
   cl_float* coeff_ = NULL;
   cl_float* temp_output_ = NULL;
-  cl_mem input_buffer_;
   cl_mem output_buffer_;
   cl_mem coeff_buffer_;
   cl_mem temp_output_buffer_;
@@ -79,7 +78,7 @@ class FIR : public Benchmark {
 
   void Initialize() override;
   void Run() override;
-  void Verify() override {};
+  void Verify() override;
   void Cleanup() override;
   void Summarize() override {}
 };

@@ -36,17 +36,15 @@ __kernel void FIR(
   __global float * coeff,
   __global float * temp_input,
   uint numTap){
+
   uint tid = get_global_id(0);
   uint numData = get_global_size(0);
   uint xid = tid + numTap - 1;
 
   float sum = 0;
-  uint i=0;
-
-  for( i=0; i<numTap; i++ )
-  {
-      sum = sum + coeff[i] * temp_input[tid + i];
-   
+  uint i = 0;
+  for(i = 0; i < numTap; i++){
+      sum = sum + coeff[i] * temp_input[xid - i];
   }
   output[tid] = sum;
 

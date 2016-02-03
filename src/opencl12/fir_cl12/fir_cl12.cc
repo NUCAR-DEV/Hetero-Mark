@@ -27,32 +27,23 @@
  *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  *   DEALINGS WITH THE SOFTWARE.
- *
  */
+
 #include <string.h>
-#include <time.h>/* for clock_gettime */
 #include <stdio.h>
-#include <stdint.h>/* for uint64 definition */
-#include <stdlib.h>/* for exit() definition */
-#include <CL/cl.h>
+#include <cstdlib>
 #include <sys/stat.h>
 
 #include "src/opencl12/fir_cl12/fir_cl12.h"
 
-#define CHECK_STATUS(status, message) \
-  if (status != CL_SUCCESS) {         \
-    printf(message);                  \
-    printf("\n");                     \
-  }
-
 void FIR::Initialize() {
   num_total_data_ = num_data_ * num_blocks_;
 
-  InitializeBuffers();
-  InitializeData();
-
   InitializeCL();
   InitializeKernels();
+
+  InitializeBuffers();
+  InitializeData();
 }
 
 void FIR::InitializeCL() {
@@ -84,34 +75,40 @@ void FIR::InitializeKernels() {
 }
 
 void FIR::InitializeBuffers() {
+  int num_temp_output = num_data_ + num_tap_ - 1;
+
   input_ = (cl_float *)malloc(num_total_data_ * sizeof(cl_float));
   output_ = (cl_float *)malloc(num_total_data_ * sizeof(cl_float));
   coeff_ = (cl_float *)malloc(num_tap_ * sizeof(cl_float));
-  temp_output_ = (cl_float *)malloc(
-      (num_data_ + num_tap_ - 1) * sizeof(cl_float));
+  temp_output_ = (cl_float *)malloc(num_temp_output * sizeof(cl_float));
 
   // Create memory buffers on the device for each vector
-  input_buffer_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
-                                 sizeof(cl_float) * num_data_, 
-                                 NULL, NULL);
+  cl_int err;
   output_buffer_ = clCreateBuffer(context_, CL_MEM_READ_WRITE, 
                                   sizeof(cl_float) * num_data_, 
-                                  NULL, NULL);
-  coeff_buffer_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
+                                  NULL, &err);
+  checkOpenCLErrors(err, "Failed to allocate output buffer");
+
+  coeff_buffer_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
                                  sizeof(cl_float) * num_tap_, 
-                                 NULL, NULL);
-  temp_output_buffer_ = clCreateBuffer(
-      context_, CL_MEM_READ_WRITE,
-      sizeof(cl_float) * (num_data_ + num_tap_ - 1), NULL, NULL);
+                                 NULL, &err);
+  checkOpenCLErrors(err, "Failed to allocate coeff buffer");
+
+  temp_output_buffer_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
+                                       sizeof(cl_float) * num_temp_output, 
+                                       NULL, &err);
+  checkOpenCLErrors(err, "Failed to allocate coeff buffer");
 }
 
 void FIR::InitializeData() {
+  srand(time(NULL));
+
   for (unsigned i = 0; i < num_total_data_; i++) {
-    input_[i] = 8;
+    input_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
   }
 
   for (unsigned i = 0; i < num_tap_; i++) {
-    coeff_[i] = 1.0 / num_tap_;
+    coeff_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
   }
 
   for (unsigned i = 0; i < (num_data_ + num_tap_ - 1); i++) {
@@ -126,40 +123,49 @@ void FIR::Run() {
   // Set the arguments of the kernel
   ret = clSetKernelArg(fir_kernel_, 0, sizeof(cl_mem), 
                        (void *)&output_buffer_);
+  checkOpenCLErrors(ret, "Set kernel argument 0\n");
   ret = clSetKernelArg(fir_kernel_, 1, sizeof(cl_mem), 
                        (void *)&coeff_buffer_);
+  checkOpenCLErrors(ret, "Set kernel argument 1\n");
   ret = clSetKernelArg(fir_kernel_, 2, sizeof(cl_mem), 
                        (void *)&temp_output_buffer_);
+  checkOpenCLErrors(ret, "Set kernel argument 2\n");
   ret = clSetKernelArg(fir_kernel_, 3, sizeof(cl_uint), 
                        (void *)&num_tap_);
+  checkOpenCLErrors(ret, "Set kernel argument 3\n");
 
   // Initialize Memory Buffer
-  ret = clEnqueueWriteBuffer(cmd_queue_, coeff_buffer_, 1, 0,
+  ret = clEnqueueWriteBuffer(cmd_queue_, coeff_buffer_, CL_TRUE, 0,
                              num_tap_ * sizeof(cl_float), 
-                             coeff_, 0, 0, NULL);
+                             coeff_, 
+                             0, NULL, NULL);
+  checkOpenCLErrors(ret, "Copy coeff to buffer\n");
 
-  ret = clEnqueueWriteBuffer(cmd_queue_, temp_output_buffer_, 1, 0,
-                             (num_tap_) * sizeof(cl_float), temp_output_, 0, 0,
-                             NULL);
+  ret = clEnqueueWriteBuffer(cmd_queue_, temp_output_buffer_, CL_TRUE, 0,
+                             num_tap_ * sizeof(cl_float), 
+                             temp_output_, 
+                             0, NULL, NULL);
+  checkOpenCLErrors(ret, "Copy input to buffer\n");
 
   // Decide the local group formation
   size_t globalThreads[1] = {num_data_};
-  size_t localThreads[1] = {128};
+  size_t localThreads[1] = {64};
   count = 0;
 
   while (count < num_blocks_) {
     // fill in the temp_input buffer object
     ret = clEnqueueWriteBuffer(
-        cmd_queue_, temp_output_buffer_, 1, 
-        ((num_tap_) - 1) * sizeof(cl_float),
+        cmd_queue_, temp_output_buffer_, CL_TRUE, 
+        (num_tap_ - 1) * sizeof(cl_float),
         num_data_ * sizeof(cl_float), 
         input_ + (count * num_data_), 
         0, 0, NULL);
+    checkOpenCLErrors(ret, "Copy data to buffer\n");
 
     // Execute the OpenCL kernel on the list
-    ret = clEnqueueNDRangeKernel(cmd_queue_, fir_kernel_, 1, NULL, 
+    ret = clEnqueueNDRangeKernel(cmd_queue_, fir_kernel_, CL_TRUE, NULL, 
                                  globalThreads, localThreads, 0, NULL, NULL);
-    CHECK_STATUS(ret, "Error: Range kernel. (clCreateKernel)\n");
+    checkOpenCLErrors(ret, "Enqueue ND Range.\n");
     clFinish(cmd_queue_);
 
     // Get the output buffer
@@ -167,6 +173,9 @@ void FIR::Run() {
                               num_data_ * sizeof(cl_float),
                               output_ + count * num_data_, 
                               0, NULL, NULL);
+    checkOpenCLErrors(ret, "Copy data back\n");
+    clFinish(cmd_queue_);
+
     count++;
   }
 
@@ -174,16 +183,38 @@ void FIR::Run() {
   ret = clFinish(cmd_queue_);
 }
 
+void FIR::Verify() {
+  bool has_error = false;
+  float *cpu_output = new float[num_total_data_];
+  for (unsigned int i = 0; i < num_total_data_; i++) {
+    float sum = 0;
+    for (unsigned int j = 0; j < num_tap_; j++) {
+      if (i < j) continue;
+      sum += input_[i - j] * coeff_[j];
+    }
+    cpu_output[i] = sum;
+    if (abs(cpu_output[i] - output_[i]) > 1e-5) {
+      has_error = true;
+      printf("At position %d, expected %f, but was %f.\n", 
+             i, cpu_output[i], output_[i]);
+    }
+  }
+
+  if (!has_error) {
+     printf("Passed!\n");
+  }
+
+  delete cpu_output;
+}
+
 void FIR::Cleanup() {
   cl_int ret;
   ret = clReleaseKernel(fir_kernel_);
   ret = clReleaseProgram(program_);
-  ret = clReleaseMemObject(input_buffer_);
   ret = clReleaseMemObject(output_buffer_);
   ret = clReleaseMemObject(coeff_buffer_);
   ret = clReleaseMemObject(temp_output_buffer_);
-
-  CHECK_STATUS(ret, "Error: Release objects.\n");
+  checkOpenCLErrors(ret, "Release objects.\n");
 
   free(input_);
   free(output_);
