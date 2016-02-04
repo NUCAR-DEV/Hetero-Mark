@@ -58,10 +58,7 @@ class FIR : public Benchmark {
   cl_float* input_ = NULL;
   cl_float* output_ = NULL;
   cl_float* coeff_ = NULL;
-  cl_float* temp_output_ = NULL;
-  cl_mem output_buffer_;
-  cl_mem coeff_buffer_;
-  cl_mem temp_output_buffer_;
+  cl_float* history_ = NULL;
 
   TimeMeasurement* timer;
 
@@ -69,6 +66,8 @@ class FIR : public Benchmark {
   void InitializeData();
   void InitializeKernels();
   void InitializeBuffers();
+  void MapSvmBuffers();
+  void UnmapSvmBuffers();
 
  public:
   FIR(){};

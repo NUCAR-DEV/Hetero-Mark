@@ -1,7 +1,7 @@
 set( BENCHMARK_NAME fir_cl20 )
 set( SOURCE_FILES fir_cl20.cc main.cc )
-set( HEADER_FILES include/fir_cl20.h )
-set( EXTRA_FILES fir_cl20_kernel.cl input/temp.dat )
+set( HEADER_FILES fir_cl20.h )
+set( EXTRA_FILES fir_cl20_kernel.cl )
 
 ############################################################################
 
@@ -24,6 +24,7 @@ endif()
 
 # Unset OPENCL_LIBRARIES, so that corresponding arch specific libs are found when bitness is changed
 unset(OPENCL_LIBRARIES CACHE)
+unset(OPENCL_INCLUDE_DIRS CACHE)
 
 if( BITNESS EQUAL 64 )
   set(BITNESS_SUFFIX x86_64)
@@ -43,13 +44,13 @@ endif()
 # Find OpenCL include and libs
 find_path( OPENCL_INCLUDE_DIRS
     NAMES OpenCL/cl.h CL/cl.h
-    HINTS $ENV{AMDAPPSDKROOT}/include ../../include/
+    HINTS ../../include/ $ENV{AMDAPPSDKROOT}/include
 )
 mark_as_advanced(OPENCL_INCLUDE_DIRS)
 
 find_library( OPENCL_LIBRARIES
 	NAMES OpenCL
-	HINTS ../../lib/ $ENV{AMDAPPSDKROOT}/lib
+	HINTS $ENV{AMDAPPSDKROOT}/lib
 	PATH_SUFFIXES ${PLATFORM}${BITNESS} ${BITNESS_SUFFIX}
 )
 mark_as_advanced( OPENCL_LIBRARIES )
@@ -63,9 +64,6 @@ endif( )
 set( COMPILER_FLAGS "-std=c++11" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
-
-# clUtil includes
-set( CLUTIL_INCLUDE_DIRS "../../include/clUtil" )
 
 file(GLOB INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp" "${CMAKE_CURRENT_SOURCE_DIR}/*.h" )
 include_directories( ${OPENCL_INCLUDE_DIRS} ${CLUTIL_INCLUDE_DIRS} )
@@ -99,22 +97,22 @@ endif( )
 
 set_target_properties( ${BENCHMARK_NAME} PROPERTIES
                         COMPILE_FLAGS ${COMPILER_FLAGS}
-                        LINK_FLAGS ${LINKER_FLAGS}
-                     )
+                        LINK_FLAGS ${LINKER_FLAGS} )
+add_dependencies( ${BENCHMARK_NAME} ${BENCHMARK_NAME}_check )
 target_link_libraries( ${BENCHMARK_NAME} cl_util time_measurement command_line_option benchmark ${OPENCL_LIBRARIES} ${ADDITIONAL_LIBRARIES} ${CLUTIL_LIBRARY})
 
 # Set output directory to bin
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BITNESS_SUFFIX}/${CMAKE_BUILD_TYPE})
+# set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BITNESS_SUFFIX}/${CMAKE_BUILD_TYPE})
 
 # Copy extra files to binary directory
 foreach( extra_file ${EXTRA_FILES} )
     add_custom_command(
         TARGET ${BENCHMARK_NAME} POST_BUILD
+# COMMAND ${CMAKE_COMMAND} -E copy_if_different
+# ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ./
-        )
+          ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${CMAKE_CURRENT_BINARY_DIR}
+    )
 endforeach( extra_file )
 
 # Group sample based on FOLDER_GROUP defined in parent folder

@@ -32,11 +32,10 @@
  *
  */
 
-#include "src/opencl12/sw_cl12/include/sw_cl12.h"
+#include "src/opencl12/sw_cl12/sw_cl12.h"
 
-#include <stdio.h> /* for printf */
-#include <stdint.h>/* for uint64 definition */
-#include <time.h>  /* for clock_gettime */
+#include <stdio.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include <memory>

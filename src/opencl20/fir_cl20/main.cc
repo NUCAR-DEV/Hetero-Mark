@@ -38,7 +38,7 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/opencl20/fir_cl20/include/fir_cl20.h"
+#include "src/opencl20/fir_cl20/fir_cl20.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
@@ -58,6 +58,8 @@ int main(int argc, char const *argv[]) {
                                   "Number of test blocks");
   command_line_option.AddArgument("NumData", "int", "1000", "-d", "--data",
                                   "Number of data samples");
+  command_line_option.AddArgument("Verify", "bool", "false", "-v", "--verify",
+                                  "Verification mode");
 
   command_line_option.Parse(argc, argv);
   if (command_line_option.GetArgumentValue("Help")->AsBool()) {
@@ -72,8 +74,13 @@ int main(int argc, char const *argv[]) {
           ->AsInt32());
 
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  fir->SetTimer(timer.get());
+
   BenchmarkRunner runner(fir.get(), timer.get());
+  runner.set_verification_mode(
+      command_line_option.GetArgumentValue("Verify")->AsBool());
   runner.Run();
   runner.Summarize();
+
   return 0;
 }
