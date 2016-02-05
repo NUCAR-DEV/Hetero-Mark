@@ -45,15 +45,14 @@
 
 class FirBenchmark : public Benchmark {
  private:
-  unsigned int numTap = 1024;
-  unsigned int numData = 0;
-  unsigned int numTotalData = 0;
-  unsigned int numBlocks = 0;
-  int local;
-  float *input = nullptr;
-  float *output = nullptr;
-  float *coeff = nullptr;
-  float *temp_output = nullptr;
+  unsigned int num_tap_ = 16;
+  unsigned int num_data_ = 0;
+  unsigned int num_blocks_ = 0;
+  unsigned int num_total_data_ = 0;
+  float *input_ = nullptr;
+  float *output_ = nullptr;
+  float *coeff_ = nullptr;
+  float *history_ = nullptr;
 
  public:
   void Initialize() override;
@@ -62,8 +61,10 @@ class FirBenchmark : public Benchmark {
   void Summarize() override;
   void Cleanup() override;
 
-  void setNumBlocks(unsigned int numBlocks) { this->numBlocks = numBlocks; }
-  void setNumData(unsigned int numData) { this->numData = numData; }
+  void SetNumBlocks(unsigned int num_blocks) { 
+    this->num_blocks_ = num_blocks; 
+  }
+  void SetNumData(unsigned int num_data) { this->num_data_ = num_data; }
 };
 
 #endif  // SRC_HSA_FIR_HSA_FIR_BENCHMARK_H_
