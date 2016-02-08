@@ -41,7 +41,7 @@
 #include <cstdlib>
 #include <string>
 
-#include "include/iir_cl20.h"
+#include "src/opencl20/iir_cl20/iir_cl20.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
@@ -69,12 +69,13 @@ int main(int argc, char const *argv[]) {
       command_line_option.GetArgumentValue("Length")->AsInt32());
 
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  IIR->SetTimer(timer.get());
 
   BenchmarkRunner runner(IIR.get(), timer.get());
 
   runner.Run();
 
-  // runner.Summarize();
+  runner.Summarize();
 
   return 0;
 }

@@ -2,6 +2,7 @@
 #define PARIIR_CL12_H
 
 #include "src/common/cl_util/cl_util.h"
+#include "src/common/time_measurement/time_measurement.h"
 #include "src/common/benchmark/benchmark.h"
 
 #define ROWS 256  // num of parallel subfilters
@@ -47,6 +48,7 @@ class ParIIR : public Benchmark {
 
   // User defined kernels
   cl_kernel kernel_pariir;
+
 
   //--- ----------------------------------------------------------------------//
   // Initialize functions
