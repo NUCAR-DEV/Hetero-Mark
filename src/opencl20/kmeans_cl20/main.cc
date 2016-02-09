@@ -38,14 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "include/kmeans_cl20.h"
+#include <cstdlib>
+#include <string>
+#include "src/opencl20/kmeans_cl20/kmeans_cl20.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/command_line_option/command_line_option.h"
-
-#include <cstdlib>
-#include <string>
 
 int main(int argc, char const *argv[]) {
   // Setup command line option
@@ -64,8 +63,6 @@ int main(int argc, char const *argv[]) {
                                   "--threshold", "Threshold value");
   command_line_option.AddArgument("nloops", "int", "1", "-l", "--loops",
                                   "Iteration for each number of clusters");
-  command_line_option.AddArgument("binary", "bool", "false", "-b", "--binary",
-                                  "Input file is in binary format");
   command_line_option.AddArgument("rmse", "bool", "false", "-r", "--rmse",
                                   "Calculate RMSE");
   command_line_option.AddArgument("cluster", "bool", "false", "-o",
@@ -84,7 +81,6 @@ int main(int argc, char const *argv[]) {
 
     fp.filename = const_cast<char *>(
         command_line_option.GetArgumentValue("FileName")->AsString().c_str());
-    fp.binary = command_line_option.GetArgumentValue("binary")->AsBool();
     fp.threshold =
         command_line_option.GetArgumentValue("Threshold")->AsDouble();
     fp.max_cl =
@@ -103,6 +99,7 @@ int main(int argc, char const *argv[]) {
   km->SetInitialParameters(fp);
 
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  km->SetTimer(timer.get());
   BenchmarkRunner runner(km.get(), timer.get());
   runner.Run();
   runner.Summarize();
