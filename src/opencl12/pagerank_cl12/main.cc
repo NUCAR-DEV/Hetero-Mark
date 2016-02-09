@@ -84,6 +84,7 @@ int main(int argc, char const *argv[]) {
   //  }
 
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  pr->SetTimer(timer.get());
   BenchmarkRunner runner(pr.get(), timer.get());
   runner.Run();
   runner.Summarize();

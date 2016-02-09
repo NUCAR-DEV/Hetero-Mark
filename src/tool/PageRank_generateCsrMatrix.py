@@ -1,6 +1,7 @@
 from scipy import sparse
 import numpy as np
 from scipy.sparse import csr_matrix
+
 def genCsrFile(numRows, numCols, density):
     m = sparse.rand(numRows, numCols, density=density, format='csr', dtype=np.float32, random_state=None)
     a = m.toarray()
