@@ -69,6 +69,7 @@ int main(int argc, const char **argv) {
   // Create and run benchmarks
   std::unique_ptr<IirBenchmark> benchmark(new IirBenchmark(length));
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  benchmark->SetTimer(timer.get());
   BenchmarkRunner runner(benchmark.get(), timer.get());
   runner.set_verification_mode(verify);
   runner.Run();

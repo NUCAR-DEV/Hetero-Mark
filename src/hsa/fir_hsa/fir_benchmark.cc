@@ -65,6 +65,12 @@ void FirBenchmark::Initialize() {
   for (unsigned int i = 0; i <  num_tap_; i++) {
     history_[i] = 0.0;
   }
+
+  timer->End({"Initialize"});
+  timer->Start();
+  FIR_init(0);
+  timer->End({"Compile"});
+  timer->Start();
 }
 
 void FirBenchmark::Run() {
@@ -97,7 +103,7 @@ void FirBenchmark::Verify() {
   }
 
   if (!has_error) {
-    printf("Passed!\n");
+    printf("Passed! %d data points filtered\n", num_total_data_);
   }
 
   delete cpu_output;

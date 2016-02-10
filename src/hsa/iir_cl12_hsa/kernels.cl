@@ -2,10 +2,10 @@
 
 __kernel void IIR(const int len, 
                      const float c, 
-                     __constant float *nsec, 
-                     __constant float *dsec, 
+                     __global float *nsec, 
+                     __global float *dsec, 
                      __local float *sm,
-                     __constant float *x, 
+                     __global float *x, 
                      __global float *y) 
 {
 	int gid = get_global_id(0);

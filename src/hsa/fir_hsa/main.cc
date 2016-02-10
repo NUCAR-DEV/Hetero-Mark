@@ -76,6 +76,7 @@ int main(int argc, const char **argv) {
   benchmark->SetNumData(num_data);
   benchmark->SetNumBlocks(num_block);
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  benchmark->SetTimer(timer.get());
   BenchmarkRunner runner(benchmark.get(), timer.get());
   runner.set_verification_mode(
       command_line_option.GetArgumentValue("Verify")->AsBool());
