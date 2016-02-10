@@ -56,21 +56,18 @@ performance.
 
 ####Compiling the code
 
-* To build the framework, please make the directory `common`.
+Use the following commands to compile the benchmarks
 
-* To compile without debug 
-
-`cmake .`
-
-* To compile with debug
-
-`cmake -DCMAKE_BUILD_TYPE=Debug.`
+`mkdir build`
+`cd build`
+`cmake ../`
+`make`
 
 ### Download standard input data
 Standard input is provided for data dependent benchmark such as K-means. 
 Cloning Hetero-Mark repository will not download the standard input data. 
 Download the standard input data with the following commands:
-'git lfs fetch'
+`git lfs fetch`
 
 You may need to install the Git extension for versioning large files. 
 Instructions can be found [here](https://git-lfs.github.com/)
