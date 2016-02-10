@@ -43,11 +43,8 @@ if (have_snack AND HSA_RUNTIME)
     WORKING_DIRECTORY ""
     VERBATIM
   )
-add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
-target_link_libraries(${FOLDER_NAME}
+  add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
+  target_link_libraries(${FOLDER_NAME}
     time_measurement command_line_option benchmark ${HSA_RUNTIME})
-else (have_snack AND HSA_RUNTIME)
-  message(WARNING "Skipping ${FOLDER_NAME}, snack.sh or HSA runtime is not \
-    found")
 endif (have_snack AND HSA_RUNTIME)
 

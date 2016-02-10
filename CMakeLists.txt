@@ -9,6 +9,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 include(ExternalProject)
 include(StyleCheck)
+include(OpenCL)
+include(HSA)
 
 set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
