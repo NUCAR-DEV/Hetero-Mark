@@ -59,25 +59,34 @@ performance.
 Use the following commands to compile the benchmarks
 
 `mkdir build`
+
 `cd build`
+
 `cmake ../`
+
 `make`
 
-### Download standard input data
+### Input data
+
+#### Download standard input data
 Standard input is provided for data dependent benchmark such as K-means. 
 Cloning Hetero-Mark repository will not download the standard input data. 
 Download the standard input data with the following commands:
+
 `git lfs fetch`
 
 You may need to install the Git extension for versioning large files. 
 Instructions can be found [here](https://git-lfs.github.com/)
 
-####Input data generation
+#### Generate your own input data
 * To generate custom data in `data` folder
   * AES - It generates custom size plain text file. Usage: `./<exec> <file size>` 
   * KMeans - It generates the input file for KMeans. Usage:
-`g++ KMeans_datagen.cpp -o KMeans_datagen`
-`./KMeans_gen_dataset.sh`
+
+    `g++ KMeans_datagen.cpp -o KMeans_datagen`
+
+    `./KMeans_gen_dataset.sh`
+
   * PageRank - It generates the input matrix for PageRank. Usage: `python PageRank_generateCsrMatrix.py`
 
 ####Note
