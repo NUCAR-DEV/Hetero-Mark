@@ -66,7 +66,7 @@ void HMM::Init() {
 
 void HMM::InitCL() {
   // Init OCL context
-  runtime = clRuntime::getInstance();
+  runtime = clHelper::clRuntime::getInstance();
 
   // OpenCL objects get from clRuntime class release themselves automatically,
   // no need to clRelease them explicitly
@@ -78,7 +78,7 @@ void HMM::InitCL() {
   // cmdQueue_1 = runtime->getCmdQueue(1);
 
   // Helper to read kernel file
-  file = clFile::getInstance();
+  file = clHelper::clFile::getInstance();
 }
 
 void HMM::InitParam() {

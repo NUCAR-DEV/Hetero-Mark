@@ -54,9 +54,9 @@ void HistBenchmark::Initialize() {
       input_[i] = i % num_colors_;
     }
   } else {
-    srand(time(NULL));
+    unsigned int seed = time(NULL);
     for (unsigned int i = 0; i < num_pixels_; i++) {
-      input_[i] = rand() % num_colors_;
+      input_[i] = rand_r(&seed) % num_colors_;
     }
   }
 

@@ -41,7 +41,7 @@
 #include <cstdlib>
 #include <string>
 
-#include "src/opencl20/sw_cl20/include/sw_cl20.h"
+#include "src/opencl20/sw_cl20/sw_cl20.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"

@@ -51,14 +51,16 @@ void FirBenchmark::Initialize() {
   coeff_ = new float[num_tap_];
   history_ = new float[num_tap_];
 
+  unsigned int seed = time(NULL);
+
   // Initialize input data
   for (unsigned int i = 0; i < num_total_data_; i++) {
-    input_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    input_[i] = static_cast<float>(rand_r(seed)) / static_cast<float>(RAND_MAX);
   }
 
   // Initialize coefficient
   for (unsigned int i = 0; i < num_tap_; i++) {
-    coeff_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    coeff_[i] = static_cast<float>(rand_r(seed)) / static_cast<float>(RAND_MAX);
   }
 
   // Initialize history

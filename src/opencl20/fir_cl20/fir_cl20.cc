@@ -45,14 +45,14 @@ void FIR::Initialize() {
 }
 
 void FIR::InitializeCL() {
-  runtime_ = clRuntime::getInstance();
+  runtime_ = clHelper::clRuntime::getInstance();
 
   platform_ = runtime_->getPlatformID();
   device_ = runtime_->getDevice();
   context_ = runtime_->getContext();
   cmd_queue_ = runtime_->getCmdQueue(0);
 
-  file_ = clFile::getInstance();
+  file_ = clHelper::clFile::getInstance();
 }
 
 void FIR::InitializeKernels() {

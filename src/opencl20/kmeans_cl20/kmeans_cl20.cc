@@ -162,7 +162,7 @@ void KMEANS::unmap_cluster_svm() {
 }
 
 void KMEANS::CL_initialize() {
-  runtime = clRuntime::getInstance();
+  runtime = clHelper::clRuntime::getInstance();
   // OpenCL objects get from clRuntime class
   platform = runtime->getPlatformID();
   context = runtime->getContext();
@@ -173,8 +173,8 @@ void KMEANS::CL_initialize() {
   // SVM buffers
   // feature, feature_swap, membership, clusters
   // ----------------------------------------------------------------------//
-  svmCoarseGrainAvail = runtime->isSVMavail(SVM_COARSE);
-  svmFineGrainAvail = runtime->isSVMavail(SVM_FINE);
+  svmCoarseGrainAvail = runtime->isSVMavail(clHelper::SVM_COARSE);
+  svmFineGrainAvail = runtime->isSVMavail(clHelper::SVM_FINE);
 
   // runtime->displayDeviceInfo();
   // cout << svmCoarseGrainAvail << endl;
@@ -189,7 +189,7 @@ void KMEANS::CL_initialize() {
 
 void KMEANS::CL_build_program() {
   // Helper to read kernel file
-  file = clFile::getInstance();
+  file = clHelper::clFile::getInstance();
   file->open("kmeans_cl20_kernel.cl");
 
   const char *source = file->getSourceChar();

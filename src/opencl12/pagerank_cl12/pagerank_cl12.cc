@@ -82,8 +82,8 @@ void PageRank::Initialize() {
 }
 
 void PageRank::InitCl() {
-  runtime = clRuntime::getInstance();
-  file = clFile::getInstance();
+  runtime = clHelper::clRuntime::getInstance();
+  file = clHelper::clFile::getInstance();
 
   platform = runtime->getPlatformID();
   device = runtime->getDevice();

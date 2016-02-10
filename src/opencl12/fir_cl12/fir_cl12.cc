@@ -45,14 +45,14 @@ void FIR::Initialize() {
 }
 
 void FIR::InitializeCL() {
-  runtime_ = clRuntime::getInstance();
+  runtime_ = clHelper::clRuntime::getInstance();
 
   platform_ = runtime_->getPlatformID();
   device_ = runtime_->getDevice();
   context_ = runtime_->getContext();
   cmd_queue_ = runtime_->getCmdQueue(0);
 
-  file_ = clFile::getInstance();
+  file_ = clHelper::clFile::getInstance();
 }
 
 void FIR::InitializeKernels() {
@@ -103,14 +103,16 @@ void FIR::InitializeBuffers() {
 }
 
 void FIR::InitializeData() {
-  srand(time(NULL));
+  unsigned int seed = time(NULL);
 
   for (unsigned i = 0; i < num_total_data_; i++) {
-    input_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    input_[i] =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 
   for (unsigned i = 0; i < num_tap_; i++) {
-    coeff_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    coeff_[i] =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 
   for (unsigned i = 0; i < (num_data_ + num_tap_ - 1); i++) {

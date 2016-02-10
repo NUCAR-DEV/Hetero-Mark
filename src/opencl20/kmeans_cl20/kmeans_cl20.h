@@ -42,8 +42,8 @@
 /*             Northeastern University                                        */
 /******************************************************************************/
 
-#ifndef _H_FUZZY_KMEANS
-#define _H_FUZZY_KMEANS
+#ifndef SRC_OPENCL20_KMEANS_CL20_KMEANS_CL20_H_
+#define SRC_OPENCL20_KMEANS_CL20_KMEANS_CL20_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,8 +99,6 @@
 #endif
 
 extern double wtime(void);
-
-using namespace clHelper;
 
 struct FilePackage {
   char *filename;
@@ -208,17 +206,17 @@ class KMEANS : public Benchmark {
   cl_mem d_membership;
 
   // Helper objects
-  clRuntime *runtime;
-  clFile *file;
+  clHelper::clRuntime *runtime;
+  clHelper::clFile *file;
   cl_int err;
 
   //-----------------------------------------------------------------------//
   // svm function
   //-----------------------------------------------------------------------//
-  void map_feature_svm(int);
-  void map_feature_swap_svm(int);
-  void map_cluster_svm(int);
-  void map_membership_svm(int);
+  void map_feature_svm(int mode);
+  void map_feature_swap_svm(int mode);
+  void map_cluster_svm(int mode);
+  void map_membership_svm(int mode);
 
   void unmap_feature_svm();
   void unmap_feature_swap_svm();
@@ -272,4 +270,4 @@ class KMEANS : public Benchmark {
   void Free_mem_svm();
 };
 
-#endif
+#endif  // SRC_OPENCL20_KMEANS_CL20_KMEANS_CL20_H_

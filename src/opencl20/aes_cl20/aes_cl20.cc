@@ -42,15 +42,9 @@
 #include <memory>
 #include <sstream>
 
-#define ENABLE_PROFILE 1
-
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clTimeNDRangeKernel
-#endif
-
 AES::AES() {
-  runtime = clRuntime::getInstance();
-  file = clFile::getInstance();
+  runtime = clHelper::clRuntime::getInstance();
+  file = clHelper::clFile::getInstance();
 
   platform = runtime->getPlatformID();
   device = runtime->getDevice();

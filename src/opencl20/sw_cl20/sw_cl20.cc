@@ -32,17 +32,15 @@
  *
  */
 
-#include "src/opencl20/sw_cl20/include/sw_cl20.h"
+#include "src/opencl20/sw_cl20/sw_cl20.h"
 
-#include <stdio.h> /* for printf */
-#include <stdint.h>/* for uint64 definition */
-#include <stdlib.h>/* for exit() definition */
-#include <time.h>  /* for clock_gettime */
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 #include <memory>
 #include <cmath>
-
-#define BILLION 1000000000L
 
 ShallowWater::ShallowWater(unsigned m, unsigned n)
     : m_(m),

@@ -29,10 +29,10 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include <stdio.h>  /* for printf */
-#include <stdint.h> /* for uint64 definition */
-#include <stdlib.h> /* for exit() definition */
-#include <time.h>   /* for clock_gettime */
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
 #include <string.h>
 #include <math.h>
 #include <iostream>
@@ -41,10 +41,6 @@
 #include "src/common/cl_util/cl_util.h"
 
 #include "src/opencl12/kmeans_cl12/kmeans_cl12.h"
-
-#define BILLION 1000000000L
-
-using namespace std;
 
 KMEANS::KMEANS() {}
 
@@ -88,6 +84,7 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
 
 void KMEANS::Read() {
   char line[1024];
+  char *saveptr;
   float *buf;
   FILE *infile;
   int i, j;
@@ -97,23 +94,24 @@ void KMEANS::Read() {
   }
 
   while (fgets(line, 1024, infile) != NULL) {
-    if (strtok(line, " \t\n") != 0) npoints++;
+    if (strtok_r(line, " \t\n", &saveptr) != 0) npoints++;
   }
 
   rewind(infile);
 
   while (fgets(line, 1024, infile) != NULL) {
-    if (strtok(line, " \t\n") != 0) {
+    if (strtok_r(line, " \t\n", &saveptr) != 0) {
       // ignore the id (first attribute): nfeatures = 1;
-      while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
+      while (strtok_r(NULL, " ,\t\n", &saveptr) != NULL) nfeatures++;
       break;
     }
   }
 
   // allocate space for features[] and read attributes of all objects
-  buf = (float *)malloc(npoints * nfeatures * sizeof(float));
-  feature = (float **)malloc(npoints * sizeof(float *));
-  feature[0] = (float *)malloc(npoints * nfeatures * sizeof(float));
+  buf = reinterpret_cast<float *>(malloc(npoints * nfeatures * sizeof(float)));
+  feature = reinterpret_cast<float **>(malloc(npoints * sizeof(float *)));
+  feature[0] =
+      reinterpret_cast<float *>(malloc(npoints * nfeatures * sizeof(float)));
 
   // fixme : svm buffer
   for (i = 1; i < npoints; i++) feature[i] = feature[i - 1] + nfeatures;
@@ -123,10 +121,10 @@ void KMEANS::Read() {
   i = 0;
 
   while (fgets(line, 1024, infile) != NULL) {
-    if (strtok(line, " \t\n") == NULL) continue;
+    if (strtok_r(line, " \t\n", &saveptr) == NULL) continue;
 
     for (j = 0; j < nfeatures; j++) {
-      buf[i] = atof(strtok(NULL, " ,\t\n"));
+      buf[i] = atof(strtok_r(NULL, " ,\t\n", &saveptr));
       i++;
     }
   }
@@ -150,7 +148,7 @@ void KMEANS::Read() {
 }
 
 void KMEANS::CL_initialize() {
-  runtime = clRuntime::getInstance();
+  runtime = clHelper::clRuntime::getInstance();
   // OpenCL objects get from clRuntime class
   platform = runtime->getPlatformID();
   context = runtime->getContext();
@@ -161,7 +159,7 @@ void KMEANS::CL_initialize() {
 void KMEANS::CL_build_program() {
   cl_int err;
   // Helper to read kernel file
-  file = clFile::getInstance();
+  file = clHelper::clFile::getInstance();
   file->open("kmeans_cl12_kernel.cl");
 
   const char *source = file->getSourceChar();
@@ -205,7 +203,7 @@ void KMEANS::Create_mem() {
                              nclusters * nfeatures * sizeof(float), NULL, &err);
   checkOpenCLErrors(err, "clCreateBuffer d_cluster failed");
 
-  membership_OCL = (int *)malloc(npoints * sizeof(int));
+  membership_OCL = reinterpret_cast<int *>(malloc(npoints * sizeof(int)));
 }
 
 void KMEANS::Swap_features() {
@@ -217,10 +215,14 @@ void KMEANS::Swap_features() {
                              0, 0);
   checkOpenCLErrors(err, "ERROR: clEnqueueWriteBuffer d_feature");
 
-  clSetKernelArg(kernel2, 0, sizeof(void *), (void *)&d_feature);
-  clSetKernelArg(kernel2, 1, sizeof(void *), (void *)&d_feature_swap);
-  clSetKernelArg(kernel2, 2, sizeof(cl_int), (void *)&npoints);
-  clSetKernelArg(kernel2, 3, sizeof(cl_int), (void *)&nfeatures);
+  clSetKernelArg(kernel2, 0, sizeof(void *),
+                 reinterpret_cast<void *>(&d_feature));
+  clSetKernelArg(kernel2, 1, sizeof(void *),
+                 reinterpret_cast<void *>(&d_feature_swap));
+  clSetKernelArg(kernel2, 2, sizeof(cl_int),
+                 reinterpret_cast<void *>(&npoints));
+  clSetKernelArg(kernel2, 3, sizeof(cl_int),
+                 reinterpret_cast<void *>(&nfeatures));
 
   size_t global_work = (size_t)npoints;
   size_t local_work_size = BLOCK_SIZE;
@@ -265,14 +267,21 @@ void KMEANS::Kmeans_ocl() {
   int size = 0;
   int offset = 0;
 
-  clSetKernelArg(kernel_s, 0, sizeof(void *), (void *)&d_feature_swap);
-  clSetKernelArg(kernel_s, 1, sizeof(void *), (void *)&d_cluster);
-  clSetKernelArg(kernel_s, 2, sizeof(void *), (void *)&d_membership);
-  clSetKernelArg(kernel_s, 3, sizeof(cl_int), (void *)&npoints);
-  clSetKernelArg(kernel_s, 4, sizeof(cl_int), (void *)&nclusters);
-  clSetKernelArg(kernel_s, 5, sizeof(cl_int), (void *)&nfeatures);
-  clSetKernelArg(kernel_s, 6, sizeof(cl_int), (void *)&offset);
-  clSetKernelArg(kernel_s, 7, sizeof(cl_int), (void *)&size);
+  clSetKernelArg(kernel_s, 0, sizeof(void *),
+                 reinterpret_cast<void *>(&d_feature_swap));
+  clSetKernelArg(kernel_s, 1, sizeof(void *),
+                 reinterpret_cast<void *>(&d_cluster));
+  clSetKernelArg(kernel_s, 2, sizeof(void *),
+                 reinterpret_cast<void *>(&d_membership));
+  clSetKernelArg(kernel_s, 3, sizeof(cl_int),
+                 reinterpret_cast<void *>(&npoints));
+  clSetKernelArg(kernel_s, 4, sizeof(cl_int),
+                 reinterpret_cast<void *>(&nclusters));
+  clSetKernelArg(kernel_s, 5, sizeof(cl_int),
+                 reinterpret_cast<void *>(&nfeatures));
+  clSetKernelArg(kernel_s, 6, sizeof(cl_int),
+                 reinterpret_cast<void *>(&offset));
+  clSetKernelArg(kernel_s, 7, sizeof(cl_int), reinterpret_cast<void *>(&size));
 
   err = clEnqueueNDRangeKernel(cmd_queue, kernel_s, 1, NULL, &global_work,
                                &local_work_size, 0, 0, 0);
@@ -299,7 +308,7 @@ void KMEANS::Kmeans_ocl() {
     }
   }
 
-  delta = (float)delta_tmp;
+  delta = static_cast<float>(delta_tmp);
 }
 
 void KMEANS::Kmeans_clustering() {
@@ -316,14 +325,15 @@ void KMEANS::Kmeans_clustering() {
 
   // fixme : use svm
   // allocate space for and initialize returning variable clusters[]
-  clusters = (float **)malloc(nclusters * sizeof(float *));
-  clusters[0] = (float *)malloc(nclusters * nfeatures * sizeof(float));
+  clusters = reinterpret_cast<float **>(malloc(nclusters * sizeof(float *)));
+  clusters[0] =
+      reinterpret_cast<float *>(malloc(nclusters * nfeatures * sizeof(float)));
   for (i = 1; i < nclusters; i++) {
     clusters[i] = clusters[i - 1] + nfeatures;
   }
 
   // initialize the random clusters
-  initial = (int *)malloc(npoints * sizeof(int));
+  initial = reinterpret_cast<int *>(malloc(npoints * sizeof(int)));
   for (i = 0; i < npoints; i++) {
     initial[i] = i;
   }
@@ -352,10 +362,11 @@ void KMEANS::Kmeans_clustering() {
   }
 
   // allocate space for and initialize new_centers_len and new_centers
-  new_centers_len = (int *)calloc(nclusters, sizeof(int));
+  new_centers_len = reinterpret_cast<int *>(calloc(nclusters, sizeof(int)));
 
-  new_centers = (float **)malloc(nclusters * sizeof(float *));
-  new_centers[0] = (float *)calloc(nclusters * nfeatures, sizeof(float));
+  new_centers = reinterpret_cast<float **>(malloc(nclusters * sizeof(float *)));
+  new_centers[0] =
+      reinterpret_cast<float *>(calloc(nclusters * nfeatures, sizeof(float)));
   for (i = 1; i < nclusters; i++)
     new_centers[i] = new_centers[i - 1] + nfeatures;
 
@@ -405,7 +416,7 @@ void KMEANS::Clustering() {
   index = 0;  // number of iteration to reach the best RMSE
 
   // fixme
-  membership = (int *)malloc(npoints * sizeof(int));
+  membership = reinterpret_cast<int *>(malloc(npoints * sizeof(int)));
 
   min_rmse_ref = FLT_MAX;
 

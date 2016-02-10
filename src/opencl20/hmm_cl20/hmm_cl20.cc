@@ -71,7 +71,7 @@ void HMM::Init() {
 
 void HMM::InitCL() {
   // Init OCL context
-  runtime = clRuntime::getInstance();
+  runtime = clHelper::clRuntime::getInstance();
 
   // OpenCL objects get from clRuntime class release themselves automatically,
   // no need to clRelease them explicitly
@@ -83,7 +83,7 @@ void HMM::InitCL() {
   // cmdQueue_1 = runtime->getCmdQueue(1);
 
   // Helper to read kernel file
-  file = clFile::getInstance();
+  file = clHelper::clFile::getInstance();
 }
 
 void HMM::InitParam() {
@@ -206,9 +206,11 @@ void HMM::InitBuffers() {
   cl_int err;
   int i, j;
 
-  bool svmCoarseGrainAvail = clRuntime::getInstance()->isSVMavail(SVM_COARSE);
+  bool svmCoarseGrainAvail =
+      clHelper::clRuntime::getInstance()->isSVMavail(clHelper::SVM_COARSE);
   // bool svmFineGrainAvail = clRuntime::getInstance()->isSVMavail(SVM_FINE);
-  this->svmFineGrainAvail = clRuntime::getInstance()->isSVMavail(SVM_FINE);
+  this->svmFineGrainAvail =
+      clHelper::clRuntime::getInstance()->isSVMavail(clHelper::SVM_FINE);
 
   // Need at least coarse grain
   if (!svmCoarseGrainAvail) {
