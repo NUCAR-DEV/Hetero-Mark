@@ -239,7 +239,7 @@ void AES::KeyExpansion(uint8_t *pk) {
 void AES::InitKeys() {
   // Read the private key in
   for (int i = 0; i < 32; i++)
-    if (fscanf(keyfile, "%02x", (int *)&key[i])) {
+    if (fscanf(keyfile, "%02x", reinterpret_cast<int *>(&key[i]))) {
     }
   // If statment exists to supress the "ignored"
   // results warning
@@ -379,19 +379,19 @@ void AES::Run() {
       current_offset = i * 16;
       for (int ix = 0; ix < 4; ix++) {
         char hex[3];
-        sprintf(hex, "%02x", states[current_offset + ix]);
+        snprintf(hex, sizeof(hex), "%02x", states[current_offset + ix]);
         for (int i = 0; i < 3; i++) {
           putc(hex[i], outfile);
         }
-        sprintf(hex, "%02x", states[current_offset + ix + 4]);
+        snprintf(hex, sizeof(hex), "%02x", states[current_offset + ix + 4]);
         for (int i = 0; i < 3; i++) {
           putc(hex[i], outfile);
         }
-        sprintf(hex, "%02x", states[current_offset + ix + 8]);
+        snprintf(hex, sizeof(hex), "%02x", states[current_offset + ix + 8]);
         for (int i = 0; i < 3; i++) {
           putc(hex[i], outfile);
         }
-        sprintf(hex, "%02x", states[current_offset + ix + 12]);
+        snprintf(hex, sizeof(hex), "%02x", states[current_offset + ix + 12]);
         for (int i = 0; i < 3; i++) {
           putc(hex[i], outfile);
         }

@@ -51,8 +51,8 @@ class HMM : public Benchmark {
   static const int BLOCKSIZE = 256;
 
   int N;
-  int T = 64;  // number of (overlapping) windows
-  int D = 64;  // number of features
+  int T = 64;
+  int D = 64;
 
   int bytes_nn;
   int bytes_nt;

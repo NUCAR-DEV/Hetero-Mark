@@ -153,9 +153,9 @@ void AES::InitKernel() {
 
 void AES::InitBuffer() {
   MAXIMUM_MEMORY_ALLOCATION = runtime->getNumComputeUnit();
-  svm_ptr = (uint8_t *)clSVMAlloc(
-      context, CL_MEM_READ_WRITE,
-      sizeof(uint8_t) * 16 * MAXIMUM_MEMORY_ALLOCATION, 0);
+  svm_ptr = reinterpret_cast<uint8_t *>(
+      clSVMAlloc(context, CL_MEM_READ_WRITE,
+                 sizeof(uint8_t) * 16 * MAXIMUM_MEMORY_ALLOCATION, 0));
   if (!svm_ptr) std::cout << "Failed to clSVMAlloc svm_ptr" << std::endl;
 }
 
@@ -261,7 +261,7 @@ void AES::KeyExpansion(uint8_t *pk) {
 void AES::InitKeys() {
   // Read the private key in
   for (int i = 0; i < 32; i++)
-    if (fscanf(keyfile, "%02x", (int *)&key[i])) {
+    if (fscanf(keyfile, "%02x", reinterpret_cast<int *>(&key[i]))) {
     }
   // If statement to suppress the "ignored"
   // result warning
@@ -370,7 +370,8 @@ void AES::Run() {
     // For now, let the runtime decide on the local
     const size_t global_ws = spawn;  // One WU per state in this round
 
-    err = clSetKernelArgSVMPointer(kernel, 0, (void *)svm_ptr);
+    err =
+        clSetKernelArgSVMPointer(kernel, 0, reinterpret_cast<void *>(svm_ptr));
     // Specific function for SVM data
     checkOpenCLErrors(err, "Failed to set kernel SVM arg ");
 
@@ -390,19 +391,19 @@ void AES::Run() {
     for (int i = 0; i < spawn; i++) {
       for (int ix = 0; ix < 4; ix++) {
         char hex[3];
-        sprintf(hex, "%02x", svm_ptr[(i * 16) + ix]);
+        snprintf(hex, sizeof(hex), "%02x", svm_ptr[(i * 16) + ix]);
         for (int i = 0; i < 3; i++) {
           putc(hex[i], outfile);
         }
-        sprintf(hex, "%02x", svm_ptr[(i * 16) + ix + 4]);
+        snprintf(hex, sizeof(hex), "%02x", svm_ptr[(i * 16) + ix + 4]);
         for (int i = 0; i < 3; i++) {
           putc(hex[i], outfile);
         }
-        sprintf(hex, "%02x", svm_ptr[(i * 16) + ix + 8]);
+        snprintf(hex, sizeof(hex), "%02x", svm_ptr[(i * 16) + ix + 8]);
         for (int i = 0; i < 3; i++) {
           putc(hex[i], outfile);
         }
-        sprintf(hex, "%02x", svm_ptr[(i * 16) + ix + 12]);
+        snprintf(hex, sizeof(hex), "%02x", svm_ptr[(i * 16) + ix + 12]);
         for (int i = 0; i < 3; i++) {
           putc(hex[i], outfile);
         }

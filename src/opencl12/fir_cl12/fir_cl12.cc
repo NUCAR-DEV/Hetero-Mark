@@ -32,8 +32,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <cstdlib>
-#include <sys/stat.h>
-
 #include "src/opencl12/fir_cl12/fir_cl12.h"
 
 void FIR::Initialize() {
@@ -80,10 +78,13 @@ void FIR::InitializeKernels() {
 void FIR::InitializeBuffers() {
   int num_temp_output = num_data_ + num_tap_ - 1;
 
-  input_ = (cl_float *)malloc(num_total_data_ * sizeof(cl_float));
-  output_ = (cl_float *)malloc(num_total_data_ * sizeof(cl_float));
-  coeff_ = (cl_float *)malloc(num_tap_ * sizeof(cl_float));
-  temp_output_ = (cl_float *)malloc(num_temp_output * sizeof(cl_float));
+  input_ =
+      reinterpret_cast<cl_float *>(malloc(num_total_data_ * sizeof(cl_float)));
+  output_ =
+      reinterpret_cast<cl_float *>(malloc(num_total_data_ * sizeof(cl_float)));
+  coeff_ = reinterpret_cast<cl_float *>(malloc(num_tap_ * sizeof(cl_float)));
+  temp_output_ =
+      reinterpret_cast<cl_float *>(malloc(num_temp_output * sizeof(cl_float)));
 
   // Create memory buffers on the device for each vector
   cl_int err;
@@ -122,14 +123,17 @@ void FIR::Run() {
   unsigned int count;
 
   // Set the arguments of the kernel
-  ret = clSetKernelArg(fir_kernel_, 0, sizeof(cl_mem), (void *)&output_buffer_);
+  ret = clSetKernelArg(fir_kernel_, 0, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&output_buffer_));
   checkOpenCLErrors(ret, "Set kernel argument 0\n");
-  ret = clSetKernelArg(fir_kernel_, 1, sizeof(cl_mem), (void *)&coeff_buffer_);
+  ret = clSetKernelArg(fir_kernel_, 1, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&coeff_buffer_));
   checkOpenCLErrors(ret, "Set kernel argument 1\n");
   ret = clSetKernelArg(fir_kernel_, 2, sizeof(cl_mem),
-                       (void *)&temp_output_buffer_);
+                       reinterpret_cast<void *>(&temp_output_buffer_));
   checkOpenCLErrors(ret, "Set kernel argument 2\n");
-  ret = clSetKernelArg(fir_kernel_, 3, sizeof(cl_uint), (void *)&num_tap_);
+  ret = clSetKernelArg(fir_kernel_, 3, sizeof(cl_uint),
+                       reinterpret_cast<void *>(&num_tap_));
   checkOpenCLErrors(ret, "Set kernel argument 3\n");
 
   // Initialize Memory Buffer

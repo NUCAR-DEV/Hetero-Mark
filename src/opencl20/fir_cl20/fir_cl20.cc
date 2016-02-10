@@ -32,8 +32,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <cstdlib>
-#include <sys/stat.h>
-
 #include "src/opencl20/fir_cl20/fir_cl20.h"
 
 void FIR::Initialize() {
@@ -79,27 +77,29 @@ void FIR::InitializeKernels() {
 }
 
 void FIR::InitializeBuffers() {
-  input_ = (cl_float *)clSVMAlloc(context_, CL_MEM_READ_ONLY,
-                                  num_total_data_ * sizeof(cl_float), 0);
-  output_ = (cl_float *)clSVMAlloc(context_, CL_MEM_READ_WRITE,
-                                   num_total_data_ * sizeof(cl_float), 0);
-  coeff_ = (cl_float *)clSVMAlloc(context_, CL_MEM_READ_ONLY,
-                                  num_tap_ * sizeof(cl_float), 0);
-  history_ = (cl_float *)clSVMAlloc(context_, CL_MEM_READ_WRITE,
-                                    num_tap_ * sizeof(cl_float), 0);
+  input_ = reinterpret_cast<cl_float *>(clSVMAlloc(
+      context_, CL_MEM_READ_ONLY, num_total_data_ * sizeof(cl_float), 0));
+  output_ = reinterpret_cast<cl_float *>(clSVMAlloc(
+      context_, CL_MEM_READ_WRITE, num_total_data_ * sizeof(cl_float), 0));
+  coeff_ = reinterpret_cast<cl_float *>(
+      clSVMAlloc(context_, CL_MEM_READ_ONLY, num_tap_ * sizeof(cl_float), 0));
+  history_ = reinterpret_cast<cl_float *>(
+      clSVMAlloc(context_, CL_MEM_READ_WRITE, num_tap_ * sizeof(cl_float), 0));
 }
 
 void FIR::InitializeData() {
-  srand(time(NULL));
+  unsigned int seed = time(NULL);
 
   MapSvmBuffers();
 
   for (unsigned i = 0; i < num_total_data_; i++) {
-    input_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    input_[i] =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 
   for (unsigned i = 0; i < num_tap_; i++) {
-    coeff_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    coeff_[i] =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 
   for (unsigned i = 0; i < num_tap_; i++) {
@@ -156,7 +156,8 @@ void FIR::Run() {
   ret = clSetKernelArgSVMPointer(fir_kernel_, 3, history_);
   checkOpenCLErrors(ret, "Set kernel argument 3\n");
 
-  ret = clSetKernelArg(fir_kernel_, 4, sizeof(cl_uint), (void *)&num_tap_);
+  ret = clSetKernelArg(fir_kernel_, 4, sizeof(cl_uint),
+                       reinterpret_cast<void *>(&num_tap_));
   checkOpenCLErrors(ret, "Set kernel argument 4\n");
 
   // Decide the local group formation

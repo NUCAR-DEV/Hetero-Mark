@@ -51,10 +51,10 @@
  * KMeans clustering
  *
  */
-#include <stdio.h> /* for printf */
-#include <stdint.h>/* for uint64 definition */
-#include <stdlib.h>/* for exit() definition */
-#include <time.h>  /* for clock_gettime */
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
 #include <string.h>
 #include <math.h>
 #include <iostream>
@@ -62,10 +62,6 @@
 #include <cassert>
 #include "src/common/cl_util/cl_util.h"
 #include "src/opencl20/kmeans_cl20/kmeans_cl20.h"
-
-#define BILLION 1000000000L
-
-using namespace std;
 
 KMEANS::KMEANS() {}
 
@@ -222,33 +218,36 @@ void KMEANS::Create_mem_svm() {
   bytes_cf = nclusters * nfeatures * sizeof(float);
 
   printf("bytes_pf %lu\n", bytes_pf);
-  feature_svm = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_pf, 0);
+  feature_svm = reinterpret_cast<float *>(
+      clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_pf, 0));
   if (!feature_svm) {
     printf("Failed to allocate feature_svm.\n%s-%d\n", __FILE__, __LINE__);
     exit(-1);
   }
 
-  feature_swap_svm =
-      (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_pf, 0);
+  feature_swap_svm = reinterpret_cast<float *>(
+      clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_pf, 0));
   if (!feature_swap_svm) {
     printf("Failed to allocate feature_swap_svm.\n%s-%d\n", __FILE__, __LINE__);
     exit(-1);
   }
 
-  cluster_svm = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_cf, 0);
+  cluster_svm = reinterpret_cast<float *>(
+      clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_cf, 0));
   if (!cluster_svm) {
     printf("Failed to allocate cluster_svm.\n%s-%d\n", __FILE__, __LINE__);
     exit(-1);
   }
 
-  membership_svm = (int *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_p, 0);
+  membership_svm = reinterpret_cast<int *>(
+      clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_p, 0));
   if (!membership_svm) {
     printf("Failed to allocate SVM memory : membership_svm.\n%s-%d\n", __FILE__,
            __LINE__);
     exit(-1);
   }
 
-  membership_OCL = (int *)malloc(npoints * sizeof(int));
+  membership_OCL = reinterpret_cast<int *>(malloc(npoints * sizeof(int)));
 }
 
 void KMEANS::Swap_features_svm() {
@@ -277,8 +276,10 @@ void KMEANS::Swap_features_svm() {
 
   clSetKernelArgSVMPointer(kernel2, 0, feature_svm);
   clSetKernelArgSVMPointer(kernel2, 1, feature_swap_svm);
-  clSetKernelArg(kernel2, 2, sizeof(cl_int), (void *)&npoints);
-  clSetKernelArg(kernel2, 3, sizeof(cl_int), (void *)&nfeatures);
+  clSetKernelArg(kernel2, 2, sizeof(cl_int),
+                 reinterpret_cast<void *>(&npoints));
+  clSetKernelArg(kernel2, 3, sizeof(cl_int),
+                 reinterpret_cast<void *>(&nfeatures));
 
   size_t global_work = (size_t)npoints;
   size_t local_work_size = BLOCK_SIZE;
@@ -355,11 +356,15 @@ void KMEANS::Kmeans_ocl_svm() {
   clSetKernelArgSVMPointer(kernel_s, 0, feature_swap_svm);
   clSetKernelArgSVMPointer(kernel_s, 1, cluster_svm);
   clSetKernelArgSVMPointer(kernel_s, 2, membership_svm);
-  clSetKernelArg(kernel_s, 3, sizeof(cl_int), (void *)&npoints);
-  clSetKernelArg(kernel_s, 4, sizeof(cl_int), (void *)&nclusters);
-  clSetKernelArg(kernel_s, 5, sizeof(cl_int), (void *)&nfeatures);
-  clSetKernelArg(kernel_s, 6, sizeof(cl_int), (void *)&offset);
-  clSetKernelArg(kernel_s, 7, sizeof(cl_int), (void *)&size);
+  clSetKernelArg(kernel_s, 3, sizeof(cl_int),
+                 reinterpret_cast<void *>(&npoints));
+  clSetKernelArg(kernel_s, 4, sizeof(cl_int),
+                 reinterpret_cast<void *>(&nclusters));
+  clSetKernelArg(kernel_s, 5, sizeof(cl_int),
+                 reinterpret_cast<void *>(&nfeatures));
+  clSetKernelArg(kernel_s, 6, sizeof(cl_int),
+                 reinterpret_cast<void *>(&offset));
+  clSetKernelArg(kernel_s, 7, sizeof(cl_int), reinterpret_cast<void *>(&size));
 
   err = clEnqueueNDRangeKernel(cmd_queue, kernel_s, 1, NULL, &global_work,
                                &local_work_size, 0, 0, 0);
@@ -401,7 +406,7 @@ void KMEANS::Kmeans_ocl_svm() {
   unmap_feature_svm();
   // unmap_membership_svm();
 
-  delta = (float)delta_tmp;
+  delta = static_cast<float>(delta_tmp);
 }
 
 void KMEANS::Kmeans_clustering() {
@@ -428,7 +433,7 @@ void KMEANS::Kmeans_clustering() {
   //
 
   // initialize the random clusters
-  initial = (int *)malloc(npoints * sizeof(int));
+  initial = reinterpret_cast<int *>(malloc(npoints * sizeof(int)));
   for (i = 0; i < npoints; i++) {
     initial[i] = i;
   }
@@ -471,10 +476,11 @@ void KMEANS::Kmeans_clustering() {
   unmap_feature_svm();
 
   // allocate space for and initialize new_centers_len and new_centers
-  new_centers_len = (int *)calloc(nclusters, sizeof(int));
+  new_centers_len = reinterpret_cast<int *>(calloc(nclusters, sizeof(int)));
 
-  new_centers = (float **)malloc(nclusters * sizeof(float *));
-  new_centers[0] = (float *)calloc(nclusters * nfeatures, sizeof(float));
+  new_centers = reinterpret_cast<float **>(malloc(nclusters * sizeof(float *)));
+  new_centers[0] =
+      reinterpret_cast<float *>(calloc(nclusters * nfeatures, sizeof(float)));
   for (i = 1; i < nclusters; i++)
     new_centers[i] = new_centers[i - 1] + nfeatures;
 
@@ -691,8 +697,8 @@ void KMEANS::Display_results_svm() {
       if (isRMSE) {
         // if calculated RMSE
         printf(
-            "Number of trials to approach the best RMSE of \
-                        %.3f is %d\n",
+            "Number of trials to approach the best RMSE of "
+            "%.3f is %d\n",
             min_rmse_1, index_1 + 1);
       }
     } else {
@@ -713,7 +719,7 @@ void KMEANS::Clustering() {
   index_1 = 0;
 
   // fixme
-  membership = (int *)malloc(npoints * sizeof(int));
+  membership = reinterpret_cast<int *>(malloc(npoints * sizeof(int)));
 
   // min_rmse_ref   = FLT_MAX;
   min_rmse_ref_1 = FLT_MAX;
@@ -751,7 +757,7 @@ void KMEANS::Clustering() {
 
       // save the last round for display
       if ((nclusters == max_nclusters) && (i == (nloops - 1))) {
-        cluster_centres = (float *)malloc(bytes_cf);
+        cluster_centres = reinterpret_cast<float *>(malloc(bytes_cf));
         memcpy(cluster_centres, cluster_centres_1, bytes_cf);
       }
 
@@ -814,6 +820,7 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
 
 void KMEANS::Read() {
   char line[1024];
+  char *saveptr;
   float *buf;
   FILE *infile;
   int i, j;
@@ -823,32 +830,33 @@ void KMEANS::Read() {
   }
 
   while (fgets(line, 1024, infile) != NULL) {
-    if (strtok(line, " \t\n") != 0) npoints++;
+    if (strtok_r(line, " \t\n", &saveptr) != 0) npoints++;
   }
 
   rewind(infile);
 
   while (fgets(line, 1024, infile) != NULL) {
-    if (strtok(line, " \t\n") != 0) {
+    if (strtok_r(line, " \t\n", &saveptr) != 0) {
       // ignore the id (first attribute): nfeatures = 1;
-      while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
+      while (strtok_r(NULL, " ,\t\n", &saveptr) != NULL) nfeatures++;
       break;
     }
   }
 
   // allocate space for features[] and read attributes of all objects
-  buf = (float *)malloc(npoints * nfeatures * sizeof(float));
-  feature_1 = (float *)malloc(npoints * nfeatures * sizeof(float));
+  buf = reinterpret_cast<float *>(malloc(npoints * nfeatures * sizeof(float)));
+  feature_1 =
+      reinterpret_cast<float *>(malloc(npoints * nfeatures * sizeof(float)));
 
   rewind(infile);
 
   i = 0;
 
   while (fgets(line, 1024, infile) != NULL) {
-    if (strtok(line, " \t\n") == NULL) continue;
+    if (strtok_r(line, " \t\n", &saveptr) == NULL) continue;
 
     for (j = 0; j < nfeatures; j++) {
-      buf[i] = atof(strtok(NULL, " ,\t\n"));
+      buf[i] = atof(strtok_r(NULL, " ,\t\n", &saveptr));
       i++;
     }
   }

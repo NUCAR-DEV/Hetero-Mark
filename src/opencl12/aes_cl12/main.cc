@@ -38,14 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include <cstdlib>
+#include <string>
 #include "include/aes_cl12.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/command_line_option/command_line_option.h"
-
-#include <cstdlib>
-#include <string>
 
 void print_help() {
   printf(
