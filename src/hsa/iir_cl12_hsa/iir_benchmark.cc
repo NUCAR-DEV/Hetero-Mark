@@ -49,9 +49,7 @@
 
 void cpu_pariir(float *x, float *y, float *ns, float *dsec, float c, int len);
 
-IirBenchmark::IirBenchmark(int len) {
-  this->len = len;
-}
+IirBenchmark::IirBenchmark(int len) { this->len = len; }
 
 void IirBenchmark::Cleanup() {
   delete[] X;
@@ -80,6 +78,12 @@ void IirBenchmark::Initialize() {
     nsec[i] = 0.00002f;
     dsec[i] = 0.00005f;
   }
+
+  timer->End({"Initialize"});
+  timer->Start();
+  IIR_init(0);
+  timer->End({"Compilation"});
+  timer->Start();
 }
 
 void IirBenchmark::Run() {
@@ -138,8 +142,7 @@ void IirBenchmark::Verify() {
     }
   }
 
-  if (success)
-    printf("Passed!\n");
+  if (success) printf("Passed!\n");
 
   delete[] ds;
   delete[] ns;

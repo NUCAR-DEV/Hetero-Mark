@@ -32,11 +32,9 @@ CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
 Makefile
-*.cmake
 build
 bin
 Testing
-!CppLint.cmake
 
 #ctags
 .tags*

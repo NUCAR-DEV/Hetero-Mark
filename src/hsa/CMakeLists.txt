@@ -1,4 +1,3 @@
-include(../../CppLint.cmake)
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
 
@@ -15,11 +14,6 @@ set( SUBDIRECTORIES
   kmeans_hsa
   page_rank_hsa
 )
-
-set( check_target ${FOLDER_NAME}_check )
-set( check_target_src )
-add_style_check_target( ${check_target} "${check_target_src}" 
-  "${SUBDIRECTORIES}" )
 
 ###############################################################
 

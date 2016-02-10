@@ -60,13 +60,6 @@ endif( )
 
 ############################################################################
 
-# Style check
-set( check_target ${BENCHMARK_NAME}_check )
-set( check_target_src ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
-add_style_check_target(${check_target} "${check_target_src}" "")
-
-############################################################################
-
 set( COMPILER_FLAGS "-std=c++11" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
@@ -110,17 +103,12 @@ set_target_properties( ${BENCHMARK_NAME} PROPERTIES
                      )
 target_link_libraries( ${BENCHMARK_NAME} cl_util time_measurement command_line_option benchmark ${OPENCL_LIBRARIES} ${ADDITIONAL_LIBRARIES} ${CLUTIL_LIBRARY})
 
-# Set output directory to bin
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BITNESS_SUFFIX}/${CMAKE_BUILD_TYPE})
-
 # Copy extra files to binary directory
 foreach( extra_file ${EXTRA_FILES} )
     add_custom_command(
         TARGET ${BENCHMARK_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ./
+        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${CMAKE_CURRENT_BINARY_DIR}
         )
 endforeach( extra_file )
 

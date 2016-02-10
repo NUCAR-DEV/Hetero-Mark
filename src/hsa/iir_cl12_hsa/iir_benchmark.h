@@ -40,6 +40,7 @@
 #define SRC_HSA_IIR_CL12_HSA_IIR_BENCHMARK_H_
 
 #include "src/common/benchmark/benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
 
 class IirBenchmark : public Benchmark {
   int len;
@@ -57,8 +58,12 @@ class IirBenchmark : public Benchmark {
   float *X;
   float *gpu_Y;
 
+  TimeMeasurement *timer;
+
  public:
   explicit IirBenchmark(int len);
+
+  void SetTimer(TimeMeasurement *timer) { this->timer = timer; }
 
   void Initialize() override;
   void Run() override;

@@ -15,10 +15,6 @@ set( SRC_FILE
   cl_util.cc
 )
 
-set( check_target ${FOLDER_NAME}_check )
-set( check_target_src ${HEADER_FILE})
-add_style_check_target(${check_target} "${check_target_src}" "${SUBDIRECTORIES}")
-
 # Find OpenCL include and libs
 find_path( OPENCL_INCLUDE_DIRS
     NAMES OpenCL/cl.h CL/cl.h

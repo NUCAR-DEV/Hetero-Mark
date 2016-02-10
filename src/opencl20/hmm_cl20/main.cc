@@ -41,23 +41,21 @@
 #include <cstdlib>
 #include <string>
 
-#include "include/hmm_cl20.h"
+#include "src/opencl20/hmm_cl20/hmm_cl20.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/command_line_option/command_line_option.h"
-
 
 int main(int argc, char const *argv[]) {
   // Setup command line option
   CommandLineOption command_line_option(
       "====== Hetero-Mark HMM Benchmarks (OpenCL 2.0) ======",
       "This benchmarks runs the Hidden Markov Model.");
-  command_line_option.AddArgument("Help", "bool", "false",
-      "-h", "--help", "Dump help information");
-  command_line_option.AddArgument("HiddenStates", "int", "16",
-      "-s", "--states",
-      "Number of hidden states");
+  command_line_option.AddArgument("Help", "bool", "false", "-h", "--help",
+                                  "Dump help information");
+  command_line_option.AddArgument("HiddenStates", "int", "16", "-s", "--states",
+                                  "Number of hidden states");
 
   command_line_option.Parse(argc, argv);
   if (command_line_option.GetArgumentValue("Help")->AsBool()) {
@@ -71,12 +69,13 @@ int main(int argc, char const *argv[]) {
       command_line_option.GetArgumentValue("HiddenStates")->AsInt32());
 
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  hmm->SetTimer(timer.get());
 
   BenchmarkRunner runner(hmm.get(), timer.get());
 
   runner.Run();
 
-  // runner.Summarize();
+  runner.Summarize();
 
   return 0;
 }

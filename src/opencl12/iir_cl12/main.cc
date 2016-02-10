@@ -38,26 +38,24 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-
 #include <cstdlib>
 #include <string>
 
-#include "include/iir_cl12.h"
+#include "src/opencl12/iir_cl12/iir_cl12.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/command_line_option/command_line_option.h"
-
 
 int main(int argc, char const *argv[]) {
   // Setup command line option
   CommandLineOption command_line_option(
       "====== Hetero-Mark IIR Benchmarks (OpenCL 1.2) ======",
       "This benchmarks runs the parallel IIR for multi-channel case.");
-  command_line_option.AddArgument("Help", "bool", "false",
-      "-h", "--help", "Dump help information");
-  command_line_option.AddArgument("Length", "int", "256",
-      "-l", "--length", "Length of input");
+  command_line_option.AddArgument("Help", "bool", "false", "-h", "--help",
+                                  "Dump help information");
+  command_line_option.AddArgument("Length", "int", "256", "-l", "--length",
+                                  "Length of input");
 
   command_line_option.Parse(argc, argv);
   if (command_line_option.GetArgumentValue("Help")->AsBool()) {
@@ -71,12 +69,13 @@ int main(int argc, char const *argv[]) {
       command_line_option.GetArgumentValue("Length")->AsInt32());
 
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  IIR->SetTimer(timer.get());
 
   BenchmarkRunner runner(IIR.get(), timer.get());
 
   runner.Run();
 
-  // runner.Summarize();
+  runner.Summarize();
 
   return 0;
 }

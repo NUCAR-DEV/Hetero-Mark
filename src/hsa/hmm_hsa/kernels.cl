@@ -110,7 +110,7 @@ __kernel void TransposeSymKernel (const int N,
 __kernel void FWD_update_alphaKernel(const int N,
                                const int current,
 								 __local float *sm,
-								 __constant float *constMem,
+								 float *constMem,
 								 __global float *aT,
 								 __global float *b,
 								 __global float *alpha)
@@ -173,7 +173,7 @@ __kernel void BK_BetaBKernel(const int N,
 __kernel void BK_update_betaKernel(const int N,
                              const int current,
 						     __local float *sm,
-							 __constant float *constMem,
+							 float *constMem,
 				             __global float *a,
 							 __global float *beta)
 {
@@ -541,7 +541,7 @@ __kernel void EM_gamma_state_sumKernel(const int N,
 
 __kernel void EM_gamma_obsKernel(const int D,
                            const int T,
-						   __constant float *constMem,
+						   float *constMem,
                            __global const float *observations, // D x T
                            __global       float *gamma_obs)
 {
@@ -605,11 +605,11 @@ __kernel void EM_expect_muKernel(const int D,
 __kernel void EM_sigma_devKernel(const int D,
                            const int T,
 						   const int hs,
-						   __constant float *constMem,
-                           __global const float *gamma_obs,
-                           __global const float *observations,        
-                           __global const float *gamma_state_sum,        
-                           __global       float *sigma_dev)
+						   float *constMem,
+                           __global float *gamma_obs,
+                           __global float *observations,        
+                           __global float *gamma_state_sum,        
+                           __global float *sigma_dev)
 {
         // C = A x B'
         // C , sigma_dev  DxD 
@@ -658,8 +658,8 @@ __kernel void EM_sigma_devKernel(const int D,
 __kernel void EM_expect_sigmaKernel(const int blk_rows,
                             const int width,
                             const int start,
-                            __global const float *sigma_dev,
-                            __global       float *expect_sigma)
+                            __global float *sigma_dev,
+                            __global float *expect_sigma)
 {
 
         volatile __local int2 blkid;

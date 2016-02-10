@@ -8,12 +8,6 @@ set( HEADER_FILES
 set( TEST_FILES
     benchmark_runner_test.cc)
 
-# Style check
-set( check_target ${FOLDER_NAME}_check )
-set( check_target_src ${SRC_FILES} ${HEADER_FILES} ${TEST_FILES})
-add_style_check_target(${check_target} 
-  "${check_target_src}" "${SUBDIRECTORIES}")
-
 # Unit test
 if (enable-test)
   add_executable(${FOLDER_NAME}_test 

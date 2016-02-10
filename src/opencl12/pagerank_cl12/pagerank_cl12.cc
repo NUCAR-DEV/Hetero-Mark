@@ -56,6 +56,34 @@
 #include <memory>
 
 PageRank::PageRank() {
+  workGroupSize = 64;
+  maxIter = 1000;
+}
+
+void PageRank::Initialize() {
+  timer_->End({"Initialize"});
+  timer_->Start();
+
+  InitCl();
+  InitKernel();
+
+  timer_->End({"Init Runtime"});
+  timer_->Start();
+
+  // Input adjacency matrix from file
+  ReadCsrMatrix();
+  ReadDenseVector();
+  // Initilize the buffer on device
+  InitBuffer();
+  // Fill in the buffer and transfer them onto device
+  FillBuffer();
+  // Print();
+  // Use a kernel to convert the adajcency matrix to column stocastic matrix
+
+
+}
+
+void PageRank::InitCl() {
   runtime = clRuntime::getInstance();
   file = clFile::getInstance();
 
@@ -63,8 +91,7 @@ PageRank::PageRank() {
   device = runtime->getDevice();
   context = runtime->getContext();
   cmdQueue = runtime->getCmdQueue(0);
-  workGroupSize = 64;
-  maxIter = 10;
+
 }
 
 void PageRank::SetInitialParameters(std::string fName1, std::string fName2) {
@@ -308,16 +335,6 @@ void PageRank::PageRankCpu() {
 }
 
 void PageRank::Run() {
-  // Input adjacency matrix from file
-  ReadCsrMatrix();
-  ReadDenseVector();
-  // Initilize the buffer on device
-  InitBuffer();
-  // Fill in the buffer and transfer them onto device
-  FillBuffer();
-  // Print();
-  // Use a kernel to convert the adajcency matrix to column stocastic matrix
-
   // The pagerank kernel where SPMV is iteratively called
   std::cout << "FillBuffer()" << fileName1 << std::endl;
   InitKernel();
@@ -328,8 +345,8 @@ void PageRank::Run() {
   ReadBuffer();
   std::cout << "ReadBuffer()" << fileName1 << std::endl;
 
-  //CpuRun();  // NOTE CPU AFTER GPU
-  //std::cout << "CpuRun()" << fileName1 << std::endl;
+  // CpuRun();  // NOTE CPU AFTER GPU
+  // std::cout << "CpuRun()" << fileName1 << std::endl;
 }
 
 void PageRank::Test() {

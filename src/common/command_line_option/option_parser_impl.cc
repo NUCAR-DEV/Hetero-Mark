@@ -11,30 +11,30 @@
  *
  * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
- * to deal with the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal with the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
- *   Redistributions of source code must retain the above copyright notice, 
+ *
+ *   Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimers.
  *
- *   Redistributions in binary form must reproduce the above copyright 
- *   notice, this list of conditions and the following disclaimers in the 
+ *   Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimers in the
  *   documentation and/or other materials provided with the distribution.
  *
- *   Neither the names of NUCAR, Northeastern University, nor the names of 
- *   its contributors may be used to endorse or promote products derived 
+ *   Neither the names of NUCAR, Northeastern University, nor the names of
+ *   its contributors may be used to endorse or promote products derived
  *   from this Software without specific prior written permission.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS WITH THE SOFTWARE.
  */
 
@@ -49,8 +49,8 @@ void OptionParserImpl::Parse(int argc, const char **argv) {
   while (iterator->HasNext()) {
     Argument *argument = iterator->Next();
     std::string default_value = argument->get_default_value();
-    auto argument_value = argument_value_factory_->ProduceArgumentValue(
-          default_value.c_str());
+    auto argument_value =
+        argument_value_factory_->ProduceArgumentValue(default_value.c_str());
     argument_values_.emplace(argument->get_name(), std::move(argument_value));
   }
 
@@ -69,8 +69,10 @@ void OptionParserImpl::Parse(int argc, const char **argv) {
     // Check if it is long or shor prompt
     bool is_short_prompt = false;
     bool is_long_prompt = false;
-    if (arg[0] == '-' && arg[1] == '-') is_long_prompt = true;
-    else if (arg[0] == '-') is_short_prompt = true;
+    if (arg[0] == '-' && arg[1] == '-')
+      is_long_prompt = true;
+    else if (arg[0] == '-')
+      is_short_prompt = true;
 
     // According to the prompt, find the argument
     // FIXME:Yifan Move this part of code to another function
@@ -108,8 +110,9 @@ void OptionParserImpl::Parse(int argc, const char **argv) {
     } else {
       // Non-bool type prompt cannot be the last argument
       if (i == argc - 1) {
-        throw std::runtime_error("Argument " + arg + "must followed by its "
-            "value");
+        throw std::runtime_error("Argument " + arg +
+                                 "must followed by its "
+                                 "value");
       }
 
       // Consumes one more argument

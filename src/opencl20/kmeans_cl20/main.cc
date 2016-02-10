@@ -38,79 +38,71 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-
-#include "include/kmeans_cl20.h"
+#include <cstdlib>
+#include <string>
+#include "src/opencl20/kmeans_cl20/kmeans_cl20.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/command_line_option/command_line_option.h"
 
-#include <cstdlib>
-#include <string>
-
-int main(int argc, char const *argv[])
-{
-    // Setup command line option
-    CommandLineOption command_line_option(
+int main(int argc, char const *argv[]) {
+  // Setup command line option
+  CommandLineOption command_line_option(
       "====== Hetero-Mark KMeans Benchmarks (OpenCL 2.0) ======",
       "This benchmarks runs the KMeans Algorithm.");
-    command_line_option.AddArgument("Help", "bool", "false",
-        "-h", "--help", "Dump help information");
-    command_line_option.AddArgument("FileName", "string", "",
-        "-i", "--input",
-        "File containing data to be clustered");
-    command_line_option.AddArgument("max_nclusters", "int", "5",
-        "-m", "--max",
-        "Maximum number of clusters allowed");
-    command_line_option.AddArgument("min_nclusters", "int", "5",
-        "-n", "--min",
-        "Minimum number of clusters allowed");
-    command_line_option.AddArgument("Threshold", "double", "0.001",
-        "-t", "--threshold",
-        "Threshold value");
-    command_line_option.AddArgument("nloops", "int", "1",
-        "-l", "--loops",
-        "Iteration for each number of clusters");
-    command_line_option.AddArgument("binary", "bool", "false",
-        "-b", "--binary",
-        "Input file is in binary format");
-    command_line_option.AddArgument("rmse", "bool", "false",
-        "-r", "--rmse",
-        "Calculate RMSE");
-    command_line_option.AddArgument("cluster", "bool", "false",
-        "-o", "--outputcluster",
-        "Output cluster center coordinates");
+  command_line_option.AddArgument("Help", "bool", "false", "-h", "--help",
+                                  "Dump help information");
+  command_line_option.AddArgument("FileName", "string", "", "-i", "--input",
+                                  "File containing data to be clustered");
+  command_line_option.AddArgument("max_nclusters", "int", "5", "-m", "--max",
+                                  "Maximum number of clusters allowed");
+  command_line_option.AddArgument("min_nclusters", "int", "5", "-n", "--min",
+                                  "Minimum number of clusters allowed");
+  command_line_option.AddArgument("Threshold", "double", "0.001", "-t",
+                                  "--threshold", "Threshold value");
+  command_line_option.AddArgument("nloops", "int", "1", "-l", "--loops",
+                                  "Iteration for each number of clusters");
+  command_line_option.AddArgument("rmse", "bool", "false", "-r", "--rmse",
+                                  "Calculate RMSE");
+  command_line_option.AddArgument("cluster", "bool", "false", "-o",
+                                  "--outputcluster",
+                                  "Output cluster center coordinates");
 
-    FilePackage fp;
-    try {
-      command_line_option.Parse(argc, argv);
+  FilePackage fp;
+  try {
+    command_line_option.Parse(argc, argv);
 
-      // Print help information
-      if (command_line_option.GetArgumentValue("Help")->AsBool()) {
-        command_line_option.Help();
-        return 0;
-      }
-
-      fp.filename = const_cast<char*>(command_line_option.GetArgumentValue("FileName")->AsString().c_str());
-      fp.binary = command_line_option.GetArgumentValue("binary")->AsBool();
-      fp.threshold = command_line_option.GetArgumentValue("Threshold")->AsDouble();
-      fp.max_cl = command_line_option.GetArgumentValue("max_nclusters")->AsInt32();
-      fp.min_cl = command_line_option.GetArgumentValue("min_nclusters")->AsInt32();
-      fp.RMSE = command_line_option.GetArgumentValue("rmse")->AsBool();
-      fp.output = command_line_option.GetArgumentValue("cluster")->AsBool();
-      fp.nloops = command_line_option.GetArgumentValue("nloops")->AsInt32();
-    } catch (const std::exception &e) {
-      std::cerr << e.what();
+    // Print help information
+    if (command_line_option.GetArgumentValue("Help")->AsBool()) {
+      command_line_option.Help();
       return 0;
     }
 
-    std::unique_ptr<KMEANS> km(new KMEANS());
-    km->SetInitialParameters(fp);
-
-    std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-    BenchmarkRunner runner(km.get(), timer.get());
-    runner.Run();
-    runner.Summarize();
-
+    fp.filename = const_cast<char *>(
+        command_line_option.GetArgumentValue("FileName")->AsString().c_str());
+    fp.threshold =
+        command_line_option.GetArgumentValue("Threshold")->AsDouble();
+    fp.max_cl =
+        command_line_option.GetArgumentValue("max_nclusters")->AsInt32();
+    fp.min_cl =
+        command_line_option.GetArgumentValue("min_nclusters")->AsInt32();
+    fp.RMSE = command_line_option.GetArgumentValue("rmse")->AsBool();
+    fp.output = command_line_option.GetArgumentValue("cluster")->AsBool();
+    fp.nloops = command_line_option.GetArgumentValue("nloops")->AsInt32();
+  } catch (const std::exception &e) {
+    std::cerr << e.what();
     return 0;
+  }
+
+  std::unique_ptr<KMEANS> km(new KMEANS());
+  km->SetInitialParameters(fp);
+
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  km->SetTimer(timer.get());
+  BenchmarkRunner runner(km.get(), timer.get());
+  runner.Run();
+  runner.Summarize();
+
+  return 0;
 }

@@ -58,23 +58,28 @@ int main(int argc, const char **argv) {
       "NumBlock", "integer", "1024", "-b", "--num-block",
       "Number of data blocks, each data block is process in one kernel "
       "launching");
+  command_line_option.AddArgument("Verify", "bool", "false", "-v", "--verify",
+                                  "Run self-validation");
 
   command_line_option.Parse(argc, argv);
   if (command_line_option.GetArgumentValue("Help")->AsBool()) {
     command_line_option.Help();
     return 0;
   }
-  uint32_t numData =
+  uint32_t num_data =
       command_line_option.GetArgumentValue("NumData")->AsUInt32();
-  uint32_t numBlock =
+  uint32_t num_block =
       command_line_option.GetArgumentValue("NumBlock")->AsUInt32();
 
   // Create and run benchmarks
   std::unique_ptr<FirBenchmark> benchmark(new FirBenchmark());
-  benchmark->setNumData(numData);
-  benchmark->setNumBlocks(numBlock);
+  benchmark->SetNumData(num_data);
+  benchmark->SetNumBlocks(num_block);
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  benchmark->SetTimer(timer.get());
   BenchmarkRunner runner(benchmark.get(), timer.get());
+  runner.set_verification_mode(
+      command_line_option.GetArgumentValue("Verify")->AsBool());
   runner.Run();
   runner.Summarize();
 }
