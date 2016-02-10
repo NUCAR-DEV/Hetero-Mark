@@ -335,7 +335,8 @@ float KmeansBenchmark::euclid_dist_2(float *pt1, float *pt2) {
 }
 
 int KmeansBenchmark::find_nearest_point(float *pt, float **pts) {
-  int index_local, i;
+  int index_local = 0;
+  int i;
   float max_dist = FLT_MAX;
 
   // find the cluster center id with min distance to pt
@@ -347,7 +348,7 @@ int KmeansBenchmark::find_nearest_point(float *pt, float **pts) {
       index_local = i;
     }
   }
-  return (index_local);
+  return index_local;
 }
 
 void KmeansBenchmark::RMS_err() {

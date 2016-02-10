@@ -1,5 +1,5 @@
-# set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-# set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
@@ -9,10 +9,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 include(ExternalProject)
 include(StyleCheck)
+include(OpenCL)
+include(HSA)
 
 set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
-set( CMAKE_CXX_FLAGS "-Wall -pthread -g" )
+set( CMAKE_CXX_FLAGS "-Wall -Werror -pthread -g" )
 add_definitions(
   -std=c++11
 )

@@ -1,6 +1,9 @@
 file(GLOB_RECURSE ALL_SOURCE_FILES 
     RELATIVE ${CMAKE_SOURCE_DIR}
     src/*.cc src/*.cpp src/*.h)
+  file(GLOB_RECURSE ALL_KERNEL_FILES
+    RELATIVE ${CMAKE_SOURCE_DIR}
+    src/*.cl)
 
 find_package(PythonInterp)
 if(NOT PYTHONINTERP_FOUND)
@@ -27,7 +30,7 @@ add_custom_target(check
   COMMAND "${CMAKE_COMMAND}" -E chdir
     "${CMAKE_SOURCE_DIR}"
     ${CMAKE_SOURCE_DIR}/clang-format -style=Google -i
-    ${ALL_SOURCE_FILES}
+    ${ALL_SOURCE_FILES} ${ALL_KERNEL_FILES}
   COMMAND "${CMAKE_COMMAND}" 
     -E chdir "${CMAKE_SOURCE_DIR}"
     ${CMAKE_SOURCE_DIR}/cpplint.py

@@ -54,52 +54,44 @@ performance.
  behavior of fluids, wave modeling for interactive systems. It predicts
  matters of practical interest, e.g. internal tides in strait of Gibraltar.
 
-####Directory structure
-
-* common - contains the framework for the suite
-
-* data - input files required by applications such as KMeans and PageRank
-
-* hsa - source of HSA applications
-
-* micro-benchmark - source of micro-benchmarks
-
-* opencl12 - source of OpenCL 1.2 applications
-
-* opencl20 - source of OpenCL 2.0 applications
-
-* tool - some tools for input generation for applications such as AES, KMeans and PageRank
-
-
 ####Compiling the code
 
-* To build the framework, please make the directory `common`.
+Use the following commands to compile the benchmarks
 
-* To compile without debug 
+`mkdir build`
 
-`cmake .`
+`cd build`
 
-* To compile with debug
+`cmake ../`
 
-`cmake -DCMAKE_BUILD_TYPE=Debug.`
+`make`
 
-####Running the code
-After compiling, the executables are located in 
-`<app folder>/bin/x86_64/Release/`
+### Input data
 
-####Input data generation
+#### Download standard input data
+Standard input is provided for data dependent benchmark such as K-means. 
+Cloning Hetero-Mark repository will not download the standard input data. 
+Download the standard input data with the following commands:
+
+`git lfs fetch`
+
+You may need to install the Git extension for versioning large files. 
+Instructions can be found [here](https://git-lfs.github.com/)
+
+#### Generate your own input data
 * To generate custom data in `data` folder
   * AES - It generates custom size plain text file. Usage: `./<exec> <file size>` 
   * KMeans - It generates the input file for KMeans. Usage:
-`g++ KMeans_datagen.cpp -o KMeans_datagen`
-`./KMeans_gen_dataset.sh`
-  * PageRank - It generates the input matrix for PageRank. Usage: `python PageRank_generateCsrMatrix.py`
 
+    `g++ KMeans_datagen.cpp -o KMeans_datagen`
+
+    `./KMeans_gen_dataset.sh`
+
+  * PageRank - It generates the input matrix for PageRank. Usage: `python PageRank_generateCsrMatrix.py`
 
 ####Note
 If the system is missing HSA environment, it will throw some warnings such as `Skipping <application name>, snack.sh is not found`.
 
 ####Development guide
-The skeleton code for new benchmark is available in `src/template` directory.
 
-Make sure to add new benchmark dir to `CmakeList.txt` file in `src/`, otherwise new benchmark won't be compiled with others.
+Hetero-mark follows [google c++ coding style](https://google.github.io/styleguide/cppguide.html) in header files and source files. 

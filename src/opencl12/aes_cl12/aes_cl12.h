@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_OPENCL20_AES_CL20_INCLUDE_AES_CL20_H_
-#define SRC_OPENCL20_AES_CL20_INCLUDE_AES_CL20_H_
+#ifndef SRC_OPENCL12_AES_CL12_AES_CL12_H_
+#define SRC_OPENCL12_AES_CL12_AES_CL12_H_
 
 #include "src/common/cl_util/cl_util.h"
 #include "src/common/benchmark/benchmark.h"
@@ -64,6 +64,8 @@ class AES : public Benchmark {
 
   cl_program program;
   cl_kernel kernel;
+  cl_mem dev_states;
+  cl_mem cl_key;
 
   static const int MAX_SOURCE_SIZE = 0x100000;
 
@@ -72,10 +74,12 @@ class AES : public Benchmark {
   static const int Nr = 14;
   static const int Nk = 8;
 
-  // MAXIMUM_MEMORY_ALLOCATION stores the number of work-units that
-  // can be launched on the GPU, 1 is a failsafe if the API does not
-  // return an approprate value
-  int MAXIMUM_MEMORY_ALLOCATION;
+  // BASIC_UNIT is the number of streams that execute on the gpu per work unit
+  // MAX_WORK_ITEMS is the number of logical work units
+  // RUNNING_THREADS is the product of the two
+  int BASIC_UNIT = 1024;
+  int MAX_WORK_ITEMS = 256;
+  int RUNNING_THREADS;
   bool hex_mode;
 
   // Files
@@ -85,7 +89,6 @@ class AES : public Benchmark {
 
   uint8_t key[32];
   uint32_t expanded_key[60];
-  uint8_t *svm_ptr;
 
   // S-box is used in some AES transformation operations
   uint8_t s[256] = {
@@ -151,11 +154,9 @@ class AES : public Benchmark {
   void InitFiles();
   void InitKeys();
   void InitKernel();
-  void InitBuffer();
 
   void FreeFiles();
   void FreeKernel();
-  void FreeBuffer();
 
  public:
   AES();
@@ -169,4 +170,4 @@ class AES : public Benchmark {
   void Summarize() override {}
 };
 
-#endif  // SRC_OPENCL20_AES_CL20_INCLUDE_AES_CL20_H_
+#endif  // SRC_OPENCL12_AES_CL12_AES_CL12_H_

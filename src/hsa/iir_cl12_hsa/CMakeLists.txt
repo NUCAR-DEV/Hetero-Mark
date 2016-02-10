@@ -10,11 +10,13 @@ set( SRC_FILES
 )
 set( HEADER_FILES )
 set( TEST_FILES )
+set( EXTRA_FILES 
+  kernels.cl
+)
 
 # Group samples by folder
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-file(COPY kernels.cl DESTINATION .)
 
 # Check if snack is available
 find_file(have_snack NAMES snack.sh DOC "snack.sh file") 
@@ -35,6 +37,13 @@ endif (${TEST_FILES})
 ###############################################################
 
 if (have_snack AND HSA_RUNTIME)
+  foreach( extra_file ${EXTRA_FILES} )
+    add_custom_command(
+      OUTPUT ${extra_file}
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${CMAKE_CURRENT_BINARY_DIR}
+    )
+  endforeach( extra_file )
   add_custom_command(
     OUTPUT kernels.o kernels.h
     COMMAND snack.sh -c kernels.cl
@@ -43,11 +52,8 @@ if (have_snack AND HSA_RUNTIME)
     WORKING_DIRECTORY ""
     VERBATIM
   )
-add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
-target_link_libraries(${FOLDER_NAME}
+  add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
+  target_link_libraries(${FOLDER_NAME}
     time_measurement command_line_option benchmark ${HSA_RUNTIME})
-else (have_snack AND HSA_RUNTIME)
-  message(WARNING "Skipping ${FOLDER_NAME}, snack.sh or HSA runtime is not \
-    found")
 endif (have_snack AND HSA_RUNTIME)
 
