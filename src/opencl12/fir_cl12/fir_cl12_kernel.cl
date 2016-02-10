@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (c) 2015 Northeastern University
 * All rights reserved.
 *
@@ -30,29 +30,24 @@
 *   DEALINGS WITH THE SOFTWARE.
 */
 
-
-__kernel void FIR( 
-  __global float * output,
-  __global float * coeff,
-  __global float * temp_input,
-  uint numTap){
-
+__kernel void FIR(__global float* output, __global float* coeff,
+                  __global float* temp_input, uint numTap) {
   uint tid = get_global_id(0);
   uint numData = get_global_size(0);
   uint xid = tid + numTap - 1;
 
   float sum = 0;
   uint i = 0;
-  for(i = 0; i < numTap; i++){
-      sum = sum + coeff[i] * temp_input[xid - i];
+  for (i = 0; i < numTap; i++) {
+    sum = sum + coeff[i] * temp_input[xid - i];
   }
   output[tid] = sum;
 
-  barrier( CLK_GLOBAL_MEM_FENCE );
+  barrier(CLK_GLOBAL_MEM_FENCE);
 
   /* fill the history buffer */
-  if( tid >= numData - numTap + 1 )
-      temp_input[ tid - ( numData - numTap + 1 ) ] = temp_input[xid];
+  if (tid >= numData - numTap + 1)
+    temp_input[tid - (numData - numTap + 1)] = temp_input[xid];
 
-  barrier( CLK_GLOBAL_MEM_FENCE );
+  barrier(CLK_GLOBAL_MEM_FENCE);
 }

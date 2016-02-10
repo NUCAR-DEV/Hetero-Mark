@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_OPENCL12_AES_CL12_INCLUDE_AES_CL12_H_
-#define SRC_OPENCL12_AES_CL12_INCLUDE_AES_CL12_H_
+#ifndef SRC_OPENCL12_AES_CL12_AES_CL12_H_
+#define SRC_OPENCL12_AES_CL12_AES_CL12_H_
 
 #include "src/common/cl_util/cl_util.h"
 #include "src/common/benchmark/benchmark.h"
@@ -170,4 +170,4 @@ class AES : public Benchmark {
   void Summarize() override {}
 };
 
-#endif  // SRC_OPENCL12_AES_CL12_INCLUDE_AES_CL12_H_
+#endif  // SRC_OPENCL12_AES_CL12_AES_CL12_H_

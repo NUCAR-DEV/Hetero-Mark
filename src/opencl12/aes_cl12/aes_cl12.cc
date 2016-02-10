@@ -37,10 +37,9 @@
  */
 
 #include "src/opencl12/aes_cl12/aes_cl12.h"
-
-#include <string.h>
 #include <inttypes.h>
-#include <time.h>
+#include <string.h>
+#include <string>
 #include <memory>
 #include <sstream>
 
