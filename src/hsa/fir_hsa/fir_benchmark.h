@@ -42,6 +42,7 @@
 #define SRC_HSA_FIR_HSA_FIR_BENCHMARK_H_
 
 #include "src/common/benchmark/benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
 
 class FirBenchmark : public Benchmark {
  private:
@@ -54,6 +55,8 @@ class FirBenchmark : public Benchmark {
   float *coeff_ = nullptr;
   float *history_ = nullptr;
 
+  TimeMeasurement *timer = nullptr;
+
  public:
   void Initialize() override;
   void Run() override;
@@ -63,6 +66,7 @@ class FirBenchmark : public Benchmark {
 
   void SetNumBlocks(unsigned int num_blocks) { this->num_blocks_ = num_blocks; }
   void SetNumData(unsigned int num_data) { this->num_data_ = num_data; }
+  void SetTimer(TimeMeasurement *timer) { this->timer = timer; }
 };
 
 #endif  // SRC_HSA_FIR_HSA_FIR_BENCHMARK_H_

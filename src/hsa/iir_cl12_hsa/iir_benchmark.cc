@@ -78,6 +78,12 @@ void IirBenchmark::Initialize() {
     nsec[i] = 0.00002f;
     dsec[i] = 0.00005f;
   }
+
+  timer->End({"Initialize"});
+  timer->Start();
+  IIR_init(0);
+  timer->End({"Compilation"});
+  timer->Start();
 }
 
 void IirBenchmark::Run() {

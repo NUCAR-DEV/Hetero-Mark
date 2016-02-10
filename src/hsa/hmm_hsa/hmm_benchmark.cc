@@ -56,6 +56,31 @@ HmmBenchmark::HmmBenchmark(int N) {
 }
 
 void HmmBenchmark::Initialize() {
+
+  timer_->End({"Initialize"});
+  timer_->Start();
+  FWD_init_alphaKernel_init(0);
+  FWD_norm_alphaKernel_init(0);
+  TransposeSymKernel_init(0);
+  FWD_update_alphaKernel_init(0);
+  BK_BetaBKernel_init(0);
+  BK_update_betaKernel_init(0);
+  BK_norm_betaKernel_init(0);
+  EM_betaB_alphabetaKernel_init(0);
+  EM_update_gammaKernel_init(0);
+  EM_alpha_betaBKernel_init(0);
+  EM_pre_xisumKernel_init(0);
+  EM_update_xisumKernel_init(0);
+  EM_gammaKernel_init(0);
+  EM_expectAKernel_init(0);
+  EM_gamma_state_sumKernel_init(0);
+  EM_gamma_obsKernel_init(0);
+  EM_expect_muKernel_init(0);
+  EM_sigma_devKernel_init(0);
+  EM_expect_sigmaKernel_init(0);
+  timer_->End({"Init Runtime"});
+  timer_->Start();
+
   InitParam();
   InitBuffers();
 }
@@ -89,9 +114,6 @@ void HmmBenchmark::InitParam() {
 }
 
 void HmmBenchmark::InitBuffers() {
-  // SVM buffers
-  //        a,b,prior,lll, blk_result
-
   int i, j;
 
   // Prepare
@@ -263,9 +285,6 @@ void HmmBenchmark::EM() {
     // alpha * betaB'
     EM_alpha_betaB(current);
 
-    // normalise( A .*  (alpha * betaB') )
-    // compute xi_sum_tmp and block results
-    // FIXME: sometimes segmentation faults
     EM_pre_xisum();
 
     sum = 0.f;
@@ -283,12 +302,6 @@ void HmmBenchmark::EM() {
   // TODO(yifan): reuse template
   EM_gamma(current);
 
-  // update expected values
-
-  // TODO(yifan): Merge with previous gamma update
-  // expected_prior = gamma(:, 1);
-
-  // check from here !!!
   memcpy(expect_prior, gamma, bytes_n);
 
   // update expect_A
@@ -313,7 +326,6 @@ void HmmBenchmark::EM() {
     current = hs * D;
 
     // compute expect_mu
-    // TODO(yifan) map to host when there is not enough data?
     EM_expect_mu(current, hs);
 
     // copy expect_mu to constant mem
@@ -532,7 +544,24 @@ void HmmBenchmark::EM_expect_mu(int pos, int currentstate) {
 }
 
 void HmmBenchmark::EM_sigma_dev(int currentstate) {
-  int hs = currentstate;
+  // int hs = currentstate;
+  // printf("EM_sigma_dev: %d\n", currentstate);
+
+  SNK_INIT_LPARM(lparm, 16);
+  lparm->ndim = 2;
+  lparm->gdims[0] = D;
+  lparm->gdims[1] = D;
+  lparm->ldims[0] = 8;
+  lparm->ldims[1] = 8;
+
+  /*
+  EM_sigma_devKernel(D, T, hs, constMem, gamma_obs, observations,
+                     gamma_state_sum, sigma_dev, lparm);
+  */
+}
+
+void HmmBenchmark::EM_expect_sigma(size_t pos) {
+  // int start = pos;
 
   SNK_INIT_LPARM(lparm, 16);
   lparm->ndim = 2;
@@ -541,28 +570,9 @@ void HmmBenchmark::EM_sigma_dev(int currentstate) {
   lparm->ldims[0] = 16;
   lparm->ldims[1] = 16;
 
-  EM_sigma_devKernel(D, T, hs, constMem, gamma_obs, observations,
-                     gamma_state_sum, sigma_dev, lparm);
-}
-
-void HmmBenchmark::EM_expect_sigma(size_t pos) {
-  // FIXME: no cast?
-  int start = pos;
-
-  // FIXME: OCL 1.2 doesn't support non-uniform workgroup size,
-  // i.e global size must be multiples of local size
-  // size_t localSize[2]  = {16, 16};
-  size_t localSize[2] = {16, (size_t)blknum};
-  size_t globalSize[2] = {16, (size_t)blknum};
-
-  SNK_INIT_LPARM(lparm, 16);
-  lparm->ndim = 2;
-  lparm->gdims[0] = globalSize[0];
-  lparm->gdims[1] = globalSize[1];
-  lparm->ldims[0] = localSize[0];
-  lparm->ldims[1] = localSize[1];
-
+  /*
   EM_expect_sigmaKernel(blk_rows, D, start, sigma_dev, expect_sigma, lparm);
+  */
 }
 
 //                                      Run HmmBenchmark

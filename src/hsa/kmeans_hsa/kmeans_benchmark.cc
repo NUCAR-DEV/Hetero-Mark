@@ -425,7 +425,15 @@ void KmeansBenchmark::Display_results() {
   }
 }
 
-void KmeansBenchmark::Initialize() { Read(); }
+void KmeansBenchmark::Initialize() { 
+  timer_->End({"Initialize"});
+  timer_->Start();
+  kmeans_kernel_c_init(0);
+  kmeans_swap_init(0);
+  timer_->End({"Init Runtime"});
+  timer_->Start();
+  Read(); 
+}
 
 void KmeansBenchmark::Run() { Clustering(); }
 

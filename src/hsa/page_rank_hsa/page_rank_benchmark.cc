@@ -45,7 +45,7 @@
 
 PageRankBenchmark::PageRankBenchmark() {
   workGroupSize = 64;
-  maxIter = 300;
+  maxIter = 1000;
 }
 
 void PageRankBenchmark::InitBuffer() {
@@ -201,6 +201,13 @@ void PageRankBenchmark::Initialize() {
   ReadDenseVector();
   InitBuffer();
   FillBuffer();
+
+  timer_->End({"Initialize"});
+  timer_->Start();
+  pageRank_kernel_init(0);
+  timer_->End({"Init Runtime"});
+  timer_->Start();
+
 }
 
 void PageRankBenchmark::Run() {
