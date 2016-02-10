@@ -66,6 +66,15 @@ performance.
 
 `cmake -DCMAKE_BUILD_TYPE=Debug.`
 
+### Download standard input data
+Standard input is provided for data dependent benchmark such as K-means. 
+Cloning Hetero-Mark repository will not download the standard input data. 
+Download the standard input data with the following commands:
+'git lfs fetch'
+
+You may need to install the Git extension for versioning large files. 
+Instructions can be found [here](https://git-lfs.github.com/)
+
 ####Input data generation
 * To generate custom data in `data` folder
   * AES - It generates custom size plain text file. Usage: `./<exec> <file size>` 
@@ -73,7 +82,6 @@ performance.
 `g++ KMeans_datagen.cpp -o KMeans_datagen`
 `./KMeans_gen_dataset.sh`
   * PageRank - It generates the input matrix for PageRank. Usage: `python PageRank_generateCsrMatrix.py`
-
 
 ####Note
 If the system is missing HSA environment, it will throw some warnings such as `Skipping <application name>, snack.sh is not found`.
