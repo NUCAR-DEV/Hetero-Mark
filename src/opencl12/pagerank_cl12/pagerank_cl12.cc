@@ -79,8 +79,6 @@ void PageRank::Initialize() {
   FillBuffer();
   // Print();
   // Use a kernel to convert the adajcency matrix to column stocastic matrix
-
-
 }
 
 void PageRank::InitCl() {
@@ -91,7 +89,6 @@ void PageRank::InitCl() {
   device = runtime->getDevice();
   context = runtime->getContext();
   cmdQueue = runtime->getCmdQueue(0);
-
 }
 
 void PageRank::SetInitialParameters(std::string fName1, std::string fName2) {

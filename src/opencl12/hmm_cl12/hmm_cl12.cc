@@ -57,7 +57,7 @@ void HMM::Init() {
   // HMM Parameters
   //        a,b,prior,alpha
   // printf("=>Initialize parameters.\n");
-  
+
   timer_->End({"Initialize"});
   timer_->Start();
   InitCL();

@@ -189,7 +189,6 @@ void KMEANS::CL_initialize() {
     printf("SVM coarse grain support unavailable\n");
     exit(-1);
   }
-
 }
 
 void KMEANS::CL_build_program() {
@@ -811,7 +810,6 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
   isRMSE = parameters.RMSE;
   isOutput = parameters.output;
   nloops = parameters.nloops;
-
 }
 
 void KMEANS::Read() {
@@ -860,7 +858,6 @@ void KMEANS::Read() {
   bytes_pf = npoints * nfeatures * sizeof(float);
   bytes_p = sizeof(int) * npoints;
 
-
   printf("\nI/O completed\n");
   printf("\nNumber of objects: %d\n", npoints);
   printf("Number of features: %d\n", nfeatures);
@@ -876,10 +873,7 @@ void KMEANS::Read() {
 
   // now features holds 2-dimensional array of features //
   free(buf);
-
 }
-
-
 
 void KMEANS::Initialize() {
   timer_->End({"Initialize"});

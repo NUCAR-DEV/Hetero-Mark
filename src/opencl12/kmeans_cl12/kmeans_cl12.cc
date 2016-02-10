@@ -77,7 +77,6 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
 
   best_nclusters = 0;
 
-
   filename = parameters.filename;
   threshold = parameters.threshold;
   max_nclusters = parameters.max_cl;
@@ -85,7 +84,6 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
   isRMSE = parameters.RMSE;
   isOutput = parameters.output;
   nloops = parameters.nloops;
-
 }
 
 void KMEANS::Read() {
@@ -149,7 +147,6 @@ void KMEANS::Read() {
   // now features holds 2-dimensional array of features //
   memcpy(feature[0], buf, npoints * nfeatures * sizeof(float));
   free(buf);
-
 }
 
 void KMEANS::CL_initialize() {

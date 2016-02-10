@@ -61,9 +61,7 @@ class FirBenchmark : public Benchmark {
   void Summarize() override;
   void Cleanup() override;
 
-  void SetNumBlocks(unsigned int num_blocks) { 
-    this->num_blocks_ = num_blocks; 
-  }
+  void SetNumBlocks(unsigned int num_blocks) { this->num_blocks_ = num_blocks; }
   void SetNumData(unsigned int num_data) { this->num_data_ = num_data; }
 };
 

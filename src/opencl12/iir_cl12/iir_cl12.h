@@ -49,7 +49,6 @@ class ParIIR : public Benchmark {
   // User defined kernels
   cl_kernel kernel_pariir;
 
-
   //--- ----------------------------------------------------------------------//
   // Initialize functions
   //--- ----------------------------------------------------------------------//

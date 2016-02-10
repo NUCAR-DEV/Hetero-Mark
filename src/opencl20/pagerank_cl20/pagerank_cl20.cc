@@ -53,7 +53,7 @@ void PageRank::Initialize() {
   InitKernel();
   timer_->End({"Init Runtime"});
   timer_->Start();
-  
+
   ReadCsrMatrix();
   ReadDenseVector();
   InitBuffer();
@@ -69,8 +69,6 @@ void PageRank::InitCl() {
   context = runtime->getContext();
   cmdQueue = runtime->getCmdQueue(0, CL_QUEUE_PROFILING_ENABLE);
 }
-
-
 
 void PageRank::SetInitialParameters(std::string fName1, std::string fName2) {
   isVectorGiven = 1;
