@@ -54,23 +54,6 @@ performance.
  behavior of fluids, wave modeling for interactive systems. It predicts
  matters of practical interest, e.g. internal tides in strait of Gibraltar.
 
-####Directory structure
-
-* common - contains the framework for the suite
-
-* data - input files required by applications such as KMeans and PageRank
-
-* hsa - source of HSA applications
-
-* micro-benchmark - source of micro-benchmarks
-
-* opencl12 - source of OpenCL 1.2 applications
-
-* opencl20 - source of OpenCL 2.0 applications
-
-* tool - some tools for input generation for applications such as AES, KMeans and PageRank
-
-
 ####Compiling the code
 
 * To build the framework, please make the directory `common`.
@@ -82,10 +65,6 @@ performance.
 * To compile with debug
 
 `cmake -DCMAKE_BUILD_TYPE=Debug.`
-
-####Running the code
-After compiling, the executables are located in 
-`<app folder>/bin/x86_64/Release/`
 
 ####Input data generation
 * To generate custom data in `data` folder
