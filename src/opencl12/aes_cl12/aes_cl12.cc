@@ -36,7 +36,7 @@
  *
  */
 
-#include "src/opencl12/aes_cl12/include/aes_cl12.h"
+#include "src/opencl12/aes_cl12/aes_cl12.h"
 
 #include <string.h>
 #include <inttypes.h>

@@ -13,7 +13,6 @@ if(CMAKE_BUILD_TYPE MATCHES "[Tt][Bb][Bb]")
   return( )
 endif()
 
-set( COMPILER_FLAGS "-std=c++11" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 

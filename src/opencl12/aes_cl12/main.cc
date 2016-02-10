@@ -40,7 +40,7 @@
 
 #include <cstdlib>
 #include <string>
-#include "include/aes_cl12.h"
+#include "src/opencl12/aes_cl12/aes_cl12.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"

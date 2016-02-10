@@ -13,54 +13,6 @@ if(CMAKE_BUILD_TYPE MATCHES "[Tt][Bb][Bb]")
   return( )
 endif()
 
-# Auto-select bitness based on platform
-if( NOT BITNESS )
-  if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(BITNESS 64)
-  else()
-    set(BITNESS 32)
-  endif()
-endif()
-
-# Unset OPENCL_LIBRARIES, so that corresponding arch specific libs are found when bitness is changed
-unset(OPENCL_LIBRARIES CACHE)
-
-if( BITNESS EQUAL 64 )
-  set(BITNESS_SUFFIX x86_64)
-elseif( BITNESS EQUAL 32 )
-  set(BITNESS_SUFFIX x86)
-else()
-  message( FATAL_ERROR "Bitness specified is invalid" )
-endif()
-
-# Set CMAKE_BUILD_TYPE (default = Release)
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-	set(CMAKE_BUILD_TYPE Release)
-endif()
-
-############################################################################
-
-# Find OpenCL include and libs
-find_path( OPENCL_INCLUDE_DIRS
-    NAMES OpenCL/cl.h CL/cl.h
-    HINTS $ENV{AMDAPPSDKROOT}/include ../../include/
-)
-mark_as_advanced(OPENCL_INCLUDE_DIRS)
-
-find_library( OPENCL_LIBRARIES
-	NAMES OpenCL
-	HINTS ../../lib/ $ENV{AMDAPPSDKROOT}/lib
-	PATH_SUFFIXES ${PLATFORM}${BITNESS} ${BITNESS_SUFFIX}
-)
-mark_as_advanced( OPENCL_LIBRARIES )
-
-if( OPENCL_INCLUDE_DIRS STREQUAL "" OR OPENCL_LIBRARIES STREQUAL "")
-	message( FATAL_ERROR "Could not locate OpenCL include & libs" )
-endif( )
-
-############################################################################
-
-set( COMPILER_FLAGS "-std=c++11" )
 set( LINKER_FLAGS " " )
 set( ADDITIONAL_LIBRARIES "" )
 
@@ -103,17 +55,13 @@ set_target_properties( ${BENCHMARK_NAME} PROPERTIES
                      )
 target_link_libraries( ${BENCHMARK_NAME} cl_util time_measurement command_line_option benchmark ${OPENCL_LIBRARIES} ${ADDITIONAL_LIBRARIES} ${CLUTIL_LIBRARY})
 
-# Set output directory to bin
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BITNESS_SUFFIX}/${CMAKE_BUILD_TYPE})
 
 # Copy extra files to binary directory
 foreach( extra_file ${EXTRA_FILES} )
     add_custom_command(
         TARGET ${BENCHMARK_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ./
+        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${CMAKE_CURRENT_BINARY_DIR}
         )
 endforeach( extra_file )
 
