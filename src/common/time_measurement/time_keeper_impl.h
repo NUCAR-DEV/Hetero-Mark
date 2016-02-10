@@ -58,7 +58,6 @@ class TimeKeeperImpl : public TimeKeeper {
              std::map<std::string, double>::iterator end);
 
     bool HasNext() override;
-    ;
     std::pair<std::string, double> Next() override;
 
    private:

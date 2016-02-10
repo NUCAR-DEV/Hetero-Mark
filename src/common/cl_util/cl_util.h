@@ -46,8 +46,6 @@
 #include "src/common/cl_util/cl_runtime.h"
 #include "src/common/cl_util/cl_profiler.h"
 
-namespace clHelper {
-
 #ifndef clSVMFreeSafe
 #define clSVMFreeSafe(ctx, ptr) \
   if (ptr) clSVMFree(ctx, ptr)
@@ -56,9 +54,7 @@ namespace clHelper {
 #define ENABLE_PROFILE 1
 
 #if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clTimeNDRangeKernel
+#define clEnqueueNDRangeKernel clHelper::clTimeNDRangeKernel
 #endif
-
-}  // namespace clHelper
 
 #endif  // SRC_COMMON_CL_UTIL_CL_UTIL_H_

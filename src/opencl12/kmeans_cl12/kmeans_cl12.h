@@ -42,8 +42,8 @@
 /*             Northeastern University                                        */
 /******************************************************************************/
 
-#ifndef _H_FUZZY_KMEANS
-#define _H_FUZZY_KMEANS
+#ifndef SRC_OPENCL12_KMEANS_CL12_KMEANS_CL12_H_
+#define SRC_OPENCL12_KMEANS_CL12_KMEANS_CL12_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,8 +99,6 @@
 #endif
 
 extern double wtime(void);
-
-using namespace clHelper;
 
 struct FilePackage {
   char *filename;
@@ -169,8 +167,8 @@ class KMEANS : public Benchmark {
   // Device Parameters
   //-----------------------------------------------------------------------//
   // Helper objects
-  clRuntime *runtime;
-  clFile *file;
+  clHelper::clRuntime *runtime;
+  clHelper::clFile *file;
 
   // ocl kernel
   cl_kernel kernel_s;
@@ -228,4 +226,4 @@ class KMEANS : public Benchmark {
   void Free_mem();
 };
 
-#endif
+#endif  // SRC_OPENCL12_KMEANS_CL12_KMEANS_CL12_H_

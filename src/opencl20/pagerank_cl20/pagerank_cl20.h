@@ -38,11 +38,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef PageRank_H
-#define PageRank_H
+#ifndef SRC_OPENCL20_PAGERANK_CL20_PAGERANK_CL20_H_
+#define SRC_OPENCL20_PAGERANK_CL20_PAGERANK_CL20_H_
 
-#include <stdio.h> /* for printf */
-#include <stdint.h>/* for uint64 definition */
+#include <stdio.h>
+#include <stdint.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -52,12 +52,10 @@
 #include "src/common/cl_util/cl_util.h"
 #include "src/common/benchmark/benchmark.h"
 
-using namespace clHelper;
-
 class PageRank : public Benchmark {
  private:
-  clRuntime* runtime;
-  clFile* file;
+  clHelper::clRuntime* runtime;
+  clHelper::clFile* file;
 
   cl_platform_id platform;
   cl_device_id device;
@@ -126,7 +124,7 @@ class PageRank : public Benchmark {
   void Print();
   void PrintOutput();
   int GetLength();
-  float abs(float);
+  float abs(float value);
 };
 
-#endif
+#endif  // SRC_OPENCL20_PAGERANK_CL20_PAGERANK_CL20_H_

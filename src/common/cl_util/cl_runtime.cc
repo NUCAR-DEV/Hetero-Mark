@@ -285,4 +285,5 @@ cl_uint clRuntime::getNumComputeUnit() const {
 
   return numComputeUnit;
 }
-}
+
+}  // namespace clHelper

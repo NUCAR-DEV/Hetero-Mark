@@ -32,8 +32,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <cstdlib>
-#include <sys/stat.h>
-
 #include "src/opencl12/fir_cl12/fir_cl12.h"
 
 void FIR::Initialize() {
@@ -47,14 +45,14 @@ void FIR::Initialize() {
 }
 
 void FIR::InitializeCL() {
-  runtime_ = clRuntime::getInstance();
+  runtime_ = clHelper::clRuntime::getInstance();
 
   platform_ = runtime_->getPlatformID();
   device_ = runtime_->getDevice();
   context_ = runtime_->getContext();
   cmd_queue_ = runtime_->getCmdQueue(0);
 
-  file_ = clFile::getInstance();
+  file_ = clHelper::clFile::getInstance();
 }
 
 void FIR::InitializeKernels() {
@@ -80,10 +78,13 @@ void FIR::InitializeKernels() {
 void FIR::InitializeBuffers() {
   int num_temp_output = num_data_ + num_tap_ - 1;
 
-  input_ = (cl_float *)malloc(num_total_data_ * sizeof(cl_float));
-  output_ = (cl_float *)malloc(num_total_data_ * sizeof(cl_float));
-  coeff_ = (cl_float *)malloc(num_tap_ * sizeof(cl_float));
-  temp_output_ = (cl_float *)malloc(num_temp_output * sizeof(cl_float));
+  input_ =
+      reinterpret_cast<cl_float *>(malloc(num_total_data_ * sizeof(cl_float)));
+  output_ =
+      reinterpret_cast<cl_float *>(malloc(num_total_data_ * sizeof(cl_float)));
+  coeff_ = reinterpret_cast<cl_float *>(malloc(num_tap_ * sizeof(cl_float)));
+  temp_output_ =
+      reinterpret_cast<cl_float *>(malloc(num_temp_output * sizeof(cl_float)));
 
   // Create memory buffers on the device for each vector
   cl_int err;
@@ -102,14 +103,16 @@ void FIR::InitializeBuffers() {
 }
 
 void FIR::InitializeData() {
-  srand(time(NULL));
+  unsigned int seed = time(NULL);
 
   for (unsigned i = 0; i < num_total_data_; i++) {
-    input_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    input_[i] =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 
   for (unsigned i = 0; i < num_tap_; i++) {
-    coeff_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    coeff_[i] =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 
   for (unsigned i = 0; i < (num_data_ + num_tap_ - 1); i++) {
@@ -122,14 +125,17 @@ void FIR::Run() {
   unsigned int count;
 
   // Set the arguments of the kernel
-  ret = clSetKernelArg(fir_kernel_, 0, sizeof(cl_mem), (void *)&output_buffer_);
+  ret = clSetKernelArg(fir_kernel_, 0, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&output_buffer_));
   checkOpenCLErrors(ret, "Set kernel argument 0\n");
-  ret = clSetKernelArg(fir_kernel_, 1, sizeof(cl_mem), (void *)&coeff_buffer_);
+  ret = clSetKernelArg(fir_kernel_, 1, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&coeff_buffer_));
   checkOpenCLErrors(ret, "Set kernel argument 1\n");
   ret = clSetKernelArg(fir_kernel_, 2, sizeof(cl_mem),
-                       (void *)&temp_output_buffer_);
+                       reinterpret_cast<void *>(&temp_output_buffer_));
   checkOpenCLErrors(ret, "Set kernel argument 2\n");
-  ret = clSetKernelArg(fir_kernel_, 3, sizeof(cl_uint), (void *)&num_tap_);
+  ret = clSetKernelArg(fir_kernel_, 3, sizeof(cl_uint),
+                       reinterpret_cast<void *>(&num_tap_));
   checkOpenCLErrors(ret, "Set kernel argument 3\n");
 
   // Initialize Memory Buffer

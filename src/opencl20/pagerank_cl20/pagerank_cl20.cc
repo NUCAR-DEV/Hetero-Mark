@@ -53,7 +53,7 @@ void PageRank::Initialize() {
   InitKernel();
   timer_->End({"Init Runtime"});
   timer_->Start();
-  
+
   ReadCsrMatrix();
   ReadDenseVector();
   InitBuffer();
@@ -61,16 +61,14 @@ void PageRank::Initialize() {
 }
 
 void PageRank::InitCl() {
-  runtime = clRuntime::getInstance();
-  file = clFile::getInstance();
+  runtime = clHelper::clRuntime::getInstance();
+  file = clHelper::clFile::getInstance();
 
   platform = runtime->getPlatformID();
   device = runtime->getDevice();
   context = runtime->getContext();
   cmdQueue = runtime->getCmdQueue(0, CL_QUEUE_PROFILING_ENABLE);
 }
-
-
 
 void PageRank::SetInitialParameters(std::string fName1, std::string fName2) {
   isVectorGiven = 1;
@@ -120,21 +118,21 @@ void PageRank::InitBuffer() {
 void PageRank::InitBufferGpu() {}
 
 void PageRank::InitBufferCpu() {
-  rowOffset = (int *)clSVMAlloc(context,
-                                CL_MEM_READ_ONLY | CL_MEM_SVM_FINE_GRAIN_BUFFER,
-                                sizeof(int) * (nr + 1), 0);
-  col = (int *)clSVMAlloc(context,
-                          CL_MEM_READ_ONLY | CL_MEM_SVM_FINE_GRAIN_BUFFER,
-                          sizeof(int) * (nnz), 0);
-  val = (float *)clSVMAlloc(context,
-                            CL_MEM_READ_ONLY | CL_MEM_SVM_FINE_GRAIN_BUFFER,
-                            sizeof(float) * (nnz), 0);
-  vector = (float *)clSVMAlloc(context,
-                               CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
-                               sizeof(float) * (nr), 0);
-  eigenV = (float *)clSVMAlloc(context,
-                               CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
-                               sizeof(float) * (nr), 0);
+  rowOffset = reinterpret_cast<int *>(
+      clSVMAlloc(context, CL_MEM_READ_ONLY | CL_MEM_SVM_FINE_GRAIN_BUFFER,
+                 sizeof(int) * (nr + 1), 0));
+  col = reinterpret_cast<int *>(
+      clSVMAlloc(context, CL_MEM_READ_ONLY | CL_MEM_SVM_FINE_GRAIN_BUFFER,
+                 sizeof(int) * (nnz), 0));
+  val = reinterpret_cast<float *>(
+      clSVMAlloc(context, CL_MEM_READ_ONLY | CL_MEM_SVM_FINE_GRAIN_BUFFER,
+                 sizeof(float) * (nnz), 0));
+  vector = reinterpret_cast<float *>(
+      clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
+                 sizeof(float) * (nr), 0));
+  eigenV = reinterpret_cast<float *>(
+      clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
+                 sizeof(float) * (nr), 0));
 }
 
 void PageRank::FreeKernel() {}
@@ -172,7 +170,7 @@ void PageRank::FillBufferCpu() {
     }
   } else {
     for (int j = 0; j < nr; j++) {
-      vector[j] = (float)1 / (float)nr;
+      vector[j] = 1.0 / nr;
       eigenV[j] = 0.0;
     }
   }
@@ -222,19 +220,24 @@ void PageRank::ExecKernel() {
   local_work_size[0] = workGroupSize;
   int i = 0;
   err = clSetKernelArg(kernel, i++, sizeof(int), &nr);
-  err |= clSetKernelArgSVMPointer(kernel, i++, (void *)rowOffset);
-  err |= clSetKernelArgSVMPointer(kernel, i++, (void *)col);
-  err |= clSetKernelArgSVMPointer(kernel, i++, (void *)val);
+  err |= clSetKernelArgSVMPointer(kernel, i++,
+                                  reinterpret_cast<void *>(rowOffset));
+  err |= clSetKernelArgSVMPointer(kernel, i++, reinterpret_cast<void *>(col));
+  err |= clSetKernelArgSVMPointer(kernel, i++, reinterpret_cast<void *>(val));
   err |= clSetKernelArg(kernel, i++, sizeof(float) * 64, NULL);
   checkOpenCLErrors(err, "Failed to setKernelArg...\n");
   for (int j = 0; j < maxIter; j++) {
     if (j % 2 == 0) {
-      err |= clSetKernelArgSVMPointer(kernel, i, (void *)vector);
-      err |= clSetKernelArgSVMPointer(kernel, i + 1, (void *)eigenV);
+      err |=
+          clSetKernelArgSVMPointer(kernel, i, reinterpret_cast<void *>(vector));
+      err |= clSetKernelArgSVMPointer(kernel, i + 1,
+                                      reinterpret_cast<void *>(eigenV));
       checkOpenCLErrors(err, "Failed to setKernelArg...\n");
     } else {
-      err |= clSetKernelArgSVMPointer(kernel, i, (void *)eigenV);
-      err |= clSetKernelArgSVMPointer(kernel, i + 1, (void *)vector);
+      err |=
+          clSetKernelArgSVMPointer(kernel, i, reinterpret_cast<void *>(eigenV));
+      err |= clSetKernelArgSVMPointer(kernel, i + 1,
+                                      reinterpret_cast<void *>(vector));
       checkOpenCLErrors(err, "Failed to setKernelArg...\n");
     }
     err = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, global_work_size,

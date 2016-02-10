@@ -56,7 +56,6 @@ HmmBenchmark::HmmBenchmark(int N) {
 }
 
 void HmmBenchmark::Initialize() {
-
   timer_->End({"Initialize"});
   timer_->Start();
   FWD_init_alphaKernel_init(0);

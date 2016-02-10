@@ -78,7 +78,7 @@ void ParIIR::InitParam() {
 
 void ParIIR::InitCL() {
   // Init OCL context
-  runtime = clRuntime::getInstance();
+  runtime = clHelper::clRuntime::getInstance();
 
   // OpenCL objects get from clRuntime class release themselves automatically,
   // no need to clRelease them explicitly
@@ -90,7 +90,7 @@ void ParIIR::InitCL() {
   // cmdQueue_1 = runtime->getCmdQueue(1);
 
   // Helper to read kernel file
-  file = clFile::getInstance();
+  file = clHelper::clFile::getInstance();
 }
 
 void ParIIR::InitKernels() {
@@ -131,14 +131,16 @@ void ParIIR::InitBuffers() {
   int i;
 
   // input
-  h_X = (float *)malloc(bytes);
+  h_X = reinterpret_cast<float *>(malloc(bytes));
   for (i = 0; i < len; i++) {
     h_X[i] = 0.1f;
   }
 
   // coefficients
-  nsec = (cl_float2 *)malloc(sizeof(cl_float2) * ROWS);  // numerator
-  dsec = (cl_float2 *)malloc(sizeof(cl_float2) * ROWS);  // denominator
+  nsec = reinterpret_cast<cl_float2 *>(
+      malloc(sizeof(cl_float2) * ROWS));  // numerator
+  dsec = reinterpret_cast<cl_float2 *>(
+      malloc(sizeof(cl_float2) * ROWS));  // denominator
 
   for (i = 0; i < ROWS; i++) {
     // nsec[i].x = nsec[i].y = 0.00002f;
@@ -148,10 +150,10 @@ void ParIIR::InitBuffers() {
   }
 
   // cpu output: single channel
-  cpu_y = (float *)malloc(bytes);
+  cpu_y = reinterpret_cast<float *>(malloc(bytes));
 
   // gpu output: multi channel
-  h_Y = (float *)malloc(bytes * channels);
+  h_Y = reinterpret_cast<float *>(malloc(bytes * channels));
 
   // err = clEnqueueWriteBuffer(cmdQueue, d_nsec, CL_TRUE, 0,
   //                            sizeof(float)*row*2, nsec, 0, NULL, NULL);
@@ -221,11 +223,11 @@ void ParIIR::compare() {
                       h_Y, 0, NULL, NULL);
 
   // Compute CPU results
-  float *ds = (float *)malloc(sizeof(float) * ROWS * 2);
-  float *ns = (float *)malloc(sizeof(float) * ROWS * 2);
+  float *ds = reinterpret_cast<float *>(malloc(sizeof(float) * ROWS * 2));
+  float *ns = reinterpret_cast<float *>(malloc(sizeof(float) * ROWS * 2));
 
   // internal state
-  float *u = (float *)malloc(sizeof(float) * ROWS * 2);
+  float *u = reinterpret_cast<float *>(malloc(sizeof(float) * ROWS * 2));
   memset(u, 0, sizeof(float) * ROWS * 2);
 
   float out, unew;

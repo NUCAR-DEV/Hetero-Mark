@@ -32,8 +32,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <cstdlib>
-#include <sys/stat.h>
-
 #include "src/opencl20/fir_cl20/fir_cl20.h"
 
 void FIR::Initialize() {
@@ -47,14 +45,14 @@ void FIR::Initialize() {
 }
 
 void FIR::InitializeCL() {
-  runtime_ = clRuntime::getInstance();
+  runtime_ = clHelper::clRuntime::getInstance();
 
   platform_ = runtime_->getPlatformID();
   device_ = runtime_->getDevice();
   context_ = runtime_->getContext();
   cmd_queue_ = runtime_->getCmdQueue(0);
 
-  file_ = clFile::getInstance();
+  file_ = clHelper::clFile::getInstance();
 }
 
 void FIR::InitializeKernels() {
@@ -68,8 +66,8 @@ void FIR::InitializeKernels() {
                                        NULL, &err);
   checkOpenCLErrors(err, "Failed to create program with source...\n");
 
-  err = clBuildProgram(program_, 1, &device_,
-                       "-I ./ -cl-std=CL2.0", NULL, NULL);
+  err =
+      clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL2.0", NULL, NULL);
   checkOpenCLErrors(err, "Failed to build program...\n");
 
   fir_kernel_ = clCreateKernel(program_, "FIR", &err);
@@ -79,28 +77,29 @@ void FIR::InitializeKernels() {
 }
 
 void FIR::InitializeBuffers() {
-  input_ = (cl_float *) clSVMAlloc(context_, CL_MEM_READ_ONLY, 
-                                   num_total_data_ * sizeof(cl_float), 0);
-  output_ = (cl_float *) clSVMAlloc(context_, CL_MEM_READ_WRITE, 
-                                    num_total_data_ * sizeof(cl_float), 0);
-  coeff_ = (cl_float *) clSVMAlloc(context_, CL_MEM_READ_ONLY, 
-                                   num_tap_ * sizeof(cl_float), 0);
-  history_ = (cl_float *) clSVMAlloc(context_, CL_MEM_READ_WRITE, 
-                                     num_tap_ * sizeof(cl_float), 
-                                     0);
+  input_ = reinterpret_cast<cl_float *>(clSVMAlloc(
+      context_, CL_MEM_READ_ONLY, num_total_data_ * sizeof(cl_float), 0));
+  output_ = reinterpret_cast<cl_float *>(clSVMAlloc(
+      context_, CL_MEM_READ_WRITE, num_total_data_ * sizeof(cl_float), 0));
+  coeff_ = reinterpret_cast<cl_float *>(
+      clSVMAlloc(context_, CL_MEM_READ_ONLY, num_tap_ * sizeof(cl_float), 0));
+  history_ = reinterpret_cast<cl_float *>(
+      clSVMAlloc(context_, CL_MEM_READ_WRITE, num_tap_ * sizeof(cl_float), 0));
 }
 
 void FIR::InitializeData() {
-  srand(time(NULL));
+  unsigned int seed = time(NULL);
 
   MapSvmBuffers();
 
   for (unsigned i = 0; i < num_total_data_; i++) {
-    input_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    input_[i] =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 
   for (unsigned i = 0; i < num_tap_; i++) {
-    coeff_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    coeff_[i] =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 
   for (unsigned i = 0; i < num_tap_; i++) {
@@ -113,19 +112,19 @@ void FIR::InitializeData() {
 void FIR::MapSvmBuffers() {
   cl_int err;
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, input_, 
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, input_,
                         num_total_data_ * sizeof(cl_float), 0, 0, 0);
   checkOpenCLErrors(err, "Map SVM input\n");
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, output_, 
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, output_,
                         num_total_data_ * sizeof(cl_float), 0, 0, 0);
   checkOpenCLErrors(err, "Map SVM output\n");
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, coeff_, 
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, coeff_,
                         num_tap_ * sizeof(cl_float), 0, 0, 0);
   checkOpenCLErrors(err, "Map SVM coeff\n");
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, history_, 
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, history_,
                         num_tap_ * sizeof(cl_float), 0, 0, 0);
   checkOpenCLErrors(err, "Map SVM history\n");
 }
@@ -142,7 +141,7 @@ void FIR::UnmapSvmBuffers() {
   err = clEnqueueSVMUnmap(cmd_queue_, coeff_, 0, 0, 0);
   checkOpenCLErrors(err, "Ummap SVM input\n");
 
-  err = clEnqueueSVMUnmap(cmd_queue_, history_,  0, 0, 0);
+  err = clEnqueueSVMUnmap(cmd_queue_, history_, 0, 0, 0);
   checkOpenCLErrors(err, "Ummap SVM history\n");
 }
 
@@ -157,7 +156,8 @@ void FIR::Run() {
   ret = clSetKernelArgSVMPointer(fir_kernel_, 3, history_);
   checkOpenCLErrors(ret, "Set kernel argument 3\n");
 
-  ret = clSetKernelArg(fir_kernel_, 4, sizeof(cl_uint), (void *)&num_tap_);
+  ret = clSetKernelArg(fir_kernel_, 4, sizeof(cl_uint),
+                       reinterpret_cast<void *>(&num_tap_));
   checkOpenCLErrors(ret, "Set kernel argument 4\n");
 
   // Decide the local group formation
@@ -166,13 +166,10 @@ void FIR::Run() {
   count = 0;
 
   while (count < num_blocks_) {
-
-    ret = clSetKernelArgSVMPointer(fir_kernel_, 0, 
-                                   input_ + num_data_ * count);
+    ret = clSetKernelArgSVMPointer(fir_kernel_, 0, input_ + num_data_ * count);
     checkOpenCLErrors(ret, "Set kernel argument 0\n");
 
-    ret = clSetKernelArgSVMPointer(fir_kernel_, 1, 
-                                   output_ + num_data_ * count);
+    ret = clSetKernelArgSVMPointer(fir_kernel_, 1, output_ + num_data_ * count);
     checkOpenCLErrors(ret, "Set kernel argument 1\n");
 
     // Execute the OpenCL kernel on the list
@@ -180,7 +177,6 @@ void FIR::Run() {
                                  globalThreads, localThreads, 0, NULL, NULL);
     checkOpenCLErrors(ret, "Enqueue ND Range.\n");
     clFinish(cmd_queue_);
-
 
     count++;
   }

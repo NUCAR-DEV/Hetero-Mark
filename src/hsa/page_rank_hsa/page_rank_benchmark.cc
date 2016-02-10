@@ -207,7 +207,6 @@ void PageRankBenchmark::Initialize() {
   pageRank_kernel_init(0);
   timer_->End({"Init Runtime"});
   timer_->Start();
-
 }
 
 void PageRankBenchmark::Run() {

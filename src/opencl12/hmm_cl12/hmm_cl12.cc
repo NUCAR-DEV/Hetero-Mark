@@ -34,18 +34,13 @@
  *
  */
 
-#include <stdint.h>/* for uint64 definition */
-#include <time.h>  /* for clock_gettime */
+#include <stdint.h>
+#include <time.h>
 #include <math.h>
 #include <string.h>
 #include <iostream>
-
 #include "src/common/cl_util/cl_util.h"
 #include "src/opencl12/hmm_cl12/hmm_cl12.h"
-
-using namespace std;
-
-#define BILLION 1000000000L
 
 HMM::HMM() {}
 
@@ -57,7 +52,7 @@ void HMM::Init() {
   // HMM Parameters
   //        a,b,prior,alpha
   // printf("=>Initialize parameters.\n");
-  
+
   timer_->End({"Initialize"});
   timer_->Start();
   InitCL();
@@ -71,7 +66,7 @@ void HMM::Init() {
 
 void HMM::InitCL() {
   // Init OCL context
-  runtime = clRuntime::getInstance();
+  runtime = clHelper::clRuntime::getInstance();
 
   // OpenCL objects get from clRuntime class release themselves automatically,
   // no need to clRelease them explicitly
@@ -83,7 +78,7 @@ void HMM::InitCL() {
   // cmdQueue_1 = runtime->getCmdQueue(1);
 
   // Helper to read kernel file
-  file = clFile::getInstance();
+  file = clHelper::clFile::getInstance();
 }
 
 void HMM::InitParam() {
@@ -306,20 +301,23 @@ void HMM::InitBuffers() {
 
   // OCL 1.2 needs explicit copy
   err = clEnqueueWriteBuffer(cmdQueue_0, a, CL_TRUE, 0, sizeof(float) * N * N,
-                             (void *)a_host.get(), 0, NULL, NULL);
+                             reinterpret_cast<void *>(a_host.get()), 0, NULL,
+                             NULL);
   checkOpenCLErrors(err, "Failed to copy data to a");
 
   err = clEnqueueWriteBuffer(cmdQueue_0, b, CL_TRUE, 0, sizeof(float) * N * T,
-                             (void *)b_host.get(), 0, NULL, NULL);
+                             reinterpret_cast<void *>(b_host.get()), 0, NULL,
+                             NULL);
   checkOpenCLErrors(err, "Failed to copy data to b");
 
   err = clEnqueueWriteBuffer(cmdQueue_0, prior, CL_TRUE, 0, sizeof(float) * N,
-                             (void *)prior_host.get(), 0, NULL, NULL);
+                             reinterpret_cast<void *>(prior_host.get()), 0,
+                             NULL, NULL);
   checkOpenCLErrors(err, "Failed to copy data to prior");
 
-  err = clEnqueueWriteBuffer(cmdQueue_0, observations, CL_TRUE, 0,
-                             sizeof(float) * D * T,
-                             (void *)observations_host.get(), 0, NULL, NULL);
+  err = clEnqueueWriteBuffer(
+      cmdQueue_0, observations, CL_TRUE, 0, sizeof(float) * D * T,
+      reinterpret_cast<void *>(observations_host.get()), 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to copy data to observations");
 
   clFinish(cmdQueue_0);
@@ -435,8 +433,8 @@ void HMM::CleanUpKernels() {
 void HMM::Forward() {
   // clear lll
   float zero = 0.f;
-  clEnqueueFillBuffer(cmdQueue_0, lll, (void *)&zero, sizeof(float), 0,
-                      sizeof(float), 0, NULL, NULL);
+  clEnqueueFillBuffer(cmdQueue_0, lll, reinterpret_cast<void *>(&zero),
+                      sizeof(float), 0, sizeof(float), 0, NULL, NULL);
 
   ForwardInitAlpha();
 
@@ -505,8 +503,8 @@ void HMM::EM() {
 
   // clear data for xi_sum
   float zero = 0.f;
-  clEnqueueFillBuffer(cmdQueue_0, xi_sum, (void *)&zero, sizeof(float), 0,
-                      bytes_nn, 0, NULL, NULL);
+  clEnqueueFillBuffer(cmdQueue_0, xi_sum, reinterpret_cast<void *>(&zero),
+                      sizeof(float), 0, bytes_nn, 0, NULL, NULL);
 
   float sum;
 
@@ -536,9 +534,9 @@ void HMM::EM() {
     // Explicitly copy to host to finalized the summation
     std::unique_ptr<float[]> blk_result_host(new float[tileblks]);
 
-    err =
-        clEnqueueReadBuffer(cmdQueue_0, blk_result, CL_TRUE, 0, bytes_tileblks,
-                            (void *)blk_result_host.get(), 0, NULL, NULL);
+    err = clEnqueueReadBuffer(
+        cmdQueue_0, blk_result, CL_TRUE, 0, bytes_tileblks,
+        reinterpret_cast<void *>(blk_result_host.get()), 0, NULL, NULL);
     checkOpenCLErrors(err, "Failed to clEnqueueCopyBuffer");
 
     // compute on cpu
@@ -625,21 +623,24 @@ void HMM::ForwardInitAlpha() {
   size_t globalSize = (size_t)(ceil(N / 256.f) * 256);
   size_t localSize = 256;
 
-  err = clSetKernelArg(kernel_FWD_init_alpha, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_FWD_init_alpha, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at Kernel Arguments.");
 
-  err = clSetKernelArg(kernel_FWD_init_alpha, 1, sizeof(cl_mem), (void *)&b);
+  err = clSetKernelArg(kernel_FWD_init_alpha, 1, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&b));
   checkOpenCLErrors(err, "Failed at Kernel Arguments.");
 
-  err =
-      clSetKernelArg(kernel_FWD_init_alpha, 2, sizeof(cl_mem), (void *)&prior);
+  err = clSetKernelArg(kernel_FWD_init_alpha, 2, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&prior));
   checkOpenCLErrors(err, "Failed at Kernel Arguments.");
 
-  err =
-      clSetKernelArg(kernel_FWD_init_alpha, 3, sizeof(cl_mem), (void *)&alpha);
+  err = clSetKernelArg(kernel_FWD_init_alpha, 3, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&alpha));
   checkOpenCLErrors(err, "Failed at Kernel Arguments.");
 
-  err = clSetKernelArg(kernel_FWD_init_alpha, 4, sizeof(cl_mem), (void *)&beta);
+  err = clSetKernelArg(kernel_FWD_init_alpha, 4, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&beta));
   checkOpenCLErrors(err, "Failed at Kernel Arguments.");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_FWD_init_alpha, 1, 0,
@@ -655,21 +656,24 @@ void HMM::ForwardNormAlpha(int startpos) {
 
   int pos = startpos;
 
-  err = clSetKernelArg(kernel_FWD_norm_alpha, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_FWD_norm_alpha, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_FWD_norm_alpha, 1, sizeof(int), (void *)&pos);
+  err = clSetKernelArg(kernel_FWD_norm_alpha, 1, sizeof(int),
+                       reinterpret_cast<void *>(&pos));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_FWD_norm_alpha, 2, sizeof(float) * 256, NULL);
   // local memory
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err =
-      clSetKernelArg(kernel_FWD_norm_alpha, 3, sizeof(cl_mem), (void *)&alpha);
+  err = clSetKernelArg(kernel_FWD_norm_alpha, 3, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&alpha));
   checkOpenCLErrors(err, "Failed at Kernel Arguments.");
 
-  err = clSetKernelArg(kernel_FWD_norm_alpha, 4, sizeof(cl_mem), (void *)&lll);
+  err = clSetKernelArg(kernel_FWD_norm_alpha, 4, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&lll));
   checkOpenCLErrors(err, "Failed at Kernel Arguments.");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_FWD_norm_alpha, 1, 0,
@@ -683,17 +687,20 @@ void HMM::TransposeSym(int size) {
   size_t localSize[2] = {16, 16};
   size_t globalSize[2] = {(size_t)N, (size_t)N};  // N is multiple of 16
 
-  err = clSetKernelArg(kernel_TransposeSym, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_TransposeSym, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_TransposeSym, 1, sizeof(float) * 272, NULL);
   // local memory
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_TransposeSym, 2, sizeof(cl_mem), (void *)&a);
+  err = clSetKernelArg(kernel_TransposeSym, 2, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&a));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_TransposeSym, 3, sizeof(cl_mem), (void *)&aT);
+  err = clSetKernelArg(kernel_TransposeSym, 3, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&aT));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_TransposeSym, 2, 0,
@@ -708,11 +715,12 @@ void HMM::ForwardUpdateAlpha(int pos) {
   size_t localSize[2] = {16, 16};
   size_t globalSize[2] = {16, (size_t)N};  // N is multiple of 16
 
-  err = clSetKernelArg(kernel_FWD_update_alpha, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_FWD_update_alpha, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err =
-      clSetKernelArg(kernel_FWD_update_alpha, 1, sizeof(int), (void *)&current);
+  err = clSetKernelArg(kernel_FWD_update_alpha, 1, sizeof(int),
+                       reinterpret_cast<void *>(&current));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_FWD_update_alpha, 2, sizeof(float) * 272,
@@ -720,17 +728,19 @@ void HMM::ForwardUpdateAlpha(int pos) {
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_FWD_update_alpha, 3, sizeof(cl_mem),
-                       (void *)&constMem);
+                       reinterpret_cast<void *>(&constMem));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_FWD_update_alpha, 4, sizeof(cl_mem), (void *)&aT);
+  err = clSetKernelArg(kernel_FWD_update_alpha, 4, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&aT));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_FWD_update_alpha, 5, sizeof(cl_mem), (void *)&b);
+  err = clSetKernelArg(kernel_FWD_update_alpha, 5, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&b));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_FWD_update_alpha, 6, sizeof(cl_mem),
-                       (void *)&alpha);
+                       reinterpret_cast<void *>(&alpha));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_FWD_update_alpha, 2, 0,
@@ -747,19 +757,24 @@ void HMM::BackwardBetaB(int pos) {
   size_t globalSize = (size_t)(ceil(N / 256.f) * 256);
   size_t localSize = 256;
 
-  err = clSetKernelArg(kernel_BK_BetaB, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_BK_BetaB, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_BK_BetaB, 1, sizeof(int), (void *)&previous);
+  err = clSetKernelArg(kernel_BK_BetaB, 1, sizeof(int),
+                       reinterpret_cast<void *>(&previous));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_BK_BetaB, 2, sizeof(cl_mem), (void *)&beta);
+  err = clSetKernelArg(kernel_BK_BetaB, 2, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&beta));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_BK_BetaB, 3, sizeof(cl_mem), (void *)&b);
+  err = clSetKernelArg(kernel_BK_BetaB, 3, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&b));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_BK_BetaB, 4, sizeof(cl_mem), (void *)&betaB);
+  err = clSetKernelArg(kernel_BK_BetaB, 4, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&betaB));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_BK_BetaB, 1, 0, &globalSize,
@@ -775,10 +790,12 @@ void HMM::BackwardUpdateBeta(int pos) {
   size_t localSize[2] = {16, 16};
   size_t globalSize[2] = {16, (size_t)N};  // N is multiple of 16
 
-  err = clSetKernelArg(kernel_BK_update_beta, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_BK_update_beta, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_BK_update_beta, 1, sizeof(int), (void *)&current);
+  err = clSetKernelArg(kernel_BK_update_beta, 1, sizeof(int),
+                       reinterpret_cast<void *>(&current));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_BK_update_beta, 2, sizeof(float) * 272,
@@ -786,13 +803,15 @@ void HMM::BackwardUpdateBeta(int pos) {
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_BK_update_beta, 3, sizeof(cl_mem),
-                       (void *)&constMem);
+                       reinterpret_cast<void *>(&constMem));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_BK_update_beta, 4, sizeof(cl_mem), (void *)&a);
+  err = clSetKernelArg(kernel_BK_update_beta, 4, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&a));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_BK_update_beta, 5, sizeof(cl_mem), (void *)&beta);
+  err = clSetKernelArg(kernel_BK_update_beta, 5, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&beta));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_BK_update_beta, 2, 0,
@@ -808,17 +827,20 @@ void HMM::BackwardNormBeta(int pos) {
 
   int current = pos;
 
-  err = clSetKernelArg(kernel_BK_norm_beta, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_BK_norm_beta, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_BK_norm_beta, 1, sizeof(int), (void *)&current);
+  err = clSetKernelArg(kernel_BK_norm_beta, 1, sizeof(int),
+                       reinterpret_cast<void *>(&current));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_BK_norm_beta, 2, sizeof(float) * 256,
                        NULL);  // local memory
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_BK_norm_beta, 3, sizeof(cl_mem), (void *)&beta);
+  err = clSetKernelArg(kernel_BK_norm_beta, 3, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&beta));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_BK_norm_beta, 1, 0,
@@ -836,35 +858,36 @@ void HMM::EM_betaB_alphabeta(int curpos, int prepos) {
   size_t localSize = 256;
   size_t globalSize = (size_t)(ceil(N / 256.f) * 256);
 
-  err = clSetKernelArg(kernel_EM_betaB_alphabeta, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_EM_betaB_alphabeta, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_betaB_alphabeta, 1, sizeof(int),
-                       (void *)&current);
+                       reinterpret_cast<void *>(&current));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_betaB_alphabeta, 2, sizeof(int),
-                       (void *)&previous);
+                       reinterpret_cast<void *>(&previous));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_betaB_alphabeta, 3, sizeof(cl_mem),
-                       (void *)&beta);
+                       reinterpret_cast<void *>(&beta));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err =
-      clSetKernelArg(kernel_EM_betaB_alphabeta, 4, sizeof(cl_mem), (void *)&b);
+  err = clSetKernelArg(kernel_EM_betaB_alphabeta, 4, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&b));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_betaB_alphabeta, 5, sizeof(cl_mem),
-                       (void *)&alpha);
+                       reinterpret_cast<void *>(&alpha));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_betaB_alphabeta, 6, sizeof(cl_mem),
-                       (void *)&betaB);
+                       reinterpret_cast<void *>(&betaB));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_betaB_alphabeta, 7, sizeof(cl_mem),
-                       (void *)&alpha_beta);
+                       reinterpret_cast<void *>(&alpha_beta));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_betaB_alphabeta, 1, 0,
@@ -880,22 +903,23 @@ void HMM::EM_update_gamma(int pos) {
   size_t localSize = 256;
   size_t globalSize = (size_t)(ceil(N / 256.f) * 256);
 
-  err = clSetKernelArg(kernel_EM_update_gamma, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_EM_update_gamma, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err =
-      clSetKernelArg(kernel_EM_update_gamma, 1, sizeof(int), (void *)&current);
+  err = clSetKernelArg(kernel_EM_update_gamma, 1, sizeof(int),
+                       reinterpret_cast<void *>(&current));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_update_gamma, 2, sizeof(float) * 256, NULL);
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_update_gamma, 3, sizeof(cl_mem),
-                       (void *)&alpha_beta);
+                       reinterpret_cast<void *>(&alpha_beta));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
-  err =
-      clSetKernelArg(kernel_EM_update_gamma, 4, sizeof(cl_mem), (void *)&gamma);
+  err = clSetKernelArg(kernel_EM_update_gamma, 4, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&gamma));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_update_gamma, 1, 0,
@@ -911,22 +935,24 @@ void HMM::EM_alpha_betaB(int pos) {
   size_t localSize[2] = {16, 16};
   size_t globalSize[2] = {(size_t)N, (size_t)N};  // N is multiple of 16
 
-  err = clSetKernelArg(kernel_EM_alpha_betaB, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_EM_alpha_betaB, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_alpha_betaB, 1, sizeof(int), (void *)&current);
+  err = clSetKernelArg(kernel_EM_alpha_betaB, 1, sizeof(int),
+                       reinterpret_cast<void *>(&current));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err =
-      clSetKernelArg(kernel_EM_alpha_betaB, 2, sizeof(cl_mem), (void *)&betaB);
+  err = clSetKernelArg(kernel_EM_alpha_betaB, 2, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&betaB));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
-  err =
-      clSetKernelArg(kernel_EM_alpha_betaB, 3, sizeof(cl_mem), (void *)&alpha);
+  err = clSetKernelArg(kernel_EM_alpha_betaB, 3, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&alpha));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_alpha_betaB, 4, sizeof(cl_mem),
-                       (void *)&alpha_betaB);
+                       reinterpret_cast<void *>(&alpha_betaB));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_alpha_betaB, 2, 0,
@@ -940,25 +966,27 @@ void HMM::EM_pre_xisum() {
   size_t localSize[2] = {16, 16};
   size_t globalSize[2] = {(size_t)N, (size_t)N};  // N is multiple of 16
 
-  err = clSetKernelArg(kernel_EM_pre_xisum, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_EM_pre_xisum, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_pre_xisum, 1, sizeof(float) * 272, NULL);
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_pre_xisum, 2, sizeof(cl_mem), (void *)&a);
+  err = clSetKernelArg(kernel_EM_pre_xisum, 2, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&a));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_pre_xisum, 3, sizeof(cl_mem),
-                       (void *)&alpha_betaB);
+                       reinterpret_cast<void *>(&alpha_betaB));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_pre_xisum, 4, sizeof(cl_mem),
-                       (void *)&xi_sum_tmp);
+                       reinterpret_cast<void *>(&xi_sum_tmp));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_pre_xisum, 5, sizeof(cl_mem),
-                       (void *)&blk_result);
+                       reinterpret_cast<void *>(&blk_result));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_pre_xisum, 2, 0,
@@ -974,18 +1002,20 @@ void HMM::EM_update_xisum(float sumvalue) {
   size_t localSize[2] = {16, 16};
   size_t globalSize[2] = {(size_t)N, (size_t)N};  // N is multiple of 16
 
-  err = clSetKernelArg(kernel_EM_update_xisum, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_EM_update_xisum, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_update_xisum, 1, sizeof(float), (void *)&sum);
+  err = clSetKernelArg(kernel_EM_update_xisum, 1, sizeof(float),
+                       reinterpret_cast<void *>(&sum));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_update_xisum, 2, sizeof(cl_mem),
-                       (void *)&xi_sum_tmp);
+                       reinterpret_cast<void *>(&xi_sum_tmp));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_update_xisum, 3, sizeof(cl_mem),
-                       (void *)&xi_sum);
+                       reinterpret_cast<void *>(&xi_sum));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_update_xisum, 2, 0,
@@ -1001,22 +1031,27 @@ void HMM::EM_gamma(int pos) {
   size_t localSize = 256;
   size_t globalSize = (size_t)(ceil(N / 256.f) * 256);
 
-  err = clSetKernelArg(kernel_EM_gamma, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_EM_gamma, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_gamma, 1, sizeof(int), (void *)&current);
+  err = clSetKernelArg(kernel_EM_gamma, 1, sizeof(int),
+                       reinterpret_cast<void *>(&current));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_gamma, 2, sizeof(float) * 256, NULL);
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_gamma, 3, sizeof(cl_mem), (void *)&alpha);
+  err = clSetKernelArg(kernel_EM_gamma, 3, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&alpha));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
-  err = clSetKernelArg(kernel_EM_gamma, 4, sizeof(cl_mem), (void *)&beta);
+  err = clSetKernelArg(kernel_EM_gamma, 4, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&beta));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
-  err = clSetKernelArg(kernel_EM_gamma, 5, sizeof(cl_mem), (void *)&gamma);
+  err = clSetKernelArg(kernel_EM_gamma, 5, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&gamma));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_gamma, 1, 0, &globalSize,
@@ -1030,16 +1065,19 @@ void HMM::EM_expectA() {
   size_t localSize[2] = {16, 16};
   size_t globalSize[2] = {16, (size_t)N};  // N is multiple of 16
 
-  err = clSetKernelArg(kernel_EM_expectA, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_EM_expectA, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_expectA, 1, sizeof(float) * 272, NULL);
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_expectA, 2, sizeof(cl_mem), (void *)&xi_sum);
+  err = clSetKernelArg(kernel_EM_expectA, 2, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&xi_sum));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
-  err = clSetKernelArg(kernel_EM_expectA, 3, sizeof(cl_mem), (void *)&expect_A);
+  err = clSetKernelArg(kernel_EM_expectA, 3, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&expect_A));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_expectA, 2, 0, globalSize,
@@ -1053,21 +1091,23 @@ void HMM::EM_gamma_state_sum() {
   size_t localSize[2] = {16, 16};
   size_t globalSize[2] = {(size_t)N, 16};  // N is multiple of 16
 
-  err = clSetKernelArg(kernel_EM_gamma_state_sum, 0, sizeof(int), (void *)&N);
+  err = clSetKernelArg(kernel_EM_gamma_state_sum, 0, sizeof(int),
+                       reinterpret_cast<void *>(&N));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_gamma_state_sum, 1, sizeof(int), (void *)&T);
+  err = clSetKernelArg(kernel_EM_gamma_state_sum, 1, sizeof(int),
+                       reinterpret_cast<void *>(&T));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_gamma_state_sum, 2, sizeof(float) * 272, NULL);
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_gamma_state_sum, 3, sizeof(cl_mem),
-                       (void *)&gamma);
+                       reinterpret_cast<void *>(&gamma));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_gamma_state_sum, 4, sizeof(cl_mem),
-                       (void *)&gamma_state_sum);
+                       reinterpret_cast<void *>(&gamma_state_sum));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_gamma_state_sum, 2, 0,
@@ -1081,22 +1121,24 @@ void HMM::EM_gamma_obs() {
   size_t localSize[2] = {16, 16};
   size_t globalSize[2] = {(size_t)T, (size_t)D};  // T and D is multiple of 16
 
-  err = clSetKernelArg(kernel_EM_gamma_obs, 0, sizeof(int), (void *)&D);
+  err = clSetKernelArg(kernel_EM_gamma_obs, 0, sizeof(int),
+                       reinterpret_cast<void *>(&D));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_gamma_obs, 1, sizeof(int), (void *)&T);
+  err = clSetKernelArg(kernel_EM_gamma_obs, 1, sizeof(int),
+                       reinterpret_cast<void *>(&T));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err =
-      clSetKernelArg(kernel_EM_gamma_obs, 2, sizeof(cl_mem), (void *)&constMem);
+  err = clSetKernelArg(kernel_EM_gamma_obs, 2, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&constMem));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_gamma_obs, 3, sizeof(cl_mem),
-                       (void *)&observations);
+                       reinterpret_cast<void *>(&observations));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_gamma_obs, 4, sizeof(cl_mem),
-                       (void *)&gamma_obs);
+                       reinterpret_cast<void *>(&gamma_obs));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_gamma_obs, 2, 0,
@@ -1113,31 +1155,35 @@ void HMM::EM_expect_mu(int pos, int currentstate) {
   size_t localSize[2] = {16, 16};
   size_t globalSize[2] = {16, (size_t)D};  // D is multiple of 16
 
-  err = clSetKernelArg(kernel_EM_expect_mu, 0, sizeof(int), (void *)&D);
+  err = clSetKernelArg(kernel_EM_expect_mu, 0, sizeof(int),
+                       reinterpret_cast<void *>(&D));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_expect_mu, 1, sizeof(int), (void *)&T);
+  err = clSetKernelArg(kernel_EM_expect_mu, 1, sizeof(int),
+                       reinterpret_cast<void *>(&T));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_expect_mu, 2, sizeof(int), (void *)&offset);
+  err = clSetKernelArg(kernel_EM_expect_mu, 2, sizeof(int),
+                       reinterpret_cast<void *>(&offset));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_expect_mu, 3, sizeof(int), (void *)&hs);
+  err = clSetKernelArg(kernel_EM_expect_mu, 3, sizeof(int),
+                       reinterpret_cast<void *>(&hs));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_expect_mu, 4, sizeof(float) * 272, NULL);
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_expect_mu, 5, sizeof(cl_mem),
-                       (void *)&gamma_obs);
+                       reinterpret_cast<void *>(&gamma_obs));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_expect_mu, 6, sizeof(cl_mem),
-                       (void *)&gamma_state_sum);
+                       reinterpret_cast<void *>(&gamma_state_sum));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_expect_mu, 7, sizeof(cl_mem),
-                       (void *)&expect_mu);
+                       reinterpret_cast<void *>(&expect_mu));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_expect_mu, 2, 0,
@@ -1153,33 +1199,36 @@ void HMM::EM_sigma_dev(int currentstate) {
   size_t localSize[2] = {8, 8};
   size_t globalSize[2] = {(size_t)D, (size_t)D};  // D is multiple of 16
 
-  err = clSetKernelArg(kernel_EM_sigma_dev, 0, sizeof(int), (void *)&D);
+  err = clSetKernelArg(kernel_EM_sigma_dev, 0, sizeof(int),
+                       reinterpret_cast<void *>(&D));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_sigma_dev, 1, sizeof(int), (void *)&T);
+  err = clSetKernelArg(kernel_EM_sigma_dev, 1, sizeof(int),
+                       reinterpret_cast<void *>(&T));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_sigma_dev, 2, sizeof(int), (void *)&hs);
+  err = clSetKernelArg(kernel_EM_sigma_dev, 2, sizeof(int),
+                       reinterpret_cast<void *>(&hs));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err =
-      clSetKernelArg(kernel_EM_sigma_dev, 3, sizeof(cl_mem), (void *)&constMem);
+  err = clSetKernelArg(kernel_EM_sigma_dev, 3, sizeof(cl_mem),
+                       reinterpret_cast<void *>(&constMem));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_sigma_dev, 4, sizeof(cl_mem),
-                       (void *)&gamma_obs);
+                       reinterpret_cast<void *>(&gamma_obs));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_sigma_dev, 5, sizeof(cl_mem),
-                       (void *)&observations);
+                       reinterpret_cast<void *>(&observations));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_sigma_dev, 6, sizeof(cl_mem),
-                       (void *)&gamma_state_sum);
+                       reinterpret_cast<void *>(&gamma_state_sum));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_sigma_dev, 7, sizeof(cl_mem),
-                       (void *)&sigma_dev);
+                       reinterpret_cast<void *>(&sigma_dev));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_sigma_dev, 2, 0,
@@ -1190,8 +1239,7 @@ void HMM::EM_sigma_dev(int currentstate) {
 void HMM::EM_expect_sigma(size_t pos) {
   cl_int err;
 
-  // FIXME: no cast?
-  int start = (int)pos;
+  int start = pos;
 
   // FIXME: OCL 1.2 doesn't support non-uniform workgroup size,
   // i.e global size must be multiples of local size
@@ -1199,22 +1247,24 @@ void HMM::EM_expect_sigma(size_t pos) {
   size_t localSize[2] = {16, (size_t)blknum};
   size_t globalSize[2] = {16, (size_t)blknum};
 
-  err =
-      clSetKernelArg(kernel_EM_expect_sigma, 0, sizeof(int), (void *)&blk_rows);
+  err = clSetKernelArg(kernel_EM_expect_sigma, 0, sizeof(int),
+                       reinterpret_cast<void *>(&blk_rows));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_expect_sigma, 1, sizeof(int), (void *)&D);
+  err = clSetKernelArg(kernel_EM_expect_sigma, 1, sizeof(int),
+                       reinterpret_cast<void *>(&D));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
-  err = clSetKernelArg(kernel_EM_expect_sigma, 2, sizeof(int), (void *)&start);
+  err = clSetKernelArg(kernel_EM_expect_sigma, 2, sizeof(int),
+                       reinterpret_cast<void *>(&start));
   checkOpenCLErrors(err, "Failed at clSetKernelArg");
 
   err = clSetKernelArg(kernel_EM_expect_sigma, 3, sizeof(cl_mem),
-                       (void *)&sigma_dev);
+                       reinterpret_cast<void *>(&sigma_dev));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clSetKernelArg(kernel_EM_expect_sigma, 4, sizeof(cl_mem),
-                       (void *)&expect_sigma);
+                       reinterpret_cast<void *>(&expect_sigma));
   checkOpenCLErrors(err, "Failed at clSetKernelArgSVMPointer");
 
   err = clEnqueueNDRangeKernel(cmdQueue_0, kernel_EM_expect_sigma, 2, NULL,

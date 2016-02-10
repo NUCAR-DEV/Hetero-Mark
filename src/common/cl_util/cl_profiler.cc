@@ -208,4 +208,5 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ, cl_kernel kernel, cl_uint wd,
 
   return enqueueErr;
 }
-}
+
+}  // namespace clHelper

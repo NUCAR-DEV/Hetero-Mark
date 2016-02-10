@@ -30,19 +30,17 @@
 *   DEALINGS WITH THE SOFTWARE.
 */
 
-#ifndef FIR_H
-#define FIR_H
+#ifndef SRC_OPENCL12_FIR_CL12_FIR_CL12_H_
+#define SRC_OPENCL12_FIR_CL12_FIR_CL12_H_
 
 #include "src/common/cl_util/cl_util.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/benchmark/benchmark.h"
 
-using namespace clHelper;
-
 class FIR : public Benchmark {
  private:
-  clRuntime* runtime_;
-  clFile* file_;
+  clHelper::clRuntime* runtime_;
+  clHelper::clFile* file_;
 
   cl_platform_id platform_;
   cl_device_id device_;
@@ -88,4 +86,4 @@ class FIR : public Benchmark {
   void Summarize() override {}
 };
 
-#endif
+#endif  // SRC_OPENCL12_FIR_CL12_FIR_CL12_H_

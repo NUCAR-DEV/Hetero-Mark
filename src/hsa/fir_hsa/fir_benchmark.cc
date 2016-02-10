@@ -51,18 +51,20 @@ void FirBenchmark::Initialize() {
   coeff_ = new float[num_tap_];
   history_ = new float[num_tap_];
 
+  unsigned int seed = time(NULL);
+
   // Initialize input data
   for (unsigned int i = 0; i < num_total_data_; i++) {
-    input_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    input_[i] = static_cast<float>(rand_r(seed)) / static_cast<float>(RAND_MAX);
   }
 
   // Initialize coefficient
   for (unsigned int i = 0; i < num_tap_; i++) {
-    coeff_[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    coeff_[i] = static_cast<float>(rand_r(seed)) / static_cast<float>(RAND_MAX);
   }
 
   // Initialize history
-  for (unsigned int i = 0; i <  num_tap_; i++) {
+  for (unsigned int i = 0; i < num_tap_; i++) {
     history_[i] = 0.0;
   }
 
@@ -79,9 +81,8 @@ void FirBenchmark::Run() {
     lparm->ndim = 1;
     lparm->gdims[0] = num_data_;
     lparm->ldims[0] = 64;
-    FIR(input_ + i * num_data_, 
-        output_ + i * num_data_, 
-        coeff_, history_, num_tap_, lparm);
+    FIR(input_ + i * num_data_, output_ + i * num_data_, coeff_, history_,
+        num_tap_, lparm);
   }
 }
 
@@ -98,7 +99,7 @@ void FirBenchmark::Verify() {
     if (abs(cpu_output[i] - output_[i]) > 1e-5) {
       has_error = true;
       printf("At position %d, expected %f, but was %f.\n", i, cpu_output[i],
-          output_[i]);
+             output_[i]);
     }
   }
 
