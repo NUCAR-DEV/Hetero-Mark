@@ -66,6 +66,7 @@ int main(int argc, const char **argv) {
   // Create and run benchmarks
   std::unique_ptr<HmmBenchmark> benchmark(new HmmBenchmark(num_hidden_states));
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  benchmark->SetTimer(timer.get());
   BenchmarkRunner runner(benchmark.get(), timer.get());
   runner.Run();
   runner.Summarize();
