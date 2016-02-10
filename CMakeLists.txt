@@ -14,7 +14,7 @@ include(HSA)
 
 set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
-set( CMAKE_CXX_FLAGS "-Wall -pthread -g" )
+set( CMAKE_CXX_FLAGS "-Wall -Werror -pthread -g" )
 add_definitions(
   -std=c++11
 )

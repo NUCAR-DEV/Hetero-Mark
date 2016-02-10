@@ -268,7 +268,9 @@ void HmmBenchmark::EM() {
   }
 
   float sum;
-  int i, current, previous;
+  int i;
+  int current = 0;
+  int previous = current + N;
   int window;
 
   for (window = 0; window < (T - 1); ++window) {

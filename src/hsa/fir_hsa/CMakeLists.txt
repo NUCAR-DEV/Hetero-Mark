@@ -10,11 +10,13 @@ set( SRC_FILES
 )
 set( HEADER_FILES )
 set( TEST_FILES )
+set( EXTRA_FILES 
+  kernels.cl
+)
 
 # Group samples by folder
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-file( COPY kernels.cl DESTINATION . )
 
 # Unit test
 if (${TEST_FILES})
@@ -26,6 +28,13 @@ endif (${TEST_FILES})
 ###############################################################
 
 if (have_snack AND HSA_RUNTIME)
+  foreach( extra_file ${EXTRA_FILES} )
+    add_custom_command(
+      OUTPUT ${extra_file}
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${CMAKE_CURRENT_BINARY_DIR}
+    )
+  endforeach( extra_file )
   add_custom_command(
     OUTPUT kernels.o kernels.h
     COMMAND snack.sh -c kernels.cl
