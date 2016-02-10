@@ -42,7 +42,7 @@
 #include <string.h>
 
 #include "src/common/cl_util/cl_util.h"
-#include "include/iir_cl12.h"
+#include "src/opencl12/iir_cl12/iir_cl12.h"
 
 #define BILLION 1000000000L
 
@@ -60,9 +60,14 @@ void ParIIR::Cleanup() {
 void ParIIR::Initialize() {
   // printf("=>Initialize parameters.\n");
 
-  InitParam();
+  timer_->End({"Initialize"});
+  timer_->Start();
   InitCL();
   InitKernels();
+  timer_->End({"Init runtime"});
+  timer_->Start();
+
+  InitParam();
   InitBuffers();
 }
 

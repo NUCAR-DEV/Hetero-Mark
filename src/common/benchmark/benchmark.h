@@ -41,11 +41,16 @@
 #ifndef SRC_COMMON_BENCHMARK_BENCHMARK_H_
 #define SRC_COMMON_BENCHMARK_BENCHMARK_H_
 
+#include "src/common/time_measurement/time_measurement.h"
+
 /**
  * A benchmark is a program that test platform performance. It follows the
  * steps of Initialize, Run, Verify, Summarize and Cleanup.
  */
 class Benchmark {
+ protected:
+  TimeMeasurement *timer_;
+
  public:
   /**
    * Initialize environment, parameter, buffers
@@ -71,6 +76,11 @@ class Benchmark {
    * Clean up
    */
   virtual void Cleanup() = 0;
+
+  /**
+   * Set timer object
+   */
+  virtual void SetTimer(TimeMeasurement *timer) { timer_ = timer; }
 };
 
 #endif  // SRC_COMMON_BENCHMARK_BENCHMARK_H_

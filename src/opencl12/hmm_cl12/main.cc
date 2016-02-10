@@ -41,7 +41,7 @@
 #include <cstdlib>
 #include <string>
 
-#include "include/hmm_cl12.h"
+#include "src/opencl12/hmm_cl12/hmm_cl12.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
@@ -72,6 +72,7 @@ int main(int argc, char const *argv[]) {
 
   // Set up the timmer
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  hmm->SetTimer(timer.get());
 
   // Obtain HMM class and configure the time measurement
   BenchmarkRunner runner(hmm.get(), timer.get());
@@ -80,7 +81,7 @@ int main(int argc, char const *argv[]) {
   runner.Run();
 
   // Obtain the runtime performance
-  // runner.Summarize();
+  runner.Summarize();
 
   return 0;
 }

@@ -38,14 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "include/pagerank_cl20.h"
+#include <cstdlib>
+#include <string>
+#include "src/opencl20/pagerank_cl20/pagerank_cl20.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/command_line_option/command_line_option.h"
-
-#include <cstdlib>
-#include <string>
 
 int main(int argc, char const *argv[]) {
   // Setup command line option
@@ -82,6 +81,7 @@ int main(int argc, char const *argv[]) {
   // else { pr->SetInitialParameters(matrix, vector); }
 
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  pr->SetTimer(timer.get());
   BenchmarkRunner runner(pr.get(), timer.get());
   runner.Run();
   runner.Summarize();

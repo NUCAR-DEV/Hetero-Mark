@@ -41,7 +41,7 @@
 #include <iostream>
 
 #include "src/common/cl_util/cl_util.h"
-#include "include/hmm_cl12.h"
+#include "src/opencl12/hmm_cl12/hmm_cl12.h"
 
 using namespace std;
 
@@ -57,9 +57,15 @@ void HMM::Init() {
   // HMM Parameters
   //        a,b,prior,alpha
   // printf("=>Initialize parameters.\n");
-  InitParam();
+  
+  timer_->End({"Initialize"});
+  timer_->Start();
   InitCL();
   InitKernels();
+  timer_->End({"Init Runtime"});
+  timer_->Start();
+
+  InitParam();
   InitBuffers();
 }
 
@@ -103,7 +109,7 @@ void HMM::InitParam() {
 
 void HMM::InitKernels() {
   cl_int err;
-  file->open("hmm_cl12_kernels.cl");
+  file->open("hmm_cl12_kernel.cl");
 
   // Create program
   const char *source = file->getSourceChar();

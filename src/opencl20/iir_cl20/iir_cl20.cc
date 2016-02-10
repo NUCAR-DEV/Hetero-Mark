@@ -42,7 +42,7 @@
 #include <CL/cl_platform.h> /* cl_float2             */
 
 #include "src/common/cl_util/cl_util.h"
-#include "include/iir_cl20.h"
+#include "src/opencl20/iir_cl20/iir_cl20.h"
 
 #define BILLION 1000000000L
 
@@ -58,9 +58,14 @@ void ParIIR::Cleanup() {
 }
 
 void ParIIR::Initialize() {
-  InitParam();
+  timer_->End({"Initialize"});
+  timer_->Start();
   InitCL();
   InitKernels();
+  timer_->End({"Init Runtime"});
+  timer_->Start();
+
+  InitParam();
   InitBuffers();
 }
 
@@ -90,7 +95,7 @@ void ParIIR::InitCL() {
 void ParIIR::InitKernels() {
   cl_int err;
 
-  file->open("parIIR_cl20_kernel.cl");
+  file->open("iir_cl20_kernel.cl");
 
   // Create program
   const char *source = file->getSourceChar();

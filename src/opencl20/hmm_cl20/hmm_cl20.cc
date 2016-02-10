@@ -41,7 +41,7 @@
 #include <iostream>
 
 #include "src/common/cl_util/cl_util.h"
-#include "include/hmm_cl20.h"
+#include "src/opencl20/hmm_cl20/hmm_cl20.h"
 
 // using namespace std;
 
@@ -58,9 +58,14 @@ void HMM::Init() {
   //        a,b,prior,alpha
   printf("=>Initialize parameters.\n");
 
-  InitParam();
+  timer_->End({"Initialize"});
+  timer_->Start();
   InitCL();
   InitKernels();
+  timer_->End({"Init Runtime"});
+  timer_->Start();
+
+  InitParam();
   InitBuffers();
 }
 

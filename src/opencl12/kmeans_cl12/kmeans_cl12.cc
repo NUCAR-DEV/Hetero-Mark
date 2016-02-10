@@ -27,9 +27,6 @@
  *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  *   DEALINGS WITH THE SOFTWARE.
- *
- * KMeans clustering
- *
  */
 
 #include <stdio.h>  /* for printf */
@@ -43,7 +40,7 @@
 #include <cassert>
 #include "src/common/cl_util/cl_util.h"
 
-#include "include/kmeans_cl12.h"
+#include "src/opencl12/kmeans_cl12/kmeans_cl12.h"
 
 #define BILLION 1000000000L
 
@@ -68,7 +65,6 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
   // ------------------------- command line options -----------------------//
   // int     opt;
   // extern char   *optarg;
-  isBinaryFile = 0;
   threshold = 0.001;  // default value
   max_nclusters = 5;  // default value
   min_nclusters = 5;  // default value
@@ -76,19 +72,13 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
   isOutput = 0;
   nloops = 1;  // default value
 
-  char line[1024];
-  ssize_t ret;  // add return value for read
-
-  float *buf;
   npoints = 0;
   nfeatures = 0;
 
   best_nclusters = 0;
 
-  int i, j;
 
   filename = parameters.filename;
-  isBinaryFile = parameters.binary;
   threshold = parameters.threshold;
   max_nclusters = parameters.max_cl;
   min_nclusters = parameters.min_cl;
@@ -96,92 +86,54 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
   isOutput = parameters.output;
   nloops = parameters.nloops;
 
-  // ============== I/O begin ==============//
+}
 
-  // io_timing = omp_get_wtime();
-  if (isBinaryFile) {  // Binary file input
-    int infile;
-    if ((infile = open(filename, O_RDONLY, "0600")) == -1) {
-      fprintf(stderr, "Error: no such file (%s)\n", filename);
-      exit(1);
-    }
-
-    ret = read(infile, &npoints, sizeof(int));
-
-    if (ret == -1) {
-      fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__,
-              __LINE__);
-    }
-
-    ret = read(infile, &nfeatures, sizeof(int));
-    if (ret == -1) {
-      fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__,
-              __LINE__);
-    }
-
-    // allocate space for features[][] and read attributes of all objects
-    // defined in header file
-    buf = (float *)malloc(npoints * nfeatures * sizeof(float));
-    feature = (float **)malloc(npoints * sizeof(float *));
-    feature[0] = (float *)malloc(npoints * nfeatures * sizeof(float));
-
-    // fixme: svm buffer
-    for (i = 1; i < npoints; i++) feature[i] = feature[i - 1] + nfeatures;
-
-    ret = read(infile, buf, npoints * nfeatures * sizeof(float));
-
-    if (ret == -1) {
-      fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__,
-              __LINE__);
-    }
-
-    close(infile);
-  } else {
-    FILE *infile;
-    if ((infile = fopen(filename, "r")) == NULL) {
-      fprintf(stderr, "Error: no such file (%s)\n", filename);
-      exit(1);
-    }
-
-    while (fgets(line, 1024, infile) != NULL) {
-      if (strtok(line, " \t\n") != 0) npoints++;
-    }
-
-    rewind(infile);
-
-    while (fgets(line, 1024, infile) != NULL) {
-      if (strtok(line, " \t\n") != 0) {
-        // ignore the id (first attribute): nfeatures = 1;
-        while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
-        break;
-      }
-    }
-
-    // allocate space for features[] and read attributes of all objects
-    buf = (float *)malloc(npoints * nfeatures * sizeof(float));
-    feature = (float **)malloc(npoints * sizeof(float *));
-    feature[0] = (float *)malloc(npoints * nfeatures * sizeof(float));
-
-    // fixme : svm buffer
-    for (i = 1; i < npoints; i++) feature[i] = feature[i - 1] + nfeatures;
-
-    rewind(infile);
-
-    i = 0;
-
-    while (fgets(line, 1024, infile) != NULL) {
-      if (strtok(line, " \t\n") == NULL) continue;
-
-      for (j = 0; j < nfeatures; j++) {
-        buf[i] = atof(strtok(NULL, " ,\t\n"));
-        i++;
-      }
-    }
-
-    fclose(infile);
+void KMEANS::Read() {
+  char line[1024];
+  float *buf;
+  FILE *infile;
+  int i, j;
+  if ((infile = fopen(filename, "r")) == NULL) {
+    fprintf(stderr, "Error: no such file (%s)\n", filename);
+    exit(1);
   }
 
-  // io_timing = omp_get_wtime() - io_timing;
+  while (fgets(line, 1024, infile) != NULL) {
+    if (strtok(line, " \t\n") != 0) npoints++;
+  }
+
+  rewind(infile);
+
+  while (fgets(line, 1024, infile) != NULL) {
+    if (strtok(line, " \t\n") != 0) {
+      // ignore the id (first attribute): nfeatures = 1;
+      while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
+      break;
+    }
+  }
+
+  // allocate space for features[] and read attributes of all objects
+  buf = (float *)malloc(npoints * nfeatures * sizeof(float));
+  feature = (float **)malloc(npoints * sizeof(float *));
+  feature[0] = (float *)malloc(npoints * nfeatures * sizeof(float));
+
+  // fixme : svm buffer
+  for (i = 1; i < npoints; i++) feature[i] = feature[i - 1] + nfeatures;
+
+  rewind(infile);
+
+  i = 0;
+
+  while (fgets(line, 1024, infile) != NULL) {
+    if (strtok(line, " \t\n") == NULL) continue;
+
+    for (j = 0; j < nfeatures; j++) {
+      buf[i] = atof(strtok(NULL, " ,\t\n"));
+      i++;
+    }
+  }
+
+  fclose(infile);
 
   printf("\nI/O completed\n");
   printf("\nNumber of objects: %d\n", npoints);
@@ -197,6 +149,7 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
   // now features holds 2-dimensional array of features //
   memcpy(feature[0], buf, npoints * nfeatures * sizeof(float));
   free(buf);
+
 }
 
 void KMEANS::CL_initialize() {
@@ -212,7 +165,7 @@ void KMEANS::CL_build_program() {
   cl_int err;
   // Helper to read kernel file
   file = clFile::getInstance();
-  file->open("kmeans.cl");
+  file->open("kmeans_cl12_kernel.cl");
 
   const char *source = file->getSourceChar();
   prog =
@@ -438,16 +391,24 @@ void KMEANS::Kmeans_clustering() {
   tmp_cluster_centres = clusters;
 }
 
+void KMEANS::Initialize() {
+  timer_->End({"Initialize"});
+  timer_->Start();
+  CL_initialize();
+  CL_build_program();
+  CL_create_kernels();
+  timer_->End({"Init Runtime"});
+  timer_->Start();
+
+  Read();
+}
+
 void KMEANS::Clustering() {
   cluster_centres = NULL;
   index = 0;  // number of iteration to reach the best RMSE
 
   // fixme
   membership = (int *)malloc(npoints * sizeof(int));
-
-  CL_initialize();
-  CL_build_program();
-  CL_create_kernels();
 
   min_rmse_ref = FLT_MAX;
 

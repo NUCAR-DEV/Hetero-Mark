@@ -61,8 +61,7 @@
 #include <string>
 #include <cassert>
 #include "src/common/cl_util/cl_util.h"
-
-#include "include/kmeans_cl20.h"
+#include "src/opencl20/kmeans_cl20/kmeans_cl20.h"
 
 #define BILLION 1000000000L
 
@@ -173,12 +172,30 @@ void KMEANS::CL_initialize() {
   context = runtime->getContext();
   device = runtime->getDevice();
   cmd_queue = runtime->getCmdQueue(0);
+
+  // ----------------------------------------------------------------------//
+  // SVM buffers
+  // feature, feature_swap, membership, clusters
+  // ----------------------------------------------------------------------//
+  svmCoarseGrainAvail = runtime->isSVMavail(SVM_COARSE);
+  svmFineGrainAvail = runtime->isSVMavail(SVM_FINE);
+
+  // runtime->displayDeviceInfo();
+  // cout << svmCoarseGrainAvail << endl;
+  // cout << svmFineGrainAvail << endl;
+
+  // Need at least coarse grain
+  if (!svmCoarseGrainAvail) {
+    printf("SVM coarse grain support unavailable\n");
+    exit(-1);
+  }
+
 }
 
 void KMEANS::CL_build_program() {
   // Helper to read kernel file
   file = clFile::getInstance();
-  file->open("kmeans.cl");
+  file->open("kmeans_cl20_kernel.cl");
 
   const char *source = file->getSourceChar();
   prog =
@@ -205,6 +222,7 @@ void KMEANS::CL_create_kernels() {
 void KMEANS::Create_mem_svm() {
   bytes_cf = nclusters * nfeatures * sizeof(float);
 
+  printf("bytes_pf %lu\n", bytes_pf);
   feature_svm = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_pf, 0);
   if (!feature_svm) {
     printf("Failed to allocate feature_svm.\n%s-%d\n", __FILE__, __LINE__);
@@ -239,7 +257,7 @@ void KMEANS::Swap_features_svm() {
   map_feature_svm(1);
   memcpy(feature_svm, feature_1, bytes_pf);
 
-  // cout << "feature svm[0-19] :";
+  // cout << "20feature svm[0-19] :";
   // for (int i=0; i<20; i++) {
   //   cout << feature_svm[i] << " ";
   // }
@@ -774,7 +792,6 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
   // ------------------------- command line options -----------------------//
   // int     opt;
   // extern char   *optarg;
-  isBinaryFile = 0;
   threshold = 0.001;  // default value
   max_nclusters = 5;  // default value
   min_nclusters = 5;  // default value
@@ -782,19 +799,12 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
   isOutput = 0;
   nloops = 1;  // default value
 
-  char line[1024];
-  ssize_t ret;  // add return value for read
-
-  float *buf;
   npoints = 0;
   nfeatures = 0;
 
   best_nclusters = 0;
 
-  int i, j;
-
   filename = parameters.filename;
-  isBinaryFile = parameters.binary;
   threshold = parameters.threshold;
   max_nclusters = parameters.max_cl;
   min_nclusters = parameters.min_cl;
@@ -802,146 +812,54 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
   isOutput = parameters.output;
   nloops = parameters.nloops;
 
-  // ---------------------------------------------------------------------- //
-  // Setup Opencl env
-  // ---------------------------------------------------------------------- //
-  CL_initialize();
-  CL_build_program();
-  CL_create_kernels();
+}
 
-  // ----------------------------------------------------------------------//
-  // SVM buffers
-  // feature, feature_swap, membership, clusters
-  // ----------------------------------------------------------------------//
-  svmCoarseGrainAvail = runtime->isSVMavail(SVM_COARSE);
-  svmFineGrainAvail = runtime->isSVMavail(SVM_FINE);
-
-  // runtime->displayDeviceInfo();
-  // cout << svmCoarseGrainAvail << endl;
-  // cout << svmFineGrainAvail << endl;
-
-  // Need at least coarse grain
-  if (!svmCoarseGrainAvail) {
-    printf("SVM coarse grain support unavailable\n");
-    exit(-1);
+void KMEANS::Read() {
+  char line[1024];
+  float *buf;
+  FILE *infile;
+  int i, j;
+  if ((infile = fopen(filename, "r")) == NULL) {
+    fprintf(stderr, "Error: no such file (%s)\n", filename);
+    exit(1);
   }
 
-  // ============== I/O begin ==============//
-  // io_timing = omp_get_wtime();
-  if (isBinaryFile) {  // Binary file input
-    int infile;
-    if ((infile = open(filename, O_RDONLY, "0600")) == -1) {
-      fprintf(stderr, "Error: no such file (%s)\n", filename);
-      exit(1);
-    }
-
-    ret = read(infile, &npoints, sizeof(int));
-
-    if (ret == -1) {
-      fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__,
-              __LINE__);
-    }
-
-    ret = read(infile, &nfeatures, sizeof(int));
-    if (ret == -1) {
-      fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__,
-              __LINE__);
-    }
-
-    // bytes_pf = npoints * nfeatures * sizeof(float);
-
-    // ---------//
-    // svmalloc
-    // ---------//
-    // feature_svm = (float *)clSVMAlloc(context,
-    //                                   CL_MEM_READ_WRITE,
-    //                                   bytes_pf, 0);
-    // if ( !feature_svm ){
-    //   printf("Cannot allocate SVM memory with clSVMAlloc.\n
-    //          %s-%d\n",
-    //   FILE__, __LINE__);
-    //   exit(-1);
-    // }
-
-    buf = (float *)malloc(npoints * nfeatures * sizeof(float));
-    feature_1 = (float *)malloc(npoints * nfeatures * sizeof(float));
-    // feature     = (float**)malloc(npoints*sizeof(float*));
-    // feature[0]  = (float*) malloc(npoints*nfeatures
-    //                                     *sizeof(float));
-
-    // for (i=1; i<npoints; i++)
-    //   feature[i] = feature[i-1] + nfeatures;
-
-    ret = read(infile, buf, npoints * nfeatures * sizeof(float));
-
-    if (ret == -1) {
-      fprintf(stderr, "Error: failed to read, info: %s.%d\n", __FILE__,
-              __LINE__);
-    }
-
-    close(infile);
-  } else {
-    FILE *infile;
-    if ((infile = fopen(filename, "r")) == NULL) {
-      fprintf(stderr, "Error: no such file (%s)\n", filename);
-      exit(1);
-    }
-
-    while (fgets(line, 1024, infile) != NULL) {
-      if (strtok(line, " \t\n") != 0) npoints++;
-    }
-
-    rewind(infile);
-
-    while (fgets(line, 1024, infile) != NULL) {
-      if (strtok(line, " \t\n") != 0) {
-        // ignore the id (first attribute): nfeatures = 1;
-        while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
-        break;
-      }
-    }
-
-    // ----------//
-    // svmalloc
-    // ----------//
-    // feature_svm = (float *)clSVMAlloc(context,
-    //                                  CL_MEM_READ_WRITE,
-    //                                  bytes_pf, 0);
-    // if ( !feature_svm ) {
-    //   printf("Failed to allocate SVM memory : feature_svm.\n%s-%d\n",
-    //   __FILE__, __LINE__);
-    //   exit(-1);
-    // }
-
-    // allocate space for features[] and read attributes of all objects
-    buf = (float *)malloc(npoints * nfeatures * sizeof(float));
-    feature_1 = (float *)malloc(npoints * nfeatures * sizeof(float));
-    // feature     = (float**)malloc(npoints*          sizeof(float*));
-    // feature[0]  = (float*) malloc(npoints*nfeatures*sizeof(float));
-
-    // fixme : svm buffer
-    // for (i=1; i<npoints; i++)
-    //   feature[i] = feature[i-1] + nfeatures;
-
-    rewind(infile);
-
-    i = 0;
-
-    while (fgets(line, 1024, infile) != NULL) {
-      if (strtok(line, " \t\n") == NULL) continue;
-
-      for (j = 0; j < nfeatures; j++) {
-        buf[i] = atof(strtok(NULL, " ,\t\n"));
-        i++;
-      }
-    }
-    fclose(infile);
+  while (fgets(line, 1024, infile) != NULL) {
+    if (strtok(line, " \t\n") != 0) npoints++;
   }
+
+  rewind(infile);
+
+  while (fgets(line, 1024, infile) != NULL) {
+    if (strtok(line, " \t\n") != 0) {
+      // ignore the id (first attribute): nfeatures = 1;
+      while (strtok(NULL, " ,\t\n") != NULL) nfeatures++;
+      break;
+    }
+  }
+
+  // allocate space for features[] and read attributes of all objects
+  buf = (float *)malloc(npoints * nfeatures * sizeof(float));
+  feature_1 = (float *)malloc(npoints * nfeatures * sizeof(float));
+
+  rewind(infile);
+
+  i = 0;
+
+  while (fgets(line, 1024, infile) != NULL) {
+    if (strtok(line, " \t\n") == NULL) continue;
+
+    for (j = 0; j < nfeatures; j++) {
+      buf[i] = atof(strtok(NULL, " ,\t\n"));
+      i++;
+    }
+  }
+
+  fclose(infile);
 
   bytes_pf = npoints * nfeatures * sizeof(float);
   bytes_p = sizeof(int) * npoints;
 
-  // io_timing = omp_get_wtime() - io_timing;
 
   printf("\nI/O completed\n");
   printf("\nNumber of objects: %d\n", npoints);
@@ -954,17 +872,25 @@ void KMEANS::SetInitialParameters(FilePackage parameters) {
     exit(0);
   }
 
-  // now features holds 2-dimensional array of features //
-  // memcpy(feature[0], buf, npoints*nfeatures*sizeof(float));
   memcpy(feature_1, buf, npoints * nfeatures * sizeof(float));
 
-  // --------------------//
-  // svm map for writing
-  // --------------------//
-  // map_feature_svm(1);
-  // memcpy(feature_svm, buf, bytes_pf);
-  // unmap_feature_svm();
+  // now features holds 2-dimensional array of features //
   free(buf);
+
+}
+
+
+
+void KMEANS::Initialize() {
+  timer_->End({"Initialize"});
+  timer_->Start();
+  CL_initialize();
+  CL_build_program();
+  CL_create_kernels();
+  timer_->End({"Init Runtime"});
+  timer_->Start();
+
+  Read();
 }
 
 void KMEANS::Run() {
