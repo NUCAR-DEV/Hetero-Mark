@@ -1,10 +1,12 @@
-###Hetero-Mark
+# Hetero-Mark
 A Benchmark Suite for Heterogeneous System Computation
 
-####Requirements
-* [g++](https://gcc.gnu.org/onlinedocs/gcc-3.3.6/gcc/G_002b_002b-and-GCC.html) - The GNU C++ Compiler
+# Requirements
+* [g++](https://gcc.gnu.org/onlinedocs/gcc-3.3.6/gcc/G_002b_002b-and-GCC.html) - The GNU C++ compiler
 * [OpenCL 2.0](http://support.amd.com/en-us/kb-articles/Pages/OpenCL2-Driver.aspx) - The OpenCL 2.0 driver
-* [HSA](https://github.com/HSAFoundation/HSA-Drivers-Linux-AMD) - HSA driver
+* [HSA Driver](https://github.com/HSAFoundation/HSA-Drivers-Linux-AMD) - HSA driver
+* [CLOC & SNACK](https://github.com/HSAFoundation/CLOC) - OpenCL to HSAIL compiler and snack runtime.
+    Make sure that snack.sh is available in system path
 
 ####Applications
 The suite is in development. All outputs show the time it takes to run
@@ -90,7 +92,7 @@ Instructions can be found [here](https://git-lfs.github.com/)
   * PageRank - It generates the input matrix for PageRank. Usage: `python PageRank_generateCsrMatrix.py`
 
 ####Note
-If the system is missing HSA environment, it will throw some warnings such as `Skipping <application name>, snack.sh is not found`.
+If error happens during compilation, but you want to compile other benchmarks, use `make -i` to ignore errors. 
 
 ####Development guide
 
