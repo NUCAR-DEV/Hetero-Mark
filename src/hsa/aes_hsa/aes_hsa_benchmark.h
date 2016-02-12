@@ -157,4 +157,3 @@ class AES : public Benchmark {
 };
 
 #endif  // SRC_HSA_AES_HSA_AES_HSA_BENCHMARK_H_
-

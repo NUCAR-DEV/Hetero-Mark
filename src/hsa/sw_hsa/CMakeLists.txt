@@ -1,14 +1,14 @@
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
 
-set( FOLDER_NAME hist_hsa )
+set( FOLDER_NAME sw_hsa )
 set( SUBDIRECTORIES )
 set( SRC_FILES 
   main.cc
-  hist_benchmark.cc
+  sw_hsa.cc
 )
 set( HEADER_FILES
-  hist_benchmark.h
+  sw_hsa.h
 )
 set( TEST_FILES )
 set( EXTRA_FILES 

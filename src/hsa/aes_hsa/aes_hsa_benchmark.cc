@@ -32,12 +32,12 @@
  */
 
 #include "src/hsa/aes_hsa/aes_hsa_benchmark.h"
-#include "src/hsa/aes_hsa/kernels.h"
 #include <inttypes.h>
 #include <string.h>
 #include <string>
 #include <memory>
 #include <sstream>
+#include "src/hsa/aes_hsa/kernels.h"
 
 AES::AES() {
   // Init
@@ -87,8 +87,7 @@ void AES::InitFiles() {
   }
 }
 
-void AES::InitKernel() {
-}
+void AES::InitKernel() {}
 
 void AES::FreeFiles() {
   fclose(infile);
@@ -96,8 +95,7 @@ void AES::FreeFiles() {
   fclose(outfile);
 }
 
-void AES::FreeKernel() {
-}
+void AES::FreeKernel() {}
 
 uint32_t AES::RotateWord(uint32_t word) {
   // Unions allow the 32-bit word to be operated on without
@@ -288,7 +286,6 @@ void AES::Run() {
     lparm->ldims[0] = local_ws;
 
     CLRunnerntrl(states, expanded_key, lparm);
-
 
     for (int i = 0; i < spawn; i++) {
       current_offset = i * 16;
