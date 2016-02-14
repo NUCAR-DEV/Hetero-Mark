@@ -19,15 +19,6 @@ set( EXTRA_FILES
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
 
-# Check if snack is available
-find_file(have_snack NAMES snack.sh DOC "snack.sh file") 
-
-# Check if HSA runtime is available
-find_library(HSA_RUNTIME 
-  NAMES hsa-runtime64
-  PATHS $ENV{HSA_RUNTIME_PATH}/lib
-  NO_DEFAULT_PATH)
-
 # Unit test
 if (${TEST_FILES})
   add_executable(${FOLDER_NAME}_unittest ${TEST_FILES} ${SRC_FILES} ${HEADER_FILES})
@@ -50,7 +41,7 @@ if (have_snack AND HSA_RUNTIME)
     COMMAND snack.sh -c kernels.cl
     DEPENDS kernels.cl
     COMMENT "Using snack to generate kernel library"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    WORKING_DIRECTORY ""
     VERBATIM
   )
   add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})

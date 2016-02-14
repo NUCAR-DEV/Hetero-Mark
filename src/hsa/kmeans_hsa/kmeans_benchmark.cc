@@ -158,9 +158,7 @@ void KmeansBenchmark::TransposeFeatures() {
               lparm);
 }
 
-void KmeansBenchmark::Free_mem() {
-  delete feature_transpose_;
-}
+void KmeansBenchmark::Free_mem() { delete feature_transpose_; }
 
 void KmeansBenchmark::UpdateMembership(int num_clusters) {
   int *new_membership = new int[num_points_];
@@ -202,7 +200,7 @@ void KmeansBenchmark::KmeansClustering(int num_clusters) {
 
   InitializeClusters(num_clusters);
   InitializeMembership();
-  
+
   // iterate until convergence
   do {
     UpdateMembership(num_clusters);
@@ -233,7 +231,7 @@ void KmeansBenchmark::UpdateClusterCentroids(int num_clusters) {
   }
 
   // For each cluster, devide by the number of points in the cluster
-  for(int i = 0; i < num_clusters; i++) {
+  for (int i = 0; i < num_clusters; i++) {
     for (int j = 0; j < num_features_; j++) {
       clusters_[i][j] /= member_count[i];
     }
@@ -268,7 +266,6 @@ void KmeansBenchmark::DumpClusterCentroids(int num_clusters) {
     }
     printf("\n");
   }
-
 }
 
 void KmeansBenchmark::Clustering() {
@@ -285,7 +282,7 @@ void KmeansBenchmark::Clustering() {
     TransposeFeatures();
 
     KmeansClustering(num_clusters);
-    
+
     float rmse = CalculateRMSE();
     if (rmse < min_rmse_) {
       min_rmse_ = rmse;
@@ -301,8 +298,9 @@ float KmeansBenchmark::CalculateRMSE() {
   for (int i = 0; i < num_points_; i++) {
     float distance_square = 0;
     for (int j = 0; j < num_features_; j++) {
-      distance_square += pow((feature_[i][j] - clusters_[membership_[i]][j]), 2);
-    } 
+      distance_square +=
+          pow((feature_[i][j] - clusters_[membership_[i]][j]), 2);
+    }
     mean_square_error += distance_square;
   }
   mean_square_error /= num_points_;
@@ -349,6 +347,4 @@ void KmeansBenchmark::Summarize() { DisplayResults(); }
 
 void KmeansBenchmark::Verify() {}
 
-void KmeansBenchmark::Cleanup() {
-  Free_mem();
-}
+void KmeansBenchmark::Cleanup() { Free_mem(); }
