@@ -14,12 +14,12 @@ A Benchmark Suite for Heterogeneous System Computation
 
 Makesure the following lines are in your bashrc file. Change the paths according your system.
 
-    ```bash
+``` bash
     export HSA_LLVM_PATH=/opt/amd/cloc/bin                                          
     export HSA_RUNTIME_PATH=/opt/hsa                                                
     export PATH=$PATH:/opt/amd/cloc/bin                                             
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/hsa/lib  
-    ```
+```
 
 ## Applications
 The suite is in development. All outputs show the time it takes to run
@@ -73,12 +73,12 @@ performance.
 
 Use the following commands to compile the benchmarks
 
-    ```bash
+```bash
     mkdir build
     cd build
     cmake ../
     make
-    ```
+```
 
 ## Input data
 
@@ -87,9 +87,9 @@ Standard input is provided for data dependent benchmark such as K-means.
 Cloning Hetero-Mark repository will not download the standard input data. 
 Download the standard input data with the following commands:
 
-    ``` bash
+``` bash
     git lfs fetch
-    ```
+```
 
 You may need to install the Git extension for versioning large files. 
 Instructions can be found [here](https://git-lfs.github.com/)
@@ -105,6 +105,7 @@ Instructions can be found [here](https://git-lfs.github.com/)
     ```
 
   * PageRank - It generates the input matrix for PageRank. Usage: 
+ 
     ``` bash
     python datagen.py
     ```
