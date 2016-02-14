@@ -1,15 +1,14 @@
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
 
-set( FOLDER_NAME page_rank_hsa )
+set( FOLDER_NAME aes_hsa )
 set( SUBDIRECTORIES )
 set( SRC_FILES 
   main.cc
-  page_rank_benchmark.cc
+  aes_hsa_benchmark.h
+  aes_hsa_benchmark.cc
 )
-set( HEADER_FILES 
-  page_rank_benchmark.h
-)
+set( HEADER_FILES )
 set( TEST_FILES )
 set( EXTRA_FILES 
   kernels.cl
@@ -46,6 +45,6 @@ if (have_snack AND HSA_RUNTIME)
   )
   add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
   target_link_libraries(${FOLDER_NAME}
-    time_measurement command_line_option benchmark ${HSA_RUNTIME})
+      time_measurement command_line_option benchmark ${HSA_RUNTIME})
 endif (have_snack AND HSA_RUNTIME)
 

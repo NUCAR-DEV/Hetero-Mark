@@ -9,7 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
+ * Author: Carter McCardwell (cmccardw@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,31 +38,26 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include <cstdlib>
+#include <string>
+
+#include "src/hsa/sw_hsa/sw_hsa.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/command_line_option/command_line_option.h"
-#include "src/hsa/kmeans_hsa/kmeans_benchmark.h"
 
-int main(int argc, const char **argv) {
+int main(int argc, char const *argv[]) {
   // Setup command line option
   CommandLineOption command_line_option(
-      "====== Hetero-Mark KMEANS Benchmark "
-      "(HSA mode) ======",
-      "This benchmarks runs kmeans algorithm.");
+      "====== Hetero-Mark Shallow Water Benchmarks (OpenCL 2.0) ======",
+      "This benchmarks runs the Shallow Water Benchmark.");
   command_line_option.AddArgument("Help", "bool", "false", "-h", "--help",
                                   "Dump help information");
-  command_line_option.AddArgument(
-      "Input File", "string", "input.txt", "-i", "--input-file",
-      "The file that containing data to be clustered");
-  command_line_option.AddArgument("Maximum Clusters", "integer", "5", "-m",
-                                  "--max-clusters",
-                                  "Maximum number of clusters allowed");
-  command_line_option.AddArgument("Minimum Clusters", "integer", "5", "-n",
-                                  "--min-clusters",
-                                  "Minimum number of clusters allowed");
-  command_line_option.AddArgument("Verify", "bool", "false", "-v", "--verify",
-                                  "Verify the calculation result");
+  command_line_option.AddArgument("dimx", "int", "2048", "-x", "--dimx",
+                                  "X Dimension");
+  command_line_option.AddArgument("dimy", "int", "2048", "-y", "--dimy",
+                                  "Y Dimension");
 
   command_line_option.Parse(argc, argv);
   if (command_line_option.GetArgumentValue("Help")->AsBool()) {
@@ -70,25 +65,15 @@ int main(int argc, const char **argv) {
     return 0;
   }
 
-  bool verify = command_line_option.GetArgumentValue("Verify")->AsBool();
-  std::string input =
-      command_line_option.GetArgumentValue("Input File")->AsString();
-  uint32_t max_clusters =
-      command_line_option.GetArgumentValue("Maximum Clusters")->AsUInt32();
-  uint32_t min_clusters =
-      command_line_option.GetArgumentValue("Minimum Clusters")->AsUInt32();
+  int x = command_line_option.GetArgumentValue("dimx")->AsInt32();
+  int y = command_line_option.GetArgumentValue("dimy")->AsInt32();
 
-  // Create and setup benchmarks
-  std::unique_ptr<KmeansBenchmark> benchmark(new KmeansBenchmark());
-  benchmark->SetInputFileName(input.c_str());
-  benchmark->SetMaxClusters(max_clusters);
-  benchmark->SetMinClusters(min_clusters);
+  std::unique_ptr<ShallowWater> sw(new ShallowWater(x, y));
 
-  // Run benchmark
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  benchmark->SetTimer(timer.get());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
-  runner.set_verification_mode(verify);
+  BenchmarkRunner runner(sw.get(), timer.get());
   runner.Run();
   runner.Summarize();
+
+  return 0;
 }
