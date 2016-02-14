@@ -1,14 +1,27 @@
 # Hetero-Mark
 A Benchmark Suite for Heterogeneous System Computation
 
-# Requirements
-* [g++](https://gcc.gnu.org/onlinedocs/gcc-3.3.6/gcc/G_002b_002b-and-GCC.html) - The GNU C++ compiler
+## Prerequisite
+
+### OpenCL Environment
 * [OpenCL 2.0](http://support.amd.com/en-us/kb-articles/Pages/OpenCL2-Driver.aspx) - The OpenCL 2.0 driver
+
+### HSA Environment
 * [HSA Driver](https://github.com/HSAFoundation/HSA-Drivers-Linux-AMD) - HSA driver
 * [CLOC & SNACK](https://github.com/HSAFoundation/CLOC) - OpenCL to HSAIL compiler and snack runtime.
     Make sure that snack.sh is available in system path
+* [HSA Runtime](https://github.com/HSAFoundation/HSA-Runtime-AMD) - HSA runtime library
 
-####Applications
+Makesure the following lines are in your bashrc file. Change the paths according your system.
+
+    ```bash
+    export HSA_LLVM_PATH=/opt/amd/cloc/bin                                          
+    export HSA_RUNTIME_PATH=/opt/hsa                                                
+    export PATH=$PATH:/opt/amd/cloc/bin                                             
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/hsa/lib  
+    ```
+
+## Applications
 The suite is in development. All outputs show the time it takes to run
 the application without overheads such as data transfer time etc.
 
@@ -56,44 +69,49 @@ performance.
  behavior of fluids, wave modeling for interactive systems. It predicts
  matters of practical interest, e.g. internal tides in strait of Gibraltar.
 
-####Compiling the code
+## Compiling the code
 
 Use the following commands to compile the benchmarks
 
-`mkdir build`
+    ```bash
+    mkdir build
+    cd build
+    cmake ../
+    make
+    ```
 
-`cd build`
+## Input data
 
-`cmake ../`
-
-`make`
-
-### Input data
-
-#### Download standard input data
+### Download standard input data
 Standard input is provided for data dependent benchmark such as K-means. 
 Cloning Hetero-Mark repository will not download the standard input data. 
 Download the standard input data with the following commands:
 
-`git lfs fetch`
+    ``` bash
+    git lfs fetch
+    ```
 
 You may need to install the Git extension for versioning large files. 
 Instructions can be found [here](https://git-lfs.github.com/)
 
-#### Generate your own input data
+### Generate your own input data
 * To generate custom data in `data` folder
-  * AES - It generates custom size plain text file. Usage: `./<exec> <file size>` 
+
   * KMeans - It generates the input file for KMeans. Usage:
 
-    `g++ KMeans_datagen.cpp -o KMeans_datagen`
+    ``` bash
+    g++ datagen.cpp -o datagen
+    ./datagen <numObjects> [ <numFeatures> ] [-f]
+    ```
 
-    `./KMeans_gen_dataset.sh`
+  * PageRank - It generates the input matrix for PageRank. Usage: 
+    ``` bash
+    python datagen.py
+    ```
 
-  * PageRank - It generates the input matrix for PageRank. Usage: `python PageRank_generateCsrMatrix.py`
-
-####Note
+## Note
 If error happens during compilation, but you want to compile other benchmarks, use `make -i` to ignore errors. 
 
-####Development guide
-
+## Development guide
+    
 Hetero-mark follows [google c++ coding style](https://google.github.io/styleguide/cppguide.html) in header files and source files. 
