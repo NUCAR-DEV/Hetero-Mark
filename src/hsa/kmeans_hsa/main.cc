@@ -61,10 +61,6 @@ int main(int argc, const char **argv) {
   command_line_option.AddArgument("Minimum Clusters", "integer", "5", "-n",
                                   "--min-clusters",
                                   "Minimum number of clusters allowed");
-  command_line_option.AddArgument("Threshold", "float", "0.001", "-t",
-                                  "--threshold", "Threshold value");
-  command_line_option.AddArgument("Number Loops", "integer", "1", "-l",
-                                  "--loops", "Number of loops");
   command_line_option.AddArgument("Verify", "bool", "false", "-v", "--verify",
                                   "Verify the calculation result");
 
@@ -77,10 +73,6 @@ int main(int argc, const char **argv) {
   bool verify = command_line_option.GetArgumentValue("Verify")->AsBool();
   std::string input =
       command_line_option.GetArgumentValue("Input File")->AsString();
-  uint32_t n_loops =
-      command_line_option.GetArgumentValue("Number Loops")->AsUInt32();
-  double threshold =
-      command_line_option.GetArgumentValue("Threshold")->AsDouble();
   uint32_t max_clusters =
       command_line_option.GetArgumentValue("Maximum Clusters")->AsUInt32();
   uint32_t min_clusters =
@@ -89,8 +81,6 @@ int main(int argc, const char **argv) {
   // Create and setup benchmarks
   std::unique_ptr<KmeansBenchmark> benchmark(new KmeansBenchmark());
   benchmark->SetInputFileName(input.c_str());
-  benchmark->SetNLoops(n_loops);
-  benchmark->SetThreshold(threshold);
   benchmark->SetMaxClusters(max_clusters);
   benchmark->SetMinClusters(min_clusters);
 

@@ -60,110 +60,112 @@ KmeansBenchmark::KmeansBenchmark() {}
 KmeansBenchmark::~KmeansBenchmark() {}
 
 void KmeansBenchmark::Read() {
-  char line[1024];
-  char *save_line;
-  float *buf;
-  FILE *infile;
-  if ((infile = fopen(filename_.c_str(), "r")) == NULL) {
+  FILE *input_file;
+  if ((input_file = fopen(filename_.c_str(), "r")) == NULL) {
     fprintf(stderr, "Error: no such file (%s)\n", filename_.c_str());
     exit(1);
   }
 
-  while (fgets(line, 1024, infile) != NULL) {
-    if (strtok_r(line, " \t\n", &save_line) != 0) npoints++;
+  num_points_ = GetNumberPointsFromInputFile(input_file);
+  num_features_ = GetNumberFeaturesFromInputFile(input_file);
+
+  feature_ = new float *[num_points_];
+  feature_[0] = new float[num_points_ * num_features_];
+
+  for (int i = 1; i < num_points_; i++) {
+    feature_[i] = feature_[i - 1] + num_features_;
   }
 
-  rewind(infile);
+  LoadFeaturesFromInputFile(input_file);
 
-  while (fgets(line, 1024, infile) != NULL) {
-    if (strtok_r(line, " \t\n", &save_line) != 0) {
-      // ignore the id (first attribute): nfeatures = 1;
-      while (strtok_r(NULL, " ,\t\n", &save_line) != NULL) nfeatures++;
-      break;
-    }
-  }
-
-  // allocate space for features[] and read attributes of all objects
-  buf = new float[npoints * nfeatures];
-  feature = new float *[npoints];
-  feature[0] = new float[npoints * nfeatures];
-
-  // fixme : svm buffer
-  for (int i = 1; i < npoints; i++) feature[i] = feature[i - 1] + nfeatures;
-
-  rewind(infile);
-
-  int i = 0;
-  while (fgets(line, 1024, infile) != NULL) {
-    if (strtok_r(line, " \t\n", &save_line) == NULL) continue;
-
-    for (int j = 0; j < nfeatures; j++) {
-      buf[i] = atof(strtok_r(NULL, " ,\t\n", &save_line));
-      i++;
-    }
-  }
-
-  fclose(infile);
+  fclose(input_file);
 
   printf("\nI/O completed\n");
-  printf("\nNumber of objects: %d\n", npoints);
-  printf("Number of features: %d\n", nfeatures);
+  printf("\nNumber of objects: %d\n", num_points_);
+  printf("Number of features: %d\n", num_features_);
 
   // error check for clusters
-  if (npoints < min_nclusters) {
-    printf("Error: min_nclusters(%d) > npoints(%d) -- cannot proceed\n",
-           min_nclusters, npoints);
+  if (num_points_ < min_clusters_) {
+    printf("Error: min_clusters_(%d) > num_points_(%d) -- cannot proceed\n",
+           min_clusters_, num_points_);
     exit(0);
   }
-
-  // now features holds 2-dimensional array of features //
-  memcpy(feature[0], buf, npoints * nfeatures * sizeof(float));
-  free(buf);
 }
 
-void KmeansBenchmark::Create_mem() {
-  // Create buffers
-  d_feature = new float[npoints * nfeatures];
-  d_feature_swap = new float[npoints * nfeatures];
-  d_membership = new int[npoints];
-  d_cluster = new float[nclusters * nfeatures];
-  membership_OCL = new int[npoints];
+int KmeansBenchmark::GetNumberPointsFromInputFile(FILE *input_file) {
+  char line[1024];
+  char *save_line;
+  int num_points = 0;
+
+  rewind(input_file);
+  while (fgets(line, sizeof(line), input_file) != NULL) {
+    if (strtok_r(line, " \t\n", &save_line) != 0) {
+      num_points++;
+    }
+  }
+
+  return num_points;
 }
 
-void KmeansBenchmark::Swap_features() {
-  size_t global_work = (size_t)npoints;
+int KmeansBenchmark::GetNumberFeaturesFromInputFile(FILE *input_file) {
+  char line[1024];
+  char *save_line;
+  int num_features = 0;
+
+  rewind(input_file);
+  while (fgets(line, sizeof(line), input_file) != NULL) {
+    if (strtok_r(line, " \t\n", &save_line) == NULL) continue;
+
+    while (strtok_r(NULL, " ,\t\n", &save_line) != NULL) {
+      num_features++;
+    }
+    break;
+  }
+
+  return num_features;
+}
+
+void KmeansBenchmark::LoadFeaturesFromInputFile(FILE *input_file) {
+  char line[1024];
+  char *save_line;
+
+  int index = 0;
+  rewind(input_file);
+  while (fgets(line, 1024, input_file) != NULL) {
+    // This if can avoid the index of the point to be insert into the
+    // feature array
+    if (strtok_r(line, " \t\n", &save_line) == NULL) continue;
+
+    for (int j = 0; j < num_features_; j++) {
+      feature_[0][index] = atof(strtok_r(NULL, " ,\t\n", &save_line));
+      index++;
+    }
+  }
+}
+
+void KmeansBenchmark::CreateTemporaryMemory() {
+  feature_transpose_ = new float[num_points_ * num_features_];
+}
+
+void KmeansBenchmark::TransposeFeatures() {
+  size_t global_work = (size_t)num_points_;
   size_t local_work_size = BLOCK_SIZE;
-  if (global_work % local_work_size != 0)
-    global_work = (global_work / local_work_size + 1) * local_work_size;
 
   SNK_INIT_LPARM(lparm, 0);
   lparm->ldims[0] = local_work_size;
   lparm->gdims[0] = global_work;
-  kmeans_swap(feature[0], d_feature_swap, npoints, nfeatures, lparm);
+  kmeans_swap(feature_[0], feature_transpose_, num_points_, num_features_,
+              lparm);
 }
 
 void KmeansBenchmark::Free_mem() {
-  /*
-  delete[] d_feature;
-  delete[] d_feature_swap;
-  delete[] d_cluster;
-  delete[] d_membership;
-  delete[] membership_OCL;
-  */
+  delete feature_transpose_;
 }
 
-void KmeansBenchmark::Kmeans_ocl() {
-  printf("iterating\n");
-  int i, j;
-
-  // Ke Wang adjustable local group size 2013/08/07 10:37:33
-  // work group size is defined by RD_WG_SIZE_1 or RD_WG_SIZE_1_0 2014/06/10
-  // 17:00:41
-  size_t global_work = (size_t)npoints;
-  size_t local_work_size = BLOCK_SIZE2;
-
-  if (global_work % local_work_size != 0)
-    global_work = (global_work / local_work_size + 1) * local_work_size;
+void KmeansBenchmark::UpdateMembership(int num_clusters) {
+  int *new_membership = new int[num_points_];
+  size_t global_work = (size_t)num_points_;
+  size_t local_work_size = BLOCK_SIZE;
 
   SNK_INIT_LPARM(lparm, 0);
   lparm->ldims[0] = local_work_size;
@@ -171,259 +173,164 @@ void KmeansBenchmark::Kmeans_ocl() {
 
   int size = 0;
   int offset = 0;
-  kmeans_kernel_c(d_feature_swap, clusters[0], membership_OCL, npoints,
-                  nclusters, nfeatures, offset, size, lparm);
+  kmeans_kernel_c(feature_transpose_, clusters_[0], new_membership, num_points_,
+                  num_clusters, num_features_, offset, size, lparm);
 
-  int delta_tmp = 0;
-  for (i = 0; i < npoints; i++) {
-    int cluster_id = membership_OCL[i];
-    new_centers_len[cluster_id]++;
-    if (membership_OCL[i] != membership[i]) {
-      // update membership
-      delta_tmp++;
-      membership[i] = membership_OCL[i];
-    }
-    for (j = 0; j < nfeatures; j++) {
-      new_centers[cluster_id][j] += feature[i][j];
+  delta = 0;
+  for (int i = 0; i < num_points_; i++) {
+    if (new_membership[i] != membership_[i]) {
+      delta++;
+      membership_[i] = new_membership[i];
     }
   }
-
-  delta = static_cast<float>(delta_tmp);
 }
 
-void KmeansBenchmark::Kmeans_clustering() {
-  printf("Running\n");
-  int i, j, n = 0;  // counters
-  int loop = 0, temp;
-  int initial_points = npoints;
-  int c = 0;
+void KmeansBenchmark::DumpMembership() {
+  for (int i = 0; i < num_points_; i++) {
+    printf("Point %d, belongs to cluster %d\n", i, membership_[i]);
+  }
+}
 
-  // nclusters should never be > npoints
+void KmeansBenchmark::KmeansClustering(int num_clusters) {
+  int num_iteration = 0;
+
   // that would guarantee a cluster without points
-  if (nclusters > npoints) {
-    nclusters = npoints;
+  if (num_clusters > num_points_) {
+    printf("Number of clusters cannot be less than the number of points\n");
+    exit(1);
   }
 
-  // allocate space for and initialize returning variable clusters[]
-  clusters = new float *[nclusters];
-  clusters[0] = new float[nclusters * nfeatures];
-  for (i = 1; i < nclusters; i++) {
-    clusters[i] = clusters[i - 1] + nfeatures;
-  }
-
-  // initialize the random clusters
-  initial = new int[npoints];
-  for (i = 0; i < npoints; i++) {
-    initial[i] = i;
-  }
-
-  // randomly pick cluster centers
-  for (i = 0; i < nclusters && initial_points >= 0; i++) {
-    // n = (int)rand() % initial_points;
-
-    for (j = 0; j < nfeatures; j++)
-      clusters[i][j] = feature[initial[n]][j];  // remapped
-
-    // swap the selected index to the end (not really necessary,
-    // could just move the end up)
-    temp = initial[n];
-    initial[n] = initial[initial_points - 1];
-    initial[initial_points - 1] = temp;
-    initial_points--;
-    n++;
-  }
-
-  // initialize the membership to -1 for all
-  for (i = 0; i < npoints; i++) {
-    membership[i] = -1;
-  }
-
-  // allocate space for and initialize new_centers_len and new_centers
-  new_centers_len = new int[nclusters]();
-  new_centers = new float *[nclusters];
-  new_centers[0] = new float[nclusters * nfeatures]();
-
-  for (i = 1; i < nclusters; i++)
-    new_centers[i] = new_centers[i - 1] + nfeatures;
-
+  InitializeClusters(num_clusters);
+  InitializeMembership();
+  
   // iterate until convergence
   do {
-    Kmeans_ocl();
+    UpdateMembership(num_clusters);
+    UpdateClusterCentroids(num_clusters);
+    num_iteration++;
+  } while ((delta > 0) && (num_iteration < 500));
 
-    // replace old cluster centers with new_centers
-    // CPU side of reduction
-    for (i = 0; i < nclusters; i++) {
-      for (j = 0; j < nfeatures; j++) {
-        if (new_centers_len[i] > 0) {  // take average i.e. sum/n
-          clusters[i][j] = new_centers[i][j] / new_centers_len[i];
-        }
-        new_centers[i][j] = 0.0;  // set back to 0
-      }
-      new_centers_len[i] = 0;  // set back to 0
+  printf("iterated %d times\n", num_iteration);
+}
+
+void KmeansBenchmark::UpdateClusterCentroids(int num_clusters) {
+  // Allocate space for and initialize new_centers_len and new_centers
+  int *member_count = new int[num_clusters]();
+
+  // Clean up clusters_
+  for (int i = 0; i < num_clusters; i++) {
+    for (int j = 0; j < num_features_; j++) {
+      clusters_[i][j] = 0;
     }
+  }
 
-    c++;
-  } while ((delta > threshold) && (loop++ < 500));
+  // Calculate sum
+  for (int i = 0; i < num_points_; i++) {
+    for (int j = 0; j < num_features_; j++) {
+      clusters_[membership_[i]][j] += feature_[i][j];
+    }
+    member_count[membership_[i]]++;
+  }
 
-  printf("iterated %d times\n", c);
+  // For each cluster, devide by the number of points in the cluster
+  for(int i = 0; i < num_clusters; i++) {
+    for (int j = 0; j < num_features_; j++) {
+      clusters_[i][j] /= member_count[i];
+    }
+  }
+}
 
-  delete[] new_centers[0];
-  delete[] new_centers;
-  delete[] new_centers_len;
+void KmeansBenchmark::InitializeClusters(int num_clusters) {
+  clusters_ = new float *[num_clusters];
+  clusters_[0] = new float[num_clusters * num_features_];
+  for (int i = 1; i < num_clusters; i++) {
+    clusters_[i] = clusters_[i - 1] + num_features_;
+  }
 
-  // clusters is pointed to tmp_cluster_centres
-  // return clusters;
-  tmp_cluster_centres = clusters;
+  for (int i = 0; i < num_clusters; i++) {
+    for (int j = 0; j < num_features_; j++) {
+      clusters_[i][j] = feature_[i][j];
+    }
+  }
+}
+
+void KmeansBenchmark::InitializeMembership() {
+  for (int i = 0; i < num_points_; i++) {
+    membership_[i] = -1;
+  }
+}
+
+void KmeansBenchmark::DumpClusterCentroids(int num_clusters) {
+  for (int i = 0; i < num_clusters; i++) {
+    printf("Clusters %d: ", i);
+    for (int j = 0; j < num_features_; j++) {
+      printf("%3.2f, ", clusters_[i][j]);
+    }
+    printf("\n");
+  }
+
 }
 
 void KmeansBenchmark::Clustering() {
-  cluster_centres = NULL;
-  index = 0;  // number of iteration to reach the best RMSE
+  membership_ = new int[num_points_];
+  min_rmse_ = FLT_MAX;
 
-  // fixme
-  membership = new int[npoints];
-
-  min_rmse_ref = FLT_MAX;
-
-  int i;
-
-  // sweep k from min to max_nclusters to find the best number of clusters
-  for (nclusters = min_nclusters; nclusters <= max_nclusters; nclusters++) {
+  // sweep k from min to max_clusters_ to find the best number of clusters
+  for (int num_clusters = min_clusters_; num_clusters <= max_clusters_;
+       num_clusters++) {
     // cannot have more clusters than points
-    if (nclusters > npoints) break;
+    if (num_clusters > num_points_) break;
 
-    // allocate device memory, invert data array
-    Create_mem();
-    Swap_features();
+    CreateTemporaryMemory();
+    TransposeFeatures();
 
-    // iterate nloops times for each number of clusters //
-    for (i = 0; i < nloops; i++) {
-      Kmeans_clustering();
-
-      if (cluster_centres) {
-        free(cluster_centres[0]);
-        free(cluster_centres);
-      }
-
-      cluster_centres = tmp_cluster_centres;
-
-      // find the number of clusters with the best RMSE //
-      if (isRMSE) {
-        RMS_err();
-
-        if (rmse < min_rmse_ref) {
-          min_rmse_ref = rmse;         // update reference min RMSE
-          min_rmse = min_rmse_ref;     // update return min RMSE
-          best_nclusters = nclusters;  // update optimum number of clusters
-          index = i;  // update number of iteration to reach best RMSE
-        }
-      }
+    KmeansClustering(num_clusters);
+    
+    float rmse = CalculateRMSE();
+    if (rmse < min_rmse_) {
+      min_rmse_ = rmse;
+      best_num_clusters_ = num_clusters;
     }
   }
 
-  delete[] membership;
+  delete[] membership_;
 }
 
-// multi-dimensional spatial Euclid distance square
-float KmeansBenchmark::euclid_dist_2(float *pt1, float *pt2) {
-  int i;
-  float ans = 0.0;
-
-  for (i = 0; i < nfeatures; i++) ans += (pt1[i] - pt2[i]) * (pt1[i] - pt2[i]);
-
-  return (ans);
-}
-
-int KmeansBenchmark::find_nearest_point(float *pt, float **pts) {
-  int index_local = 0;
-  int i;
-  float max_dist = FLT_MAX;
-
-  // find the cluster center id with min distance to pt
-  for (i = 0; i < nclusters; i++) {
-    float dist;
-    dist = euclid_dist_2(pt, pts[i]);  // no need square root
-    if (dist < max_dist) {
-      max_dist = dist;
-      index_local = i;
-    }
+float KmeansBenchmark::CalculateRMSE() {
+  float mean_square_error = 0;
+  for (int i = 0; i < num_points_; i++) {
+    float distance_square = 0;
+    for (int j = 0; j < num_features_; j++) {
+      distance_square += pow((feature_[i][j] - clusters_[membership_[i]][j]), 2);
+    } 
+    mean_square_error += distance_square;
   }
-  return index_local;
+  mean_square_error /= num_points_;
+  return sqrt(mean_square_error);
 }
 
-void KmeansBenchmark::RMS_err() {
-  int i;
-  int nearest_cluster_index;  // cluster center id with min distance to pt
-  float sum_euclid = 0.0;     // sum of Euclidean distance squares
-
-  // pass data pointers
-  float **feature_loc, **cluster_centres_loc;
-  feature_loc = feature;
-  cluster_centres_loc = tmp_cluster_centres;
-
-  // calculate and sum the sqaure of euclidean distance
-  for (i = 0; i < npoints; i++) {
-    nearest_cluster_index =
-        find_nearest_point(feature_loc[i], cluster_centres_loc);
-
-    sum_euclid += euclid_dist_2(feature_loc[i],
-                                cluster_centres_loc[nearest_cluster_index]);
-  }
-
-  // divide by n, then take sqrt
-  rmse = sqrt(sum_euclid / npoints);
-}
-
-void KmeansBenchmark::Display_results() {
+void KmeansBenchmark::DisplayResults() {
   int i, j;
 
   // cluster center coordinates : displayed only for when k=1
-  if ((min_nclusters == max_nclusters) && (isOutput == 1)) {
+  if (min_clusters_ == max_clusters_) {
     printf("\n================= Centroid Coordinates =================\n");
-    for (i = 0; i < max_nclusters; i++) {
+    for (i = 0; i < max_clusters_; i++) {
       printf("%d:", i);
-      for (j = 0; j < nfeatures; j++) {
-        printf(" %.2f", cluster_centres[i][j]);
+      for (j = 0; j < num_features_; j++) {
+        printf(" %.2f", clusters_[i][j]);
       }
       printf("\n\n");
     }
   }
 
-  // float len = (float)((max_nclusters - min_nclusters + 1) * nloops);
-
-  printf("Number of Iteration: %d\n", nloops);
-  // printf("Time for I/O: %.5fsec\n", io_timing);
-  // printf("Time for Entire Clustering: %.5fsec\n", cluster_timing);
-
-  if (min_nclusters != max_nclusters) {
-    if (nloops != 1) {
-      // range of k, multiple iteration
-      // printf("Average Clustering Time: %fsec\n",
-      //      cluster_timing / len);
-      printf("Best number of clusters is %d\n", best_nclusters);
-    } else {
-      // range of k, single iteration
-      // printf("Average Clustering Time: %fsec\n",
-      //      cluster_timing / len);
-      printf("Best number of clusters is %d\n", best_nclusters);
-    }
-  } else {
-    if (nloops != 1) {
-      // single k, multiple iteration
-      // printf("Average Clustering Time: %.5fsec\n",
-      //      cluster_timing / nloops);
-      if (isRMSE) {  // if calculated RMSE
-        printf("Number of trials to approach the best RMSE of %.3f is %d\n",
-               min_rmse, index + 1);
-      }
-    } else {
-      // single k, single iteration
-      if (isRMSE) {
-        // if calculated RMSE
-        printf("Root Mean Squared Error: %.3f\n", min_rmse);
-      }
-    }
+  if (min_clusters_ != max_clusters_) {
+    // range of k, single iteration
+    // printf("Average Clustering Time: %fsec\n",
+    //      cluster_timing / len);
+    printf("Best number of clusters is %d\n", best_num_clusters_);
   }
+  printf("Root Mean Squared Error: %.3f\n", min_rmse_);
 }
 
 void KmeansBenchmark::Initialize() {
@@ -438,10 +345,10 @@ void KmeansBenchmark::Initialize() {
 
 void KmeansBenchmark::Run() { Clustering(); }
 
-void KmeansBenchmark::Summarize() { Display_results(); }
+void KmeansBenchmark::Summarize() { DisplayResults(); }
 
 void KmeansBenchmark::Verify() {}
 
 void KmeansBenchmark::Cleanup() {
-  Free_mem();  // free device memory
+  Free_mem();
 }
