@@ -53,18 +53,12 @@ int main(int argc, char const *argv[]) {
       "This benchmarks runs the AES Algorithm.");
   command_line_option.AddArgument("Help", "bool", "false", "-h", "--help",
                                   "Dump help information");
-  command_line_option.AddArgument("Mode", "string", "h", "-m", "--mode",
-                                  "Mode of input parsing, \'h\' interpretes "
-                                  "the data in hex format, \'a\' interpretes "
-                                  "the data as ASCII");
   command_line_option.AddArgument("InputFile", "string", "in.txt", "-i",
                                   "--input", "The input file to be encrypted");
-  command_line_option.AddArgument("Keyfile", "string", "key.txt", "-k",
-                                  "--keyfile",
+  command_line_option.AddArgument("KeyFile", "string", "key.txt", "-k", "--key",
                                   "The file containing the key in hex format");
-  command_line_option.AddArgument(
-      "OutFile", "string", "out.bin", "-o", "--output",
-      "The file where the encrypted output should be written");
+  command_line_option.AddArgument("Verify", "bool", "false", "-v", "--verify", 
+                                  "Verify the GPU result by CPU.");
 
   command_line_option.Parse(argc, argv);
   if (command_line_option.GetArgumentValue("Help")->AsBool()) {
@@ -72,21 +66,15 @@ int main(int argc, char const *argv[]) {
     return 0;
   }
 
-  FilePackage fp;
-  fp.mode = const_cast<char *>(
-      command_line_option.GetArgumentValue("Mode")->AsString().c_str());
-  fp.in = const_cast<char *>(
-      command_line_option.GetArgumentValue("InputFile")->AsString().c_str());
-  fp.key = const_cast<char *>(
-      command_line_option.GetArgumentValue("Keyfile")->AsString().c_str());
-  fp.out = const_cast<char *>(
-      command_line_option.GetArgumentValue("OutFile")->AsString().c_str());
-
-  std::unique_ptr<AES> aes(new AES());
-  aes->SetInitialParameters(fp);
+  std::unique_ptr<AesHsaBenchmark> benchmark(new AesHsaBenchmark());
+  benchmark->SetInputFileName(
+      command_line_option.GetArgumentValue("InputFile")->AsString());
+  benchmark->SetKeyFileName(
+      command_line_option.GetArgumentValue("KeyFile")->AsString());
 
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(aes.get(), timer.get());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
+  runner.set_verification_mode(command_line_option.GetArgumentValue("Verify")->AsBool());
   runner.Run();
   runner.Summarize();
 

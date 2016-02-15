@@ -21,26 +21,26 @@ endif()
 
 # Set CMAKE_BUILD_TYPE (default = Release)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-	set(CMAKE_BUILD_TYPE Release)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 
 ############################################################################
 
 # Find OpenCL include and libs
 find_path( OPENCL_INCLUDE_DIRS
-    NAMES OpenCL/cl.h CL/cl.h
-    HINTS ../../include/ $ENV{AMDAPPSDKROOT}/include
+  NAMES OpenCL/cl.h CL/cl.h
+  HINTS $ENV{AMDAPPSDKROOT}/include
 )
 mark_as_advanced(OPENCL_INCLUDE_DIRS)
 
 find_library( OPENCL_LIBRARIES
-	NAMES OpenCL
-	HINTS $ENV{AMDAPPSDKROOT}/lib
-	PATH_SUFFIXES ${PLATFORM}${BITNESS} ${BITNESS_SUFFIX}
+  NAMES OpenCL
+  HINTS $ENV{AMDAPPSDKROOT}/lib
+  PATH_SUFFIXES ${PLATFORM}${BITNESS} ${BITNESS_SUFFIX}
 )
 mark_as_advanced( OPENCL_LIBRARIES )
 
 if( OPENCL_INCLUDE_DIRS STREQUAL "" OR OPENCL_LIBRARIES STREQUAL "")
-	message( "OpenCL include file and libraries not found. OpenCL benchmarks \
-      will be skipped." )
+  message( "OpenCL include file and libraries not found. OpenCL benchmarks \
+           will be skipped." )
 endif( )
