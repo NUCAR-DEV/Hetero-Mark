@@ -53,10 +53,12 @@ class FIR : public Benchmark {
   cl_uint num_data_ = 0;
   cl_uint num_total_data_ = 0;
   cl_uint num_blocks_ = 0;
-  cl_float* input_ = NULL;
-  cl_float* output_ = NULL;
-  cl_float* coeff_ = NULL;
-  cl_float* history_ = NULL;
+  float *input_ = NULL;
+  float *output_ = NULL;
+  cl_float *input_svm_ = NULL;
+  cl_float *output_svm_ = NULL;
+  cl_float *coeff_ = NULL;
+  cl_float *history_ = NULL;
 
   TimeMeasurement* timer;
 
