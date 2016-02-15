@@ -31,285 +31,262 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/hsa/aes_hsa/aes_hsa_benchmark.h"
-#include <inttypes.h>
-#include <string.h>
-#include <string>
-#include <memory>
-#include <sstream>
+#include <cstdio>
+#include <cstring>
 #include "src/hsa/aes_hsa/kernels.h"
+#include "src/hsa/aes_hsa/aes_hsa_benchmark.h"
 
-AES::AES() {
-  // Init
-  RUNNING_THREADS = MAX_WORK_ITEMS * BASIC_UNIT;
-  expanded_key[59] = {0x00};
-  hex_mode = 1;
+void AesHsaBenchmark::Initialize() {
+  LoadPlaintext();
+
+  LoadKey();
+
+  InitiateCiphertext(&ciphertext_);
 }
 
-AES::~AES() { FreeKernel(); }
-
-void AES::InitFiles() {
-  // Note: fp is a struct defined in the header and set using
-  // setInitialParameters(FilePackage filepackage)
-
-  // The first argument is the hex_mode
-  if (strcmp(fp.mode, "h") == 0) {
-    hex_mode = true;
-  } else if (strcmp(fp.mode, "a") == 0) {
-    hex_mode = false;
-  } else {
-    printf("error: first argument must be \'a\' for ASCII interpretation");
-    printf(" or \'h\' for hex interpretation\n");
-    exit(-1);
+void AesHsaBenchmark::LoadPlaintext() {
+  FILE *input_file = fopen(input_file_name_.c_str(), "r");
+  if (!input_file) {
+    fprintf(stderr, "Fail to open input file.\n");
+    exit(1);
   }
 
-  // The second argument is the infile
-  infile = fopen(fp.in, "r");
-  if (!infile) {
-    printf("error_in\n");
-    exit(-1);
-  }
+  // Get the size of file
+  fseek(input_file, 0L, SEEK_END);
+  uint64_t file_size = ftell(input_file); 
+  fseek(input_file, 0L, SEEK_SET);
 
-  // The third argument is the keyfile, it must be in hex
-  // and broken into two charactor parts (eg. AA BB CC ...)
-  keyfile = fopen(fp.key, "rb");
-  if (!keyfile) {
-    printf("error_key\n");
-    exit(-1);
-  }
+  // 2 char per hex number
+  text_length_ = file_size / 2; 
+  plaintext_ = reinterpret_cast<uint8_t *>(malloc(text_length_));
 
-  // The outfile, the encrypted results will be written here
-  outfile = fopen(fp.out, "w");
-  if (!outfile) {
-    printf("error (permission error: run with sudo or");
-    printf(" in directory the user owns)\n");
-    exit(-1);
+  uint64_t index = 0;
+  unsigned int byte;
+  while (fscanf(input_file, "%02x", &byte) == 1) {
+    plaintext_[index] = static_cast<uint8_t>(byte);
+    index++;
   }
 }
 
-void AES::InitKernel() {}
-
-void AES::FreeFiles() {
-  fclose(infile);
-  fclose(keyfile);
-  fclose(outfile);
-}
-
-void AES::FreeKernel() {}
-
-uint32_t AES::RotateWord(uint32_t word) {
-  // Unions allow the 32-bit word to be operated on without
-  // any memory copies or transformations
-  union {
-    uint8_t bytes[4];
-    uint32_t word;
-  } sub_word __attribute__((aligned));
-
-  // Note: The word is stored backwards, that is why the index
-  // starts at 3 and goes to 0x00
-  sub_word.word = word;
-
-  uint8_t B0 = sub_word.bytes[3];
-  uint8_t B1 = sub_word.bytes[2];
-  uint8_t B2 = sub_word.bytes[1];
-  uint8_t B3 = sub_word.bytes[0];
-
-  sub_word.bytes[3] = B1;  // 0
-  sub_word.bytes[2] = B2;  // 1
-  sub_word.bytes[1] = B3;  // 2
-  sub_word.bytes[0] = B0;  // 3
-
-  return sub_word.word;
-}
-
-uint32_t AES::SubWord(uint32_t word) {
-  union {
-    uint32_t word;
-    uint8_t bytes[4];
-  } sub_word __attribute__((aligned));
-
-  sub_word.word = word;
-
-  sub_word.bytes[3] = s[sub_word.bytes[3]];
-  sub_word.bytes[2] = s[sub_word.bytes[2]];
-  sub_word.bytes[1] = s[sub_word.bytes[1]];
-  sub_word.bytes[0] = s[sub_word.bytes[0]];
-
-  return sub_word.word;
-}
-
-void AES::KeyExpansion(uint8_t *pk) {
-  int i = 0;
-  // Temp union will hold the word that is being processed
-  union {
-    uint8_t bytes[4];
-    uint32_t word;
-  } temp __attribute__((aligned));
-
-  // Univar is the buffer that will hold the expanded key, it
-  // is loaded in 8-bit parts which is why the union is necessary
-  union {
-    uint8_t bytes[4];
-    uint32_t word;
-  } univar[60] __attribute__((aligned));
-
-  for (i = 0; i < Nk; i++) {
-    univar[i].bytes[3] = pk[i * 4];
-    univar[i].bytes[2] = pk[i * 4 + 1];
-    univar[i].bytes[1] = pk[i * 4 + 2];
-    univar[i].bytes[0] = pk[i * 4 + 3];
+void AesHsaBenchmark::LoadKey() {
+  FILE *key_file = fopen(key_file_name_.c_str(), "r");
+  if (!key_file) {
+    fprintf(stderr, "Fail to open key file.\n");
+    exit(1);
   }
 
-  for (i = Nk; i < Nb * (Nr + 1); i++) {
-    temp.word = univar[i - 1].word;
-    if (i % Nk == 0) {
-      temp.word = (SubWord(RotateWord(temp.word)));
-      temp.bytes[3] = temp.bytes[3] ^ (Rcon[i / Nk]);
-    } else if (Nk > 6 && i % Nk == 4) {
-      temp.word = SubWord(temp.word);
+  unsigned int byte;
+  for (int i = 0; i < kKeyLengthInBytes; i++) {
+    if (!fscanf(key_file, "%02x", &byte)) {
+      fprintf(stderr, "Error in key file.\n");
+      exit(1);
     }
-    if (i - 4 % Nk == 0) temp.word = SubWord(temp.word);
-
-    univar[i].word = univar[i - Nk].word ^ temp.word;
+    key_[i] = static_cast<uint8_t>(byte);
   }
 
-  // Copy from the buffer into the variable
-  for (i = 0; i < 60; i++) expanded_key[i] = univar[i].word;
 }
 
-void AES::InitKeys() {
-  // Read the private key in
-  for (int i = 0; i < 32; i++)
-    if (fscanf(keyfile, "%02x", reinterpret_cast<int *>(&key[i]))) {
+void AesHsaBenchmark::InitiateCiphertext(uint8_t **ciphertext) {
+  *ciphertext = reinterpret_cast<uint8_t *>(malloc(text_length_));
+  memcpy(*ciphertext, plaintext_, text_length_);
+}
+
+void AesHsaBenchmark::DumpText(uint8_t *text) {
+  printf("Text: ");
+  for (uint64_t i = 0; i < text_length_; i++) {
+    printf("%02x ", text[i]);
+  }
+  printf("\n");
+}
+
+void AesHsaBenchmark::DumpKey() {
+  printf("Key: ");
+  for (int i = 0; i < kKeyLengthInBytes; i++) {
+    printf("%02x ", key_[i]);
+  }
+  printf("\n");
+}
+
+void AesHsaBenchmark::DumpExpandedKey() {
+  printf("Expanded key: ");
+  for (int i = 0; i < kExpandedKeyLengthInWords; i++) {
+    printf("\nword[%d]: %08x ", i, expanded_key_[i]);
+  }
+  printf("\n");
+}
+
+void AesHsaBenchmark::Run() {
+  ExpandKey();
+  SNK_INIT_LPARM(lparm, 0);
+  int num_blocks = text_length_ / 16;
+  lparm->gdims[0] = num_blocks;
+  lparm->ldims[0] = 64 < num_blocks ? 64 : num_blocks;
+
+  Encrypt(ciphertext_, expanded_key_, lparm);
+}
+
+void AesHsaBenchmark::Verify() {
+  uint8_t *ciphertext_cpu = nullptr;
+  InitiateCiphertext(&ciphertext_cpu);
+
+  ExpandKey();
+
+  uint8_t *encrypt_ptr = ciphertext_cpu;
+  while(encrypt_ptr < ciphertext_cpu + text_length_) {
+    uint8_t *state;
+    state = encrypt_ptr;
+
+    AddRoundKeyCpu(state, 0);
+
+    for (int i = 1; i < kNumRounds; i++) {
+      SubBytesCpu(state);
+      ShiftRowsCpu(state);
+      MixColumnsCpu(state);
+      AddRoundKeyCpu(state, i * kBlockSizeInWords);
     }
-  // If statment exists to supress the "ignored"
-  // results warning
-  // Expand key
-  KeyExpansion(key);
+
+    SubBytesCpu(state);
+    ShiftRowsCpu(state);
+    AddRoundKeyCpu(state, 14 * kBlockSizeInWords);
+ 
+    encrypt_ptr += kBlockSizeInBytes;
+  }
+
+  bool passed = true;
+  for (uint64_t i = 0; i < text_length_; i++) {
+    if (ciphertext_cpu[i] != ciphertext_[i]) {
+      passed = false;
+      printf("Position: %ld, expected to be 0x%02x, but get 0x%02x\n",
+             i, ciphertext_cpu[i], ciphertext_[i]);
+    }
+  }
+
+  if (passed) {
+    printf("Passed. %ld bytes encrypted.\n", text_length_);
+  }
 }
 
-void AES::Initialize() {
-  InitFiles();
-  InitKeys();
-  InitKernel();
+void AesHsaBenchmark::AddRoundKeyCpu(uint8_t *state, uint8_t offset) {
+  for (int i = 0; i < kBlockSizeInWords; i++) {
+    uint32_t state_word = BytesToWord(state + 4 * i);
+    uint32_t after_xor_key = state_word ^ expanded_key_[offset + i];
+    WordToBytes(after_xor_key, state + 4 * i);
+  }
 }
 
-void AES::Run() {
-  int ch = 0;     // The buffer for the data read in using ASCII/binary mode
-  int spawn = 0;  // The number of compute units that will be enqueued per cycle
-  int end = 1;    // Changed to 0 when the end of the file is reached,
-                  // terminates the infinite loop
-  unsigned int current_offset = 0;  // Data is linearly dimensionalized
-  uint8_t states[16 * RUNNING_THREADS];
-  while (end) {
-    spawn = 0;
-    // Dispatch many control threads that will report back to main
-    // (for now 5x) - 1 worker per state
-    for (int i = 0; i < RUNNING_THREADS; i++) {
-      current_offset = i * 16;
-      spawn++;
-      for (int ix = 0; ix < 16; ix++) {
-        if (hex_mode == 1) {
-          if (fscanf(infile, "%02x",
-                     (unsigned int *)&states[current_offset + ix]) != EOF) {
-          } else {
-            if (ix > 0) {
-              for (int ixx = ix; ixx < 16; ixx++) {
-                states[current_offset + ixx] = 0x00;
-              }
-            } else {
-              spawn--;
-            }
-            i = RUNNING_THREADS + 1;
-            end = 0;
-            break;
-          }
-        } else {
-          ch = getc(infile);
-          if (ch != EOF) {
-            states[current_offset + ix] = ch;
-          } else {
-            if (ix > 0) {
-              for (int ixx = ix; ixx < 16; ixx++) {
-                states[current_offset + ixx] = 0x00;
-              }
-            } else {
-              spawn--;
-            }
-            i = RUNNING_THREADS + 1;
-            end = 0;
-            break;
-          }
-        }
+void AesHsaBenchmark::SubBytesCpu(uint8_t *state) {
+  for (int i = 0; i < kBlockSizeInBytes; i++) {
+    state[i] = s[state[i]];
+  }
+}
+
+void AesHsaBenchmark::ShiftRowsCpu(uint8_t *state) {
+  for (int i = 0; i < 4; i++) {
+    uint8_t bytes[4];
+    bytes[0] = state[i];
+    bytes[1] = state[i + 4];
+    bytes[2] = state[i + 8];
+    bytes[3] = state[i + 12];
+
+    uint32_t word = BytesToWord(bytes);
+    for (int j = 0; j < i; j++) {
+      word =  RotateWord(word);
+    }
+    WordToBytes(word, bytes);
+
+    state[i] = bytes[0]; 
+    state[i + 4] = bytes[1];
+    state[i + 8] = bytes[2];
+    state[i + 12] = bytes[3];
+  }
+}
+
+void AesHsaBenchmark::MixColumnsCpu(uint8_t *state) {
+  for (int i = 0; i < kBlockSizeInWords; i++) {
+    MixColumnsOneWord(state + 4 * i);
+  } 
+}
+
+void AesHsaBenchmark::MixColumnsOneWord(uint8_t *word) {
+    uint8_t a[4];
+    uint8_t b[4];
+    uint8_t high_bit;
+    for (int i = 0; i < 4; i++) {
+      a[i] = word[i];
+      high_bit = word[i] & 0x80;
+      b[i] = word[i] << 1;
+      if (high_bit == 0x80) {
+        b[i] ^= 0x1b;
       }
     }
-    if (spawn == 0) {
-      break;
+    word[0] = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1];
+    word[1] = b[1] ^ a[0] ^ a[3] ^ b[2] ^ a[2];
+    word[2] = b[2] ^ a[1] ^ a[0] ^ b[3] ^ a[3]; 
+    word[3] = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0];
+}
+
+void AesHsaBenchmark::ExpandKey() {
+  for (int i = 0; i < kKeyLengthInWords; i++) {
+    expanded_key_[i] = BytesToWord(key_ + 4 * i);
+  }
+
+  uint32_t temp;
+  for (int i = kKeyLengthInWords; i < kExpandedKeyLengthInWords; i++) {
+    temp = expanded_key_[i - 1]; 
+
+    if (i % kKeyLengthInWords == 0) {
+      uint32_t after_rotate_word = RotateWord(temp);
+      uint32_t after_sub_word = SubWord(after_rotate_word);
+      uint32_t rcon_word = Rcon[i / kKeyLengthInWords] << 24;
+      temp = after_sub_word ^ rcon_word;
+    } else if (i % kKeyLengthInWords == 4) {
+      temp = SubWord(temp);
     }
-    // arrange data correctly
-    for (int i = 0; i < spawn; i++) {
-      current_offset = i * 16;
-      uint8_t temp[16];
-      memcpy(&temp[0], &states[current_offset], sizeof(uint8_t));
-      memcpy(&temp[4], &states[current_offset + 1], sizeof(uint8_t));
-      memcpy(&temp[8], &states[current_offset + 2], sizeof(uint8_t));
-      memcpy(&temp[12], &states[current_offset + 3], sizeof(uint8_t));
-      memcpy(&temp[1], &states[current_offset + 4], sizeof(uint8_t));
-      memcpy(&temp[5], &states[current_offset + 5], sizeof(uint8_t));
-      memcpy(&temp[9], &states[current_offset + 6], sizeof(uint8_t));
-      memcpy(&temp[13], &states[current_offset + 7], sizeof(uint8_t));
-      memcpy(&temp[2], &states[current_offset + 8], sizeof(uint8_t));
-      memcpy(&temp[6], &states[current_offset + 9], sizeof(uint8_t));
-      memcpy(&temp[10], &states[current_offset + 10], sizeof(uint8_t));
-      memcpy(&temp[14], &states[current_offset + 11], sizeof(uint8_t));
-      memcpy(&temp[3], &states[current_offset + 12], sizeof(uint8_t));
-      memcpy(&temp[7], &states[current_offset + 13], sizeof(uint8_t));
-      memcpy(&temp[11], &states[current_offset + 14], sizeof(uint8_t));
-      memcpy(&temp[15], &states[current_offset + 15], sizeof(uint8_t));
-      for (int c = 0; c < 16; c++) {
-        memcpy(&states[current_offset + c], &temp[c], sizeof(uint8_t));
-      }
-    }
+    expanded_key_[i] = expanded_key_[i - kKeyLengthInWords] ^ temp;
+  }
+}
 
-    // Calculations to optimize the execution of the kernel
-    size_t local_ws;
-    const size_t global_ws = spawn;
-    if (spawn < BASIC_UNIT) {
-      local_ws = 1;
-    } else if (spawn % BASIC_UNIT > 0) {
-      local_ws = (spawn / BASIC_UNIT) + 1;
-    } else {
-      local_ws = (spawn / BASIC_UNIT);
-    }
+void AesHsaBenchmark::WordToBytes(uint32_t word, uint8_t *bytes) {
+  bytes[0] = (word & 0xff000000) >> 24;
+  bytes[1] = (word & 0x00ff0000) >> 16;
+  bytes[2] = (word & 0x0000ff00) >> 8;
+  bytes[3] = (word & 0x000000ff) >> 0;
+}
 
-    SNK_INIT_LPARM(lparm, global_ws);
-    lparm->ldims[0] = local_ws;
+uint32_t AesHsaBenchmark::BytesToWord(uint8_t *bytes) {
+  return (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
+}
 
-    CLRunnerntrl(states, expanded_key, lparm);
+uint32_t AesHsaBenchmark::RotateWord(uint32_t word) {
+  uint32_t after_rotation;
+  uint8_t bytes[5];
+  WordToBytes(word, bytes);
+  bytes[4] = bytes[0];
 
-    for (int i = 0; i < spawn; i++) {
-      current_offset = i * 16;
-      for (int ix = 0; ix < 4; ix++) {
-        char hex[3];
-        snprintf(hex, sizeof(hex), "%02x", states[current_offset + ix]);
-        for (int i = 0; i < 3; i++) {
-          putc(hex[i], outfile);
-        }
-        snprintf(hex, sizeof(hex), "%02x", states[current_offset + ix + 4]);
-        for (int i = 0; i < 3; i++) {
-          putc(hex[i], outfile);
-        }
-        snprintf(hex, sizeof(hex), "%02x", states[current_offset + ix + 8]);
-        for (int i = 0; i < 3; i++) {
-          putc(hex[i], outfile);
-        }
-        snprintf(hex, sizeof(hex), "%02x", states[current_offset + ix + 12]);
-        for (int i = 0; i < 3; i++) {
-          putc(hex[i], outfile);
-        }
-      }
-    }
-  }  // while
+  after_rotation = BytesToWord(bytes + 1);
+  return after_rotation;
+}
 
-  fflush(outfile);
+uint32_t AesHsaBenchmark::SubWord(uint32_t word) {
+  uint32_t after_subword;
+  uint8_t bytes[4];
+
+  WordToBytes(word, bytes);
+  
+  for (int i = 0; i < 4; i++) {
+    bytes[i] = s[bytes[i]];
+  }
+
+  after_subword = BytesToWord(bytes);
+  return after_subword;
+}
+
+void AesHsaBenchmark::Summarize() {
+  printf("Plaintext: ");
+  DumpText(plaintext_);
+
+  DumpKey();
+
+  printf("Ciphertext: ");
+  DumpText(ciphertext_);
 }
