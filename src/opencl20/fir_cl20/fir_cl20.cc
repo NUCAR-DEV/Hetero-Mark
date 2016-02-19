@@ -80,15 +80,14 @@ void FIR::InitializeBuffers() {
   input_ = reinterpret_cast<float *>(malloc(num_total_data_ * sizeof(float)));
   output_ = reinterpret_cast<float *>(malloc(num_total_data_ * sizeof(float)));
 
-  input_svm_ = reinterpret_cast<cl_float *>(clSVMAlloc(
-      context_, CL_MEM_READ_ONLY, num_data_ * sizeof(cl_float), 0));
-  output_svm_ = reinterpret_cast<cl_float *>(clSVMAlloc(
-      context_, CL_MEM_READ_WRITE, num_data_ * sizeof(cl_float), 0));
+  input_svm_ = reinterpret_cast<cl_float *>(
+      clSVMAlloc(context_, CL_MEM_READ_ONLY, num_data_ * sizeof(cl_float), 0));
+  output_svm_ = reinterpret_cast<cl_float *>(
+      clSVMAlloc(context_, CL_MEM_READ_WRITE, num_data_ * sizeof(cl_float), 0));
   coeff_ = reinterpret_cast<cl_float *>(
       clSVMAlloc(context_, CL_MEM_READ_ONLY, num_tap_ * sizeof(cl_float), 0));
   history_ = reinterpret_cast<cl_float *>(
       clSVMAlloc(context_, CL_MEM_READ_WRITE, num_tap_ * sizeof(cl_float), 0));
-
 }
 
 void FIR::InitializeData() {
@@ -105,7 +104,6 @@ void FIR::InitializeData() {
     coeff_[i] =
         static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
-
 
   for (unsigned i = 0; i < num_tap_; i++) {
     history_[i] = 0.0;
@@ -178,10 +176,8 @@ void FIR::Run() {
 
   MapSvmBuffers();
   while (count < num_blocks_) {
-
     memcpy(input_svm_, input_ + num_data_ * count, num_data_ * sizeof(float));
     UnmapSvmBuffers();
-
 
     // Execute the OpenCL kernel on the list
     ret = clEnqueueNDRangeKernel(cmd_queue_, fir_kernel_, CL_TRUE, NULL,

@@ -39,8 +39,8 @@
 
 class FIR : public Benchmark {
  private:
-  clHelper::clRuntime* runtime_;
-  clHelper::clFile* file_;
+  clHelper::clRuntime *runtime_;
+  clHelper::clFile *file_;
 
   cl_platform_id platform_;
   cl_device_id device_;
@@ -60,7 +60,7 @@ class FIR : public Benchmark {
   cl_float *coeff_ = NULL;
   cl_float *history_ = NULL;
 
-  TimeMeasurement* timer;
+  TimeMeasurement *timer;
 
   void InitializeCL();
   void InitializeData();
@@ -78,7 +78,7 @@ class FIR : public Benchmark {
     this->num_data_ = num_data;
   }
 
-  void SetTimer(TimeMeasurement* timer) { this->timer = timer; }
+  void SetTimer(TimeMeasurement *timer) { this->timer = timer; }
 
   void Initialize() override;
   void Run() override;
