@@ -15,25 +15,6 @@ set( SRC_FILE
   cl_util.cc
 )
 
-# Find OpenCL include and libs
-find_path( OPENCL_INCLUDE_DIRS
-    NAMES OpenCL/cl.h CL/cl.h
-    HINTS ../../include/ $ENV{AMDAPPSDKROOT}/include
-)
-mark_as_advanced(OPENCL_INCLUDE_DIRS)
-
-find_library( OPENCL_LIBRARIES
-	NAMES OpenCL
-	HINTS $ENV{AMDAPPSDKROOT}/lib
-	PATH_SUFFIXES ${PLATFORM}${BITNESS} ${BITNESS_SUFFIX}
-)
-mark_as_advanced( OPENCL_LIBRARIES )
-
-if( OPENCL_INCLUDE_DIRS STREQUAL "" OR OPENCL_LIBRARIES STREQUAL "")
-	message( FATAL_ERROR "Could not locate OpenCL include & libs" )
-endif( )
-
-
 ###############################################################
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
@@ -42,4 +23,6 @@ project( ${FOLDER_NAME} )
 
 include_directories( ${OPENCL_INCLUDE_DIRS} ${CLUTIL_INCLUDE_DIRS} )
 
-add_library(${FOLDER_NAME} ${HEADER_FILE} ${SRC_FILE})
+if(OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES)
+  add_library(${FOLDER_NAME} ${HEADER_FILE} ${SRC_FILE})
+endif()
