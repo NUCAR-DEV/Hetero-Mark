@@ -38,48 +38,20 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+#ifndef SRC_FIR_HSA_FIR_HSA_BENCHMARK_H_
+#define SRC_FIR_HSA_FIR_HSA_BENCHMARK_H_
 
-#include <memory>
-#include <string>
+#include "src/fir/fir_benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
 
-#include "src/common/command_line_option/argument.h"
+class FirHsaBenchmark : public FirBenchmark {
+ private:
+  float *history_ = nullptr;
 
-/**
- * An OptionSetting is a list of registered argument for the program
- */
-class OptionSetting {
  public:
-  /**
-   * The iterator for the arguments
-   */
-  class Iterator {
-   public:
-    virtual bool HasNext() = 0;
-    virtual Argument *Next() = 0;
-  };
-
-  /**
-   * Virtual destructor
-   */
-  virtual ~OptionSetting() {}
-
-  /**
-   * Add an argument to the command line option setting
-   */
-  virtual void AddArgument(std::unique_ptr<Argument> argument) = 0;
-
-  /**
-   * Get the argument iterator
-   */
-  virtual std::unique_ptr<Iterator> GetIterator() = 0;
-
-  virtual void SetProgramName(const char *name) = 0;
-  virtual const std::string GetProgramName() = 0;
-
-  virtual void SetProgramDescription(const char *desciption) = 0;
-  virtual const std::string GetProgramDescription() = 0;
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
 };
 
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+#endif  // SRC_FIR_HSA_FIR_HSA_BENCHMARK_H_

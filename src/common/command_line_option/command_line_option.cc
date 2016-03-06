@@ -47,9 +47,8 @@
 #include "src/common/command_line_option/option_setting_help_printer.h"
 #include "src/common/command_line_option/argument.h"
 
-CommandLineOption::CommandLineOption(const char *name,
-                                     const char *description) {
-  option_setting_.reset(new OptionSettingImpl(name, description));
+CommandLineOption::CommandLineOption() {
+  option_setting_.reset(new OptionSettingImpl());
 }
 
 void CommandLineOption::AddArgument(const char *name, const char *type,

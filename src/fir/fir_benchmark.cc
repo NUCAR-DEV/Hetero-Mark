@@ -40,16 +40,14 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include "src/hsa/fir_hsa/kernels.h"
-#include "src/hsa/fir_hsa/fir_benchmark.h"
+#include "src/fir/fir_benchmark.h"
 
 void FirBenchmark::Initialize() {
-  num_total_data_ = num_data_ * num_blocks_;
+  num_total_data_ = num_data_per_block_ * num_block_;
 
   input_ = new float[num_total_data_];
   output_ = new float[num_total_data_];
   coeff_ = new float[num_tap_];
-  history_ = new float[num_tap_];
 
   unsigned int seed = time(NULL);
 
@@ -63,28 +61,6 @@ void FirBenchmark::Initialize() {
   for (unsigned int i = 0; i < num_tap_; i++) {
     coeff_[i] =
         static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
-  }
-
-  // Initialize history
-  for (unsigned int i = 0; i < num_tap_; i++) {
-    history_[i] = 0.0;
-  }
-
-  timer->End({"Initialize"});
-  timer->Start();
-  FIR_init(0);
-  timer->End({"Compile"});
-  timer->Start();
-}
-
-void FirBenchmark::Run() {
-  for (unsigned int i = 0; i < num_blocks_; i++) {
-    SNK_INIT_LPARM(lparm, 0);
-    lparm->ndim = 1;
-    lparm->gdims[0] = num_data_;
-    lparm->ldims[0] = 64;
-    FIR(input_ + i * num_data_, output_ + i * num_data_, coeff_, history_,
-        num_tap_, lparm);
   }
 }
 
@@ -118,5 +94,4 @@ void FirBenchmark::Cleanup() {
   delete[] input_;
   delete[] output_;
   delete[] coeff_;
-  delete[] history_;
 }

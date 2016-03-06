@@ -38,48 +38,21 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+#ifndef SRC_FIR_FIR_COMMAND_LINE_OPTIONS_H_
+#define SRC_FIR_FIR_COMMAND_LINE_OPTIONS_H_
 
-#include <memory>
-#include <string>
+#include "src/common/command_line_option/benchmark_command_line_options.h"
+#include "src/fir/fir_benchmark.h"
 
-#include "src/common/command_line_option/argument.h"
-
-/**
- * An OptionSetting is a list of registered argument for the program
- */
-class OptionSetting {
+class FirCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
-  /**
-   * The iterator for the arguments
-   */
-  class Iterator {
-   public:
-    virtual bool HasNext() = 0;
-    virtual Argument *Next() = 0;
-  };
+  void RegisterOptions() override;
+  void Parse(int argc, const char *argv[]) override;
+  void ConfigureBenchmark(FirBenchmark *benchmark);
 
-  /**
-   * Virtual destructor
-   */
-  virtual ~OptionSetting() {}
-
-  /**
-   * Add an argument to the command line option setting
-   */
-  virtual void AddArgument(std::unique_ptr<Argument> argument) = 0;
-
-  /**
-   * Get the argument iterator
-   */
-  virtual std::unique_ptr<Iterator> GetIterator() = 0;
-
-  virtual void SetProgramName(const char *name) = 0;
-  virtual const std::string GetProgramName() = 0;
-
-  virtual void SetProgramDescription(const char *desciption) = 0;
-  virtual const std::string GetProgramDescription() = 0;
+ private:
+  uint32_t num_data_per_block_;
+  uint32_t num_block_;
 };
 
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+#endif  // SRC_FIR_FIR_COMMAND_LINE_OPTIONS_H_

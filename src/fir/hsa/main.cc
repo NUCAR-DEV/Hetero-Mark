@@ -38,48 +38,23 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+#include "src/common/benchmark/benchmark_runner.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/fir/fir_command_line_options.h"
+#include "src/fir/hsa/fir_hsa_benchmark.h"
 
-#include <memory>
-#include <string>
+int main(int argc, const char **argv) {
+  std::unique_ptr<FirHsaBenchmark> benchmark(new FirHsaBenchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
-#include "src/common/command_line_option/argument.h"
+  FirCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
 
-/**
- * An OptionSetting is a list of registered argument for the program
- */
-class OptionSetting {
- public:
-  /**
-   * The iterator for the arguments
-   */
-  class Iterator {
-   public:
-    virtual bool HasNext() = 0;
-    virtual Argument *Next() = 0;
-  };
-
-  /**
-   * Virtual destructor
-   */
-  virtual ~OptionSetting() {}
-
-  /**
-   * Add an argument to the command line option setting
-   */
-  virtual void AddArgument(std::unique_ptr<Argument> argument) = 0;
-
-  /**
-   * Get the argument iterator
-   */
-  virtual std::unique_ptr<Iterator> GetIterator() = 0;
-
-  virtual void SetProgramName(const char *name) = 0;
-  virtual const std::string GetProgramName() = 0;
-
-  virtual void SetProgramDescription(const char *desciption) = 0;
-  virtual const std::string GetProgramDescription() = 0;
-};
-
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+  runner.Run();
+  runner.Summarize();
+}

@@ -65,11 +65,8 @@ class OptionSettingImpl : public OptionSetting {
     std::map<std::string, std::unique_ptr<Argument>>::iterator end_;
   };
 
-  /**
-   * Constructor
-   */
-  OptionSettingImpl(const char *name, const char *description)
-      : name_(name), description_(description) {}
+  OptionSettingImpl() {}
+  ~OptionSettingImpl() {}
 
   /**
    * Add an argument
@@ -82,8 +79,12 @@ class OptionSettingImpl : public OptionSetting {
   std::unique_ptr<OptionSetting::Iterator> GetIterator() override;
 
   const std::string GetProgramName() override { return name_; }
+  void SetProgramName(const char *name) override { name_ = std::string(name); }
 
   const std::string GetProgramDescription() override { return description_; }
+  void SetProgramDescription(const char *description) override {
+    description_ = std::string(description);
+  }
 
  protected:
   std::map<std::string, std::unique_ptr<Argument>> arguments_;

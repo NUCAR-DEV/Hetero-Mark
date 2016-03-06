@@ -38,48 +38,36 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+#include "src/fir/fir_command_line_options.h"
 
-#include <memory>
-#include <string>
+void FirCommandLineOptions::RegisterOptions() {
+  BenchmarkCommandLineOptions::RegisterOptions();
 
-#include "src/common/command_line_option/argument.h"
+  command_line_option_.SetBenchmarkName("FIR Benchmark (HSA)");
+  command_line_option_.SetDescription(
+      "This benchmark runs Finite Impulse Response (FIR) Filter.");
 
-/**
- * An OptionSetting is a list of registered argument for the program
- */
-class OptionSetting {
- public:
-  /**
-   * The iterator for the arguments
-   */
-  class Iterator {
-   public:
-    virtual bool HasNext() = 0;
-    virtual Argument *Next() = 0;
-  };
+  command_line_option_.AddArgument("NumDataPerBlock", "integer", "1024", "-x",
+                                   "--num-data-per-block",
+                                   "Number of data points per block");
 
-  /**
-   * Virtual destructor
-   */
-  virtual ~OptionSetting() {}
+  command_line_option_.AddArgument("NumBlock", "integer", "1024", "-y",
+                                   "--num-block",
+                                   "Number of blocks of data to process. "
+                                   "Each block is processed by one kernel "
+                                   "launch.");
+}
 
-  /**
-   * Add an argument to the command line option setting
-   */
-  virtual void AddArgument(std::unique_ptr<Argument> argument) = 0;
+void FirCommandLineOptions::Parse(int argc, const char *argv[]) {
+  BenchmarkCommandLineOptions::Parse(argc, argv);
 
-  /**
-   * Get the argument iterator
-   */
-  virtual std::unique_ptr<Iterator> GetIterator() = 0;
+  num_data_per_block_ =
+      command_line_option_.GetArgumentValue("NumDataPerBlock")->AsUInt32();
 
-  virtual void SetProgramName(const char *name) = 0;
-  virtual const std::string GetProgramName() = 0;
+  num_block_ = command_line_option_.GetArgumentValue("NumBlock")->AsUInt32();
+}
 
-  virtual void SetProgramDescription(const char *desciption) = 0;
-  virtual const std::string GetProgramDescription() = 0;
-};
-
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+void FirCommandLineOptions::ConfigureBenchmark(FirBenchmark *benchmark) {
+  benchmark->SetNumDataPerBlock(num_data_per_block_);
+  benchmark->SetNumBlock(num_block_);
+}

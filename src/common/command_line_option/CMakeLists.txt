@@ -1,6 +1,7 @@
 set( FOLDER_NAME command_line_option )
 set( SUBDIRECTORIES )
 set( SRC_FILES 
+  benchmark_command_line_options.cc
   command_line_option.cc
   option_parser_impl.cc
   option_setting_help_printer.cc
@@ -9,6 +10,7 @@ set( HEADER_FILES
   argument.h
   argument_value.h
   argument_value_factory.h
+  benchmark_command_line_options.h
   command_line_option.h
   option_parser.h
   option_parser_impl.h

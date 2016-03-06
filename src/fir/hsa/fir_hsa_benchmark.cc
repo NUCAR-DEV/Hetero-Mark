@@ -38,48 +38,35 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+#include "src/fir/hsa/fir_hsa_benchmark.h"
+#include <cstdlib>
+#include <cstdio>
+#include "src/fir/hsa/kernels.h"
 
-#include <memory>
-#include <string>
+void FirHsaBenchmark::Initialize() {
+  FirBenchmark::Initialize();
 
-#include "src/common/command_line_option/argument.h"
+  // History saves data that carries to next kernel launch
+  history_ = new float[num_tap_];
+  for (unsigned int i = 0; i < num_tap_; i++) {
+    history_[i] = 0.0;
+  }
 
-/**
- * An OptionSetting is a list of registered argument for the program
- */
-class OptionSetting {
- public:
-  /**
-   * The iterator for the arguments
-   */
-  class Iterator {
-   public:
-    virtual bool HasNext() = 0;
-    virtual Argument *Next() = 0;
-  };
+  FIR_init(0);
+}
 
-  /**
-   * Virtual destructor
-   */
-  virtual ~OptionSetting() {}
+void FirHsaBenchmark::Run() {
+  for (unsigned int i = 0; i < num_block_; i++) {
+    SNK_INIT_LPARM(lparm, 0);
+    lparm->ndim = 1;
+    lparm->gdims[0] = num_data_per_block_;
+    lparm->ldims[0] = 64;
+    FIR(input_ + i * num_data_per_block_, output_ + i * num_data_per_block_,
+        coeff_, history_, num_tap_, lparm);
+  }
+}
 
-  /**
-   * Add an argument to the command line option setting
-   */
-  virtual void AddArgument(std::unique_ptr<Argument> argument) = 0;
-
-  /**
-   * Get the argument iterator
-   */
-  virtual std::unique_ptr<Iterator> GetIterator() = 0;
-
-  virtual void SetProgramName(const char *name) = 0;
-  virtual const std::string GetProgramName() = 0;
-
-  virtual void SetProgramDescription(const char *desciption) = 0;
-  virtual const std::string GetProgramDescription() = 0;
-};
-
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+void FirHsaBenchmark::Cleanup() {
+  FirBenchmark::Cleanup();
+  delete[] history_;
+}

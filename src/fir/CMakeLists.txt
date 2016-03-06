@@ -1,7 +1,14 @@
-set( FOLDER_NAME src )
+set( FOLDER_NAME fir )
 set( SUBDIRECTORIES 
-  common
-  fir
+  hsa
+)
+set( SRC_FILES
+  fir_benchmark.cc
+  fir_command_line_options.cc
+)
+set( HEADER_FILES
+  fir_benchmark.h
+  fir_command_line_options.h
 )
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
@@ -13,6 +20,8 @@ project( ${FOLDER_NAME} )
 # Group samples by folder
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
+
+add_library( fir ${SRC_FILES} ${HEADER_FILES} )
 
 foreach( subdir ${SUBDIRECTORIES} )
     add_subdirectory( ${subdir} )

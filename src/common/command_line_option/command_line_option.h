@@ -52,7 +52,16 @@
  */
 class CommandLineOption {
  public:
-  CommandLineOption(const char *name, const char *description);
+  CommandLineOption();
+
+  void SetBenchmarkName(const char *name) {
+    option_setting_->SetProgramName(name);
+  }
+
+  void SetDescription(const char *description) {
+    option_setting_->SetProgramDescription(description);
+  }
+
   void AddArgument(const char *name, const char *type, const char *defaultValue,
                    const char *shortPrompt, const char *longPrompt,
                    const char *description);

@@ -38,48 +38,37 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+#include <cstdlib>
+#include "src/common/command_line_option/benchmark_command_line_options.h"
 
-#include <memory>
-#include <string>
+void BenchmarkCommandLineOptions::RegisterOptions() {
+  command_line_option_.AddArgument("Help", "bool", "false", "-h", "--help",
+                                   "Dump help information");
 
-#include "src/common/command_line_option/argument.h"
+  command_line_option_.AddArgument("Quiet", "bool", "false", "-q", "--quiet",
+                                   "Mute output");
 
-/**
- * An OptionSetting is a list of registered argument for the program
- */
-class OptionSetting {
- public:
-  /**
-   * The iterator for the arguments
-   */
-  class Iterator {
-   public:
-    virtual bool HasNext() = 0;
-    virtual Argument *Next() = 0;
-  };
+  command_line_option_.AddArgument("Verify", "bool", "false", "-v", "--verify",
+                                   "Verify the GPU result with CPU");
+}
 
-  /**
-   * Virtual destructor
-   */
-  virtual ~OptionSetting() {}
+void BenchmarkCommandLineOptions::Parse(int argc, const char *argv[]) {
+  command_line_option_.Parse(argc, argv);
 
-  /**
-   * Add an argument to the command line option setting
-   */
-  virtual void AddArgument(std::unique_ptr<Argument> argument) = 0;
+  DumpHelpOnRequest();
 
-  /**
-   * Get the argument iterator
-   */
-  virtual std::unique_ptr<Iterator> GetIterator() = 0;
+  quiet_mode_ = command_line_option_.GetArgumentValue("Quiet")->AsBool();
+  verification_ = command_line_option_.GetArgumentValue("Verify")->AsBool();
+}
 
-  virtual void SetProgramName(const char *name) = 0;
-  virtual const std::string GetProgramName() = 0;
+void BenchmarkCommandLineOptions::DumpHelpOnRequest() {
+  if (command_line_option_.GetArgumentValue("Help")->AsBool()) {
+    command_line_option_.Help();
+    exit(0);
+  }
+}
 
-  virtual void SetProgramDescription(const char *desciption) = 0;
-  virtual const std::string GetProgramDescription() = 0;
-};
-
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+void BenchmarkCommandLineOptions::ConfigureBenchmarkRunner(
+    BenchmarkRunner *benchmark_runner) {
+  benchmark_runner->SetVerificationMode(verification_);
+}

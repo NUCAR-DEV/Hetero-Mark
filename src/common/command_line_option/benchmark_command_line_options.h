@@ -38,48 +38,29 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+#ifndef SRC_COMMON_COMMAND_LINE_OPTION_BENCHMARK_COMMAND_LINE_OPTIONS_H_
+#define SRC_COMMON_COMMAND_LINE_OPTION_BENCHMARK_COMMAND_LINE_OPTIONS_H_
 
 #include <memory>
-#include <string>
+#include "src/common/benchmark/benchmark_runner.h"
+#include "src/common/command_line_option/command_line_option.h"
 
-#include "src/common/command_line_option/argument.h"
-
-/**
- * An OptionSetting is a list of registered argument for the program
- */
-class OptionSetting {
+class BenchmarkCommandLineOptions {
  public:
-  /**
-   * The iterator for the arguments
-   */
-  class Iterator {
-   public:
-    virtual bool HasNext() = 0;
-    virtual Argument *Next() = 0;
-  };
+  BenchmarkCommandLineOptions() {}
+  virtual ~BenchmarkCommandLineOptions() {}
 
-  /**
-   * Virtual destructor
-   */
-  virtual ~OptionSetting() {}
+  virtual void RegisterOptions();
+  virtual void Parse(int argc, const char *argv[]);
+  virtual void ConfigureBenchmarkRunner(BenchmarkRunner *benchmark_runner);
 
-  /**
-   * Add an argument to the command line option setting
-   */
-  virtual void AddArgument(std::unique_ptr<Argument> argument) = 0;
+ protected:
+  CommandLineOption command_line_option_;
+  bool quiet_mode_;
+  bool verification_;
 
-  /**
-   * Get the argument iterator
-   */
-  virtual std::unique_ptr<Iterator> GetIterator() = 0;
-
-  virtual void SetProgramName(const char *name) = 0;
-  virtual const std::string GetProgramName() = 0;
-
-  virtual void SetProgramDescription(const char *desciption) = 0;
-  virtual const std::string GetProgramDescription() = 0;
+ private:
+  void DumpHelpOnRequest();
 };
 
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_H_
+#endif  // SRC_COMMON_COMMAND_LINE_OPTION_BENCHMARK_COMMAND_LINE_OPTIONS_H_
