@@ -1,5 +1,6 @@
 set( FOLDER_NAME cl_util )
 set( HEADER_FILE 
+  cl_benchmark.h
   cl_error.h
   cl_file.h
   cl_profiler.h
@@ -8,6 +9,7 @@ set( HEADER_FILE
 )
 
 set( SRC_FILE
+  cl_benchmark.cc
   cl_error.cc
   cl_file.cc
   cl_profiler.cc

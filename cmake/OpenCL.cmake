@@ -34,6 +34,7 @@ find_library( OPENCL_LIBRARIES
 )
 
 if( OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
+  include_directories( ${OPENCL_INCLUDE_DIRS} )
 else( OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
   message("OpenCL include file and libraries not found. OpenCL benchmarks will be skipped.")
 endif()
