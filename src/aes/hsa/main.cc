@@ -40,7 +40,7 @@
 
 #include <cstdlib>
 #include <string>
-#include "src/hsa/aes_hsa/aes_hsa_benchmark.h"
+#include "src/aes/hsa/aes_hsa_benchmark.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
@@ -57,7 +57,7 @@ int main(int argc, char const *argv[]) {
                                   "--input", "The input file to be encrypted");
   command_line_option.AddArgument("KeyFile", "string", "key.txt", "-k", "--key",
                                   "The file containing the key in hex format");
-  command_line_option.AddArgument("Verify", "bool", "false", "-v", "--verify", 
+  command_line_option.AddArgument("Verify", "bool", "false", "-v", "--verify",
                                   "Verify the GPU result by CPU.");
 
   command_line_option.Parse(argc, argv);
@@ -74,7 +74,8 @@ int main(int argc, char const *argv[]) {
 
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
-  runner.set_verification_mode(command_line_option.GetArgumentValue("Verify")->AsBool());
+  runner.SetVerificationMode(
+      command_line_option.GetArgumentValue("Verify")->AsBool());
   runner.Run();
   runner.Summarize();
 

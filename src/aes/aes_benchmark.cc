@@ -52,11 +52,11 @@ void AesBenchmark::LoadPlaintext() {
 
   // Get the size of file
   fseek(input_file, 0L, SEEK_END);
-  uint64_t file_size = ftell(input_file); 
+  uint64_t file_size = ftell(input_file);
   fseek(input_file, 0L, SEEK_SET);
 
   // 2 char per hex number
-  text_length_ = file_size / 2; 
+  text_length_ = file_size / 2;
   plaintext_ = reinterpret_cast<uint8_t *>(malloc(text_length_));
 
   uint64_t index = 0;
@@ -82,7 +82,6 @@ void AesBenchmark::LoadKey() {
     }
     key_[i] = static_cast<uint8_t>(byte);
   }
-
 }
 
 void AesBenchmark::InitiateCiphertext(uint8_t **ciphertext) {
@@ -121,7 +120,7 @@ void AesBenchmark::Verify() {
   ExpandKey();
 
   uint8_t *encrypt_ptr = ciphertext_cpu;
-  while(encrypt_ptr < ciphertext_cpu + text_length_) {
+  while (encrypt_ptr < ciphertext_cpu + text_length_) {
     uint8_t *state;
     state = encrypt_ptr;
 
@@ -137,7 +136,7 @@ void AesBenchmark::Verify() {
     SubBytesCpu(state);
     ShiftRowsCpu(state);
     AddRoundKeyCpu(state, 14 * kBlockSizeInWords);
- 
+
     encrypt_ptr += kBlockSizeInBytes;
   }
 
@@ -145,8 +144,8 @@ void AesBenchmark::Verify() {
   for (uint64_t i = 0; i < text_length_; i++) {
     if (ciphertext_cpu[i] != ciphertext_[i]) {
       passed = false;
-      printf("Position: %ld, expected to be 0x%02x, but get 0x%02x\n",
-             i, ciphertext_cpu[i], ciphertext_[i]);
+      printf("Position: %ld, expected to be 0x%02x, but get 0x%02x\n", i,
+             ciphertext_cpu[i], ciphertext_[i]);
     }
   }
 
@@ -179,11 +178,11 @@ void AesBenchmark::ShiftRowsCpu(uint8_t *state) {
 
     uint32_t word = BytesToWord(bytes);
     for (int j = 0; j < i; j++) {
-      word =  RotateWord(word);
+      word = RotateWord(word);
     }
     WordToBytes(word, bytes);
 
-    state[i] = bytes[0]; 
+    state[i] = bytes[0];
     state[i + 4] = bytes[1];
     state[i + 8] = bytes[2];
     state[i + 12] = bytes[3];
@@ -193,25 +192,25 @@ void AesBenchmark::ShiftRowsCpu(uint8_t *state) {
 void AesBenchmark::MixColumnsCpu(uint8_t *state) {
   for (int i = 0; i < kBlockSizeInWords; i++) {
     MixColumnsOneWord(state + 4 * i);
-  } 
+  }
 }
 
 void AesBenchmark::MixColumnsOneWord(uint8_t *word) {
-    uint8_t a[4];
-    uint8_t b[4];
-    uint8_t high_bit;
-    for (int i = 0; i < 4; i++) {
-      a[i] = word[i];
-      high_bit = word[i] & 0x80;
-      b[i] = word[i] << 1;
-      if (high_bit == 0x80) {
-        b[i] ^= 0x1b;
-      }
+  uint8_t a[4];
+  uint8_t b[4];
+  uint8_t high_bit;
+  for (int i = 0; i < 4; i++) {
+    a[i] = word[i];
+    high_bit = word[i] & 0x80;
+    b[i] = word[i] << 1;
+    if (high_bit == 0x80) {
+      b[i] ^= 0x1b;
     }
-    word[0] = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1];
-    word[1] = b[1] ^ a[0] ^ a[3] ^ b[2] ^ a[2];
-    word[2] = b[2] ^ a[1] ^ a[0] ^ b[3] ^ a[3]; 
-    word[3] = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0];
+  }
+  word[0] = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1];
+  word[1] = b[1] ^ a[0] ^ a[3] ^ b[2] ^ a[2];
+  word[2] = b[2] ^ a[1] ^ a[0] ^ b[3] ^ a[3];
+  word[3] = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0];
 }
 
 void AesBenchmark::ExpandKey() {
@@ -221,7 +220,7 @@ void AesBenchmark::ExpandKey() {
 
   uint32_t temp;
   for (int i = kKeyLengthInWords; i < kExpandedKeyLengthInWords; i++) {
-    temp = expanded_key_[i - 1]; 
+    temp = expanded_key_[i - 1];
 
     if (i % kKeyLengthInWords == 0) {
       uint32_t after_rotate_word = RotateWord(temp);
@@ -261,7 +260,7 @@ uint32_t AesBenchmark::SubWord(uint32_t word) {
   uint8_t bytes[4];
 
   WordToBytes(word, bytes);
-  
+
   for (int i = 0; i < 4; i++) {
     bytes[i] = s[bytes[i]];
   }

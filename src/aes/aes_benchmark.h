@@ -45,51 +45,50 @@
 #include "src/common/benchmark/benchmark.h"
 
 class AesBenchmark : public Benchmark {
-  protected:
-    const static int kBytesPerWord = 4;
-    const static int kKeyLengthInWords = 8;
-    const static int kKeyLengthInBytes = kKeyLengthInWords * kBytesPerWord;
-    const static int kBlockSizeInWords = 4;
-    const static int kBlockSizeInBytes = kBlockSizeInWords * kBytesPerWord;
-    const static int kExpandedKeyLengthInWords = 60;
-    const static int kExpandedKeyLengthInBytes = 
+ protected:
+  static const int kBytesPerWord = 4;
+  static const int kKeyLengthInWords = 8;
+  static const int kKeyLengthInBytes = kKeyLengthInWords * kBytesPerWord;
+  static const int kBlockSizeInWords = 4;
+  static const int kBlockSizeInBytes = kBlockSizeInWords * kBytesPerWord;
+  static const int kExpandedKeyLengthInWords = 60;
+  static const int kExpandedKeyLengthInBytes =
       kExpandedKeyLengthInWords * kBytesPerWord;
-    const static int kNumRounds = 14;
+  static const int kNumRounds = 14;
 
-    std::string input_file_name_;
-    std::string key_file_name_;
+  std::string input_file_name_;
+  std::string key_file_name_;
 
-    uint64_t text_length_;
-    uint8_t *plaintext_;
-    uint8_t *ciphertext_;
-    uint8_t key_[kKeyLengthInBytes];
-    uint32_t expanded_key_[kExpandedKeyLengthInWords];
+  uint64_t text_length_;
+  uint8_t *plaintext_;
+  uint8_t *ciphertext_;
+  uint8_t key_[kKeyLengthInBytes];
+  uint32_t expanded_key_[kExpandedKeyLengthInWords];
 
-    void LoadPlaintext();
-    void LoadKey();
+  void LoadPlaintext();
+  void LoadKey();
 
-    void InitiateCiphertext(uint8_t **ciphertext);
+  void InitiateCiphertext(uint8_t **ciphertext);
 
-    // Key expansion
-    void ExpandKey();
-    void WordToBytes(uint32_t word, uint8_t *bytes);
-    uint32_t BytesToWord(uint8_t *bytes);
-    uint32_t RotateWord(uint32_t word);
-    uint32_t SubWord(uint32_t word);
+  // Key expansion
+  void ExpandKey();
+  void WordToBytes(uint32_t word, uint8_t *bytes);
+  uint32_t BytesToWord(uint8_t *bytes);
+  uint32_t RotateWord(uint32_t word);
+  uint32_t SubWord(uint32_t word);
 
-    // CPU code for verification
-    void AddRoundKeyCpu(uint8_t *state, uint8_t offset);
-    void SubBytesCpu(uint8_t *state);
-    void ShiftRowsCpu(uint8_t *state);
-    void MixColumnsCpu(uint8_t *state);
-    void MixColumnsOneWord(uint8_t *word);
+  // CPU code for verification
+  void AddRoundKeyCpu(uint8_t *state, uint8_t offset);
+  void SubBytesCpu(uint8_t *state);
+  void ShiftRowsCpu(uint8_t *state);
+  void MixColumnsCpu(uint8_t *state);
+  void MixColumnsOneWord(uint8_t *word);
 
+  void DumpText(uint8_t *text);
+  void DumpKey();
+  void DumpExpandedKey();
 
-    void DumpText(uint8_t *text);
-    void DumpKey();
-    void DumpExpandedKey();
-
-    uint8_t s[256] = {
+  uint8_t s[256] = {
       0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B,
       0xFE, 0xD7, 0xAB, 0x76, 0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0,
       0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0, 0xB7, 0xFD, 0x93, 0x26,
@@ -113,7 +112,7 @@ class AesBenchmark : public Benchmark {
       0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F,
       0xB0, 0x54, 0xBB, 0x16};
 
-    uint8_t Rcon[256] = {
+  uint8_t Rcon[256] = {
       0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c,
       0xd8, 0xab, 0x4d, 0x9a, 0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a,
       0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 0x72, 0xe4, 0xd3, 0xbd,
@@ -137,23 +136,23 @@ class AesBenchmark : public Benchmark {
       0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a,
       0x74, 0xe8, 0xcb, 0x8d};
 
-  public:
-    AesBenchmark() {}
-    virtual ~AesBenchmark() {}
+ public:
+  AesBenchmark() {}
+  virtual ~AesBenchmark() {}
 
-    virtual void Initialize() override;
-    virtual void Run() override = 0;
-    virtual void Verify() override;
-    virtual void Cleanup() override = 0;
-    virtual void Summarize() override;
+  void Initialize() override;
+  void Run() override = 0;
+  void Verify() override;
+  void Cleanup() override = 0;
+  void Summarize() override;
 
-    void SetInputFileName(const std::string &file_name) {
-      input_file_name_ = file_name;
-    }
+  void SetInputFileName(const std::string &file_name) {
+    input_file_name_ = file_name;
+  }
 
-    void SetKeyFileName(const std::string &file_name) {
-      key_file_name_ = file_name;
-    }
+  void SetKeyFileName(const std::string &file_name) {
+    key_file_name_ = file_name;
+  }
 };
 
 #endif  // SRC_AES_AES_BENCHMARK_H_

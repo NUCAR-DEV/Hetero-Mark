@@ -50,6 +50,7 @@
 class Benchmark {
  protected:
   TimeMeasurement *timer_;
+  bool quiet_mode_ = false;
 
  public:
   /**
@@ -81,6 +82,11 @@ class Benchmark {
    * Set timer object
    */
   virtual void SetTimer(TimeMeasurement *timer) { timer_ = timer; }
+
+  /**
+   * Set quiet mode
+   */
+  virtual void SetQuietMode(bool quiet_mode) { quiet_mode_ = quiet_mode; }
 };
 
 #endif  // SRC_COMMON_BENCHMARK_BENCHMARK_H_

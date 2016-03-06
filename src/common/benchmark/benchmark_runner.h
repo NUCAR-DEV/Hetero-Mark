@@ -65,7 +65,7 @@ class BenchmarkRunner {
   /**
    * Set if the benchmark should be run in verification mode
    */
-  virtual void set_verification_mode(bool verification_mode) {
+  virtual void SetVerificationMode(bool verification_mode) {
     verification_mode_ = verification_mode;
   }
 

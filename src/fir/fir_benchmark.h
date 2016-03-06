@@ -38,19 +38,35 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_AES_HSA_AES_HSA_BENCHMARK_H_
-#define SRC_AES_HSA_AES_HSA_BENCHMARK_H_
+#ifndef SRC_FIR_FIR_BENCHMARK_H_
+#define SRC_FIR_FIR_BENCHMARK_H_
 
-#include "src/aes/aes_benchmark.h"
+#include "src/common/benchmark/benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
 
-class AesHsaBenchmark : public AesBenchmark {
+class FirBenchmark : public Benchmark {
  private:
- public:
-  AesHsaBenchmark() {}
-  ~AesHsaBenchmark() {}
+  unsigned int num_tap_ = 16;
+  unsigned int num_data_ = 0;
+  unsigned int num_blocks_ = 0;
+  unsigned int num_total_data_ = 0;
+  float *input_ = nullptr;
+  float *output_ = nullptr;
+  float *coeff_ = nullptr;
+  float *history_ = nullptr;
 
+  TimeMeasurement *timer = nullptr;
+
+ public:
+  void Initialize() override;
   void Run() override;
-  void Cleanup() override {}
+  void Verify() override;
+  void Summarize() override;
+  void Cleanup() override;
+
+  void SetNumBlocks(unsigned int num_blocks) { this->num_blocks_ = num_blocks; }
+  void SetNumData(unsigned int num_data) { this->num_data_ = num_data; }
+  void SetTimer(TimeMeasurement *timer) { this->timer = timer; }
 };
 
-#endif  // SRC_AES_HSA_AES_HSA_BENCHMARK_H_
+#endif  // SRC_FIR_FIR_BENCHMARK_H_
