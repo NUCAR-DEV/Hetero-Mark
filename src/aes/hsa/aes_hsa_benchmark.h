@@ -47,14 +47,11 @@ class AesHsaBenchmark : public AesBenchmark {
   private:
     
   public:
-    AesHsaBenchmark(){}
-    ~AesHsaBenchmark(){}
+    AesHsaBenchmark() {}
+    ~AesHsaBenchmark() {}
 
-    void Initialize() override;
     void Run() override;
-    void Verify() override;
     void Cleanup() override {}
-    void Summarize() override;
 
 };
 

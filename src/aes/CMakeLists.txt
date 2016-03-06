@@ -1,7 +1,12 @@
-set( FOLDER_NAME src )
+set( FOLDER_NAME aes )
 set( SUBDIRECTORIES 
-  common
-  aes
+  hsa
+)
+set( SRC_FILES
+  aes_benchmark.cc
+)
+set( HEADER_FILES
+  aes_benchmark.h
 )
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
@@ -13,6 +18,8 @@ project( ${FOLDER_NAME} )
 # Group samples by folder
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
+
+add_library( aes ${SRC_FILES} ${HEADER_FILES} )
 
 foreach( subdir ${SUBDIRECTORIES} )
     add_subdirectory( ${subdir} )

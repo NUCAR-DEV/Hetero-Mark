@@ -5,10 +5,10 @@ set( FOLDER_NAME aes_hsa )
 set( SUBDIRECTORIES )
 set( SRC_FILES 
   main.cc
-  aes_hsa_benchmark.h
   aes_hsa_benchmark.cc
 )
-set( HEADER_FILES )
+set( HEADER_FILES 
+  aes_hsa_benchmark.h)
 set( TEST_FILES )
 set( EXTRA_FILES 
   kernels.cl
@@ -45,6 +45,6 @@ if (have_snack AND HSA_RUNTIME)
   )
   add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
   target_link_libraries(${FOLDER_NAME}
-      time_measurement command_line_option benchmark ${HSA_RUNTIME})
+      aes time_measurement command_line_option benchmark ${HSA_RUNTIME})
 endif (have_snack AND HSA_RUNTIME)
 

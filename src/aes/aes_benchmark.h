@@ -45,7 +45,7 @@
 #include "src/common/benchmark/benchmark.h"
 
 class AesBenchmark : public Benchmark {
-  private:
+  protected:
     const static int kBytesPerWord = 4;
     const static int kKeyLengthInWords = 8;
     const static int kKeyLengthInBytes = kKeyLengthInWords * kBytesPerWord;
@@ -138,8 +138,8 @@ class AesBenchmark : public Benchmark {
       0x74, 0xe8, 0xcb, 0x8d};
 
   public:
-    AesBenchmark(){}
-    ~AesBenchmark(){}
+    AesBenchmark() {}
+    virtual ~AesBenchmark() {}
 
     virtual void Initialize() override;
     virtual void Run() override = 0;
