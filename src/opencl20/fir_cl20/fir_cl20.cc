@@ -1,6 +1,6 @@
 /* Copyright (c) 2015 Northeastern University
  * All rights reserved.
- *
+:*
  * Developed by:Northeastern University Computer Architecture Research (NUCAR)
  * Group, Northeastern University, http://www.ece.neu.edu/groups/nucar/
  *
@@ -77,10 +77,13 @@ void FIR::InitializeKernels() {
 }
 
 void FIR::InitializeBuffers() {
-  input_ = reinterpret_cast<cl_float *>(clSVMAlloc(
-      context_, CL_MEM_READ_ONLY, num_total_data_ * sizeof(cl_float), 0));
-  output_ = reinterpret_cast<cl_float *>(clSVMAlloc(
-      context_, CL_MEM_READ_WRITE, num_total_data_ * sizeof(cl_float), 0));
+  input_ = reinterpret_cast<float *>(malloc(num_total_data_ * sizeof(float)));
+  output_ = reinterpret_cast<float *>(malloc(num_total_data_ * sizeof(float)));
+
+  input_svm_ = reinterpret_cast<cl_float *>(
+      clSVMAlloc(context_, CL_MEM_READ_ONLY, num_data_ * sizeof(cl_float), 0));
+  output_svm_ = reinterpret_cast<cl_float *>(
+      clSVMAlloc(context_, CL_MEM_READ_WRITE, num_data_ * sizeof(cl_float), 0));
   coeff_ = reinterpret_cast<cl_float *>(
       clSVMAlloc(context_, CL_MEM_READ_ONLY, num_tap_ * sizeof(cl_float), 0));
   history_ = reinterpret_cast<cl_float *>(
@@ -90,12 +93,12 @@ void FIR::InitializeBuffers() {
 void FIR::InitializeData() {
   unsigned int seed = time(NULL);
 
-  MapSvmBuffers();
-
   for (unsigned i = 0; i < num_total_data_; i++) {
     input_[i] =
         static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
+
+  MapSvmBuffers();
 
   for (unsigned i = 0; i < num_tap_; i++) {
     coeff_[i] =
@@ -112,12 +115,12 @@ void FIR::InitializeData() {
 void FIR::MapSvmBuffers() {
   cl_int err;
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, input_,
-                        num_total_data_ * sizeof(cl_float), 0, 0, 0);
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, input_svm_,
+                        num_data_ * sizeof(cl_float), 0, 0, 0);
   checkOpenCLErrors(err, "Map SVM input\n");
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, output_,
-                        num_total_data_ * sizeof(cl_float), 0, 0, 0);
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, output_svm_,
+                        num_data_ * sizeof(cl_float), 0, 0, 0);
   checkOpenCLErrors(err, "Map SVM output\n");
 
   err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, coeff_,
@@ -132,10 +135,10 @@ void FIR::MapSvmBuffers() {
 void FIR::UnmapSvmBuffers() {
   cl_int err;
 
-  err = clEnqueueSVMUnmap(cmd_queue_, input_, 0, 0, 0);
+  err = clEnqueueSVMUnmap(cmd_queue_, input_svm_, 0, 0, 0);
   checkOpenCLErrors(err, "Ummap SVM input\n");
 
-  err = clEnqueueSVMUnmap(cmd_queue_, output_, 0, 0, 0);
+  err = clEnqueueSVMUnmap(cmd_queue_, output_svm_, 0, 0, 0);
   checkOpenCLErrors(err, "Ummap SVM output\n");
 
   err = clEnqueueSVMUnmap(cmd_queue_, coeff_, 0, 0, 0);
@@ -150,6 +153,12 @@ void FIR::Run() {
   unsigned int count;
 
   // Set the arguments of the kernel
+  ret = clSetKernelArgSVMPointer(fir_kernel_, 0, input_svm_);
+  checkOpenCLErrors(ret, "Set kernel argument 0\n");
+
+  ret = clSetKernelArgSVMPointer(fir_kernel_, 1, output_svm_);
+  checkOpenCLErrors(ret, "Set kernel argument 1\n");
+
   ret = clSetKernelArgSVMPointer(fir_kernel_, 2, coeff_);
   checkOpenCLErrors(ret, "Set kernel argument 2\n");
 
@@ -165,18 +174,19 @@ void FIR::Run() {
   size_t localThreads[1] = {64};
   count = 0;
 
+  MapSvmBuffers();
   while (count < num_blocks_) {
-    ret = clSetKernelArgSVMPointer(fir_kernel_, 0, input_ + num_data_ * count);
-    checkOpenCLErrors(ret, "Set kernel argument 0\n");
-
-    ret = clSetKernelArgSVMPointer(fir_kernel_, 1, output_ + num_data_ * count);
-    checkOpenCLErrors(ret, "Set kernel argument 1\n");
+    memcpy(input_svm_, input_ + num_data_ * count, num_data_ * sizeof(float));
+    UnmapSvmBuffers();
 
     // Execute the OpenCL kernel on the list
     ret = clEnqueueNDRangeKernel(cmd_queue_, fir_kernel_, CL_TRUE, NULL,
                                  globalThreads, localThreads, 0, NULL, NULL);
     checkOpenCLErrors(ret, "Enqueue ND Range.\n");
     clFinish(cmd_queue_);
+
+    MapSvmBuffers();
+    memcpy(output_ + num_data_ * count, output_svm_, num_data_ * sizeof(float));
 
     count++;
   }

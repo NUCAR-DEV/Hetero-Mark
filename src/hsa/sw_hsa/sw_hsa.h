@@ -32,7 +32,6 @@
 #ifndef SRC_HSA_SW_HSA_SW_HSA_H_
 #define SRC_HSA_SW_HSA_SW_HSA_H_
 
-#include "src/common/cl_util/cl_util.h"
 #include "src/common/benchmark/benchmark.h"
 
 class ShallowWater : public Benchmark {
