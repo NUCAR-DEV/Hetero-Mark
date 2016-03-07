@@ -4,9 +4,11 @@ set( SUBDIRECTORIES
 )
 set( SRC_FILES
   aes_benchmark.cc
+  aes_command_line_options.cc
 )
 set( HEADER_FILES
   aes_benchmark.h
+  aes_command_line_options.h
 )
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)

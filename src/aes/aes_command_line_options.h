@@ -26,7 +26,7 @@
  *   documentation and/or other materials provided with the distribution.
  *
  *   Neither the names of NUCAR, Northeastern University, nor the names of
- *   its contributors may be used to Endorse or promote products derived
+ *   its contributors may be used to endorse or promote products derived
  *   from this Software without specific prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -38,38 +38,21 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/benchmark/benchmark_runner.h"
+#ifndef SRC_AES_AES_COMMAND_LINE_OPTIONS_H_
+#define SRC_AES_AES_COMMAND_LINE_OPTIONS_H_
 
-void BenchmarkRunner::Run() {
-  time_measurement_->Start();
-  benchmark_->Initialize();
-  time_measurement_->End({"Initialize"});
+#include "src/common/command_line_option/benchmark_command_line_options.h"
+#include "src/aes/aes_benchmark.h"
 
-  time_measurement_->Start();
-  benchmark_->Run();
-  time_measurement_->End({"Run"});
+class AesCommandLineOptions : public BenchmarkCommandLineOptions {
+ public:
+  void RegisterOptions() override;
+  void Parse(int argc, const char *argv[]) override;
+  void ConfigureBenchmark(AesBenchmark *benchmark);
 
-  if (verification_mode_) {
-    time_measurement_->Start();
-    benchmark_->Verify();
-    time_measurement_->End({"Verify"});
-  }
+ private:
+  std::string input_file_;
+  std::string key_file_;
+};
 
-  if (!quiet_mode_) {
-    time_measurement_->Start();
-    benchmark_->Summarize();
-    time_measurement_->End({"Summarize"});
-  }
-
-  time_measurement_->Start();
-  benchmark_->Cleanup();
-  time_measurement_->End({"Cleanup"});
-
-  if (timing_mode_) {
-    Summarize(&std::cerr);
-  }
-}
-
-void BenchmarkRunner::Summarize(std::ostream *ostream) {
-  time_measurement_->Summarize(ostream);
-}
+#endif  // SRC_AES_AES_COMMAND_LINE_OPTIONS_H_
