@@ -31,7 +31,7 @@
  */
 
 __kernel void FIR(__global float* output, __global float* coeff,
-    __global float* temp_input, uint numTap) {
+                  __global float* temp_input, uint numTap) {
   uint tid = get_global_id(0);
   uint numData = get_global_size(0);
   uint xid = tid + numTap - 1;

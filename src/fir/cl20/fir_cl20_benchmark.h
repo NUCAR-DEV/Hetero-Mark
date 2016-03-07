@@ -30,15 +30,37 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
+#ifndef SRC_FIR_CL20_FIR_CL20_BENCHMARK_H_
+#define SRC_FIR_CL20_FIR_CL20_BENCHMARK_H_
+
 #include "src/common/cl_util/cl_benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/fir/fir_benchmark.h"
 
-void ClBenchmark::InitializeCl() {
-  runtime_ = clHelper::clRuntime::getInstance();
+class FirCl20Benchmark : public FirBenchmark, public ClBenchmark {
+ private:
+  cl_kernel fir_kernel_;
 
-  platform_ = runtime_->getPlatformID();
-  device_ = runtime_->getDevice();
-  context_ = runtime_->getContext();
-  cmd_queue_ = runtime_->getCmdQueue(0);
+  cl_float *input_svm_ = NULL;
+  cl_float *output_svm_ = NULL;
+  cl_float *history_ = NULL;
+  cl_float *coeff_svm_ = NULL;
 
-  file_ = clHelper::clFile::getInstance();
-}
+  void InitializeData();
+  void InitializeKernels();
+  void InitializeBuffers();
+
+  void MapSvmBuffers();
+  void UnmapSvmBuffers();
+
+ public:
+  FirCl20Benchmark(){}
+  ~FirCl20Benchmark(){}
+
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+  void Summarize() override {}
+};
+
+#endif  // SRC_FIR_CL20_FIR_CL20_BENCHMARK_H_

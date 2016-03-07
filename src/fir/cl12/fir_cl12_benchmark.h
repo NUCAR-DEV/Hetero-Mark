@@ -37,27 +37,27 @@
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/fir/fir_benchmark.h"
 
-class FirCl12Benchmark : public FirBenchmark, public ClBenchmark{
-  private:
-    cl_float *temp_output_;
+class FirCl12Benchmark : public FirBenchmark, public ClBenchmark {
+ private:
+  cl_float *temp_output_;
 
-    cl_kernel fir_kernel_;
-    cl_mem output_buffer_;
-    cl_mem coeff_buffer_;
-    cl_mem temp_output_buffer_;
+  cl_kernel fir_kernel_;
+  cl_mem output_buffer_;
+  cl_mem coeff_buffer_;
+  cl_mem temp_output_buffer_;
 
-    void InitializeData();
-    void InitializeKernels();
-    void InitializeBuffers();
+  void InitializeData();
+  void InitializeKernels();
+  void InitializeBuffers();
 
-  public:
-    FirCl12Benchmark(){};
-    ~FirCl12Benchmark(){};
+ public:
+  FirCl12Benchmark(){};
+  ~FirCl12Benchmark(){};
 
-    void Initialize() override;
-    void Run() override;
-    void Cleanup() override;
-    void Summarize() override {}
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+  void Summarize() override {}
 };
 
 #endif  // SRC_FIR_CL12_FIR_CL12_BENCHMARK_H_
