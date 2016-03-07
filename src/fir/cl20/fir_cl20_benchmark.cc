@@ -53,8 +53,8 @@ void FirCl20Benchmark::InitializeKernels() {
                                        NULL, &err);
   checkOpenCLErrors(err, "Failed to create program with source...\n");
 
-  err = clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL2.0", NULL, 
-                       NULL);
+  err =
+      clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL2.0", NULL, NULL);
   checkOpenCLErrors(err, "Failed to create program...\n");
 
   fir_kernel_ = clCreateKernel(program_, "FIR", &err);

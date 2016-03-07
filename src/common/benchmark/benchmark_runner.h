@@ -72,16 +72,12 @@ class BenchmarkRunner {
   /**
    * Set to true if you want to runner runs the summary functino
    */
-  virtual void SetQuietMode(bool quiet_mode) {
-    quiet_mode_ = quiet_mode;
-  }
+  virtual void SetQuietMode(bool quiet_mode) { quiet_mode_ = quiet_mode; }
 
   /**
    * Set if you want to dump execution time information
    */
-  virtual void SetTimingMode(bool timing_mode) {
-    timing_mode_ = timing_mode;
-  }
+  virtual void SetTimingMode(bool timing_mode) { timing_mode_ = timing_mode; }
 
  protected:
   Benchmark *benchmark_;

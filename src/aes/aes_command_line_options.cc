@@ -52,8 +52,7 @@ void AesCommandLineOptions::RegisterOptions() {
                                    "Path to input file that contains the "
                                    "plaintext to be encrypted");
 
-  command_line_option_.AddArgument("KeyFile", "string", "", "-k",
-                                   "--key-file",
+  command_line_option_.AddArgument("KeyFile", "string", "", "-k", "--key-file",
                                    "Path to the file that contains the "
                                    "key to be used to encrypt plaintext");
 }

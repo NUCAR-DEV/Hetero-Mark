@@ -54,8 +54,8 @@ class FirCl20Benchmark : public FirBenchmark, public ClBenchmark {
   void UnmapSvmBuffers();
 
  public:
-  FirCl20Benchmark(){}
-  ~FirCl20Benchmark(){}
+  FirCl20Benchmark() {}
+  ~FirCl20Benchmark() {}
 
   void Initialize() override;
   void Run() override;

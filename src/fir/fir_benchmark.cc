@@ -100,7 +100,6 @@ void FirBenchmark::Summarize() {
     printf("%d: %f \n", i, output_[i]);
   }
   printf("\n");
-
 }
 
 void FirBenchmark::Cleanup() {
