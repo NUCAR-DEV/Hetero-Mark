@@ -57,4 +57,6 @@ int main(int argc, const char **argv) {
 
   runner.Run();
   runner.Summarize();
+  
+  return 0;
 }

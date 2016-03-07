@@ -41,41 +41,23 @@
 #include <cstdlib>
 #include <string>
 #include "src/aes/hsa/aes_hsa_benchmark.h"
+#include "src/aes/aes_command_line_options.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/command_line_option/command_line_option.h"
 
 int main(int argc, char const *argv[]) {
-  // Setup command line option
-  CommandLineOption command_line_option(
-      "====== Hetero-Mark AES Benchmarks (OpenCL 2.0) ======",
-      "This benchmarks runs the AES Algorithm.");
-  command_line_option.AddArgument("Help", "bool", "false", "-h", "--help",
-                                  "Dump help information");
-  command_line_option.AddArgument("InputFile", "string", "in.txt", "-i",
-                                  "--input", "The input file to be encrypted");
-  command_line_option.AddArgument("KeyFile", "string", "key.txt", "-k", "--key",
-                                  "The file containing the key in hex format");
-  command_line_option.AddArgument("Verify", "bool", "false", "-v", "--verify",
-                                  "Verify the GPU result by CPU.");
-
-  command_line_option.Parse(argc, argv);
-  if (command_line_option.GetArgumentValue("Help")->AsBool()) {
-    command_line_option.Help();
-    return 0;
-  }
-
   std::unique_ptr<AesHsaBenchmark> benchmark(new AesHsaBenchmark());
-  benchmark->SetInputFileName(
-      command_line_option.GetArgumentValue("InputFile")->AsString());
-  benchmark->SetKeyFileName(
-      command_line_option.GetArgumentValue("KeyFile")->AsString());
-
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
-  runner.SetVerificationMode(
-      command_line_option.GetArgumentValue("Verify")->AsBool());
+
+  AesCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
+
   runner.Run();
   runner.Summarize();
 

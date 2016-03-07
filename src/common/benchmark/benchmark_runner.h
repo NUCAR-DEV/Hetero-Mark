@@ -69,14 +69,27 @@ class BenchmarkRunner {
     verification_mode_ = verification_mode;
   }
 
+  /**
+   * Set to true if you want to runner runs the summary functino
+   */
+  virtual void SetQuietMode(bool quiet_mode) {
+    quiet_mode_ = quiet_mode;
+  }
+
+  /**
+   * Set if you want to dump execution time information
+   */
+  virtual void SetTimingMode(bool timing_mode) {
+    timing_mode_ = timing_mode;
+  }
+
  protected:
-  // The benchmark to run
   Benchmark *benchmark_;
 
-  // Is verification mode
   bool verification_mode_ = false;
+  bool quiet_mode_ = false;
+  bool timing_mode_ = false;
 
-  // Time measurement
   TimeMeasurement *time_measurement_;
 };
 

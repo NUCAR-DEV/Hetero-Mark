@@ -58,6 +58,7 @@ class BenchmarkCommandLineOptions {
   CommandLineOption command_line_option_;
   bool quiet_mode_;
   bool verification_;
+  bool timing_;
 
  private:
   void DumpHelpOnRequest();

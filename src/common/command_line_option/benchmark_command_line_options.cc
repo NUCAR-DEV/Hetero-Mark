@@ -50,6 +50,9 @@ void BenchmarkCommandLineOptions::RegisterOptions() {
 
   command_line_option_.AddArgument("Verify", "bool", "false", "-v", "--verify",
                                    "Verify the GPU result with CPU");
+
+  command_line_option_.AddArgument("Timing", "bool", "false", "-t", "--timing",
+                                   "Show timing information");
 }
 
 void BenchmarkCommandLineOptions::Parse(int argc, const char *argv[]) {
@@ -59,6 +62,7 @@ void BenchmarkCommandLineOptions::Parse(int argc, const char *argv[]) {
 
   quiet_mode_ = command_line_option_.GetArgumentValue("Quiet")->AsBool();
   verification_ = command_line_option_.GetArgumentValue("Verify")->AsBool();
+  timing_ = command_line_option_.GetArgumentValue("Timing")->AsBool();
 }
 
 void BenchmarkCommandLineOptions::DumpHelpOnRequest() {
@@ -71,4 +75,6 @@ void BenchmarkCommandLineOptions::DumpHelpOnRequest() {
 void BenchmarkCommandLineOptions::ConfigureBenchmarkRunner(
     BenchmarkRunner *benchmark_runner) {
   benchmark_runner->SetVerificationMode(verification_);
+  benchmark_runner->SetQuietMode(quiet_mode_);
+  benchmark_runner->SetTimingMode(timing_);
 }

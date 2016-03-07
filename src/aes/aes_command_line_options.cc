@@ -26,7 +26,7 @@
  *   documentation and/or other materials provided with the distribution.
  *
  *   Neither the names of NUCAR, Northeastern University, nor the names of
- *   its contributors may be used to Endorse or promote products derived
+ *   its contributors may be used to endorse or promote products derived
  *   from this Software without specific prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -38,38 +38,35 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/benchmark/benchmark_runner.h"
+#include "src/aes/aes_command_line_options.h"
 
-void BenchmarkRunner::Run() {
-  time_measurement_->Start();
-  benchmark_->Initialize();
-  time_measurement_->End({"Initialize"});
+void AesCommandLineOptions::RegisterOptions() {
+  BenchmarkCommandLineOptions::RegisterOptions();
 
-  time_measurement_->Start();
-  benchmark_->Run();
-  time_measurement_->End({"Run"});
+  command_line_option_.SetBenchmarkName("AES Benchmark");
+  command_line_option_.SetDescription(
+      "This benchmark runs AES encryption algorithm");
 
-  if (verification_mode_) {
-    time_measurement_->Start();
-    benchmark_->Verify();
-    time_measurement_->End({"Verify"});
-  }
+  command_line_option_.AddArgument("InputFile", "string", "", "-i",
+                                   "--input-file",
+                                   "Path to input file that contains the "
+                                   "plaintext to be encrypted");
 
-  if (!quiet_mode_) {
-    time_measurement_->Start();
-    benchmark_->Summarize();
-    time_measurement_->End({"Summarize"});
-  }
-
-  time_measurement_->Start();
-  benchmark_->Cleanup();
-  time_measurement_->End({"Cleanup"});
-
-  if (timing_mode_) {
-    Summarize(&std::cerr);
-  }
+  command_line_option_.AddArgument("KeyFile", "string", "", "-k",
+                                   "--key-file",
+                                   "Path to the file that contains the "
+                                   "key to be used to encrypt plaintext");
 }
 
-void BenchmarkRunner::Summarize(std::ostream *ostream) {
-  time_measurement_->Summarize(ostream);
+void AesCommandLineOptions::Parse(int argc, const char *argv[]) {
+  BenchmarkCommandLineOptions::Parse(argc, argv);
+
+  input_file_ = command_line_option_.GetArgumentValue("InputFile")->AsString();
+
+  key_file_ = command_line_option_.GetArgumentValue("KeyFile")->AsString();
+}
+
+void AesCommandLineOptions::ConfigureBenchmark(AesBenchmark *benchmark) {
+  benchmark->SetInputFileName(input_file_);
+  benchmark->SetKeyFileName(key_file_);
 }
