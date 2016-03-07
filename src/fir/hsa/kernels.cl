@@ -39,7 +39,7 @@ __kernel void FIR(__global float *input, __global float *output,
   float sum = 0;
   uint i = 0;
   for (i = 0; i < num_tap; i++) {
-    if (tid > i) {
+    if (tid >= i) {
       sum = sum + coeff[i] * input[tid - i];
     } else {
       sum = sum + coeff[i] * history[num_tap - (i - tid)];

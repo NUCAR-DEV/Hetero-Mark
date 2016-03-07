@@ -60,7 +60,6 @@ class FirCl20Benchmark : public FirBenchmark, public ClBenchmark {
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
-  void Summarize() override {}
 };
 
 #endif  // SRC_FIR_CL20_FIR_CL20_BENCHMARK_H_

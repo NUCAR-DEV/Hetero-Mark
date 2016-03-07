@@ -88,7 +88,20 @@ void FirBenchmark::Verify() {
   delete cpu_output;
 }
 
-void FirBenchmark::Summarize() {}
+void FirBenchmark::Summarize() {
+  printf("Input: \n");
+  for (unsigned i = 0; i < num_total_data_; i++) {
+    printf("%d: %f \n", i, input_[i]);
+  }
+  printf("\n");
+
+  printf("GPU Output: \n");
+  for (unsigned i = 0; i < num_total_data_; i++) {
+    printf("%d: %f \n", i, output_[i]);
+  }
+  printf("\n");
+
+}
 
 void FirBenchmark::Cleanup() {
   delete[] input_;
