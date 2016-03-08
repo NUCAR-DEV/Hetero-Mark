@@ -147,7 +147,7 @@ class Benchmark():
 
     def dumpCL12MainCC(self):
         output = open(self.dump_root_ + "cl12/main.cc", "w")
-        output.write(self.getCL12CMakeLists())
+        output.write(self.getCL12MainCC())
         output.close()
 
     def dumpCL12Kernel(self):
@@ -201,7 +201,7 @@ class Benchmark():
 
     def dumpCL20MainCC(self):
         output = open(self.dump_root_ + "cl20/main.cc", "w")
-        output.write(self.getCL20CMakeLists())
+        output.write(self.getCL20MainCC())
         output.close()
 
     def dumpCL20Kernel(self):
@@ -255,7 +255,7 @@ class Benchmark():
 
     def dumpHSAMainCC(self):
         output = open(self.dump_root_ + "hsa/main.cc", "w")
-        output.write(self.getHSACMakeLists())
+        output.write(self.getHSAMainCC())
         output.close()
 
     def dumpHSAKernel(self):
