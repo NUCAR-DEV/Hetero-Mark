@@ -46,8 +46,8 @@ class BENCHNAMECAPCl12Benchmark : public BENCHNAMECAPBenchmark, public ClBenchma
   void InitializeBuffers();
 
  public:
-  BENCHNAMECAPCl12Benchmark(){};
-  ~BENCHNAMECAPCl12Benchmark(){};
+  BENCHNAMECAPCl12Benchmark(){}
+  ~BENCHNAMECAPCl12Benchmark(){}
 
   void Initialize() override;
   void Run() override;

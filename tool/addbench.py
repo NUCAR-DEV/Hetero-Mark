@@ -151,7 +151,7 @@ class Benchmark():
         output.close()
 
     def dumpCL12Kernel(self):
-        output = open(self.dump_root_ + "cl12/kernel.cl", "w")
+        output = open(self.dump_root_ + "cl12/kernels.cl", "w")
         output.write(self.getCL12Kernel())
         output.close()
 
@@ -205,7 +205,7 @@ class Benchmark():
         output.close()
 
     def dumpCL20Kernel(self):
-        output = open(self.dump_root_ + "cl20/kernel.cl", "w")
+        output = open(self.dump_root_ + "cl20/kernels.cl", "w")
         output.write(self.getCL20Kernel())
         output.close()
 
@@ -259,7 +259,7 @@ class Benchmark():
         output.close()
 
     def dumpHSAKernel(self):
-        output = open(self.dump_root_ + "hsa/kernel.cl", "w")
+        output = open(self.dump_root_ + "hsa/kernels.cl", "w")
         output.write(self.getHSAKernel())
         output.close()
 

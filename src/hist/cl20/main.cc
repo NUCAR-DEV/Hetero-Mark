@@ -53,6 +53,7 @@ int main(int argc, const char **argv) {
   options.Parse(argc, argv);
   options.ConfigureBenchmark(benchmark.get());
   options.ConfigureBenchmarkRunner(&runner);
+  runner.Summarize();
 
   runner.Run();
 }
