@@ -68,7 +68,7 @@ void AesCl12Benchmark::Initialize() {
 void AesCl12Benchmark::InitializeDeviceMemory() {
   cl_int err;
   dev_ciphertext_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
-                                   text_length_ * sizeof(cl_float), NULL, &err);
+                                   text_length_, NULL, &err);
   checkOpenCLErrors(err, "Failed to create buffer for ciphertext");
 
   dev_key_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
