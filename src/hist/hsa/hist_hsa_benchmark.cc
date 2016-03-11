@@ -44,10 +44,15 @@
 
 void HistHsaBenchmark::Initialize() {
   HistBenchmark::Initialize();
+  HIST_init(0);
 }
 
 void HistHsaBenchmark::Run() {
-  
+  SNK_INIT_LPARM(lparm, 0);
+  lparm->ndim = 1;
+  lparm->gdims[0] = 1024;
+  lparm->ldims[0] = 64;
+  HIST(pixels_, histogram_, num_color_, num_pixel_, lparm);
 }
 
 void HistHsaBenchmark::Cleanup() {
