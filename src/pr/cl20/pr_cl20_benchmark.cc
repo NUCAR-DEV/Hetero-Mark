@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2015 Northeastern University
+/* Copyright (c) 2015 Northeastern University
  * All rights reserved.
  *
  * Developed by:Northeastern University Computer Architecture Research (NUCAR)
@@ -30,30 +29,53 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
-#define SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
+#include <string.h>
+#include <stdio.h>
+#include <cstdlib>
+#include "src/pr/cl20/pr_cl20_benchmark.h"
 
-#include "src/common/cl_util/cl_benchmark.h"
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/hist/hist_benchmark.h"
+void PrCl20Benchmark::Initialize() {
+  PrBenchmark::Initialize();
 
-class HistCl12Benchmark : public HistBenchmark, public ClBenchmark {
- private:
-  cl_kernel hist_kernel_;
+  ClBenchmark::InitializeCl();
 
-  cl_mem dev_pixels_;
-  cl_mem dev_histogram_;
+  InitializeKernels();
+  InitializeBuffers();
+  InitializeData();
+}
 
-  void InitializeKernels();
-  void InitializeBuffers();
+void PrCl20Benchmark::InitializeKernels() {
+  cl_int err;
+  file_->open("kernels.cl");
 
- public:
-  HistCl12Benchmark() {}
-  ~HistCl12Benchmark() {}
+  const char *source = file_->getSourceChar();
+  program_ = clCreateProgramWithSource(context_, 1, (const char **)&source,
+                                       NULL, &err);
+  checkOpenCLErrors(err, "Failed to create program with source...\n");
 
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
+  err =
+      clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL2.0", NULL, NULL);
+  checkOpenCLErrors(err, "Failed to create program...\n");
 
-#endif  // SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
+  CREATE_KERNEL
+  pr_kernel_ = clCreateKernel(program_, "XXX", &err);
+  checkOpenCLErrors(err, "Failed to create kernel XXX\n");
+}
+
+void PrCl20Benchmark::InitializeBuffers() {}
+
+void PrCl20Benchmark::InitializeData() {}
+
+void PrCl20Benchmark::Run() {}
+
+void PrCl20Benchmark::Cleanup() {
+  PrBenchmark::Cleanup();
+
+  cl_int ret;
+  ret = clReleaseKernel(pr_kernel_);
+  ret = clReleaseProgram(program_);
+
+  OTHER_CLEANUPS
+
+  checkOpenCLErrors(ret, "Release objects.\n");
+}

@@ -57,7 +57,7 @@ void HistCl20Benchmark::InitializeKernels() {
   if (err != CL_SUCCESS) {
     char buf[0x10000];
     clGetProgramBuildInfo(program_, device_, CL_PROGRAM_BUILD_LOG, 0x10000, buf,
-        NULL);
+                          NULL);
     printf("Build info:\n%s\n", buf);
     exit(-1);
   }
@@ -69,11 +69,13 @@ void HistCl20Benchmark::InitializeKernels() {
 }
 
 void HistCl20Benchmark::InitializeBuffers() {
-  dev_pixels_ = reinterpret_cast<uint32_t *>(clSVMAlloc(context_, CL_MEM_SVM_FINE_GRAIN_BUFFER,
-                           num_pixel_ * sizeof(uint32_t), 0));
+  dev_pixels_ = reinterpret_cast<uint32_t *>(
+      clSVMAlloc(context_, CL_MEM_SVM_FINE_GRAIN_BUFFER,
+                 num_pixel_ * sizeof(uint32_t), 0));
 
-  dev_histogram_ = reinterpret_cast<uint32_t *>(clSVMAlloc(context_, CL_MEM_SVM_FINE_GRAIN_BUFFER,
-                             num_color_ * sizeof(uint32_t), 0));
+  dev_histogram_ = reinterpret_cast<uint32_t *>(
+      clSVMAlloc(context_, CL_MEM_SVM_FINE_GRAIN_BUFFER,
+                 num_color_ * sizeof(uint32_t), 0));
   for (uint32_t i = 0; i < num_color_; i++) {
     dev_histogram_[i] = 0;
   }
@@ -96,7 +98,7 @@ void HistCl20Benchmark::Run() {
   size_t global_dimensions[] = {1024};
   size_t local_dimensions[] = {64};
   err = clEnqueueNDRangeKernel(cmd_queue_, hist_kernel_, CL_TRUE, NULL,
-      global_dimensions, local_dimensions, 0, 0, NULL);
+                               global_dimensions, local_dimensions, 0, 0, NULL);
   checkOpenCLErrors(err, "Failed to launch kernel");
   clFinish(cmd_queue_);
 
@@ -112,7 +114,6 @@ void HistCl20Benchmark::Cleanup() {
   cl_int ret;
   ret = clReleaseKernel(hist_kernel_);
   ret = clReleaseProgram(program_);
-
 
   checkOpenCLErrors(ret, "Release objects.\n");
 }

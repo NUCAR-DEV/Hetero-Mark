@@ -30,30 +30,4 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
-#define SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
-
-#include "src/common/cl_util/cl_benchmark.h"
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/hist/hist_benchmark.h"
-
-class HistCl12Benchmark : public HistBenchmark, public ClBenchmark {
- private:
-  cl_kernel hist_kernel_;
-
-  cl_mem dev_pixels_;
-  cl_mem dev_histogram_;
-
-  void InitializeKernels();
-  void InitializeBuffers();
-
- public:
-  HistCl12Benchmark() {}
-  ~HistCl12Benchmark() {}
-
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
-
-#endif  // SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
+__kernel void PR() {}
