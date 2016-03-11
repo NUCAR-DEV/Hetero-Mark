@@ -65,6 +65,8 @@ void AesBenchmark::LoadPlaintext() {
     plaintext_[index] = static_cast<uint8_t>(byte);
     index++;
   }
+
+  fclose(input_file);
 }
 
 void AesBenchmark::LoadKey() {
@@ -82,6 +84,8 @@ void AesBenchmark::LoadKey() {
     }
     key_[i] = static_cast<uint8_t>(byte);
   }
+
+  fclose(key_file);
 }
 
 void AesBenchmark::InitiateCiphertext(uint8_t **ciphertext) {
@@ -277,4 +281,9 @@ void AesBenchmark::Summarize() {
 
   printf("Ciphertext: ");
   DumpText(ciphertext_);
+}
+
+void AesBenchmark::Cleanup() {
+  free(plaintext_);
+  free(ciphertext_);
 }
