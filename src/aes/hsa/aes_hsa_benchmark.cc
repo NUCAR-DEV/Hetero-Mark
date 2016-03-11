@@ -36,6 +36,11 @@
 #include <cstring>
 #include "src/aes/hsa/kernels.h"
 
+void AesHsaBenchmark::Initialize() {
+  AesBenchmark::Initialize();
+  Encrypt_init(0);
+}
+
 void AesHsaBenchmark::Run() {
   ExpandKey();
   SNK_INIT_LPARM(lparm, 0);
