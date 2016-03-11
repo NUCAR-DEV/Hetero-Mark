@@ -49,8 +49,8 @@ class AesHsaBenchmark : public AesBenchmark {
   AesHsaBenchmark() {}
   ~AesHsaBenchmark() {}
 
+  void Initialize() override;
   void Run() override;
-  void Cleanup() override {}
 };
 
 #endif  // SRC_AES_HSA_AES_HSA_BENCHMARK_H_
