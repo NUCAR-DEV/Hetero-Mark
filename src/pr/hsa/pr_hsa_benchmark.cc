@@ -49,11 +49,15 @@ void PrHsaBenchmark::Initialize() {
 }
 
 void PrHsaBenchmark::Run() {
+  uint32_t i;
+  for (i = 0; i < num_nodes_; i++) {
+    page_rank_[i] = 1.0 / num_nodes_; 
+  }
+
   SNK_INIT_LPARM(lparm, 0);
   lparm->ldims[0] = 64;
   lparm->gdims[0] = num_nodes_ * 64;
 
-  uint32_t i;
   for (i = 0; i < max_iteration_; i++) {
     if (i % 2 == 0) {
       PageRankUpdateGpu(num_nodes_, row_offsets_, column_numbers_, values_,

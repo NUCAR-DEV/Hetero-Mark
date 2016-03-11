@@ -35,7 +35,7 @@ __kernel void PageRankUpdateGpu(uint num_rows, __global uint* rowOffset,
                                 __global float* y) {
   int thread_id = get_global_id(0);
   int local_id = get_local_id(0);
-  int warp_id = thread_id / 64;
+  int warp_id = thread_id >> 6;
   int lane = thread_id & (64 - 1);
   int row = warp_id;
 
@@ -47,6 +47,8 @@ __kernel void PageRankUpdateGpu(uint num_rows, __global uint* rowOffset,
     vals[local_id] = 0;
     for (int jj = row_A_start + lane; jj < row_A_end; jj += 64)
       vals[local_id] += val[jj] * x[col[jj]];
+
+    barrier(CLK_GLOBAL_MEM_FENCE);
 
     if (lane < 32) vals[local_id] += vals[local_id + 32];
     if (lane < 16) vals[local_id] += vals[local_id + 16];
