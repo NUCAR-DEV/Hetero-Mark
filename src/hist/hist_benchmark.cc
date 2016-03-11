@@ -37,22 +37,55 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/benchmark/benchmark_runner.h"
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_command_line_options.h"
-#include "src/BENCHNAMELOWER/hsa/BENCHNAMELOWER_hsa_benchmark.h"
+#include <cstdlib>
+#include <cstdio>
+#include "src/hist/hist_benchmark.h"
 
-int main(int argc, const char **argv) {
-  std::unique_ptr<BENCHNAMECAPHsaBenchmark> benchmark(new BENCHNAMECAPHsaBenchmark());
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
+void HistBenchmark::Initialize() {
+  pixels_ = new uint32_t[num_pixel_];
+  unsigned int seed = time(NULL);
+  for (uint32_t i = 0; i < num_pixel_; i++) {
+    pixels_[i] = rand_r(&seed) % num_color_;
+  }
 
-  BENCHNAMECAPCommandLineOptions options;
-  options.RegisterOptions();
-  options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
-  options.ConfigureBenchmarkRunner(&runner);
+  histogram_ = new uint32_t[num_color_];
+}
 
-  runner.Run();
+void HistBenchmark::Verify() {
+  uint32_t *cpu_histogram = new uint32_t[num_color_]();
+  for (uint32_t i = 0; i < num_pixel_; i++) {
+    cpu_histogram[pixels_[i]]++;
+  }
+
+  bool has_error = false;
+  for (uint32_t i = 0; i < num_color_; i++) {
+    if (cpu_histogram[i] != histogram_[i]) {
+      printf("At color %d, expected to be %d, but was %d\n", i,
+             cpu_histogram[i], histogram_[i]);
+      has_error = true;
+    }
+  }
+
+  if (!has_error) {
+    printf("Passed.\n");
+  }
+}
+
+void HistBenchmark::Summarize() {
+  printf("Image: \n");
+  for (uint32_t i = 0; i < num_pixel_; i++) {
+    printf("%d ", pixels_[i]);
+  }
+  printf("\n");
+
+  printf("Histogram: \n");
+  for (uint32_t i = 0; i < num_color_; i++) {
+    printf("%d ", histogram_[i]);
+  }
+  printf("\n");
+}
+
+void HistBenchmark::Cleanup() {
+  delete pixels_;
+  delete histogram_;
 }

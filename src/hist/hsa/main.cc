@@ -40,19 +40,21 @@
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_command_line_options.h"
-#include "src/BENCHNAMELOWER/hsa/BENCHNAMELOWER_hsa_benchmark.h"
+#include "src/hist/hist_command_line_options.h"
+#include "src/hist/hsa/hist_hsa_benchmark.h"
 
 int main(int argc, const char **argv) {
-  std::unique_ptr<BENCHNAMECAPHsaBenchmark> benchmark(new BENCHNAMECAPHsaBenchmark());
+  std::unique_ptr<HistHsaBenchmark> benchmark(new HistHsaBenchmark());
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
 
-  BENCHNAMECAPCommandLineOptions options;
+  HistCommandLineOptions options;
   options.RegisterOptions();
   options.Parse(argc, argv);
   options.ConfigureBenchmark(benchmark.get());
   options.ConfigureBenchmarkRunner(&runner);
 
   runner.Run();
+
+  return 0;
 }

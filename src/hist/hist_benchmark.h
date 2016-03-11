@@ -37,22 +37,30 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/benchmark/benchmark_runner.h"
+#ifndef SRC_HIST_HIST_BENCHMARK_H_
+#define SRC_HIST_HIST_BENCHMARK_H_
+
+#include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_command_line_options.h"
-#include "src/BENCHNAMELOWER/hsa/BENCHNAMELOWER_hsa_benchmark.h"
 
-int main(int argc, const char **argv) {
-  std::unique_ptr<BENCHNAMECAPHsaBenchmark> benchmark(new BENCHNAMECAPHsaBenchmark());
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
+class HistBenchmark : public Benchmark {
+ protected:
+  uint32_t num_color_;
+  uint32_t num_pixel_;
 
-  BENCHNAMECAPCommandLineOptions options;
-  options.RegisterOptions();
-  options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
-  options.ConfigureBenchmarkRunner(&runner);
+  uint32_t *pixels_;
+  uint32_t *histogram_;
 
-  runner.Run();
-}
+ public:
+  void Initialize() override;
+  void Run() override = 0;
+  void Verify() override;
+  void Summarize() override;
+  void Cleanup() override;
+
+  // Setters
+  void SetNumColor(uint32_t num_color) { num_color_ = num_color; }
+  void SetNumPixel(uint32_t num_pixel) { num_pixel_ = num_pixel; }
+};
+
+#endif  // SRC_HIST_HIST_BENCHMARK_H_

@@ -143,7 +143,7 @@ class AesBenchmark : public Benchmark {
   void Initialize() override;
   void Run() override = 0;
   void Verify() override;
-  void Cleanup() override = 0;
+  void Cleanup() override;
   void Summarize() override;
 
   void SetInputFileName(const std::string &file_name) {

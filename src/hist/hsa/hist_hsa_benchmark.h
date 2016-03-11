@@ -37,22 +37,18 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/benchmark/benchmark_runner.h"
+#ifndef SRC_HIST_HSA_HIST_HSA_BENCHMARK_H_
+#define SRC_HIST_HSA_HIST_HSA_BENCHMARK_H_
+
+#include "src/hist/hist_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_command_line_options.h"
-#include "src/BENCHNAMELOWER/hsa/BENCHNAMELOWER_hsa_benchmark.h"
 
-int main(int argc, const char **argv) {
-  std::unique_ptr<BENCHNAMECAPHsaBenchmark> benchmark(new BENCHNAMECAPHsaBenchmark());
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
+class HistHsaBenchmark : public HistBenchmark {
+ private:
+ public:
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+};
 
-  BENCHNAMECAPCommandLineOptions options;
-  options.RegisterOptions();
-  options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
-  options.ConfigureBenchmarkRunner(&runner);
-
-  runner.Run();
-}
+#endif  // SRC_HIST_HSA_HIST_HSA_BENCHMARK_H_

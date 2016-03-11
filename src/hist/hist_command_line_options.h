@@ -37,22 +37,21 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/benchmark/benchmark_runner.h"
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_command_line_options.h"
-#include "src/BENCHNAMELOWER/hsa/BENCHNAMELOWER_hsa_benchmark.h"
+#ifndef SRC_HIST_HIST_COMMAND_LINE_OPTIONS_H_
+#define SRC_HIST_HIST_COMMAND_LINE_OPTIONS_H_
 
-int main(int argc, const char **argv) {
-  std::unique_ptr<BENCHNAMECAPHsaBenchmark> benchmark(new BENCHNAMECAPHsaBenchmark());
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
+#include "src/common/command_line_option/benchmark_command_line_options.h"
+#include "src/hist/hist_benchmark.h"
 
-  BENCHNAMECAPCommandLineOptions options;
-  options.RegisterOptions();
-  options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
-  options.ConfigureBenchmarkRunner(&runner);
+class HistCommandLineOptions : public BenchmarkCommandLineOptions {
+ public:
+  void RegisterOptions() override;
+  void Parse(int argc, const char *argv[]) override;
+  void ConfigureBenchmark(HistBenchmark *benchmark);
 
-  runner.Run();
-}
+ private:
+  uint32_t num_color_;
+  uint32_t num_pixel_;
+};
+
+#endif  // SRC_HIST_HIST_COMMAND_LINE_OPTIONS_H_

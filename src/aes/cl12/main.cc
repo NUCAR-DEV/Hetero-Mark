@@ -9,6 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Carter McCardwell (cmccardw@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,22 +38,27 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include <cstdlib>
+#include <string>
+#include "src/aes/cl12/aes_cl12_benchmark.h"
+#include "src/aes/aes_command_line_options.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_command_line_options.h"
-#include "src/BENCHNAMELOWER/hsa/BENCHNAMELOWER_hsa_benchmark.h"
+#include "src/common/command_line_option/command_line_option.h"
 
-int main(int argc, const char **argv) {
-  std::unique_ptr<BENCHNAMECAPHsaBenchmark> benchmark(new BENCHNAMECAPHsaBenchmark());
+int main(int argc, char const *argv[]) {
+  std::unique_ptr<AesCl12Benchmark> benchmark(new AesCl12Benchmark());
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
 
-  BENCHNAMECAPCommandLineOptions options;
+  AesCommandLineOptions options;
   options.RegisterOptions();
   options.Parse(argc, argv);
   options.ConfigureBenchmark(benchmark.get());
   options.ConfigureBenchmarkRunner(&runner);
 
   runner.Run();
+
+  return 0;
 }

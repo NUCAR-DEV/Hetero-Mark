@@ -9,6 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Carter McCardwell (cmccardw@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,22 +38,32 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/benchmark/benchmark_runner.h"
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_command_line_options.h"
-#include "src/BENCHNAMELOWER/hsa/BENCHNAMELOWER_hsa_benchmark.h"
+#ifndef SRC_AES_CL12_AES_CL12_BENCHMARK_H_
+#define SRC_AES_CL12_AES_CL12_BENCHMARK_H_
 
-int main(int argc, const char **argv) {
-  std::unique_ptr<BENCHNAMECAPHsaBenchmark> benchmark(new BENCHNAMECAPHsaBenchmark());
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
+#include "src/common/cl_util/cl_benchmark.h"
+#include "src/aes/aes_benchmark.h"
 
-  BENCHNAMECAPCommandLineOptions options;
-  options.RegisterOptions();
-  options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
-  options.ConfigureBenchmarkRunner(&runner);
+class AesCl12Benchmark : public AesBenchmark, public ClBenchmark {
+  cl_kernel kernel_;
 
-  runner.Run();
-}
+  cl_mem dev_ciphertext_;
+  cl_mem dev_key_;
+
+  void InitializeKernel();
+  void InitializeDeviceMemory();
+
+  void FreeKernel();
+  void FreeDeviceMemory();
+
+  void CopyDataToDevice();
+  void RunKernel();
+  void CopyDataBackFromDevice();
+
+ public:
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+};
+
+#endif  // SRC_AES_CL12_AES_CL12_BENCHMARK_H_

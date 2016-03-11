@@ -1,10 +1,9 @@
-/* Copyright (c) 2015 Northeastern University
+/*
+ * Copyright (c) 2015 Northeastern University
  * All rights reserved.
  *
  * Developed by:Northeastern University Computer Architecture Research (NUCAR)
  * Group, Northeastern University, http://www.ece.neu.edu/groups/nucar/
- *
- * Author: Carter McCardwell (carter@mccardwell.net, cmccardw@ece.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,22 +30,36 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/aes/hsa/aes_hsa_benchmark.h"
-#include <cstdio>
-#include <cstring>
-#include "src/aes/hsa/kernels.h"
+__kernel void HIST(__global uint* input, __global volatile uint* output,
+                   uint colors, uint size) {
+  uint tid = get_global_id(0);
+  uint gsize = get_global_size(0);
 
-void AesHsaBenchmark::Initialize() {
-  AesBenchmark::Initialize();
-  Encrypt_init(0);
-}
+  if (tid >= size) {
+    return;
+  }
+  uint priv_hist[256];
+  uint i = 0;
 
-void AesHsaBenchmark::Run() {
-  ExpandKey();
-  SNK_INIT_LPARM(lparm, 0);
-  int num_blocks = text_length_ / 16;
-  lparm->gdims[0] = num_blocks;
-  lparm->ldims[0] = 64 < num_blocks ? 64 : num_blocks;
+  for (i = 0; i < colors; i++) {
+    priv_hist[i] = 0;
+  }
 
-  Encrypt(ciphertext_, expanded_key_, lparm);
+  // Private histogram calculation
+  uint index = tid;
+  while (index < size) {
+    uint color = input[index];
+    priv_hist[color]++;
+    index += gsize;
+  }
+
+  // Barrier in case priv_hist is mapped to global memory
+  mem_fence(CLK_GLOBAL_MEM_FENCE);
+
+  // Copy to global memory
+  for (i = 0; i < colors; i++) {
+    if (priv_hist[i] > 0) {
+      atom_add(&output[i], priv_hist[i]);
+    }
+  }
 }

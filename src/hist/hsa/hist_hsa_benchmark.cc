@@ -37,22 +37,22 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/benchmark/benchmark_runner.h"
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_command_line_options.h"
-#include "src/BENCHNAMELOWER/hsa/BENCHNAMELOWER_hsa_benchmark.h"
+#include "src/hist/hsa/hist_hsa_benchmark.h"
+#include <cstdlib>
+#include <cstdio>
+#include "src/hist/hsa/kernels.h"
 
-int main(int argc, const char **argv) {
-  std::unique_ptr<BENCHNAMECAPHsaBenchmark> benchmark(new BENCHNAMECAPHsaBenchmark());
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
-
-  BENCHNAMECAPCommandLineOptions options;
-  options.RegisterOptions();
-  options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
-  options.ConfigureBenchmarkRunner(&runner);
-
-  runner.Run();
+void HistHsaBenchmark::Initialize() {
+  HistBenchmark::Initialize();
+  HIST_init(0);
 }
+
+void HistHsaBenchmark::Run() {
+  SNK_INIT_LPARM(lparm, 0);
+  lparm->ndim = 1;
+  lparm->gdims[0] = 1024;
+  lparm->ldims[0] = 64;
+  HIST(pixels_, histogram_, num_color_, num_pixel_, lparm);
+}
+
+void HistHsaBenchmark::Cleanup() { HistBenchmark::Cleanup(); }

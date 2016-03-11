@@ -1,6 +1,6 @@
-set( BENCHMARK_NAME aes_cl12 )
-set( SOURCE_FILES aes_cl12_benchmark.cc main.cc )
-set( HEADER_FILES aes_cl12_benchmark.h )
+set( BENCHMARK_NAME aes_cl20 )
+set( SOURCE_FILES aes_cl20_benchmark.cc main.cc )
+set( HEADER_FILES aes_cl20_benchmark.h )
 set( EXTRA_FILES kernels.cl )
 
 ############################################################################

@@ -1,10 +1,9 @@
-/* Copyright (c) 2015 Northeastern University
+/*
+ * Copyright (c) 2015 Northeastern University
  * All rights reserved.
  *
  * Developed by:Northeastern University Computer Architecture Research (NUCAR)
  * Group, Northeastern University, http://www.ece.neu.edu/groups/nucar/
- *
- * Author: Carter McCardwell (carter@mccardwell.net, cmccardw@ece.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,22 +30,30 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/aes/hsa/aes_hsa_benchmark.h"
-#include <cstdio>
-#include <cstring>
-#include "src/aes/hsa/kernels.h"
+#ifndef SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
+#define SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
 
-void AesHsaBenchmark::Initialize() {
-  AesBenchmark::Initialize();
-  Encrypt_init(0);
-}
+#include "src/common/cl_util/cl_benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/hist/hist_benchmark.h"
 
-void AesHsaBenchmark::Run() {
-  ExpandKey();
-  SNK_INIT_LPARM(lparm, 0);
-  int num_blocks = text_length_ / 16;
-  lparm->gdims[0] = num_blocks;
-  lparm->ldims[0] = 64 < num_blocks ? 64 : num_blocks;
+class HistCl12Benchmark : public HistBenchmark, public ClBenchmark {
+ private:
+  cl_kernel hist_kernel_;
 
-  Encrypt(ciphertext_, expanded_key_, lparm);
-}
+  cl_mem dev_pixels_;
+  cl_mem dev_histogram_;
+
+  void InitializeKernels();
+  void InitializeBuffers();
+
+ public:
+  HistCl12Benchmark(){}
+  ~HistCl12Benchmark(){}
+
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+};
+
+#endif  // SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_

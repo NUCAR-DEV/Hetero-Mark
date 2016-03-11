@@ -37,22 +37,31 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/benchmark/benchmark_runner.h"
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_command_line_options.h"
-#include "src/BENCHNAMELOWER/hsa/BENCHNAMELOWER_hsa_benchmark.h"
+#include "src/hist/hist_command_line_options.h"
 
-int main(int argc, const char **argv) {
-  std::unique_ptr<BENCHNAMECAPHsaBenchmark> benchmark(new BENCHNAMECAPHsaBenchmark());
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
+void HistCommandLineOptions::RegisterOptions() {
+  BenchmarkCommandLineOptions::RegisterOptions();
 
-  BENCHNAMECAPCommandLineOptions options;
-  options.RegisterOptions();
-  options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
-  options.ConfigureBenchmarkRunner(&runner);
+  command_line_option_.SetBenchmarkName("HIST Benchmark");
+  command_line_option_.SetDescription("This benchmark runs HIST.");
 
-  runner.Run();
+  command_line_option_.AddArgument("NumColors", "integer", "256", "-n",
+                                   "--num-colors",
+                                   "Number of possible colors of a pixel");
+
+  command_line_option_.AddArgument("NumPixels", "integer", "65536", "-x",
+                                   "--num-pixels",
+                                   "Number of pixels in the image");
+}
+
+void HistCommandLineOptions::Parse(int argc, const char *argv[]) {
+  BenchmarkCommandLineOptions::Parse(argc, argv);
+
+  num_color_ = command_line_option_.GetArgumentValue("NumColors")->AsUInt32();
+  num_pixel_ = command_line_option_.GetArgumentValue("NumPixels")->AsUInt32();
+}
+
+void HistCommandLineOptions::ConfigureBenchmark(HistBenchmark *benchmark) {
+  benchmark->SetNumColor(num_color_);
+  benchmark->SetNumPixel(num_pixel_);
 }
