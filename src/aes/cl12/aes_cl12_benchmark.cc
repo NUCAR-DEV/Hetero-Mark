@@ -51,7 +51,7 @@ void AesCl12Benchmark::InitializeKernel() {
     exit(-1);
   }
 
-  err = clBuildProgram(program_, 0, NULL, NULL, NULL, NULL);
+  err = clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL1.2", NULL, NULL);
   checkOpenCLErrors(err, "Failed to build program...\n");
 
   kernel_ = clCreateKernel(program_, "Encrypt", &err);
