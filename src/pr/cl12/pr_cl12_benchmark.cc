@@ -41,7 +41,6 @@ void PrCl12Benchmark::Initialize() {
 
   InitializeKernels();
   InitializeBuffers();
-  InitializeData();
 }
 
 void PrCl12Benchmark::InitializeKernels() {
@@ -56,16 +55,119 @@ void PrCl12Benchmark::InitializeKernels() {
   err = clBuildProgram(program_, 0, NULL, NULL, NULL, NULL);
   checkOpenCLErrors(err, "Failed to create program...\n");
 
-  CREATE_KERNEL
-  pr_kernel_ = clCreateKernel(program_, "XXX", &err);
-  checkOpenCLErrors(err, "Failed to create kernel XXX\n");
+  pr_kernel_ = clCreateKernel(program_, "PageRankUpdateGpu", &err);
+  checkOpenCLErrors(err, "Failed to create kernel PageRankUpdateGpu\n");
 }
 
-void PrCl12Benchmark::InitializeBuffers() {}
+void PrCl12Benchmark::InitializeBuffers() {
+  cl_int err;
 
-void PrCl12Benchmark::InitializeData() {}
+  dev_page_rank_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
+                                  num_nodes_ * sizeof(float), NULL, &err);
+  checkOpenCLErrors(err, "Failed to create page rank buffer");
 
-void PrCl12Benchmark::Run() {}
+  dev_page_rank_temp_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
+                                       num_nodes_ * sizeof(float), NULL, &err);
+  checkOpenCLErrors(err, "Failed to create page rank temp buffer");
+
+  dev_row_offsets_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
+                                    (num_nodes_ + 1) * sizeof(int), NULL, &err);
+  checkOpenCLErrors(err, "Failed to create page row offsets buffer");
+
+  dev_column_numbers_ = clCreateBuffer(
+      context_, CL_MEM_READ_ONLY, num_connections_ * sizeof(int), NULL, &err);
+  checkOpenCLErrors(err, "Failed to create page column numbers buffer");
+
+  dev_values_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
+                               num_connections_ * sizeof(float), NULL, &err);
+  checkOpenCLErrors(err, "Failed to create values buffer");
+}
+
+void PrCl12Benchmark::CopyDataToDevice() {
+  cl_int err;
+
+  float init_data = 1.0 / num_nodes_;
+  err =
+      clEnqueueFillBuffer(cmd_queue_, dev_page_rank_, &init_data, sizeof(float),
+                          0, num_nodes_ * sizeof(float), 0, NULL, NULL);
+  checkOpenCLErrors(err, "Failed to write page rank buffer");
+
+  err = clEnqueueWriteBuffer(cmd_queue_, dev_row_offsets_, CL_TRUE, 0,
+                             (num_nodes_ + 1) * sizeof(int), row_offsets_, 0,
+                             NULL, NULL);
+  checkOpenCLErrors(err, "Failed to write row offsets buffer");
+
+  err = clEnqueueWriteBuffer(cmd_queue_, dev_column_numbers_, CL_TRUE, 0,
+                             num_connections_ * sizeof(int), column_numbers_, 0,
+                             NULL, NULL);
+  checkOpenCLErrors(err, "Failed to write column numbers buffer");
+
+  err = clEnqueueWriteBuffer(cmd_queue_, dev_values_, CL_TRUE, 0,
+                             num_connections_ * sizeof(int), values_, 0, NULL,
+                             NULL);
+  checkOpenCLErrors(err, "Failed to write values buffer");
+}
+
+void PrCl12Benchmark::CopyDataBackFromDevice(cl_mem *buffer) {
+  cl_int err;
+
+  err = clEnqueueReadBuffer(cmd_queue_, dev_page_rank_, CL_TRUE, 0,
+                            num_nodes_ * sizeof(float), *buffer, 0, NULL, NULL);
+  checkOpenCLErrors(err, "Failed to copy data back from device");
+}
+
+void PrCl12Benchmark::Run() {
+  CopyDataToDevice();
+
+  cl_int err;
+
+  err = clSetKernelArg(pr_kernel_, 0, sizeof(uint32_t), &num_nodes_);
+  checkOpenCLErrors(err, "Failed to set kernel argument 0");
+
+  err = clSetKernelArg(pr_kernel_, 1, sizeof(cl_mem), &dev_row_offsets_);
+  checkOpenCLErrors(err, "Failed to set kernel argument 1");
+
+  err = clSetKernelArg(pr_kernel_, 2, sizeof(cl_mem), &dev_column_numbers_);
+  checkOpenCLErrors(err, "Failed to set kernel argument 2");
+
+  err = clSetKernelArg(pr_kernel_, 3, sizeof(cl_mem), &dev_values_);
+  checkOpenCLErrors(err, "Failed to set kernel argument 3");
+
+  err = clSetKernelArg(pr_kernel_, 4, sizeof(float) * 64, NULL);
+  checkOpenCLErrors(err, "Failed to set kernel argument 4");
+
+  uint32_t i;
+  for (i = 0; i < max_iteration_; i++) {
+    if (i % 2 == 0) {
+      err = clSetKernelArg(pr_kernel_, 5, sizeof(cl_mem), &dev_page_rank_);
+      checkOpenCLErrors(err, "Failed to set kernel argument 5");
+
+      err = clSetKernelArg(pr_kernel_, 6, sizeof(cl_mem), &dev_page_rank_temp_);
+      checkOpenCLErrors(err, "Failed to set kernel argument 6");
+    } else {
+      err = clSetKernelArg(pr_kernel_, 5, sizeof(cl_mem), &dev_page_rank_temp_);
+      checkOpenCLErrors(err, "Failed to set kernel argument 5");
+
+      err = clSetKernelArg(pr_kernel_, 6, sizeof(cl_mem), &dev_page_rank_);
+      checkOpenCLErrors(err, "Failed to set kernel argument 6");
+    }
+
+    size_t global_work_size[] = {num_nodes_ * 64};
+    size_t local_work_size[] = {64};
+    err = clEnqueueNDRangeKernel(cmd_queue_, pr_kernel_, 1, NULL,
+                                 global_work_size, local_work_size, 0, NULL,
+                                 NULL);
+    checkOpenCLErrors(err, "Failed to launch kernel");
+  }
+
+  clFinish(cmd_queue_);
+
+  if (!i % 2 == 0) {
+    CopyDataBackFromDevice(&dev_page_rank_);
+  } else {
+    CopyDataBackFromDevice(&dev_page_rank_temp_);
+  }
+}
 
 void PrCl12Benchmark::Cleanup() {
   PrBenchmark::Cleanup();
@@ -74,7 +176,11 @@ void PrCl12Benchmark::Cleanup() {
   ret = clReleaseKernel(pr_kernel_);
   ret = clReleaseProgram(program_);
 
-  OTHER_CLEANUPS
+  ret = clReleaseMemObject(dev_page_rank_);
+  ret = clReleaseMemObject(dev_page_rank_temp_);
+  ret = clReleaseMemObject(dev_row_offsets_);
+  ret = clReleaseMemObject(dev_column_numbers_);
+  ret = clReleaseMemObject(dev_values_);
 
   checkOpenCLErrors(ret, "Release objects.\n");
 }

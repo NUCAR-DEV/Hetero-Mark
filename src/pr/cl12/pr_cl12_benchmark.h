@@ -41,9 +41,17 @@ class PrCl12Benchmark : public PrBenchmark, public ClBenchmark {
  private:
   cl_kernel pr_kernel_;
 
-  void InitializeData();
+  cl_mem dev_page_rank_;
+  cl_mem dev_page_rank_temp_;
+  cl_mem dev_row_offsets_;
+  cl_mem dev_column_numbers_;
+  cl_mem dev_values_;
+
   void InitializeKernels();
   void InitializeBuffers();
+
+  void CopyDataToDevice();
+  void CopyDataBackFromDevice(cl_mem *buffer);
 
  public:
   PrCl12Benchmark() {}
@@ -52,7 +60,6 @@ class PrCl12Benchmark : public PrBenchmark, public ClBenchmark {
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
-  void Summarize() override {}
 };
 
 #endif  // SRC_PR_CL12_PR_CL12_BENCHMARK_H_
