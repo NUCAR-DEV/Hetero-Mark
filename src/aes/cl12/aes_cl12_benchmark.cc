@@ -51,7 +51,8 @@ void AesCl12Benchmark::InitializeKernel() {
     exit(-1);
   }
 
-  err = clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL1.2", NULL, NULL);
+  err =
+      clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL1.2", NULL, NULL);
   checkOpenCLErrors(err, "Failed to build program...\n");
 
   kernel_ = clCreateKernel(program_, "Encrypt", &err);
@@ -67,8 +68,8 @@ void AesCl12Benchmark::Initialize() {
 
 void AesCl12Benchmark::InitializeDeviceMemory() {
   cl_int err;
-  dev_ciphertext_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
-                                   text_length_, NULL, &err);
+  dev_ciphertext_ =
+      clCreateBuffer(context_, CL_MEM_READ_WRITE, text_length_, NULL, &err);
   checkOpenCLErrors(err, "Failed to create buffer for ciphertext");
 
   dev_key_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,

@@ -45,7 +45,6 @@
 
 class HistHsaBenchmark : public HistBenchmark {
  private:
-
  public:
   void Initialize() override;
   void Run() override;

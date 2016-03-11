@@ -38,10 +38,9 @@ void HistCl12Benchmark::Initialize() {
   HistBenchmark::Initialize();
 
   ClBenchmark::InitializeCl();
-  
+
   InitializeKernels();
   InitializeBuffers();
-  InitializeData();
 }
 
 void HistCl12Benchmark::InitializeKernels() {
@@ -50,26 +49,70 @@ void HistCl12Benchmark::InitializeKernels() {
 
   const char *source = file_->getSourceChar();
   program_ = clCreateProgramWithSource(context_, 1, (const char **)&source,
-                                       NULL, &err);
+      NULL, &err);
   checkOpenCLErrors(err, "Failed to create program with source...\n");
 
-  err = clBuildProgram(program_, 0, NULL, NULL, NULL, NULL);
+  err = clBuildProgram(program_, 1, &device_, NULL, NULL, NULL);
+  if (err != CL_SUCCESS) {
+    char buf[0x10000];
+    clGetProgramBuildInfo(program_, device_, CL_PROGRAM_BUILD_LOG, 0x10000, buf,
+        NULL);
+    printf("Build info:\n%s\n", buf);
+    exit(-1);
+  }
   checkOpenCLErrors(err, "Failed to create program...\n");
 
-  CREATE_KERNEL
-  hist_kernel_ = clCreateKernel(program_, "XXX", &err);
-  checkOpenCLErrors(err, "Failed to create kernel XXX\n");}
-
-void HistCl12Benchmark::InitializeBuffers() {
-
+  hist_kernel_ = clCreateKernel(program_, "HIST", &err);
+  checkOpenCLErrors(err, "Failed to create kernel HIST\n");
 }
 
-void HistCl12Benchmark::InitializeData() {
+void HistCl12Benchmark::InitializeBuffers() {
+  cl_int err;
+  dev_pixels_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
+      num_pixel_ * sizeof(uint32_t), NULL, &err);
+  checkOpenCLErrors(err, "Failed to create pixels buffer");
+
+  dev_histogram_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
+      num_color_ * sizeof(uint32_t), NULL, &err);
+  checkOpenCLErrors(err, "Failed to create histogram buffer");
+
+  uint32_t pattern[] = {0};
+  err = clEnqueueFillBuffer(cmd_queue_, dev_histogram_, pattern, 1, 
+                            0, num_color_ *sizeof(uint32_t), 0, NULL, NULL);
+  checkOpenCLErrors(err, "Failed to initialize histogram buffer");
 
 }
 
 void HistCl12Benchmark::Run() {
+  cl_int err;
 
+  err = clEnqueueWriteBuffer(cmd_queue_, dev_pixels_, CL_TRUE, 0,
+      num_pixel_ * sizeof(uint32_t), pixels_, 0, NULL,
+      NULL);
+  checkOpenCLErrors(err, "Failed to write pixels buffer");
+  clFinish(cmd_queue_);
+
+  err = clSetKernelArg(hist_kernel_, 0, sizeof(cl_mem), &dev_pixels_);
+  checkOpenCLErrors(err, "Failed to set argument 0");
+  err = clSetKernelArg(hist_kernel_, 1, sizeof(cl_mem), &dev_histogram_);
+  checkOpenCLErrors(err, "Failed to set argument 1");
+  err = clSetKernelArg(hist_kernel_, 2, sizeof(uint32_t), &num_color_);
+  checkOpenCLErrors(err, "Failed to set argument 2");
+  err = clSetKernelArg(hist_kernel_, 3, sizeof(uint32_t), &num_pixel_);
+  checkOpenCLErrors(err, "Failed to set argument 3");
+
+  size_t global_dimensions[] = {1024};
+  size_t local_dimensions[] = {64};
+  err = clEnqueueNDRangeKernel(cmd_queue_, hist_kernel_, CL_TRUE, NULL,
+      global_dimensions, local_dimensions, 0, 0, NULL);
+  checkOpenCLErrors(err, "Failed to launch kernel");
+  clFinish(cmd_queue_);
+
+  err = clEnqueueReadBuffer(cmd_queue_, dev_histogram_, CL_TRUE, 0,
+      num_color_ * sizeof(uint32_t), histogram_, 0, NULL,
+      NULL);
+  checkOpenCLErrors(err, "Failed to copy histogram back");
+  clFinish(cmd_queue_);
 }
 
 void HistCl12Benchmark::Cleanup() {
@@ -78,8 +121,7 @@ void HistCl12Benchmark::Cleanup() {
   cl_int ret;
   ret = clReleaseKernel(hist_kernel_);
   ret = clReleaseProgram(program_);
-
-  OTHER_CLEANUPS
-
+  ret = clReleaseMemObject(dev_pixels_);
+  ret = clReleaseMemObject(dev_histogram_);
   checkOpenCLErrors(ret, "Release objects.\n");
 }

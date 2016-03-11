@@ -45,14 +45,14 @@ void HistBenchmark::Initialize() {
   pixels_ = new uint32_t[num_pixel_];
   unsigned int seed = time(NULL);
   for (uint32_t i = 0; i < num_pixel_; i++) {
-    pixels_[i] = rand_r(&seed) % num_color_; 
-  }  
+    pixels_[i] = rand_r(&seed) % num_color_;
+  }
 
   histogram_ = new uint32_t[num_color_];
 }
 
 void HistBenchmark::Verify() {
-  uint32_t *cpu_histogram = new uint32_t[num_color_](); 
+  uint32_t *cpu_histogram = new uint32_t[num_color_]();
   for (uint32_t i = 0; i < num_pixel_; i++) {
     cpu_histogram[pixels_[i]]++;
   }
@@ -60,12 +60,12 @@ void HistBenchmark::Verify() {
   bool has_error = false;
   for (uint32_t i = 0; i < num_color_; i++) {
     if (cpu_histogram[i] != histogram_[i]) {
-      printf("At color %d, expected to be %d, but was %d\n", i, 
+      printf("At color %d, expected to be %d, but was %d\n", i,
              cpu_histogram[i], histogram_[i]);
       has_error = true;
     }
   }
-  
+
   if (!has_error) {
     printf("Passed.\n");
   }

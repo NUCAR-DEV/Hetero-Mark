@@ -43,30 +43,22 @@ void HistCommandLineOptions::RegisterOptions() {
   BenchmarkCommandLineOptions::RegisterOptions();
 
   command_line_option_.SetBenchmarkName("HIST Benchmark");
-  command_line_option_.SetDescription(
-      "This benchmark runs HIST.");
+  command_line_option_.SetDescription("This benchmark runs HIST.");
 
-  command_line_option_.AddArgument("NumColors", "integer", 
-                                    "256", "-n",
-                                    "--num-colors",
-                                    "Number of possible colors of a pixel");
+  command_line_option_.AddArgument("NumColors", "integer", "256", "-n",
+                                   "--num-colors",
+                                   "Number of possible colors of a pixel");
 
-  command_line_option_.AddArgument("NumPixels", "integer", 
-                                    "65536", "-x",
-                                    "--num-pixels",
-                                    "Number of pixels in the image");
-
-
+  command_line_option_.AddArgument("NumPixels", "integer", "65536", "-x",
+                                   "--num-pixels",
+                                   "Number of pixels in the image");
 }
 
 void HistCommandLineOptions::Parse(int argc, const char *argv[]) {
   BenchmarkCommandLineOptions::Parse(argc, argv);
 
-  num_color_ =
-        command_line_option_.GetArgumentValue("NumColors")->AsUInt32();
-  num_pixel_ =
-        command_line_option_.GetArgumentValue("NumPixels")->AsUInt32();
-
+  num_color_ = command_line_option_.GetArgumentValue("NumColors")->AsUInt32();
+  num_pixel_ = command_line_option_.GetArgumentValue("NumPixels")->AsUInt32();
 }
 
 void HistCommandLineOptions::ConfigureBenchmark(HistBenchmark *benchmark) {

@@ -59,7 +59,7 @@ __kernel void HIST(__global uint* input, __global volatile uint* output,
   // Copy to global memory
   for (i = 0; i < colors; i++) {
     if (priv_hist[i] > 0) {
-      atom_add(&output[i], priv_hist[i]);
+      atomic_add(&output[i], priv_hist[i]);
     }
   }
 }

@@ -55,6 +55,4 @@ void HistHsaBenchmark::Run() {
   HIST(pixels_, histogram_, num_color_, num_pixel_, lparm);
 }
 
-void HistHsaBenchmark::Cleanup() {
-  HistBenchmark::Cleanup();
-}
+void HistHsaBenchmark::Cleanup() { HistBenchmark::Cleanup(); }

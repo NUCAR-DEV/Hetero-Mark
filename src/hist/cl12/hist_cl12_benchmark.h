@@ -41,18 +41,19 @@ class HistCl12Benchmark : public HistBenchmark, public ClBenchmark {
  private:
   cl_kernel hist_kernel_;
 
-  void InitializeData();
+  cl_mem dev_pixels_;
+  cl_mem dev_histogram_;
+
   void InitializeKernels();
   void InitializeBuffers();
 
  public:
-  HistCl12Benchmark(){};
-  ~HistCl12Benchmark(){};
+  HistCl12Benchmark(){}
+  ~HistCl12Benchmark(){}
 
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
-  void Summarize() override {}
 };
 
 #endif  // SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_

@@ -55,6 +55,6 @@ int main(int argc, const char **argv) {
   options.ConfigureBenchmarkRunner(&runner);
 
   runner.Run();
-  
+
   return 0;
 }

@@ -41,18 +41,19 @@ class HistCl20Benchmark : public HistBenchmark, public ClBenchmark {
  private:
   cl_kernel hist_kernel_;
 
-  void InitializeData();
+  uint32_t *dev_pixels_;
+  uint32_t *dev_histogram_;
+
   void InitializeKernels();
   void InitializeBuffers();
 
  public:
-  HistCl20Benchmark(){}
-  ~HistCl20Benchmark(){}
+  HistCl20Benchmark() {}
+  ~HistCl20Benchmark() {}
 
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
-  void Summarize() override {}
 };
 
 #endif  // SRC_HIST_CL20_HIST_CL20_BENCHMARK_H_
