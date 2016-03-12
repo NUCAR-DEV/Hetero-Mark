@@ -48,8 +48,6 @@ __kernel void PageRankUpdateGpu(uint num_rows, __global uint* rowOffset,
     for (int jj = row_A_start + lane; jj < row_A_end; jj += 64)
       vals[local_id] += val[jj] * x[col[jj]];
 
-    barrier(CLK_GLOBAL_MEM_FENCE);
-
     if (lane < 32) vals[local_id] += vals[local_id + 32];
     if (lane < 16) vals[local_id] += vals[local_id + 16];
     if (lane < 8) vals[local_id] += vals[local_id + 8];
