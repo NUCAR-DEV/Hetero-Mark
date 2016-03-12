@@ -41,9 +41,17 @@ class PrCl20Benchmark : public PrBenchmark, public ClBenchmark {
  private:
   cl_kernel pr_kernel_;
 
-  void InitializeData();
-  void InitializeKernels();
+  float *dev_page_rank_;
+  float *dev_page_rank_temp_;
+  uint32_t *dev_row_offsets_;
+  uint32_t *dev_column_numbers_;
+  float *dev_values_;
+
   void InitializeBuffers();
+  void InitializeKernels();
+
+  void CopyDataToDevice();
+  void CopyDataBackFromDevice(float *buffer);
 
  public:
   PrCl20Benchmark() {}
@@ -52,7 +60,6 @@ class PrCl20Benchmark : public PrBenchmark, public ClBenchmark {
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
-  void Summarize() override {}
 };
 
 #endif  // SRC_PR_CL20_PR_CL20_BENCHMARK_H_

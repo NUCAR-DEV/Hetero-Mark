@@ -51,7 +51,7 @@ void PrHsaBenchmark::Initialize() {
 void PrHsaBenchmark::Run() {
   uint32_t i;
   for (i = 0; i < num_nodes_; i++) {
-    page_rank_[i] = 1.0 / num_nodes_; 
+    page_rank_[i] = 1.0 / num_nodes_;
   }
 
   SNK_INIT_LPARM(lparm, 0);

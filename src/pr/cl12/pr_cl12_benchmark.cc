@@ -112,7 +112,8 @@ void PrCl12Benchmark::CopyDataBackFromDevice(cl_mem *buffer) {
   cl_int err;
 
   err = clEnqueueReadBuffer(cmd_queue_, *buffer, CL_TRUE, 0,
-                            num_nodes_ * sizeof(float), page_rank_, 0, NULL, NULL);
+                            num_nodes_ * sizeof(float), page_rank_, 0, NULL,
+                            NULL);
   checkOpenCLErrors(err, "Failed to copy data back from device");
 }
 

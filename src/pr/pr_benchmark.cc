@@ -108,7 +108,7 @@ void PrBenchmark::Verify() {
   // Compare with GPU result
   bool has_error = false;
   for (i = 0; i < num_nodes_; i++) {
-    if (isnan(page_rank_[i]) || 
+    if (isnan(page_rank_[i]) ||
         fabs(page_rank_[i] - cpu_page_rank[i]) > page_rank_[i] / 100) {
       printf("Error with node %i, expected to be %e, but was %e\n", i,
              cpu_page_rank[i], page_rank_[i]);
