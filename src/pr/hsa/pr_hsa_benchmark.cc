@@ -46,6 +46,8 @@
 void PrHsaBenchmark::Initialize() {
   PrBenchmark::Initialize();
   page_rank_old_ = new float[num_nodes_];
+
+  PageRankUpdateGpu_init(0);
 }
 
 void PrHsaBenchmark::Run() {
