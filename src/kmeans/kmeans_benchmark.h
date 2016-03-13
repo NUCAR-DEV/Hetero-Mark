@@ -48,17 +48,16 @@ class KmeansBenchmark : public Benchmark {
  protected:
   std::string filename_ = "";
   double threshold_ = 0.001;
-  uint32_t max_num_clusters_ = 5;
-  uint32_t min_num_clusters_ = 5;
-  uint32_t num_loops_ = 1;
+  unsigned max_num_clusters_ = 5;
+  unsigned min_num_clusters_ = 5;
+  unsigned num_loops_ = 1;
   bool is_rmse_ = false;
   bool is_output_ = false;
 
-  uint32_t num_points_ = 0;
-  uint32_t num_features_ = 0;
-  uint32_t best_nclusters_ = 0;
+  unsigned num_points_ = 0;
+  unsigned num_features_ = 0;
 
-  std::unique_ptr<float[]> host_features_;
+  float *host_features_;
 
  public:
   void Initialize() override;
@@ -70,15 +69,15 @@ class KmeansBenchmark : public Benchmark {
   // Setters
   void setFilename(std::string filename) { filename_ = filename; }
   void setThreshold(double threshold) { threshold_ = threshold; }
-  void setMaxNumClusters(uint32_t max_num_clusters) {
+  void setMaxNumClusters(unsigned max_num_clusters) {
     max_num_clusters_ = max_num_clusters;
   }
-  void setMinNumClusters(uint32_t min_num_clusters) {
+  void setMinNumClusters(unsigned min_num_clusters) {
     min_num_clusters_ = min_num_clusters;
   }
   void setIsRMSE(bool is_rmse) { is_rmse_ = is_rmse; }
   void setIsOutput(bool is_output) { is_output_ = is_output; }
-  void setNumLoops(uint32_t num_loops) { num_loops_ = num_loops; }
+  void setNumLoops(unsigned num_loops) { num_loops_ = num_loops; }
 };
 
 #endif  // SRC_KMEANS_KMEANS_BENCHMARK_H_

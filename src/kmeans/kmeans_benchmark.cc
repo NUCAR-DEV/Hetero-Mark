@@ -48,44 +48,41 @@
 void KmeansBenchmark::Initialize() {
   std::ifstream file(filename_);
   std::string line;
-  std::vector<std::vector<unsigned>> points;
+  std::vector<float> points;
 
   // Read points from input file
   while (std::getline(file, line)) {
     num_points_++;
 
-    std::vector<unsigned> features;
     std::stringstream ss(line);
-    unsigned n;
+    float n;
 
     // Ignore the 1st attribute
     bool ignore = true;
     ss >> n;
     while (ss.good()) {
       if (!ignore)
-        features.push_back(n);
+        points.push_back(n);
       ignore = false;
       ss >> n;
     }
-    points.push_back(features);
   }
 
-  // Count number of points and features
-  num_points_ = points.size();
-  num_features_ = points[0].size();
+  // Count number features per point
+  num_features_ = points.size() / num_points_;
 
   // Sanity check
   if (num_points_ < min_num_clusters_)
     std::cerr << "Error: More clusters than points" << std::endl;
 
   // Copy data to host buffer
-  // host_features_ = Misc::NewUniqueArray<float>(num_points_ * num_features_);
-  // std::memcpy(host_features_.get(), points.data(),
-  //             num_points_ * num_features_ * sizeof(float));
+  host_features_ = new float[num_points_ * num_features_];
+  std::memcpy(host_features_, points.data(),
+              num_points_ * num_features_ * sizeof(float));
 }
 
 void KmeansBenchmark::Verify() {}
 
 void KmeansBenchmark::Summarize() {}
 
-void KmeansBenchmark::Cleanup() {}
+void KmeansBenchmark::Cleanup() { delete[] host_features_; }

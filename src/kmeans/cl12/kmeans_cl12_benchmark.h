@@ -37,15 +37,52 @@
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/kmeans/kmeans_benchmark.h"
 
+#ifndef FLT_MAX
+#define FLT_MAX 3.40282347e+38
+#endif
+
+#define _CRT_SECURE_NO_DEPRECATE 1
+#define RANDOM_MAX 2147483647
+
+#define BLOCK_SIZE 64
+
 class KmeansCl12Benchmark : public KmeansBenchmark, public ClBenchmark {
- private:
-  cl_kernel kmeans_kernel_;
+private:
+  cl_kernel kmeans_kernel_compute_;
+  cl_kernel kmeans_kernel_swap_;
+
+  cl_mem device_features_;
+  cl_mem device_features_swap_;
+  cl_mem device_membership_;
+  cl_mem device_clusters_;
+
+  unsigned num_clusters_ = 0;
+
+  float *host_clusters_;
+  int * host_membership_;
+
+  float delta_;
+  float min_rmse_;
+  int best_num_clusters_;
 
   void InitializeData();
   void InitializeKernels();
   void InitializeBuffers();
 
- public:
+  void Clustering();
+  void CreateTemporaryMemory();
+  void FreeTemporaryMemory();
+  void TransposeFeatures();
+  void KmeansClustering(unsigned num_clusters);
+  void InitializeHostClusters(unsigned num_clusters);
+  void InitializeHostMembership();
+  void UpdateMembership(unsigned num_clusters);
+  void UpdateClusterCentroids(unsigned num_clusters);
+  void DumpClusterCentroids(unsigned num_clusters);
+  void DumpMembership();
+  float CalculateRMSE();
+
+public:
   KmeansCl12Benchmark() {}
   ~KmeansCl12Benchmark() {}
 
@@ -55,4 +92,4 @@ class KmeansCl12Benchmark : public KmeansBenchmark, public ClBenchmark {
   void Summarize() override {}
 };
 
-#endif  // SRC_KMEANS_CL12_KMEANS_CL12_BENCHMARK_H_
+#endif // SRC_KMEANS_CL12_KMEANS_CL12_BENCHMARK_H_
