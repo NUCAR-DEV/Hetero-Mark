@@ -30,30 +30,36 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
-#define SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
+#ifndef SRC_PR_CL12_PR_CL12_BENCHMARK_H_
+#define SRC_PR_CL12_PR_CL12_BENCHMARK_H_
 
 #include "src/common/cl_util/cl_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/hist/hist_benchmark.h"
+#include "src/pr/pr_benchmark.h"
 
-class HistCl12Benchmark : public HistBenchmark, public ClBenchmark {
+class PrCl12Benchmark : public PrBenchmark, public ClBenchmark {
  private:
-  cl_kernel hist_kernel_;
+  cl_kernel pr_kernel_;
 
-  cl_mem dev_pixels_;
-  cl_mem dev_histogram_;
+  cl_mem dev_page_rank_;
+  cl_mem dev_page_rank_temp_;
+  cl_mem dev_row_offsets_;
+  cl_mem dev_column_numbers_;
+  cl_mem dev_values_;
 
   void InitializeKernels();
   void InitializeBuffers();
 
+  void CopyDataToDevice();
+  void CopyDataBackFromDevice(cl_mem *buffer);
+
  public:
-  HistCl12Benchmark() {}
-  ~HistCl12Benchmark() {}
+  PrCl12Benchmark() {}
+  ~PrCl12Benchmark() {}
 
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
 };
 
-#endif  // SRC_HIST_CL12_HIST_CL12_BENCHMARK_H_
+#endif  // SRC_PR_CL12_PR_CL12_BENCHMARK_H_

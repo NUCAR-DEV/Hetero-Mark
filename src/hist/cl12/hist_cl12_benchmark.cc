@@ -49,14 +49,14 @@ void HistCl12Benchmark::InitializeKernels() {
 
   const char *source = file_->getSourceChar();
   program_ = clCreateProgramWithSource(context_, 1, (const char **)&source,
-      NULL, &err);
+                                       NULL, &err);
   checkOpenCLErrors(err, "Failed to create program with source...\n");
 
   err = clBuildProgram(program_, 1, &device_, NULL, NULL, NULL);
   if (err != CL_SUCCESS) {
     char buf[0x10000];
     clGetProgramBuildInfo(program_, device_, CL_PROGRAM_BUILD_LOG, 0x10000, buf,
-        NULL);
+                          NULL);
     printf("Build info:\n%s\n", buf);
     exit(-1);
   }
@@ -69,26 +69,25 @@ void HistCl12Benchmark::InitializeKernels() {
 void HistCl12Benchmark::InitializeBuffers() {
   cl_int err;
   dev_pixels_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
-      num_pixel_ * sizeof(uint32_t), NULL, &err);
+                               num_pixel_ * sizeof(uint32_t), NULL, &err);
   checkOpenCLErrors(err, "Failed to create pixels buffer");
 
   dev_histogram_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
-      num_color_ * sizeof(uint32_t), NULL, &err);
+                                  num_color_ * sizeof(uint32_t), NULL, &err);
   checkOpenCLErrors(err, "Failed to create histogram buffer");
 
   uint32_t pattern[] = {0};
-  err = clEnqueueFillBuffer(cmd_queue_, dev_histogram_, pattern, 1, 
-                            0, num_color_ *sizeof(uint32_t), 0, NULL, NULL);
+  err = clEnqueueFillBuffer(cmd_queue_, dev_histogram_, pattern, 1, 0,
+                            num_color_ * sizeof(uint32_t), 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to initialize histogram buffer");
-
 }
 
 void HistCl12Benchmark::Run() {
   cl_int err;
 
   err = clEnqueueWriteBuffer(cmd_queue_, dev_pixels_, CL_TRUE, 0,
-      num_pixel_ * sizeof(uint32_t), pixels_, 0, NULL,
-      NULL);
+                             num_pixel_ * sizeof(uint32_t), pixels_, 0, NULL,
+                             NULL);
   checkOpenCLErrors(err, "Failed to write pixels buffer");
   clFinish(cmd_queue_);
 
@@ -104,13 +103,13 @@ void HistCl12Benchmark::Run() {
   size_t global_dimensions[] = {1024};
   size_t local_dimensions[] = {64};
   err = clEnqueueNDRangeKernel(cmd_queue_, hist_kernel_, CL_TRUE, NULL,
-      global_dimensions, local_dimensions, 0, 0, NULL);
+                               global_dimensions, local_dimensions, 0, 0, NULL);
   checkOpenCLErrors(err, "Failed to launch kernel");
   clFinish(cmd_queue_);
 
   err = clEnqueueReadBuffer(cmd_queue_, dev_histogram_, CL_TRUE, 0,
-      num_color_ * sizeof(uint32_t), histogram_, 0, NULL,
-      NULL);
+                            num_color_ * sizeof(uint32_t), histogram_, 0, NULL,
+                            NULL);
   checkOpenCLErrors(err, "Failed to copy histogram back");
   clFinish(cmd_queue_);
 }
