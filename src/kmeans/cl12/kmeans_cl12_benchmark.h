@@ -47,7 +47,7 @@
 #define BLOCK_SIZE 64
 
 class KmeansCl12Benchmark : public KmeansBenchmark, public ClBenchmark {
-private:
+ private:
   cl_kernel kmeans_kernel_compute_;
   cl_kernel kmeans_kernel_swap_;
 
@@ -59,7 +59,7 @@ private:
   unsigned num_clusters_ = 0;
 
   float *host_clusters_;
-  int * host_membership_;
+  int *host_membership_;
 
   float delta_;
   float min_rmse_;
@@ -82,7 +82,7 @@ private:
   void DumpMembership();
   float CalculateRMSE();
 
-public:
+ public:
   KmeansCl12Benchmark() {}
   ~KmeansCl12Benchmark() {}
 
@@ -92,4 +92,4 @@ public:
   void Summarize() override {}
 };
 
-#endif // SRC_KMEANS_CL12_KMEANS_CL12_BENCHMARK_H_
+#endif  // SRC_KMEANS_CL12_KMEANS_CL12_BENCHMARK_H_

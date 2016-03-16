@@ -37,13 +37,47 @@
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/kmeans/kmeans_benchmark.h"
 
+#ifndef FLT_MAX
+#define FLT_MAX 3.40282347e+38
+#endif
+
+#define _CRT_SECURE_NO_DEPRECATE 1
+#define RANDOM_MAX 2147483647
+
+#define BLOCK_SIZE 64
+
 class KmeansCl20Benchmark : public KmeansBenchmark, public ClBenchmark {
  private:
-  cl_kernel kmeans_kernel_;
+  cl_kernel kmeans_kernel_compute_;
+  cl_kernel kmeans_kernel_swap_;
+
+  float *svm_features_;
+  float *svm_features_swap_;
+  int *svm_membership_;
+  int *svm_clusters_;
+
+  unsigned num_clusters_ = 0;
+  float delta_;
+  float min_rmse_;
+  int best_num_clusters_;
 
   void InitializeData();
   void InitializeKernels();
   void InitializeBuffers();
+
+  void Clustering();
+  void CreateTemporaryMemory();
+  void FreeTemporaryMemory();
+  void TransposeFeatures();
+  void KmeansClustering(unsigned num_clusters);
+  void InitializeClusters(unsigned num_clusters);
+  void FreeClusters();
+  void InitializeMembership();
+  void UpdateMembership(unsigned num_clusters);
+  void UpdateClusterCentroids(unsigned num_clusters);
+  void DumpClusterCentroids(unsigned num_clusters);
+  void DumpMembership();
+  float CalculateRMSE();
 
  public:
   KmeansCl20Benchmark() {}

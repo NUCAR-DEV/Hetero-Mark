@@ -52,8 +52,8 @@ void PrCl20Benchmark::InitializeKernels() {
                                        NULL, &err);
   checkOpenCLErrors(err, "Failed to create program with source...\n");
 
-  err = clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL2.0", 
-                       NULL, NULL);
+  err =
+      clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL2.0", NULL, NULL);
   checkOpenCLErrors(err, "Failed to create program...\n");
 
   pr_kernel_ = clCreateKernel(program_, "PageRankUpdateGpu", &err);
@@ -61,11 +61,11 @@ void PrCl20Benchmark::InitializeKernels() {
 }
 
 void PrCl20Benchmark::InitializeBuffers() {
-  dev_page_rank_ = reinterpret_cast<float *>(clSVMAlloc(
-      context_, CL_MEM_READ_WRITE, num_nodes_ * sizeof(float), 0));
+  dev_page_rank_ = reinterpret_cast<float *>(
+      clSVMAlloc(context_, CL_MEM_READ_WRITE, num_nodes_ * sizeof(float), 0));
 
-  dev_page_rank_temp_ = reinterpret_cast<float *>(clSVMAlloc(
-      context_, CL_MEM_READ_WRITE, num_nodes_ * sizeof(float), 0));
+  dev_page_rank_temp_ = reinterpret_cast<float *>(
+      clSVMAlloc(context_, CL_MEM_READ_WRITE, num_nodes_ * sizeof(float), 0));
 
   dev_row_offsets_ = reinterpret_cast<uint32_t *>(clSVMAlloc(
       context_, CL_MEM_READ_ONLY, (num_nodes_ + 1) * sizeof(uint32_t), 0));
@@ -80,8 +80,8 @@ void PrCl20Benchmark::InitializeBuffers() {
 void PrCl20Benchmark::CopyDataToDevice() {
   cl_int err;
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, dev_page_rank_, 
-                  num_nodes_ * sizeof(float), 0, NULL, NULL);
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, dev_page_rank_,
+                        num_nodes_ * sizeof(float), 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to map SVM buffer page rank");
   for (uint32_t i = 0; i < num_nodes_; i++) {
     dev_page_rank_[i] = 1.0 / num_nodes_;
@@ -89,21 +89,22 @@ void PrCl20Benchmark::CopyDataToDevice() {
   err = clEnqueueSVMUnmap(cmd_queue_, dev_page_rank_, 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to unmap SVM buffer page rank");
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, dev_row_offsets_, 
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, dev_row_offsets_,
                         (num_nodes_ + 1) * sizeof(uint32_t), 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to map svm buffer");
   memcpy(dev_row_offsets_, row_offsets_, (num_nodes_ + 1) * sizeof(uint32_t));
   err = clEnqueueSVMUnmap(cmd_queue_, dev_row_offsets_, 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to unmap SVM buffer page rank");
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, dev_column_numbers_, 
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, dev_column_numbers_,
                         num_connections_ * sizeof(uint32_t), 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to map svm buffer");
-  memcpy(dev_column_numbers_, column_numbers_, num_connections_ * sizeof(uint32_t));
+  memcpy(dev_column_numbers_, column_numbers_,
+         num_connections_ * sizeof(uint32_t));
   err = clEnqueueSVMUnmap(cmd_queue_, dev_column_numbers_, 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to unmap SVM buffer page rank");
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, dev_values_, 
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_WRITE, dev_values_,
                         num_connections_ * sizeof(float), 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to map svm buffer");
   memcpy(dev_values_, values_, num_connections_ * sizeof(float));
@@ -116,8 +117,8 @@ void PrCl20Benchmark::CopyDataToDevice() {
 void PrCl20Benchmark::CopyDataBackFromDevice(float *buffer) {
   cl_int err;
 
-  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_READ, buffer, 
-                 num_nodes_ * sizeof(float), 0, NULL, NULL);
+  err = clEnqueueSVMMap(cmd_queue_, CL_TRUE, CL_MAP_READ, buffer,
+                        num_nodes_ * sizeof(float), 0, NULL, NULL);
   checkOpenCLErrors(err, "Failed to map svm buffer");
 
   memcpy(page_rank_, buffer, num_nodes_ * sizeof(float));

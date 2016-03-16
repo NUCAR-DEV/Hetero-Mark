@@ -61,8 +61,7 @@ void KmeansBenchmark::Initialize() {
     bool ignore = true;
     ss >> n;
     while (ss.good()) {
-      if (!ignore)
-        points.push_back(n);
+      if (!ignore) points.push_back(n);
       ignore = false;
       ss >> n;
     }

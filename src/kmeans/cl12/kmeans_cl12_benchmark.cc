@@ -107,10 +107,8 @@ void KmeansCl12Benchmark::Clustering() {
   // Sweep k from min to max_clusters_ to find the best number of clusters
   for (num_clusters_ = min_num_clusters_; num_clusters_ <= max_num_clusters_;
        num_clusters_++) {
-
     // Sanity check: cannot have more clusters than points
-    if (num_clusters_ > num_points_)
-      break;
+    if (num_clusters_ > num_points_) break;
 
     CreateTemporaryMemory();
     TransposeFeatures();
@@ -253,7 +251,7 @@ void KmeansCl12Benchmark::UpdateMembership(unsigned num_clusters) {
 
 void KmeansCl12Benchmark::UpdateClusterCentroids(unsigned num_clusters) {
   // Allocate space for and initialize new_centers_len and new_centers
-  int *member_count = new int[num_clusters];
+  int *member_count = new int[num_clusters]();
 
   // Clean up host_clusters_
   for (unsigned i = 0; i < num_clusters * num_features_; ++i)
@@ -273,7 +271,7 @@ void KmeansCl12Benchmark::UpdateClusterCentroids(unsigned num_clusters) {
   for (unsigned i = 0; i < num_clusters; i++) {
     for (unsigned j = 0; j < num_features_; j++) {
       unsigned index = i * num_features_ + j;
-      host_clusters_[index] /= member_count[i];
+      if (member_count[i]) host_clusters_[index] /= member_count[i];
     }
   }
 
