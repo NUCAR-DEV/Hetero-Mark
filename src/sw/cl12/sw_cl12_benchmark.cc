@@ -217,7 +217,7 @@ void SwCl12Benchmark::InitPsiP() {
   err |= clSetKernelArg(kernel_sw_init_psi_p_, 4, sizeof(unsigned),
                         reinterpret_cast<void *>(&m_len_));
   err |= clSetKernelArg(kernel_sw_init_psi_p_, 5, sizeof(unsigned),
-                        reinterpret_cast<void *>(&m_len_));
+                        reinterpret_cast<void *>(&n_len_));
   err |= clSetKernelArg(kernel_sw_init_psi_p_, 6, sizeof(cl_mem),
                         reinterpret_cast<void *>(&p_));
   err |= clSetKernelArg(kernel_sw_init_psi_p_, 7, sizeof(cl_mem),

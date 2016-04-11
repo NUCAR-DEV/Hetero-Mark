@@ -55,7 +55,7 @@ void SwCl20Benchmark::InitializeKernels() {
                                        NULL, &err);
   checkOpenCLErrors(err, "Failed to create program with source...\n");
 
-  err = clBuildProgram(program_, 0, NULL, NULL, NULL, NULL);
+  err = clBuildProgram(program_, 0, NULL, "-I. -cl-std=CL2.0", NULL, NULL);
   checkOpenCLErrors(err, "Failed to create program...\n");
 
   // Create kernels
@@ -84,6 +84,7 @@ void SwCl20Benchmark::InitializeKernels() {
 
 void SwCl20Benchmark::FreeKernels() {
   cl_int err;
+
   // Release kernels
   err = clReleaseKernel(kernel_sw_init_psi_p_);
   checkOpenCLErrors(err, "Failed to release cl kernel: kernel_sw_init_psi_p_");
@@ -220,7 +221,7 @@ void SwCl20Benchmark::InitPsiP() {
   err |= clSetKernelArg(kernel_sw_init_psi_p_, 4, sizeof(unsigned),
                         reinterpret_cast<void *>(&m_len_));
   err |= clSetKernelArg(kernel_sw_init_psi_p_, 5, sizeof(unsigned),
-                        reinterpret_cast<void *>(&m_len_));
+                        reinterpret_cast<void *>(&nq_len_));
   err |= clSetKernelArgSVMPointer(kernel_sw_init_psi_p_, 6,
                                   reinterpret_cast<void *>(p_));
   err |= clSetKernelArgSVMPointer(kernel_sw_init_psi_p_, 7,
