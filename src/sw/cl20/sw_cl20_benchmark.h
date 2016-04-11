@@ -37,14 +37,56 @@
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/sw/sw_benchmark.h"
 
-class SwCl20Benchmark : public SwBenchmark,
-                                  public ClBenchmark {
+class SwCl20Benchmark : public SwBenchmark, public ClBenchmark {
  private:
-  cl_kernel sw_kernel_;
+  // OpenCL 2.0 style svm buffers
+  double *u_curr_;
+  double *u_next_;
 
+  double *v_curr_;
+  double *v_next_;
+
+  double *p_curr_;
+  double *p_next_;
+
+  double *u_;
+  double *v_;
+  double *p_;
+
+  double *cu_;
+  double *cv_;
+
+  double *z_;
+  double *h_;
+  double *psi_;
+
+  // Kernels
+  cl_kernel kernel_sw_init_psi_p_;
+  cl_kernel kernel_sw_init_velocities_;
+  cl_kernel kernel_sw_compute0_;
+  cl_kernel kernel_sw_update0_;
+  cl_kernel kernel_sw_compute1_;
+  cl_kernel kernel_sw_update1_;
+  cl_kernel kernel_sw_time_smooth_;
+
+  // Initialize
+  void InitializeParams();
   void InitializeData();
   void InitializeKernels();
   void InitializeBuffers();
+  void InitPsiP();
+  void InitVelocities();
+
+  // Free
+  void FreeKernels();
+  void FreeBuffers();
+
+  // Run
+  void Compute0();
+  void PeriodicUpdate0();
+  void Compute1();
+  void PeriodicUpdate1();
+  void TimeSmooth(int ncycle);
 
  public:
   SwCl20Benchmark() {}

@@ -43,7 +43,7 @@ void SwCl12Benchmark::Initialize() {
   InitializeParams();
   InitializeKernels();
   InitializeBuffers();
-  InitializeData();  
+  InitializeData();
 }
 
 void SwCl12Benchmark::InitializeKernels() {
@@ -145,6 +145,20 @@ void SwCl12Benchmark::InitializeParams() {
 void SwCl12Benchmark::InitializeData() {
   InitPsiP();
   InitVelocities();
+
+  // FIXME: Boundary conditions
+  cl_int err;
+
+  size_t sizeInBytes = sizeof(double) * m_len_ * n_len_;
+  err = clEnqueueCopyBuffer(cmd_queue_, u_, u_curr_, 0, 0, sizeInBytes, 0, NULL,
+                            NULL);
+  err |= clEnqueueCopyBuffer(cmd_queue_, v_, v_curr_, 0, 0, sizeInBytes, 0,
+                             NULL, NULL);
+  err |= clEnqueueCopyBuffer(cmd_queue_, p_, p_curr_, 0, 0, sizeInBytes, 0,
+                             NULL, NULL);
+  checkOpenCLErrors(err, "Failed to clEnqueueCopyBuffer");
+
+  clFinish(cmd_queue_);
 }
 
 #define clFreeBuffer(buf)        \
@@ -457,7 +471,6 @@ void SwCl12Benchmark::Run() {
 
 void SwCl12Benchmark::Cleanup() {
   SwBenchmark::Cleanup();
-
   cl_int err;
 
   // Release buffers

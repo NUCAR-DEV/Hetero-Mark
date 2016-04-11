@@ -70,17 +70,17 @@ class SwCl12Benchmark : public SwBenchmark,
   cl_kernel kernel_sw_update1_;
   cl_kernel kernel_sw_time_smooth_;
 
+  // Initialize
   void InitializeParams();
   void InitializeData();
   void InitializeKernels();
   void InitializeBuffers();
-
-  void FreeKernels();
-  void FreeBuffers();
-
-  // Initialize
   void InitPsiP();
   void InitVelocities();
+
+  // Free
+  void FreeKernels();
+  void FreeBuffers();
 
   // Run
   void Compute0();
