@@ -50,7 +50,6 @@ class BENCHNAMECAPCommandLineOptions : public BenchmarkCommandLineOptions {
   void ConfigureBenchmark(BENCHNAMECAPBenchmark *benchmark);
 
  private:
-
 };
 
 #endif  // SRC_BENCHNAMEUPPER_BENCHNAMEUPPER_COMMAND_LINE_OPTIONS_H_

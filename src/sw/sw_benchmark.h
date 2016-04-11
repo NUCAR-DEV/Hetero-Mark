@@ -37,18 +37,36 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
-#define SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
+#ifndef SRC_SW_SW_BENCHMARK_H_
+#define SRC_SW_SW_BENCHMARK_H_
 
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_benchmark.h"
+#include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
-class BENCHNAMECAPHsaBenchmark : public BENCHNAMECAPBenchmark {
- private:
+class SwBenchmark : public Benchmark {
+ protected:
+  // Size
+  unsigned m_;
+  unsigned n_;
+  unsigned m_len_;
+  unsigned n_len_;
+  unsigned itmax_;
+
+  // Params
+  double dt_, tdt_, dx_, dy_, a_, alpha_, el_, pi_;
+  double tpi_, di_, dj_, pcf_;
+  double tdts8_, tdtsdx_, tdtsdy_, fsdx_, fsdy_;
+  
  public:
   void Initialize() override;
-  void Run() override;
+  void Run() override = 0;
+  void Verify() override;
+  void Summarize() override;
   void Cleanup() override;
+
+  // Setters
+  void setSizeM(unsigned m) { m_ = m; };
+  void setSizeN(unsigned n) { n_ = n; };
 };
 
-#endif  // SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
+#endif  // SRC_SW_SW_BENCHMARK_H_

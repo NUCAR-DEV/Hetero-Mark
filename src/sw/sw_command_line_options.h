@@ -37,18 +37,21 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
-#define SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
+#ifndef SRC_SW_SW_COMMAND_LINE_OPTIONS_H_
+#define SRC_SW_SW_COMMAND_LINE_OPTIONS_H_
 
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_benchmark.h"
-#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/command_line_option/benchmark_command_line_options.h"
+#include "src/sw/sw_benchmark.h"
 
-class BENCHNAMECAPHsaBenchmark : public BENCHNAMECAPBenchmark {
- private:
+class SwCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
+  void RegisterOptions() override;
+  void Parse(int argc, const char *argv[]) override;
+  void ConfigureBenchmark(SwBenchmark *benchmark);
+
+ private:
+  unsigned m_;
+  unsigned n_;
 };
 
-#endif  // SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
+#endif  // SRC_SW_SW_COMMAND_LINE_OPTIONS_H_

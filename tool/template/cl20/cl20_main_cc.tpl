@@ -44,7 +44,8 @@
 #include "src/BENCHNAMELOWER/cl20/BENCHNAMELOWER_cl20_benchmark.h"
 
 int main(int argc, const char **argv) {
-  std::unique_ptr<BENCHNAMECAPCl20Benchmark> benchmark(new BENCHNAMECAPCl20Benchmark());
+  std::unique_ptr<BENCHNAMECAPCl20Benchmark> benchmark(
+      new BENCHNAMECAPCl20Benchmark());
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
 

@@ -1,4 +1,5 @@
-/* Copyright (c) 2015 Northeastern University
+/*
+ * Copyright (c) 2015 Northeastern University
  * All rights reserved.
  *
  * Developed by:Northeastern University Computer Architecture Research (NUCAR)
@@ -29,53 +30,30 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
-#include <cstdlib>
-#include "src/BENCHNAMELOWER/cl20/BENCHNAMELOWER_cl20_benchmark.h"
+#ifndef SRC_SW_CL20_SW_CL20_BENCHMARK_H_
+#define SRC_SW_CL20_SW_CL20_BENCHMARK_H_
 
-void BENCHNAMECAPCl20Benchmark::Initialize() {
-  BENCHNAMECAPBenchmark::Initialize();
+#include "src/common/cl_util/cl_benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/sw/sw_benchmark.h"
 
-  ClBenchmark::InitializeCl();
+class SwCl20Benchmark : public SwBenchmark,
+                                  public ClBenchmark {
+ private:
+  cl_kernel sw_kernel_;
 
-  InitializeKernels();
-  InitializeBuffers();
-  InitializeData();
-}
+  void InitializeData();
+  void InitializeKernels();
+  void InitializeBuffers();
 
-void BENCHNAMECAPCl20Benchmark::InitializeKernels() {
-  cl_int err;
-  file_->open("kernels.cl");
+ public:
+  SwCl20Benchmark() {}
+  ~SwCl20Benchmark() {}
 
-  const char *source = file_->getSourceChar();
-  program_ = clCreateProgramWithSource(context_, 1, (const char **)&source,
-                                       NULL, &err);
-  checkOpenCLErrors(err, "Failed to create program with source...\n");
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+  void Summarize() override {}
+};
 
-  err =
-      clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL2.0", NULL, NULL);
-  checkOpenCLErrors(err, "Failed to create program...\n");
-
-  CREATE_KERNEL
-  BENCHNAMELOWER_kernel_ = clCreateKernel(program_, "XXX", &err);
-  checkOpenCLErrors(err, "Failed to create kernel XXX\n");
-}
-
-void BENCHNAMECAPCl20Benchmark::InitializeBuffers() {}
-
-void BENCHNAMECAPCl20Benchmark::InitializeData() {}
-
-void BENCHNAMECAPCl20Benchmark::Run() {}
-
-void BENCHNAMECAPCl20Benchmark::Cleanup() {
-  BENCHNAMECAPBenchmark::Cleanup();
-
-  cl_int ret;
-  ret = clReleaseKernel(BENCHNAMELOWER_kernel_);
-  ret = clReleaseProgram(program_);
-
-  OTHER_CLEANUPS
-
-  checkOpenCLErrors(ret, "Release objects.\n");
-}
+#endif  // SRC_SW_CL20_SW_CL20_BENCHMARK_H_

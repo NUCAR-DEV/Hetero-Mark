@@ -38,7 +38,7 @@ void BENCHNAMECAPCl12Benchmark::Initialize() {
   BENCHNAMECAPBenchmark::Initialize();
 
   ClBenchmark::InitializeCl();
-  
+
   InitializeKernels();
   InitializeBuffers();
   InitializeData();
@@ -58,19 +58,14 @@ void BENCHNAMECAPCl12Benchmark::InitializeKernels() {
 
   CREATE_KERNEL
   BENCHNAMELOWER_kernel_ = clCreateKernel(program_, "XXX", &err);
-  checkOpenCLErrors(err, "Failed to create kernel XXX\n");}
-
-void BENCHNAMECAPCl12Benchmark::InitializeBuffers() {
-
+  checkOpenCLErrors(err, "Failed to create kernel XXX\n");
 }
 
-void BENCHNAMECAPCl12Benchmark::InitializeData() {
+void BENCHNAMECAPCl12Benchmark::InitializeBuffers() {}
 
-}
+void BENCHNAMECAPCl12Benchmark::InitializeData() {}
 
-void BENCHNAMECAPCl12Benchmark::Run() {
-
-}
+void BENCHNAMECAPCl12Benchmark::Run() {}
 
 void BENCHNAMECAPCl12Benchmark::Cleanup() {
   BENCHNAMECAPBenchmark::Cleanup();

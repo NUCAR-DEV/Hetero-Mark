@@ -43,27 +43,25 @@ void BENCHNAMECAPCommandLineOptions::RegisterOptions() {
   BenchmarkCommandLineOptions::RegisterOptions();
 
   command_line_option_.SetBenchmarkName("BENCHNAMEUPPER Benchmark");
-  command_line_option_.SetDescription(
-      "This benchmark runs BENCHNAMEUPPER.");
+  command_line_option_.SetDescription("This benchmark runs BENCHNAMEUPPER.");
 
   // e.g:
-  // command_line_option_.AddArgument("NumDataPerBlock", "integer", 
+  // command_line_option_.AddArgument("NumDataPerBlock", "integer",
   //                                  "1024", "-x",
   //                                  "--num-data-per-block",
   //                                  "Number of data points per block");
-
 }
 
 void BENCHNAMECAPCommandLineOptions::Parse(int argc, const char *argv[]) {
   BenchmarkCommandLineOptions::Parse(argc, argv);
 
-  // e.g : 
+  // e.g :
   // num_data_per_block_ =
   //      command_line_option_.GetArgumentValue("NumDataPerBlock")->AsUInt32();
-
 }
 
-void BENCHNAMECAPCommandLineOptions::ConfigureBenchmark(BENCHNAMECAPBenchmark *benchmark) {
-  // e.g : 
+void BENCHNAMECAPCommandLineOptions::ConfigureBenchmark(
+    BENCHNAMECAPBenchmark *benchmark) {
+  // e.g :
   // benchmark->SetNumDataPerBlock(num_data_per_block_);
 }

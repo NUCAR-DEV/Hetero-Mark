@@ -32,10 +32,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <cstdlib>
-#include "src/BENCHNAMELOWER/cl20/BENCHNAMELOWER_cl20_benchmark.h"
+#include "src/sw/cl20/sw_cl20_benchmark.h"
 
-void BENCHNAMECAPCl20Benchmark::Initialize() {
-  BENCHNAMECAPBenchmark::Initialize();
+void SwCl20Benchmark::Initialize() {
+  SwBenchmark::Initialize();
 
   ClBenchmark::InitializeCl();
 
@@ -44,7 +44,7 @@ void BENCHNAMECAPCl20Benchmark::Initialize() {
   InitializeData();
 }
 
-void BENCHNAMECAPCl20Benchmark::InitializeKernels() {
+void SwCl20Benchmark::InitializeKernels() {
   cl_int err;
   file_->open("kernels.cl");
 
@@ -58,21 +58,21 @@ void BENCHNAMECAPCl20Benchmark::InitializeKernels() {
   checkOpenCLErrors(err, "Failed to create program...\n");
 
   CREATE_KERNEL
-  BENCHNAMELOWER_kernel_ = clCreateKernel(program_, "XXX", &err);
+  sw_kernel_ = clCreateKernel(program_, "XXX", &err);
   checkOpenCLErrors(err, "Failed to create kernel XXX\n");
 }
 
-void BENCHNAMECAPCl20Benchmark::InitializeBuffers() {}
+void SwCl20Benchmark::InitializeBuffers() {}
 
-void BENCHNAMECAPCl20Benchmark::InitializeData() {}
+void SwCl20Benchmark::InitializeData() {}
 
-void BENCHNAMECAPCl20Benchmark::Run() {}
+void SwCl20Benchmark::Run() {}
 
-void BENCHNAMECAPCl20Benchmark::Cleanup() {
-  BENCHNAMECAPBenchmark::Cleanup();
+void SwCl20Benchmark::Cleanup() {
+  SwBenchmark::Cleanup();
 
   cl_int ret;
-  ret = clReleaseKernel(BENCHNAMELOWER_kernel_);
+  ret = clReleaseKernel(sw_kernel_);
   ret = clReleaseProgram(program_);
 
   OTHER_CLEANUPS

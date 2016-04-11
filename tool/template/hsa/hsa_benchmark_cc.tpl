@@ -46,10 +46,6 @@ void BENCHNAMECAPHsaBenchmark::Initialize() {
   BENCHNAMECAPBenchmark::Initialize();
 }
 
-void BENCHNAMECAPHsaBenchmark::Run() {
-  
-}
+void BENCHNAMECAPHsaBenchmark::Run() {}
 
-void BENCHNAMECAPHsaBenchmark::Cleanup() {
-  BENCHNAMECAPBenchmark::Cleanup();
-}
+void BENCHNAMECAPHsaBenchmark::Cleanup() { BENCHNAMECAPBenchmark::Cleanup(); }

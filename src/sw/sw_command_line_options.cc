@@ -37,18 +37,29 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
-#define SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
+#include "src/sw/sw_command_line_options.h"
 
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_benchmark.h"
-#include "src/common/time_measurement/time_measurement.h"
+void SwCommandLineOptions::RegisterOptions() {
+  BenchmarkCommandLineOptions::RegisterOptions();
 
-class BENCHNAMECAPHsaBenchmark : public BENCHNAMECAPBenchmark {
- private:
- public:
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
+  command_line_option_.SetBenchmarkName("ShallowWater Benchmark");
+  command_line_option_.SetDescription(
+      "This benchmark runs ShallowWater benchmark.");
 
-#endif  // SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
+  command_line_option_.AddArgument("SizeM", "integer", "1024", "-m", "--m-size",
+                                   "Size M");
+  command_line_option_.AddArgument("SizeN", "integer", "1024", "-n", "--n-size",
+                                   "Size N");
+}
+
+void SwCommandLineOptions::Parse(int argc, const char *argv[]) {
+  BenchmarkCommandLineOptions::Parse(argc, argv);
+
+  m_ = command_line_option_.GetArgumentValue("SizeM")->AsUInt32();
+  n_ = command_line_option_.GetArgumentValue("SizeN")->AsUInt32();
+}
+
+void SwCommandLineOptions::ConfigureBenchmark(SwBenchmark *benchmark) {
+  benchmark->setSizeM(m_);
+  benchmark->setSizeN(n_);
+}

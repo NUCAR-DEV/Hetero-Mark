@@ -1,4 +1,5 @@
-/* Copyright (c) 2015 Northeastern University
+/*
+ * Copyright (c) 2015 Northeastern University
  * All rights reserved.
  *
  * Developed by:Northeastern University Computer Architecture Research (NUCAR)
@@ -29,53 +30,73 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
-#include <cstdlib>
-#include "src/BENCHNAMELOWER/cl20/BENCHNAMELOWER_cl20_benchmark.h"
+#ifndef SRC_SW_CL12_SW_CL12_BENCHMARK_H_
+#define SRC_SW_CL12_SW_CL12_BENCHMARK_H_
 
-void BENCHNAMECAPCl20Benchmark::Initialize() {
-  BENCHNAMECAPBenchmark::Initialize();
+#include "src/common/cl_util/cl_benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/sw/sw_benchmark.h"
 
-  ClBenchmark::InitializeCl();
+class SwCl12Benchmark : public SwBenchmark,
+                                  public ClBenchmark {
+ private:
+  // OpenCL 1.2 style buffers
+  cl_mem u_curr_;
+  cl_mem u_next_;
 
-  InitializeKernels();
-  InitializeBuffers();
-  InitializeData();
-}
+  cl_mem v_curr_;
+  cl_mem v_next_;
 
-void BENCHNAMECAPCl20Benchmark::InitializeKernels() {
-  cl_int err;
-  file_->open("kernels.cl");
+  cl_mem p_curr_;
+  cl_mem p_next_;
 
-  const char *source = file_->getSourceChar();
-  program_ = clCreateProgramWithSource(context_, 1, (const char **)&source,
-                                       NULL, &err);
-  checkOpenCLErrors(err, "Failed to create program with source...\n");
+  cl_mem u_;
+  cl_mem v_;
+  cl_mem p_;
 
-  err =
-      clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL2.0", NULL, NULL);
-  checkOpenCLErrors(err, "Failed to create program...\n");
+  cl_mem cu_;
+  cl_mem cv_;
 
-  CREATE_KERNEL
-  BENCHNAMELOWER_kernel_ = clCreateKernel(program_, "XXX", &err);
-  checkOpenCLErrors(err, "Failed to create kernel XXX\n");
-}
+  cl_mem z_;
+  cl_mem h_;
+  cl_mem psi_;
 
-void BENCHNAMECAPCl20Benchmark::InitializeBuffers() {}
+  // Kernels
+  cl_kernel kernel_sw_init_psi_p_;
+  cl_kernel kernel_sw_init_velocities_;
+  cl_kernel kernel_sw_compute0_;
+  cl_kernel kernel_sw_update0_;
+  cl_kernel kernel_sw_compute1_;
+  cl_kernel kernel_sw_update1_;
+  cl_kernel kernel_sw_time_smooth_;
 
-void BENCHNAMECAPCl20Benchmark::InitializeData() {}
+  void InitializeParams();
+  void InitializeData();
+  void InitializeKernels();
+  void InitializeBuffers();
 
-void BENCHNAMECAPCl20Benchmark::Run() {}
+  void FreeKernels();
+  void FreeBuffers();
 
-void BENCHNAMECAPCl20Benchmark::Cleanup() {
-  BENCHNAMECAPBenchmark::Cleanup();
+  // Initialize
+  void InitPsiP();
+  void InitVelocities();
 
-  cl_int ret;
-  ret = clReleaseKernel(BENCHNAMELOWER_kernel_);
-  ret = clReleaseProgram(program_);
+  // Run
+  void Compute0();
+  void PeriodicUpdate0();
+  void Compute1();
+  void PeriodicUpdate1();
+  void TimeSmooth(int ncycle);
 
-  OTHER_CLEANUPS
+ public:
+  SwCl12Benchmark() {}
+  ~SwCl12Benchmark() {}
 
-  checkOpenCLErrors(ret, "Release objects.\n");
-}
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+  void Summarize() override {}
+};
+
+#endif  // SRC_SW_CL12_SW_CL12_BENCHMARK_H_

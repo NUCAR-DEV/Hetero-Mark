@@ -45,7 +45,6 @@
 
 class BENCHNAMECAPBenchmark : public Benchmark {
  protected:
-  
  public:
   void Initialize() override;
   void Run() override = 0;
@@ -54,7 +53,6 @@ class BENCHNAMECAPBenchmark : public Benchmark {
   void Cleanup() override;
 
   // Setters
-  
 };
 
 #endif  // SRC_BENCHNAMEUPPER_BENCHNAMEUPPER_BENCHMARK_H_

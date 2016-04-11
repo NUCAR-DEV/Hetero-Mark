@@ -30,6 +30,4 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-__kernel void BENCHNAMEUPPER() {
-
-}
+__kernel void BENCHNAMEUPPER() {}

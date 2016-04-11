@@ -77,6 +77,7 @@ void KmeansHsaBenchmark::UpdateMembership(unsigned num_clusters) {
       membership_[i] = new_membership[i];
     }
   }
+  delete[] new_membership;
 }
 
 void KmeansHsaBenchmark::CreateTemporaryMemory() {
@@ -84,7 +85,8 @@ void KmeansHsaBenchmark::CreateTemporaryMemory() {
 }
 
 void KmeansHsaBenchmark::FreeTemporaryMemory() {
-  if (feature_transpose_) delete[] feature_transpose_;
+  if (feature_transpose_)
+    delete[] feature_transpose_;
 }
 
 void KmeansHsaBenchmark::DumpMembership() {
@@ -136,7 +138,8 @@ void KmeansHsaBenchmark::UpdateClusterCentroids(unsigned num_clusters) {
     for (unsigned i = 0; i < num_clusters; i++) {
       for (unsigned j = 0; j < num_features_; j++) {
         unsigned index = i * num_features_ + j;
-        if (member_count[i]) clusters_[index] /= member_count[i];
+        if (member_count[i])
+          clusters_[index] /= member_count[i];
       }
     }
 
@@ -154,7 +157,8 @@ void KmeansHsaBenchmark::InitializeClusters(unsigned num_clusters) {
 }
 
 void KmeansHsaBenchmark::InitializeMembership() {
-  for (unsigned i = 0; i < num_points_; i++) membership_[i] = -1;
+  for (unsigned i = 0; i < num_points_; i++)
+    membership_[i] = -1;
 }
 
 void KmeansHsaBenchmark::Clustering() {
@@ -164,7 +168,8 @@ void KmeansHsaBenchmark::Clustering() {
   // Sweep k from min to max_clusters_ to find the best number of cluster
   for (unsigned num_clusters = min_num_clusters_;
        num_clusters < max_num_clusters_; num_clusters_++) {
-    if (num_clusters > num_points_) break;
+    if (num_clusters > num_points_)
+      break;
 
     CreateTemporaryMemory();
     TransposeFeatures();

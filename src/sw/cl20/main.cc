@@ -37,18 +37,23 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
-#define SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
-
-#include "src/BENCHNAMELOWER/BENCHNAMELOWER_benchmark.h"
+#include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/sw/sw_command_line_options.h"
+#include "src/sw/cl20/sw_cl20_benchmark.h"
 
-class BENCHNAMECAPHsaBenchmark : public BENCHNAMECAPBenchmark {
- private:
- public:
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
+int main(int argc, const char **argv) {
+  std::unique_ptr<SwCl20Benchmark> benchmark(
+      new SwCl20Benchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
-#endif  // SRC_BENCHNAMEUPPER_HSA_BENCHNAMEUPPER_HSA_BENCHMARK_H_
+  SwCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
+
+  runner.Run();
+}

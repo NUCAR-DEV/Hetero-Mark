@@ -41,16 +41,10 @@
 #include <cstdio>
 #include "src/BENCHNAMELOWER/BENCHNAMELOWER_benchmark.h"
 
-void BENCHNAMECAPBenchmark::Initialize() {
-  
-}
+void BENCHNAMECAPBenchmark::Initialize() {}
 
-void BENCHNAMECAPBenchmark::Verify() {
-  
-}
+void BENCHNAMECAPBenchmark::Verify() {}
 
 void BENCHNAMECAPBenchmark::Summarize() {}
 
-void BENCHNAMECAPBenchmark::Cleanup() {
-  
-}
+void BENCHNAMECAPBenchmark::Cleanup() {}

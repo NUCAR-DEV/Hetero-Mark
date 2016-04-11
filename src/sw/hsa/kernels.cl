@@ -1,4 +1,5 @@
-/* Copyright (c) 2015 Northeastern University
+/*
+ * Copyright (c) 2015 Northeastern University
  * All rights reserved.
  *
  * Developed by:Northeastern University Computer Architecture Research (NUCAR)
@@ -29,53 +30,4 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
-#include <cstdlib>
-#include "src/BENCHNAMELOWER/cl20/BENCHNAMELOWER_cl20_benchmark.h"
-
-void BENCHNAMECAPCl20Benchmark::Initialize() {
-  BENCHNAMECAPBenchmark::Initialize();
-
-  ClBenchmark::InitializeCl();
-
-  InitializeKernels();
-  InitializeBuffers();
-  InitializeData();
-}
-
-void BENCHNAMECAPCl20Benchmark::InitializeKernels() {
-  cl_int err;
-  file_->open("kernels.cl");
-
-  const char *source = file_->getSourceChar();
-  program_ = clCreateProgramWithSource(context_, 1, (const char **)&source,
-                                       NULL, &err);
-  checkOpenCLErrors(err, "Failed to create program with source...\n");
-
-  err =
-      clBuildProgram(program_, 1, &device_, "-I ./ -cl-std=CL2.0", NULL, NULL);
-  checkOpenCLErrors(err, "Failed to create program...\n");
-
-  CREATE_KERNEL
-  BENCHNAMELOWER_kernel_ = clCreateKernel(program_, "XXX", &err);
-  checkOpenCLErrors(err, "Failed to create kernel XXX\n");
-}
-
-void BENCHNAMECAPCl20Benchmark::InitializeBuffers() {}
-
-void BENCHNAMECAPCl20Benchmark::InitializeData() {}
-
-void BENCHNAMECAPCl20Benchmark::Run() {}
-
-void BENCHNAMECAPCl20Benchmark::Cleanup() {
-  BENCHNAMECAPBenchmark::Cleanup();
-
-  cl_int ret;
-  ret = clReleaseKernel(BENCHNAMELOWER_kernel_);
-  ret = clReleaseProgram(program_);
-
-  OTHER_CLEANUPS
-
-  checkOpenCLErrors(ret, "Release objects.\n");
-}
+__kernel void SW() {}

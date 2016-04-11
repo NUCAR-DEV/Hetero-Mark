@@ -37,7 +37,8 @@
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/BENCHNAMELOWER/BENCHNAMELOWER_benchmark.h"
 
-class BENCHNAMECAPCl12Benchmark : public BENCHNAMECAPBenchmark, public ClBenchmark {
+class BENCHNAMECAPCl12Benchmark : public BENCHNAMECAPBenchmark,
+                                  public ClBenchmark {
  private:
   cl_kernel BENCHNAMELOWER_kernel_;
 
@@ -46,8 +47,8 @@ class BENCHNAMECAPCl12Benchmark : public BENCHNAMECAPBenchmark, public ClBenchma
   void InitializeBuffers();
 
  public:
-  BENCHNAMECAPCl12Benchmark(){}
-  ~BENCHNAMECAPCl12Benchmark(){}
+  BENCHNAMECAPCl12Benchmark() {}
+  ~BENCHNAMECAPCl12Benchmark() {}
 
   void Initialize() override;
   void Run() override;
