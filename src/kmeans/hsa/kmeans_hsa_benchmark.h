@@ -43,8 +43,39 @@
 #include "src/kmeans/kmeans_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
+#ifndef FLT_MAX
+#define FLT_MAX 3.40282347e+38
+#endif
+
+#define _CRT_SECURE_NO_DEPRECATE 1
+#define RANDOM_MAX 2147483647
+
+#define BLOCK_SIZE 64
+
 class KmeansHsaBenchmark : public KmeansBenchmark {
  private:
+  float *feature_transpose_;
+  int *membership_;
+  float *clusters_;
+
+  unsigned num_clusters_ = 0;
+  float delta;
+  float min_rmse_;
+  int best_num_clusters_;
+
+  void Clustering();
+  void CreateTemporaryMemory();
+  void FreeTemporaryMemory();
+  void TransposeFeatures();
+  void KmeansClustering(unsigned num_clusters);
+  void InitializeClusters(unsigned num_clusters);
+  void InitializeMembership();
+  void UpdateMembership(unsigned num_clusters);
+  void UpdateClusterCentroids(unsigned num_clusters);
+  void DumpClusterCentroids(unsigned num_clusters);
+  void DumpMembership();
+  float CalculateRMSE();
+
  public:
   void Initialize() override;
   void Run() override;
