@@ -66,15 +66,6 @@ class SwHsaBenchmark : public SwBenchmark {
   double *h_;
   double *psi_;
 
-  // Kernels
-  cl_kernel kernel_sw_init_psi_p_;
-  cl_kernel kernel_sw_init_velocities_;
-  cl_kernel kernel_sw_compute0_;
-  cl_kernel kernel_sw_update0_;
-  cl_kernel kernel_sw_compute1_;
-  cl_kernel kernel_sw_update1_;
-  cl_kernel kernel_sw_time_smooth_;
-
   // Initialize
   void InitializeParams();
   void InitializeData();

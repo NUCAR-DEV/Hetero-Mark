@@ -40,6 +40,8 @@
 #include "src/sw/hsa/sw_hsa_benchmark.h"
 #include <cstdlib>
 #include <cstdio>
+#include <cmath>
+#include <string.h>
 #include "src/sw/hsa/kernels.h"
 
 void SwHsaBenchmark::Initialize() {
@@ -50,7 +52,7 @@ void SwHsaBenchmark::Initialize() {
   InitializeData();
 }
 
-void SwHsaBenchmark::InitBuffer() {
+void SwHsaBenchmark::InitializeBuffers() {
   size_t sizeInBytes = sizeof(double) * m_len_ * n_len_;
 
   // Fine grain buffers
@@ -70,7 +72,7 @@ void SwHsaBenchmark::InitBuffer() {
   psi_ = reinterpret_cast<double *>(malloc(sizeInBytes));
 }
 
-void SwHsaBenchmark::FreeBuffer() {
+void SwHsaBenchmark::FreeBuffers() {
   free(u_curr_);
   free(u_next_);
   free(v_curr_);
@@ -214,7 +216,5 @@ void SwHsaBenchmark::Run() {
     TimeSmooth(i);
   }
 }
-
-void SwHsaBenchmark::Run() {}
 
 void SwHsaBenchmark::Cleanup() { SwBenchmark::Cleanup(); }

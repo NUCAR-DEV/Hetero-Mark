@@ -31,8 +31,8 @@
  */
 
 __kernel void sw_init_psi_p(const double a, const double di, const double dj,
-                            const double pcf, const unsigned M_LEN,
-                            const unsigned N_LEN, __global double *p,
+                            const double pcf, const unsigned int M_LEN,
+                            const unsigned int N_LEN, __global double *p,
                             __global double *psi) {
   int x = get_global_id(0);
   int y = get_global_id(1);
@@ -44,7 +44,7 @@ __kernel void sw_init_psi_p(const double a, const double di, const double dj,
 }
 
 __kernel void sw_init_velocities(const double dx, const double dy,
-                                 const unsigned M, const unsigned N,
+                                 const unsigned int M, const unsigned int N,
                                  __global const double *psi, __global double *u,
                                  __global double *v) {
   int x = get_global_id(0);
@@ -58,7 +58,7 @@ __kernel void sw_init_velocities(const double dx, const double dy,
 }
 
 __kernel void sw_compute0(const double fsdx, const double fsdy,
-                          const unsigned M_LEN, __global const double *u,
+                          const unsigned int M_LEN, __global const double *u,
                           __global const double *v, __global const double *p,
                           __global double *cu, __global double *cv,
                           __global double *z, __global double *h) {
@@ -81,8 +81,8 @@ __kernel void sw_compute0(const double fsdx, const double fsdy,
                              v[y * M_LEN + x] * v[y * M_LEN + x]);
 }
 
-__kernel void sw_update0(const unsigned M, const unsigned N,
-                         const unsigned M_LEN, __global double *cu,
+__kernel void sw_update0(const unsigned int M, const unsigned int N,
+                         const unsigned int M_LEN, __global double *cu,
                          __global double *cv, __global double *z,
                          __global double *h) {
   int x = get_global_id(0);
@@ -109,7 +109,7 @@ __kernel void sw_update0(const unsigned M, const unsigned N,
 }
 
 __kernel void sw_compute1(const double tdts8, const double tdtsdx,
-                          const double tdtsdy, const unsigned M_LEN,
+                          const double tdtsdy, const unsigned int M_LEN,
                           __global const double *cu, __global const double *cv,
                           __global const double *z, __global const double *h,
                           __global const double *u_curr,
@@ -140,8 +140,8 @@ __kernel void sw_compute1(const double tdts8, const double tdtsdx,
       tdtsdy * (cv[y * M_LEN + x + 1] - cv[y * M_LEN + x]);
 }
 
-__kernel void sw_update1(const unsigned M, const unsigned N,
-                         const unsigned M_LEN, __global double *u_next,
+__kernel void sw_update1(const unsigned int M, const unsigned int N,
+                         const unsigned int M_LEN, __global double *u_next,
                          __global double *v_next, __global double *p_next) {
   int x = get_global_id(0);
   int y = get_global_id(1);
@@ -163,8 +163,8 @@ __kernel void sw_update1(const unsigned M, const unsigned N,
   p_next[M * M_LEN + N] = p_next[0];
 }
 
-__kernel void sw_time_smooth(const unsigned M, const unsigned N,
-                             const unsigned M_LEN, const double alpha,
+__kernel void sw_time_smooth(const unsigned int M, const unsigned int N,
+                             const unsigned int M_LEN, const double alpha,
                              __global double *u, __global double *v,
                              __global double *p, __global double *u_curr,
                              __global double *v_curr, __global double *p_curr,
