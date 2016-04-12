@@ -47,6 +47,10 @@
 
 void KmeansBenchmark::Initialize() {
   std::ifstream file(filename_);
+  if (!file.is_open()) {
+      std::cerr << "Error: Cannot open file" << std::endl;
+     exit(-1);
+  }
   std::string line;
   std::vector<float> points;
 

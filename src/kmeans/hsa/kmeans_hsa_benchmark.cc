@@ -18,7 +18,7 @@
  * Software is furnished to do so, subject to the following conditions:
  *
  *   Redistributions of source code must retain the above copyright notice,
- *   this list of conditions and the following disclaimers.
+    this list of conditions and the following disclaimers.
  *
  *   Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimers in the
@@ -43,7 +43,11 @@
 #include <cmath>
 #include "src/kmeans/hsa/kernels.h"
 
-void KmeansHsaBenchmark::Initialize() { KmeansHsaBenchmark::Initialize(); }
+void KmeansHsaBenchmark::Initialize() {
+  KmeansBenchmark::Initialize();
+  kmeans_kernel_compute_init(0);
+  kmeans_kernel_swap_init(0);
+}
 
 void KmeansHsaBenchmark::TransposeFeatures() {
   size_t global_work = (size_t)num_points_;
@@ -52,8 +56,8 @@ void KmeansHsaBenchmark::TransposeFeatures() {
   SNK_INIT_LPARM(lparm, 0);
   lparm->ldims[0] = local_work_size;
   lparm->gdims[0] = global_work;
-  kmeans_swap(host_features_, feature_transpose_, num_points_, num_features_,
-              lparm);
+  kmeans_kernel_swap(host_features_, feature_transpose_, num_points_,
+                     num_features_, lparm);
 }
 
 void KmeansHsaBenchmark::UpdateMembership(unsigned num_clusters) {
@@ -67,8 +71,9 @@ void KmeansHsaBenchmark::UpdateMembership(unsigned num_clusters) {
 
   int size = 0;
   int offset = 0;
-  kmeans_kernel_c(feature_transpose_, clusters_, new_membership, num_points_,
-                  num_clusters, num_features_, offset, size, lparm);
+  kmeans_kernel_compute(feature_transpose_, clusters_, new_membership,
+                        num_points_, num_clusters, num_features_, offset, size,
+                        lparm);
 
   delta = 0;
   for (unsigned i = 0; i < num_points_; i++) {
@@ -85,8 +90,7 @@ void KmeansHsaBenchmark::CreateTemporaryMemory() {
 }
 
 void KmeansHsaBenchmark::FreeTemporaryMemory() {
-  if (feature_transpose_)
-    delete[] feature_transpose_;
+  if (feature_transpose_) delete[] feature_transpose_;
 }
 
 void KmeansHsaBenchmark::DumpMembership() {
@@ -138,8 +142,7 @@ void KmeansHsaBenchmark::UpdateClusterCentroids(unsigned num_clusters) {
     for (unsigned i = 0; i < num_clusters; i++) {
       for (unsigned j = 0; j < num_features_; j++) {
         unsigned index = i * num_features_ + j;
-        if (member_count[i])
-          clusters_[index] /= member_count[i];
+        if (member_count[i]) clusters_[index] /= member_count[i];
       }
     }
 
@@ -157,8 +160,7 @@ void KmeansHsaBenchmark::InitializeClusters(unsigned num_clusters) {
 }
 
 void KmeansHsaBenchmark::InitializeMembership() {
-  for (unsigned i = 0; i < num_points_; i++)
-    membership_[i] = -1;
+  for (unsigned i = 0; i < num_points_; i++) membership_[i] = -1;
 }
 
 void KmeansHsaBenchmark::Clustering() {
@@ -168,8 +170,7 @@ void KmeansHsaBenchmark::Clustering() {
   // Sweep k from min to max_clusters_ to find the best number of cluster
   for (unsigned num_clusters = min_num_clusters_;
        num_clusters < max_num_clusters_; num_clusters_++) {
-    if (num_clusters > num_points_)
-      break;
+    if (num_clusters > num_points_) break;
 
     CreateTemporaryMemory();
     TransposeFeatures();
@@ -204,4 +205,4 @@ float KmeansHsaBenchmark::CalculateRMSE() {
 
 void KmeansHsaBenchmark::Run() { Clustering(); }
 
-void KmeansHsaBenchmark::Cleanup() { KmeansHsaBenchmark::Cleanup(); }
+void KmeansHsaBenchmark::Cleanup() { KmeansBenchmark::Cleanup(); }
