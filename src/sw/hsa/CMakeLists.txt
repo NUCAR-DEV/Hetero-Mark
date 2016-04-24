@@ -37,7 +37,7 @@ if (have_snack AND HSA_RUNTIME)
   endforeach( extra_file )
   add_custom_command(
     OUTPUT kernels.o kernels.h
-    COMMAND snack.sh -c kernels.cl
+    COMMAND ${SNACK} -c kernels.cl
     DEPENDS kernels.cl
     COMMENT "Using snack to generate kernel library"
     WORKING_DIRECTORY ""

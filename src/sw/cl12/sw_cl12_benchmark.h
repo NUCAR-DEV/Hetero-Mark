@@ -37,8 +37,7 @@
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/sw/sw_benchmark.h"
 
-class SwCl12Benchmark : public SwBenchmark,
-                                  public ClBenchmark {
+class SwCl12Benchmark : public SwBenchmark, public ClBenchmark {
  private:
   // OpenCL 1.2 style buffers
   cl_mem u_curr_;

@@ -44,8 +44,7 @@
 #include "src/sw/cl20/sw_cl20_benchmark.h"
 
 int main(int argc, const char **argv) {
-  std::unique_ptr<SwCl20Benchmark> benchmark(
-      new SwCl20Benchmark());
+  std::unique_ptr<SwCl20Benchmark> benchmark(new SwCl20Benchmark());
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
 

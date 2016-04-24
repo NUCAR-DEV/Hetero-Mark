@@ -44,8 +44,7 @@
 #include "src/sw/hsa/sw_hsa_benchmark.h"
 
 int main(int argc, const char **argv) {
-  std::unique_ptr<SwHsaBenchmark> benchmark(
-      new SwHsaBenchmark());
+  std::unique_ptr<SwHsaBenchmark> benchmark(new SwHsaBenchmark());
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
 

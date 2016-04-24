@@ -44,8 +44,7 @@
 #include "src/sw/cl12/sw_cl12_benchmark.h"
 
 int main(int argc, const char **argv) {
-  std::unique_ptr<SwCl12Benchmark> benchmark(
-      new SwCl12Benchmark());
+  std::unique_ptr<SwCl12Benchmark> benchmark(new SwCl12Benchmark());
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
   BenchmarkRunner runner(benchmark.get(), timer.get());
 

@@ -56,7 +56,7 @@ class SwBenchmark : public Benchmark {
   double dt_, tdt_, dx_, dy_, a_, alpha_, el_, pi_;
   double tpi_, di_, dj_, pcf_;
   double tdts8_, tdtsdx_, tdtsdy_, fsdx_, fsdy_;
-  
+
  public:
   void Initialize() override;
   void Run() override = 0;
@@ -65,8 +65,8 @@ class SwBenchmark : public Benchmark {
   void Cleanup() override;
 
   // Setters
-  void setSizeM(unsigned m) { m_ = m; };
-  void setSizeN(unsigned n) { n_ = n; };
+  void setSizeM(unsigned m) { m_ = m; }
+  void setSizeN(unsigned n) { n_ = n; }
 };
 
 #endif  // SRC_SW_SW_BENCHMARK_H_

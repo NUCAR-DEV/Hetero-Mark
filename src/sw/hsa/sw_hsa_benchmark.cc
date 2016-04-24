@@ -38,10 +38,10 @@
  */
 
 #include "src/sw/hsa/sw_hsa_benchmark.h"
+#include <string.h>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include <string.h>
 #include "src/sw/hsa/kernels.h"
 
 void SwHsaBenchmark::Initialize() {
