@@ -64,19 +64,19 @@ std::pair<std::string, double> TimeKeeperImpl::Iterator::Next() {
 TimeKeeperImpl::TimeKeeperImpl(Timer *timer) : timer_(timer) {}
 
 void TimeKeeperImpl::Start() {
-  if (start_time_ != 0) {
-    throw std::runtime_error("Timer is already runnin.");
+  if (start_time_ > 0) {
+    throw std::runtime_error("Timer is already running.");
   }
   start_time_ = timer_->GetTimeInSec();
 }
 
 void TimeKeeperImpl::End(std::initializer_list<const char *> catagory_names) {
-  if (start_time_ == 0) {
+  if (start_time_ < 0) {
     throw std::runtime_error("Timer has not been started.");
   }
   double end_time = timer_->GetTimeInSec();
   double time_difference = end_time - start_time_;
-  start_time_ = 0;
+  start_time_ = -1;
 
   // Accumulate the time into catagories
   for (auto catagory_name : catagory_names) {

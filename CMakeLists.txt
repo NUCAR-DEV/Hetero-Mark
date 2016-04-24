@@ -11,10 +11,11 @@ include(ExternalProject)
 include(StyleCheck)
 include(OpenCL)
 include(HSA)
+include(Multi2Sim)
 
 set( FOLDER_NAME Hetero-Mark )
 set( SUBDIRECTORIES src )
-set( CMAKE_CXX_FLAGS "-Wall -Werror -pthread" )
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pthread" )
 add_definitions(
   -std=c++11
 )

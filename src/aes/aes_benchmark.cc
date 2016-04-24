@@ -31,6 +31,7 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
+#include <inttypes.h>
 #include <cstdio>
 #include <cstring>
 #include "src/aes/aes_benchmark.h"
@@ -148,13 +149,13 @@ void AesBenchmark::Verify() {
   for (uint64_t i = 0; i < text_length_; i++) {
     if (ciphertext_cpu[i] != ciphertext_[i]) {
       passed = false;
-      printf("Position: %ld, expected to be 0x%02x, but get 0x%02x\n", i,
-             ciphertext_cpu[i], ciphertext_[i]);
+      printf("Position: %" PRIu64 ", expected to be 0x%02x, but get 0x%02x\n", 
+             i, ciphertext_cpu[i], ciphertext_[i]);
     }
   }
 
   if (passed) {
-    printf("Passed. %ld bytes encrypted.\n", text_length_);
+    printf("Passed. %" PRIu64 " bytes encrypted.\n", text_length_);
   }
 }
 

@@ -103,7 +103,7 @@ class TimeKeeperImpl : public TimeKeeper {
  protected:
   std::map<std::string, double> time_catagories_;
   Timer *timer_;
-  double start_time_ = 0;
+  double start_time_ = -1;
 };
 
 #endif  // SRC_COMMON_TIME_MEASUREMENT_TIME_KEEPER_IMPL_H_
