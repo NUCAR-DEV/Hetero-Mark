@@ -48,7 +48,7 @@ void HistBenchmark::Initialize() {
     pixels_[i] = rand_r(&seed) % num_color_;
   }
 
-  histogram_ = new uint32_t[num_color_];
+  histogram_ = new uint32_t[num_color_]();
 }
 
 void HistBenchmark::Verify() {
