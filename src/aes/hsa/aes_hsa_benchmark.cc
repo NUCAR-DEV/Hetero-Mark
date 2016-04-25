@@ -48,5 +48,5 @@ void AesHsaBenchmark::Run() {
   lparm->gdims[0] = num_blocks;
   lparm->ldims[0] = 64 < num_blocks ? 64 : num_blocks;
 
-  Encrypt(ciphertext_, expanded_key_, lparm);
+  Encrypt(ciphertext_, expanded_key_, s, lparm);
 }

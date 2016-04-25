@@ -47,13 +47,13 @@ void KmeansCommandLineOptions::RegisterOptions() {
       "This benchmarks runs the KMeans Algorithm.");
   command_line_option_.AddArgument("Help", "bool", "false", "-h", "--help",
                                    "Dump help information");
-  command_line_option_.AddArgument("FileName", "string", "", "-f", "--file",
+  command_line_option_.AddArgument("FileName", "string", "", "-i", "--input",
                                    "File containing data to be clustered");
   command_line_option_.AddArgument("MaxNumClusters", "int", "5", "-m", "--max",
                                    "Maximum number of clusters allowed");
   command_line_option_.AddArgument("MinNumClusters", "int", "5", "-n", "--min",
                                    "Minimum number of clusters allowed");
-  command_line_option_.AddArgument("Threshold", "double", "0.001", "-t",
+  command_line_option_.AddArgument("Threshold", "double", "0.001", "",
                                    "--threshold", "Threshold value");
   command_line_option_.AddArgument("NumLoops", "int", "1", "-l", "--loops",
                                    "Iteration for each number of clusters");
