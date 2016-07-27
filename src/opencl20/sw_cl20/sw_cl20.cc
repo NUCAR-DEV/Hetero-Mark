@@ -491,6 +491,7 @@ void ShallowWater::Run() {
 }
 
 void ShallowWater::Cleanup() {
+  clFinish(cmdQueue_);
   FreeBuffer();
   FreeKernel();
 }
