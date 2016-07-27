@@ -406,5 +406,8 @@ void AES::Run() {
     checkOpenCLErrors(err, "Failed at unmap SVM ptr");
   }  // While
 
+  // Make sure we have fully flushed all the unmap commands from the queue
+  // before we leaves here and eventually try to free this buffer.
+  clFinish(cmd_queue);
   fflush(outfile);
 }
