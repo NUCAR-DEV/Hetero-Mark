@@ -259,6 +259,10 @@ void HMM::InitBuffers() {
       clCreateBuffer(context, CL_MEM_READ_WRITE, bytes_tileblks, NULL, &err);
   checkOpenCLErrors(err, "Failed to create buffer: blk_result ");
 
+  sigma_dev =
+      clCreateBuffer(context, CL_MEM_READ_WRITE, bytes_dd, NULL, &err);
+  checkOpenCLErrors(err, "Failed to create buffer: sigma_dev ");
+
   // Expected values
   expect_prior =
       clCreateBuffer(context, CL_MEM_READ_WRITE, bytes_n, NULL, &err);

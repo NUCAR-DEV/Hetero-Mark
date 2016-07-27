@@ -276,6 +276,8 @@ void HMM::InitBuffers() {
   // intermediate blk results from the device
   blk_result = reinterpret_cast<float *>(
       clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_tileblks, 0));
+  sigma_dev = reinterpret_cast<float *>(
+      clSVMAlloc(context, CL_MEM_READ_WRITE, bytes_dd, 0));
 
   // Expected values
   expect_prior = reinterpret_cast<float *>(
