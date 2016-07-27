@@ -118,7 +118,7 @@ void AES::InitKernel() {
   append_str << "};\n";
 
   // Open kernel file
-  file->open("aes_cl12_Kernels.cl");
+  file->open("aes_cl12_kernel.cl");
 
   // Append kernel source code
   append_str << file->getSource();
