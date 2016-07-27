@@ -222,6 +222,7 @@ void FIR::Verify() {
 
 void FIR::Cleanup() {
   cl_int ret;
+  clFinish(cmd_queue_);
   ret = clReleaseKernel(fir_kernel_);
   ret = clReleaseProgram(program_);
   clSVMFree(context_, input_);
