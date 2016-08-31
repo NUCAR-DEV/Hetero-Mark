@@ -1,0 +1,70 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Cmakes
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+Makefile
+build
+bin
+Testing
+
+#ctags
+.tags*
+
+# vim tmp files
+*.swp
+
+# hsa file
+*.hsail
+*.brig
+isa.txt
+*.isa
+
+# debug file
+*.debug
+
+# snack file
+*_brig.h
+*.snackwrap.c
+
+# Unit tests
+gtest
+*_unittest
+
+# Apple OS X operating system
+.DS_Store
+
+# Gedit files
+*~
+
+# Data file
+data 
+data.tar.gz
