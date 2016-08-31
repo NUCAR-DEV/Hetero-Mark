@@ -314,6 +314,7 @@ void KMEANS::Free_mem_svm() {
   clSVMFree(context, feature_svm);
   clSVMFree(context, feature_swap_svm);
   clSVMFree(context, cluster_svm);
+  clSVMFree(context, membership_svm);
 
   free(membership_OCL);
 }
@@ -787,10 +788,11 @@ void KMEANS::Clustering() {
       unmap_cluster_svm();
     }
 
+    clFinish(cmd_queue);
     Free_mem_svm();
   }
 
-  clSVMFree(context, membership_svm);
+  free(membership);
 }
 
 void KMEANS::SetInitialParameters(FilePackage parameters) {
