@@ -78,7 +78,7 @@ void ShallowWater::InitKernel() {
   cl_int err;
 
   // Open kernel file_
-  file_->open("sw_Kernels.cl");
+  file_->open("sw_cl12_kernel.cl");
 
   // Create program_
   const char *source = file_->getSourceChar();
