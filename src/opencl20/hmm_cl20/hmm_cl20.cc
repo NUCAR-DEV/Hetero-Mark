@@ -366,6 +366,7 @@ void HMM::InitBuffers() {
 }
 
 void HMM::Cleanup() {
+  clFinish(cmdQueue_0);
   CleanUpKernels();
   CleanUpBuffers();
 }
