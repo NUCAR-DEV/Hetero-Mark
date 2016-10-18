@@ -1,3 +1,14 @@
 [1] Saoni Mukherjee, Xiang Gong, Leiming Yu, Carter McCardwell, Yash Ukidave,
  Tuan Dao, Fanny Nina Paravecino, and David Kaeli. Exploring the Features of 
 OpenCL 2.0 Accepted in The International Workshop on OpenCL (IWOCL), 2015.
+
+[2] Saoni Mukherjee, Yifan Sun, Paul Blinzer, Amir Kavyan Ziabari and David 
+Kaeli, "A comprehensive performance analysis of HSA and OpenCL 2.0," 2016 IEEE 
+International Symposium on Performance Analysis of Systems and Software 
+(ISPASS), Uppsala, 2016, pp. 183-193.
+
+[3] Yifan Sun, Xiang Gong, Amir Kavyan Ziabari, Leiming Yu, Xiangyu Li, Saoni
+Mukherjee, Carter McCardwell, Alejandro Villegas, David Kaeli, "Hetero-mark, a 
+benchmark suite for CPU-GPU collaborative computing," 2016 IEEE International 
+Symposium on Workload Characterization (IISWC), Providence, RI, USA, 2016, pp. 
+1-10.
