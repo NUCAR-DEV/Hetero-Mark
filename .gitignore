@@ -46,6 +46,10 @@ Testing
 *.hsail
 *.brig
 isa.txt
+<<<<<<< HEAD
+=======
+*.isa
+>>>>>>> 3af8b46762e84a54b4908e4435f89972be6b1cac
 
 # debug file
 *.debug
@@ -63,3 +67,10 @@ gtest
 
 # Gedit files
 *~
+<<<<<<< HEAD
+=======
+
+# Data file
+data 
+data.tar.gz
+>>>>>>> 3af8b46762e84a54b4908e4435f89972be6b1cac
