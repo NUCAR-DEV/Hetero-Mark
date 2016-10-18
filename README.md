@@ -1,4 +1,4 @@
-# Hetero-Mark
+#Hetero-Mark
 A Benchmark Suite for Heterogeneous System Computation
 
 ## Prerequisite
@@ -91,6 +91,18 @@ root directory.
 
 ### Generate your own input data
 * To generate custom data in `data` folder
+
+  * AES - Generates the input file and keys for AES. For keys, only 16-byte is
+    allowed. Usage:
+    ``` bash
+    ./datagen <num_bytes> > file.data
+    ```
+
+  * Gene-alignment - Generates the input file for Gene Alignment. The target
+    sequence length should be much shorter than the query sequence length.
+    ``` bash
+    python data_gen.py <target_sequence_len> <query_sequence_len>
+    ```
 
   * KMeans - It generates the input file for KMeans. Usage:
 
