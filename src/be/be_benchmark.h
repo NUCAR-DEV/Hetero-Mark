@@ -40,6 +40,8 @@
 #ifndef SRC_BE_BE_BENCHMARK_H_
 #define SRC_BE_BE_BENCHMARK_H_
 
+#include <vector>
+
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
@@ -49,15 +51,15 @@ class BeBenchmark : public Benchmark {
   uint32_t num_pixels_;
   bool collaborative_execution_;
 
-  uint8_t *data_;
-  uint8_t *foreground_;
-  float *background_;
+  std::vector<uint8_t> data_;
+  std::vector<uint8_t> foreground_;
+  std::vector<float> background_;
 
   float alpha_ = 0.03;
 
  public:
   void Initialize() override;
-  void Run() override = 0;
+  void Run() override {};
   void Verify() override;
   void Summarize() override;
   void Cleanup() override;

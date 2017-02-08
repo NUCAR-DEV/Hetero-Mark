@@ -1,6 +1,6 @@
-set( FOLDER_NAME command_line_option )
-set( SUBDIRECTORIES )
-set( SRC_FILES 
+set(FOLDER_NAME command_line_option)
+set(SUBDIRECTORIES)
+set(SRC_FILES 
   benchmark_command_line_options.cc
   command_line_option.cc
   option_parser_impl.cc
@@ -30,13 +30,8 @@ if (enable-test)
   add_test(${FOLDER_NAME}_test ${FOLDER_NAME}_test)
 endif (enable-test)
 
-###############################################################
-
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
-
-# Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-
 add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES})
+set_target_properties(${FOLDER_NAME} PROPERTIES
+    COMPILE_FLAGS ${COMPILER_FLAGS}
+    LINK_FLAGS ${LINKER_FLAGS})
+

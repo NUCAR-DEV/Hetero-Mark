@@ -1,39 +1,28 @@
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-set(CMAKE_CXX_COMPILER clang++)
-
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
-project( Hetero-Mark )
+cmake_minimum_required(VERSION 3.2)
+project(Hetero-Mark)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
-
 include(ExternalProject)
 include(StyleCheck)
 include(OpenCL)
 include(HSA)
-include(Multi2Sim)
+include(HCC)
 
-set( FOLDER_NAME Hetero-Mark )
-set( SUBDIRECTORIES src )
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pthread")
-if (NOT CompileForMulti2Sim)
-  set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++" )
-endif()
+set(FOLDER_NAME Hetero-Mark)
 
-add_definitions(
-  -std=c++11
-)
-
-option (enable-test "Compile all Hetero-mark unit tests" OFF)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-reorder -pthread")
+add_definitions(-std=c++11)
 
 # Include from path root
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 
 # Test
-if (enable-test)
+option(ENABLE_TEST "Compile all Hetero-Mark unit tests" OFF)
+if (ENABLE_TEST)
   enable_testing()
   ExternalProject_Add(googletest
     URL https://googletest.googlecode.com/files/gtest-1.7.0.zip
@@ -51,14 +40,11 @@ if (enable-test)
   add_dependencies(gtest googletest)
   add_dependencies(gtest_main googletest)
   include_directories(${source_dir}/include)
-endif (enable-test)
+endif (ENABLE_TEST)
 
 
-# Group samples by folder
-set_property( GLOBAL PROPERTY USE_FOLDERS ON )
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-
-foreach( subdir ${SUBDIRECTORIES} )
-  add_subdirectory( ${subdir} )
-endforeach( subdir )
+set(SUBDIRECTORIES src)
+foreach(subdir ${SUBDIRECTORIES})
+  add_subdirectory(${subdir})
+endforeach(subdir)
 

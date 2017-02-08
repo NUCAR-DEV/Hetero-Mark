@@ -42,15 +42,16 @@
 #include "src/be/be_benchmark.h"
 
 void BeBenchmark::Initialize() {
-  data_ = new uint8_t[num_frames_ * num_pixels_];
+  foreground_.resize(num_frames_ * num_pixels_);
+  data_.resize(num_frames_ * num_pixels_);
   for (int i = 0; i < num_frames_ * num_pixels_; i++) {
     data_[i] = rand() % 255;
   }
-  foreground_ = new uint8_t[num_frames_ * num_pixels_];
-  background_ = new float[num_pixels_];
+  background_.resize(num_pixels_);
   for (int i = 0; i < num_pixels_; i++) {
     background_[i] = data_[i];
   }
+
 }
 
 void BeBenchmark::Verify() {
@@ -80,10 +81,11 @@ void BeBenchmark::Verify() {
     for (uint32_t j = 0; j < num_pixels_; j++) {
       uint32_t id = i * num_pixels_ + j;
       if (foreground_[id] != cpu_foreground[id]) {
-        printf("Frame %d, pixel %d, expected %d, but was %d\n", i, j,
-               cpu_foreground[id], foreground_[id]);
         has_error = true;
       }
+      printf("Frame %d, pixel %d, expected %d, but was %d\n", i, j,
+          cpu_foreground[id], foreground_[id]);
+
     }
   }
   if (!has_error) {
@@ -94,7 +96,4 @@ void BeBenchmark::Verify() {
 void BeBenchmark::Summarize() {}
 
 void BeBenchmark::Cleanup() {
-  delete[] data_;
-  delete[] foreground_;
-  delete[] background_;
 }

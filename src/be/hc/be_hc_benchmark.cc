@@ -38,7 +38,7 @@
  */
 
 #include "src/be/hc/be_hc_benchmark.h"
-#include <hcc/hc.hpp>
+#include <hc.hpp>
 #include <cstdlib>
 #include <cstdio>
 
@@ -78,27 +78,33 @@ void BeHcBenchmark::CollaborativeRun() {
 }
 
 void BeHcBenchmark::NormalRun() {
+
+  hc::accelerator_view acc_view = hc::accelerator().get_default_view();
+
   hc::array_view<float, 1> background(num_pixels_, background_);
   hc::array_view<uint8_t, 1> av_data(num_frames_ * num_pixels_, data_);
   hc::array_view<uint8_t, 1> av_foreground(num_frames_ * num_pixels_,
                                            foreground_);
+  float alpha = alpha_;
+  uint32_t num_pixels = num_pixels_; 
 
   for (uint32_t i = 0; i < num_frames_; i++) {
     hc::parallel_for_each(
       hc::extent<1>(num_pixels_),
-      [=](hc::index<1> j)[[hc]] {
-        uint32_t id = i * num_pixels_ + j[0];
-        if (av_data[id] > background[j]) {
-          av_foreground[id] = av_data[id] - background[j];
+      [&i, &alpha, &num_pixels, &background, &av_data, &av_foreground](hc::index<1> j)[[hc]] {
+        uint32_t id = i * num_pixels + j[0];
+        if (av_data[id] > background[j[0]]) {
+          av_foreground[id] = av_data[id] - background[j[0]];
         } else {
-          av_foreground[id] = background[j] - av_data[id];
+          av_foreground[id] = background[j[0]] - av_data[id];
         }
 
-        background[j] = background[j] * (1 - alpha_) + av_data[id] * alpha_;
+        background[j[0]] = background[j[0]] * (1 - alpha) + av_data[id] * alpha;
       });
-
-    av_foreground.synchronize();
+    acc_view.flush();
   }
+  av_foreground.synchronize();
+  printf("Synced!\n");
 }
 
 void BeHcBenchmark::Cleanup() { BeBenchmark::Cleanup(); }
