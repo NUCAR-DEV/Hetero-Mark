@@ -81,11 +81,10 @@ void BeBenchmark::Verify() {
     for (uint32_t j = 0; j < num_pixels_; j++) {
       uint32_t id = i * num_pixels_ + j;
       if (foreground_[id] != cpu_foreground[id]) {
+        printf("Frame %d, pixel %d, expected %d, but was %d\n", i, j,
+          cpu_foreground[id], foreground_[id]);
         has_error = true;
       }
-      printf("Frame %d, pixel %d, expected %d, but was %d\n", i, j,
-          cpu_foreground[id], foreground_[id]);
-
     }
   }
   if (!has_error) {

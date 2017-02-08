@@ -87,24 +87,22 @@ void BeHcBenchmark::NormalRun() {
                                            foreground_);
   float alpha = alpha_;
   uint32_t num_pixels = num_pixels_; 
-
+ 
   for (uint32_t i = 0; i < num_frames_; i++) {
-    hc::parallel_for_each(
-      hc::extent<1>(num_pixels_),
-      [&i, &alpha, &num_pixels, &background, &av_data, &av_foreground](hc::index<1> j)[[hc]] {
-        uint32_t id = i * num_pixels + j[0];
-        if (av_data[id] > background[j[0]]) {
-          av_foreground[id] = av_data[id] - background[j[0]];
-        } else {
-          av_foreground[id] = background[j[0]] - av_data[id];
-        }
-
-        background[j[0]] = background[j[0]] * (1 - alpha) + av_data[id] * alpha;
-      });
-    acc_view.flush();
+    hc::parallel_for_each(hc::extent<1>(num_pixels_), 
+                          [=](hc::index<1> j) [[hc]] {
+      uint32_t id = i * num_pixels + j[0];
+      if (av_data[id] > background[j]) {
+        av_foreground[id] = av_data[id] - background[j];
+      } else {
+        av_foreground[id] = - av_data[id] + background[j];
+      }
+      
+      background[j] = background[j] * (1 - alpha) + av_data[id] * alpha;
+    });
   }
+
   av_foreground.synchronize();
-  printf("Synced!\n");
 }
 
 void BeHcBenchmark::Cleanup() { BeBenchmark::Cleanup(); }
