@@ -1,22 +1,17 @@
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
+cmake_minimum_required(VERSION 3.2)
 
-set( FOLDER_NAME aes_hsa )
-set( SUBDIRECTORIES )
-set( SRC_FILES 
+set(FOLDER_NAME aes_hsa)
+set(SUBDIRECTORIES)
+set(SRC_FILES 
   main.cc
   aes_hsa_benchmark.cc
 )
-set( HEADER_FILES 
+set(HEADER_FILES 
   aes_hsa_benchmark.h)
-set( TEST_FILES )
-set( EXTRA_FILES 
+set(TEST_FILES)
+set(EXTRA_FILES 
   kernels.cl
 )
-
-# Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
 
 # Unit test
 if (${TEST_FILES})
@@ -25,8 +20,7 @@ if (${TEST_FILES})
   add_test(${FOLDER_NAME}_unittest ${FOLDER_NAME}_unittest)
 endif (${TEST_FILES})
 
-###############################################################
-
+if (NOT COMPILE_HCC) 
 if (have_snack AND HSA_RUNTIME)
   foreach( extra_file ${EXTRA_FILES} )
     add_custom_command(
@@ -47,4 +41,5 @@ if (have_snack AND HSA_RUNTIME)
   target_link_libraries(${FOLDER_NAME}
       aes time_measurement command_line_option benchmark ${HSA_RUNTIME})
 endif (have_snack AND HSA_RUNTIME)
+endif (NOT COMPILE_HCC)
 
