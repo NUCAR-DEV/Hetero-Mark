@@ -33,6 +33,7 @@ CMakeFiles
 cmake_install.cmake
 Makefile
 build
+build-*
 bin
 Testing
 

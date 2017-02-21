@@ -17,8 +17,10 @@ if (enable-test)
 endif (enable-test)
 
 add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES})
-set_target_properties(${FOLDER_NAME} PROPERTIES
-    COMPILE_FLAGS ${COMPILER_FLAGS}
-    LINK_FLAGS ${LINKER_FLAGS})
+if (COMPILE_HCC)
+  set_target_properties(${FOLDER_NAME} PROPERTIES
+      COMPILE_FLAGS ${COMPILER_FLAGS}
+      LINK_FLAGS ${LINKER_FLAGS})
+endif (COMPILE_HCC)
 
 

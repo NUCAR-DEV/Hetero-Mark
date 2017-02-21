@@ -43,10 +43,26 @@ void AesHsaBenchmark::Initialize() {
 
 void AesHsaBenchmark::Run() {
   ExpandKey();
+  uint8_t *ciphertext = reinterpret_cast<uint8_t *>(
+      malloc_global(text_length_));
+  uint32_t *expanded_key = reinterpret_cast<uint32_t *>(
+      malloc_global(kExpandedKeyLengthInBytes));
+  uint8_t *d_s = reinterpret_cast<uint8_t *>(
+      malloc_global(256));
+  memcpy(ciphertext, ciphertext_, text_length_);
+  memcpy(expanded_key, expanded_key_, kExpandedKeyLengthInBytes);
+  memcpy(d_s, s, 256);
+
   SNK_INIT_LPARM(lparm, 0);
   int num_blocks = text_length_ / 16;
   lparm->gdims[0] = num_blocks;
   lparm->ldims[0] = 64 < num_blocks ? 64 : num_blocks;
 
-  Encrypt(ciphertext_, expanded_key_, s, lparm);
+  Encrypt(ciphertext, expanded_key, d_s, lparm);
+    
+  memcpy(ciphertext_, ciphertext, text_length_);
+
+  free_global(ciphertext);
+  free_global(expanded_key);
+  free_global(d_s);
 }
