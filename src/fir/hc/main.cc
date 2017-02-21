@@ -9,7 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
+ * Author: Shi Dong (shidong@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,35 +38,24 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_FIR_FIR_BENCHMARK_H_
-#define SRC_FIR_FIR_BENCHMARK_H_
-
-#include "src/common/benchmark/benchmark.h"
+#include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/fir/fir_command_line_options.h"
+#include "src/fir/hc/fir_hc_benchmark.h"
 
-class FirBenchmark : public Benchmark {
- protected:
-  uint32_t num_tap_ = 16;
-  uint32_t num_data_per_block_ = 0;
-  uint32_t num_block_ = 0;
-  uint32_t num_total_data_ = 0;
+int main(int argc, const char **argv) {
+  std::unique_ptr<FirHcBenchmark> benchmark(new FirHcBenchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
-  float *input_ = nullptr;
-  float *output_ = nullptr;
-  float *coeff_ = nullptr;
+  FirCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
 
- public:
-  void Initialize() override;
-  void Run() override {};
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
+  runner.Run();
 
-  void SetNumBlock(uint32_t num_block) { num_block_ = num_block; }
-  void SetNumDataPerBlock(uint32_t num_data_per_block) {
-    num_data_per_block_ = num_data_per_block;
-  }
-  void SetNumTap(uint32_t num_tap) { num_tap_ = num_tap; }
-};
-
-#endif  // SRC_FIR_FIR_BENCHMARK_H_
+  return 0;
+}

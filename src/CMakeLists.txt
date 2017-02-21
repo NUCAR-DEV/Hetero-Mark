@@ -4,6 +4,7 @@ set(FOLDER_NAME src)
 set(SUBDIRECTORIES
   common
   be
+  fir
 )
 
 foreach(subdir ${SUBDIRECTORIES})

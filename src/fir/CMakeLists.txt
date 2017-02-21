@@ -1,8 +1,6 @@
 set( FOLDER_NAME fir )
 set( SUBDIRECTORIES 
-  cl12
-  cl20
-  hsa
+  hc
 )
 set( SRC_FILES
   fir_benchmark.cc
@@ -13,18 +11,12 @@ set( HEADER_FILES
   fir_command_line_options.h
 )
 
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
-project( ${FOLDER_NAME} )
+add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES})
+set_target_properties(${FOLDER_NAME} PROPERTIES
+    COMPILE_FLAGS ${COMPILER_FLAGS}
+    LINK_FLAGS ${LINKER_FLAGS})
 
-###############################################################
+foreach(subdir ${SUBDIRECTORIES})
+    add_subdirectory(${subdir})
+endforeach(subdir)
 
-# Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-
-add_library( fir ${SRC_FILES} ${HEADER_FILES} )
-
-foreach( subdir ${SUBDIRECTORIES} )
-    add_subdirectory( ${subdir} )
-endforeach( subdir )

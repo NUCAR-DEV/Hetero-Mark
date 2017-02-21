@@ -9,7 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
+ * Author: Shi Dong (shidong@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,35 +38,56 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_FIR_FIR_BENCHMARK_H_
-#define SRC_FIR_FIR_BENCHMARK_H_
+#include "src/fir/hc/fir_hc_benchmark.h"
+#include <hc.hpp>
+#include <cstdlib>
+#include <cstdio>
 
-#include "src/common/benchmark/benchmark.h"
-#include "src/common/time_measurement/time_measurement.h"
+void FirHcBenchmark::Initialize() {
+  FirBenchmark::Initialize();
 
-class FirBenchmark : public Benchmark {
- protected:
-  uint32_t num_tap_ = 16;
-  uint32_t num_data_per_block_ = 0;
-  uint32_t num_block_ = 0;
-  uint32_t num_total_data_ = 0;
-
-  float *input_ = nullptr;
-  float *output_ = nullptr;
-  float *coeff_ = nullptr;
-
- public:
-  void Initialize() override;
-  void Run() override {};
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
-
-  void SetNumBlock(uint32_t num_block) { num_block_ = num_block; }
-  void SetNumDataPerBlock(uint32_t num_data_per_block) {
-    num_data_per_block_ = num_data_per_block;
+  // History saves data that carries to next kernel launch
+  history_ = new float[num_tap_];
+  for (unsigned int i = 0; i < num_tap_; i++) {
+    history_[i] = 0.0;
   }
-  void SetNumTap(uint32_t num_tap) { num_tap_ = num_tap; }
-};
 
-#endif  // SRC_FIR_FIR_BENCHMARK_H_
+}
+
+void FirHcBenchmark::Run() {
+  hc::array_view<float, 1> av_input(num_total_data_, input_);
+  hc::array_view<float, 1> av_coeff(num_tap_, coeff_);
+  hc::array_view<float, 1> av_output(num_total_data_, output_);
+
+  std::vector<hc::completion_future> futures(num_block_); 
+  for (unsigned int i = 0; i < num_block_; i++) {
+    auto future = 
+    hc::parallel_for_each(
+      hc::tiled_extent<1>(hc::extent<1>(num_data_per_block_), num_data_per_block_), 
+      [=](hc::tiled_index<1> j)[[hc]] {
+        uint32_t id = i * num_block_ + j.global[0];
+        float sum = 0;
+        for (uint32_t i = 0; i < num_tap_; i++) {
+          if (id >= i) {
+            sum = sum + av_coeff[i] * av_input[id - i];
+          } else {
+            sum = sum + av_coeff[i] * history_[num_tap_ - (i - id)];
+          }
+        }
+        av_output[id] = sum;
+      
+        j.barrier.wait();
+      
+        if (id >= num_data_per_block_ - num_tap_) {
+          history_[num_tap_ - (num_data_per_block_ - id)] = av_input[id];
+        }
+      
+        j.barrier.wait();
+      });
+  }
+}
+
+void FirHcBenchmark::Cleanup() {
+  FirBenchmark::Cleanup();
+  delete[] history_;
+}
