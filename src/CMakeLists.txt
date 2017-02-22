@@ -5,6 +5,7 @@ set(SUBDIRECTORIES
   common
   be
   aes
+  fir
 )
 
 foreach(subdir ${SUBDIRECTORIES})

@@ -47,7 +47,7 @@ void FirHsaBenchmark::Initialize() {
   FirBenchmark::Initialize();
 
   // History saves data that carries to next kernel launch
-  history_ = new float[num_tap_];
+  history_ = malloc_global(num_tap_);
   for (unsigned int i = 0; i < num_tap_; i++) {
     history_[i] = 0.0;
   }
@@ -68,5 +68,5 @@ void FirHsaBenchmark::Run() {
 
 void FirHsaBenchmark::Cleanup() {
   FirBenchmark::Cleanup();
-  delete[] history_;
+  free_global(history_);
 }
