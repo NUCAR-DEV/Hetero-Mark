@@ -58,37 +58,39 @@ void FirHcBenchmark::Run() {
   hc::array_view<float, 1> av_input(num_total_data_, input_);
   hc::array_view<float, 1> av_coeff(num_tap_, coeff_);
   hc::array_view<float, 1> av_output(num_total_data_, output_);
-  hc::array_view<float, 1> av_history(num_tap_, output_);
+  hc::array_view<float, 1> av_history(num_tap_, history_);
 
-  std::vector<hc::completion_future> futures(num_block_); 
+  uint32_t num_tap = num_tap_;
+  uint32_t num_data_per_block = num_data_per_block_;
+
   for (unsigned int i = 0; i < num_block_; i++) {
-    auto future = 
+    hc::extent<1> ex(num_data_per_block);
+    hc::tiled_extent<1> tiled_ex = ex.tile(512);
     hc::parallel_for_each(
-      hc::tiled_extent<1>(
-        hc::extent<1>(num_data_per_block_), num_data_per_block_), 
+        tiled_ex,
       [=](hc::tiled_index<1> j)[[hc]] {
-        uint32_t id = i * num_block_ + j.global[0];
+        uint32_t id = i * num_data_per_block + j.global[0];
         float sum = 0;
-        for (uint32_t i = 0; i < num_tap_; i++) {
-          if (id >= i) {
-            sum = sum + av_coeff[i] * av_input[id - i];
+        for (uint32_t k = 0; k < num_tap; k++) {
+          if (j.global[0] >= k) {
+            sum = sum + av_coeff[k] * av_input[id - k];
           } else {
-            sum = sum + av_coeff[i] * av_history[num_tap_ - (i - id)];
+            sum = sum + av_coeff[k] * av_history[num_tap - (k - j.global[0])];
           }
         }
         av_output[id] = sum;
       
         j.barrier.wait();
       
-        if (id >= num_data_per_block_ - num_tap_) {
-          av_history[num_tap_ - (num_data_per_block_ - id)] = av_input[id];
+        if (j.global[0] >= num_data_per_block - num_tap) {
+          av_history[num_tap - (num_data_per_block - j.global[0])] = av_input[id];
         }
       
         j.barrier.wait();
       });
   }
-
   av_output.synchronize();
+
 }
 
 void FirHcBenchmark::Cleanup() {
