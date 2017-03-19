@@ -1,22 +1,18 @@
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
+cmake_minimum_required(VERSION 3.2)
 
-set( FOLDER_NAME fir_hsa )
-set( SUBDIRECTORIES )
-set( SRC_FILES 
+set(FOLDER_NAME fir_hsa)
+set(SUBDIRECTORIES)
+set(SRC_FILES 
   main.cc
-  fir_hsa_benchmark.h
   fir_hsa_benchmark.cc
 )
-set( HEADER_FILES )
-set( TEST_FILES )
-set( EXTRA_FILES 
+set(HEADER_FILES
+  fir_hsa_benchmark.h
+)
+set(TEST_FILES)
+set(EXTRA_FILES 
   kernels.cl
 )
-
-# Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
 
 # Unit test
 if (${TEST_FILES})
@@ -25,16 +21,16 @@ if (${TEST_FILES})
   add_test(${FOLDER_NAME}_unittest ${FOLDER_NAME}_unittest)
 endif (${TEST_FILES})
 
-###############################################################
 
+if (NOT COMPILE_HCC)
 if (have_snack AND HSA_RUNTIME)
-  foreach( extra_file ${EXTRA_FILES} )
+  foreach(extra_file ${EXTRA_FILES})
     add_custom_command(
       OUTPUT ${extra_file}
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${CMAKE_CURRENT_BINARY_DIR}
     )
-  endforeach( extra_file )
+  endforeach(extra_file)
   add_custom_command(
     OUTPUT kernels.o kernels.h
     COMMAND ${SNACK} -c kernels.cl
@@ -47,4 +43,4 @@ if (have_snack AND HSA_RUNTIME)
   target_link_libraries(${FOLDER_NAME}
       fir time_measurement command_line_option benchmark ${HSA_RUNTIME})
 endif (have_snack AND HSA_RUNTIME)
-
+endif (NOT COMPILE_HCC)

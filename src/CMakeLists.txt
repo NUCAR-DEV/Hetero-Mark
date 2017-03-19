@@ -6,6 +6,7 @@ set(SUBDIRECTORIES
   be
   fir
   aes
+  fir
 )
 
 foreach(subdir ${SUBDIRECTORIES})

@@ -44,11 +44,11 @@
 void BeBenchmark::Initialize() {
   foreground_.resize(num_frames_ * num_pixels_);
   data_.resize(num_frames_ * num_pixels_);
-  for (int i = 0; i < num_frames_ * num_pixels_; i++) {
+  for (uint32_t i = 0; i < num_frames_ * num_pixels_; i++) {
     data_[i] = rand() % 255;
   }
   background_.resize(num_pixels_);
-  for (int i = 0; i < num_pixels_; i++) {
+  for (uint32_t i = 0; i < num_pixels_; i++) {
     background_[i] = data_[i];
   }
 
