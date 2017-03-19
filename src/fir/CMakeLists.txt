@@ -3,6 +3,8 @@ set(SUBDIRECTORIES
   cl12
   cl20
   hsa
+  hc
+
 )
 set(SRC_FILES
   fir_benchmark.cc
@@ -14,6 +16,7 @@ set(HEADER_FILES
 )
 
 add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES})
+
 if (COMPILE_HCC)
   set_target_properties(${FOLDER_NAME} PROPERTIES
       COMPILE_FLAGS ${COMPILER_FLAGS}
@@ -23,6 +26,3 @@ endif (COMPILE_HCC)
 foreach(subdir ${SUBDIRECTORIES})
     add_subdirectory(${subdir})
 endforeach(subdir)
-
-
-

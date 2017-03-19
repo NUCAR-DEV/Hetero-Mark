@@ -9,7 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
+ * Author: Shi Dong (shidong@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,75 +38,62 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/fir/hc/fir_hc_benchmark.h"
+#include <hc.hpp>
 #include <cstdlib>
 #include <cstdio>
-#include <cmath>
-#include "src/fir/fir_benchmark.h"
 
-void FirBenchmark::Initialize() {
-  num_total_data_ = num_data_per_block_ * num_block_;
+void FirHcBenchmark::Initialize() {
+  FirBenchmark::Initialize();
 
-  input_ = new float[num_total_data_];
-  output_ = new float[num_total_data_];
-  coeff_ = new float[num_tap_];
-
-  // unsigned int seed = time(NULL);
-
-  // Initialize input data
-  for (unsigned int i = 0; i < num_total_data_; i++) {
-    input_[i] = i;
-    // input_[i] =
-    //     static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
-  }
-
-  // Initialize coefficient
+  // History saves data that carries to next kernel launch
+  history_ = new float[num_tap_];
   for (unsigned int i = 0; i < num_tap_; i++) {
-    coeff_[i] = i;
-    // coeff_[i] =
-    //     static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
+    history_[i] = 0.0;
   }
+
 }
 
-void FirBenchmark::Verify() {
-  bool has_error = false;
-  float *cpu_output = new float[num_total_data_];
-  for (unsigned int i = 0; i < num_total_data_; i++) {
-    float sum = 0;
-    for (unsigned int j = 0; j < num_tap_; j++) {
-      if (i < j) continue;
-      sum += input_[i - j] * coeff_[j];
-    }
-    cpu_output[i] = sum;
-    if (std::abs(cpu_output[i] - output_[i]) > 1e-5) {
-      has_error = true;
-      printf("At position %d, expected %f, but was %f.\n", i, cpu_output[i],
-             output_[i]);
-    }
-  }
+void FirHcBenchmark::Run() {
+  hc::array_view<float, 1> av_input(num_total_data_, input_);
+  hc::array_view<float, 1> av_coeff(num_tap_, coeff_);
+  hc::array_view<float, 1> av_output(num_total_data_, output_);
+  hc::array_view<float, 1> av_history(num_tap_, history_);
 
-  if (!has_error) {
-    printf("Passed! %d data points filtered\n", num_total_data_);
-  }
+  uint32_t num_tap = num_tap_;
+  uint32_t num_data_per_block = num_data_per_block_;
 
-  delete cpu_output;
+  for (unsigned int i = 0; i < num_block_; i++) {
+    hc::extent<1> ex(num_data_per_block);
+    hc::tiled_extent<1> tiled_ex = ex.tile(512);
+    hc::parallel_for_each(
+        tiled_ex,
+      [=](hc::tiled_index<1> j)[[hc]] {
+        uint32_t id = i * num_data_per_block + j.global[0];
+        float sum = 0;
+        for (uint32_t k = 0; k < num_tap; k++) {
+          if (j.global[0] >= k) {
+            sum = sum + av_coeff[k] * av_input[id - k];
+          } else {
+            sum = sum + av_coeff[k] * av_history[num_tap - (k - j.global[0])];
+          }
+        }
+        av_output[id] = sum;
+      
+        j.barrier.wait();
+      
+        if (j.global[0] >= num_data_per_block - num_tap) {
+          av_history[num_tap - (num_data_per_block - j.global[0])] = av_input[id];
+        }
+      
+        j.barrier.wait();
+      });
+  }
+  av_output.synchronize();
+
 }
 
-void FirBenchmark::Summarize() {
-  printf("Input: \n");
-  for (unsigned i = 0; i < num_total_data_; i++) {
-    printf("%d: %f \n", i, input_[i]);
-  }
-  printf("\n");
-
-  printf("GPU Output: \n");
-  for (unsigned i = 0; i < num_total_data_; i++) {
-    printf("%d: %f \n", i, output_[i]);
-  }
-  printf("\n");
-}
-
-void FirBenchmark::Cleanup() {
-  delete[] input_;
-  delete[] output_;
-  delete[] coeff_;
+void FirHcBenchmark::Cleanup() {
+  FirBenchmark::Cleanup();
+  delete[] history_;
 }

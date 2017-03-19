@@ -9,7 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
+ * Author: Shi Dong (shidong@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,35 +38,20 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_FIR_FIR_BENCHMARK_H_
-#define SRC_FIR_FIR_BENCHMARK_H_
+#ifndef SRC_FIR_HC_FIR_HC_BENCHMARK_H_
+#define SRC_FIR_HC_FIR_HC_BENCHMARK_H_
 
-#include "src/common/benchmark/benchmark.h"
+#include "src/fir/fir_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
-class FirBenchmark : public Benchmark {
- protected:
-  uint32_t num_tap_ = 16;
-  uint32_t num_data_per_block_ = 0;
-  uint32_t num_block_ = 0;
-  uint32_t num_total_data_ = 0;
-
-  float *input_ = nullptr;
-  float *output_ = nullptr;
-  float *coeff_ = nullptr;
+class FirHcBenchmark : public FirBenchmark {
+ private:
+  float *history_ = nullptr;
 
  public:
   void Initialize() override;
-  void Run() override {};
-  void Verify() override;
-  void Summarize() override;
+  void Run() override;
   void Cleanup() override;
-
-  void SetNumBlock(uint32_t num_block) { num_block_ = num_block; }
-  void SetNumDataPerBlock(uint32_t num_data_per_block) {
-    num_data_per_block_ = num_data_per_block;
-  }
-  void SetNumTap(uint32_t num_tap) { num_tap_ = num_tap; }
 };
 
-#endif  // SRC_FIR_FIR_BENCHMARK_H_
+#endif  // SRC_FIR_HC_FIR_HC_BENCHMARK_H_
