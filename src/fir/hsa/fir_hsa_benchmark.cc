@@ -41,13 +41,14 @@
 #include "src/fir/hsa/fir_hsa_benchmark.h"
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 #include "src/fir/hsa/kernels.h"
 
 void FirHsaBenchmark::Initialize() {
   FirBenchmark::Initialize();
 
   // History saves data that carries to next kernel launch
-  history_ = malloc_global(num_tap_);
+  history_ = reinterpret_cast<float *>(malloc_global(num_tap_));
   for (unsigned int i = 0; i < num_tap_; i++) {
     history_[i] = 0.0;
   }
@@ -56,14 +57,27 @@ void FirHsaBenchmark::Initialize() {
 }
 
 void FirHsaBenchmark::Run() {
+  float *d_input = reinterpret_cast<float *>(malloc_global(num_data_per_block_ * sizeof(float)));
+  float *d_output = reinterpret_cast<float *>(malloc_global(num_data_per_block_ * sizeof(float)));
+  float *d_coeff = reinterpret_cast<float *>(malloc_global(num_data_per_block_ * sizeof(float)));
+
+  memcpy(d_coeff, coeff_, num_tap_ * sizeof(float));
+
   for (unsigned int i = 0; i < num_block_; i++) {
+    memcpy(d_input, input_ + i * num_data_per_block_, num_data_per_block_ * sizeof(float));
+
     SNK_INIT_LPARM(lparm, 0);
     lparm->ndim = 1;
     lparm->gdims[0] = num_data_per_block_;
-    lparm->ldims[0] = 64;
-    FIR(input_ + i * num_data_per_block_, output_ + i * num_data_per_block_,
-        coeff_, history_, num_tap_, lparm);
+    lparm->ldims[0] = 256;
+    FIR(d_input, d_output, d_coeff, history_, num_tap_, lparm);
+
+    memcpy(output_ + i * num_data_per_block_, d_output, num_data_per_block_ * sizeof(float));
   }
+
+  free_global(d_input);
+  free_global(d_output);
+  free_global(d_coeff);
 }
 
 void FirHsaBenchmark::Cleanup() {
