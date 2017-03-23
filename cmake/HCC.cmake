@@ -4,6 +4,8 @@ if (COMPILE_HCC)
   # set(CMAKE_CXX_COMPILER hcc)
   message("Compiling HCC benchmarks, skipping others.")
 
+  include_directories("/opt/rocm/include/hcc")
+
   # Thank for HCC-Example-Application for the following solution
   execute_process(COMMAND hcc-config  --cxxflags 
                   OUTPUT_VARIABLE KALMAR_COMPILE_FLAGS)
