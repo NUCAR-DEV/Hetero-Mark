@@ -4,7 +4,6 @@ set(SUBDIRECTORIES
   cl20
   hsa
   hc
-
 )
 set(SRC_FILES
   fir_benchmark.cc
