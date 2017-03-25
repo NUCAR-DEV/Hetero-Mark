@@ -48,7 +48,7 @@ std::unique_ptr<OptionSetting::Iterator> OptionSettingImpl::GetIterator() {
   OptionSetting::Iterator *it =
       new Iterator(arguments_.begin(), arguments_.end());
   std::unique_ptr<OptionSetting::Iterator> iterator(it);
-  return std::move(iterator);
+  return iterator;
 }
 
 bool OptionSettingImpl::Iterator::HasNext() { return iterator_ != end_; }

@@ -53,6 +53,7 @@ void BeHcBenchmark::Run() {
 }
 
 void BeHcBenchmark::CollaborativeRun() {
+  /*
   hc::array_view<float, 1> background(num_pixels_, background_);
   hc::array_view<uint8_t, 1> av_data(num_frames_ * num_pixels_, data_);
   hc::array_view<uint8_t, 1> av_foreground(num_frames_ * num_pixels_,
@@ -75,9 +76,11 @@ void BeHcBenchmark::CollaborativeRun() {
       });
   }
   av_foreground.synchronize();
+  */
 }
 
 void BeHcBenchmark::NormalRun() {
+  /*
 
   hc::accelerator_view acc_view = hc::accelerator().get_default_view();
 
@@ -103,6 +106,7 @@ void BeHcBenchmark::NormalRun() {
   }
 
   av_foreground.synchronize();
+  */
 }
 
 void BeHcBenchmark::Cleanup() { BeBenchmark::Cleanup(); }

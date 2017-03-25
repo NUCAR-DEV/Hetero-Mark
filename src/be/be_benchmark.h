@@ -41,6 +41,8 @@
 #define SRC_BE_BE_BENCHMARK_H_
 
 #include <vector>
+// #include <libavcodec/avcodec.h>
+#include <opencv2/opencv.hpp>
 
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
@@ -48,14 +50,20 @@
 class BeBenchmark : public Benchmark {
  protected:
   uint32_t num_frames_;
-  uint32_t num_pixels_;
+  uint32_t width_;
+  uint32_t height_;
   bool collaborative_execution_;
+  std::string input_file_;
+
+  cv::VideoCapture video_;
 
   std::vector<uint8_t> data_;
   std::vector<uint8_t> foreground_;
   std::vector<float> background_;
 
   float alpha_ = 0.03;
+
+  uint8_t *nextFrame();
 
  public:
   void Initialize() override;
@@ -65,8 +73,10 @@ class BeBenchmark : public Benchmark {
   void Cleanup() override;
 
   // Setters
+  void SetInputFile(const std::string &input_file) { 
+    input_file_ = input_file; 
+  }
   void SetNumFrames(uint32_t num_frames) { num_frames_ = num_frames; }
-  void SetNumPixels(uint32_t num_pixels) { num_pixels_ = num_pixels; }
   void SetCollaborativeExecution(bool collaborative_execution) {
     collaborative_execution_ = collaborative_execution;
   }

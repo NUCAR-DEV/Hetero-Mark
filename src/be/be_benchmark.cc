@@ -42,19 +42,25 @@
 #include "src/be/be_benchmark.h"
 
 void BeBenchmark::Initialize() {
-  foreground_.resize(num_frames_ * num_pixels_);
-  data_.resize(num_frames_ * num_pixels_);
-  for (uint32_t i = 0; i < num_frames_ * num_pixels_; i++) {
-    data_[i] = rand() % 255;
-  }
-  background_.resize(num_pixels_);
-  for (uint32_t i = 0; i < num_pixels_; i++) {
-    background_[i] = data_[i];
+  if (!video_.open(input_file_)) {
+    fprintf(stderr, "Fail to open input file.\n");
+    exit(1);
   }
 
+  width_= static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_WIDTH));
+  height_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_HEIGHT));
+  num_frames_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_COUNT));
+}
+
+uint8_t *BeBenchmark::nextFrame() {
+  cv::Mat image;
+  video_ >> image;
+  uint8_t *buffer = new uint8_t[width_ * height_];
+  return buffer;
 }
 
 void BeBenchmark::Verify() {
+  /*
   uint8_t *cpu_foreground = new uint8_t[num_frames_ * num_pixels_];
 
   // Reset background image
@@ -90,6 +96,7 @@ void BeBenchmark::Verify() {
   if (!has_error) {
     printf("Passed!\n");
   }
+  */
 }
 
 void BeBenchmark::Summarize() {}
