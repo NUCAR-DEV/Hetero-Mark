@@ -52,7 +52,11 @@ void BeBenchmark::Initialize() {
   num_frames_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_COUNT));
   printf("width %d, height %d, num_frames %d\n", width_, height_, num_frames_);
 
+
+  foreground_.resize((uint64_t)width_ * height_ * num_frames_);
   background_.resize(width_ * height_);
+
+  collaborative_execution_ = true;
 }
 
 uint8_t *BeBenchmark::nextFrame() {
@@ -95,21 +99,22 @@ void BeBenchmark::Verify() {
     frame = nextFrame();
   }
 
-    // Match
-  // bool has_error = false;
-  // for (uint32_t i = 0; i < num_frames_; i++) {
-  //   for (uint32_t j = 0; j < num_pixels_; j++) {
-  //     uint32_t id = i * num_pixels_ + j;
-  //     if (foreground_[id] != cpu_foreground[id]) {
-  //       printf("Frame %d, pixel %d, expected %d, but was %d\n", i, j,
-  //         cpu_foreground[id], foreground_[id]);
-  //       has_error = true;
-  //     }
-  //   }
-  // }
-  // if (!has_error) {
-  //   printf("Passed!\n");
-  // }
+  // Match
+  bool has_error = false;
+  for (uint64_t i = 0; i < num_frames_; i++) {
+    for (uint64_t j = 0; j < num_pixels; j++) {
+      uint64_t id = i * num_pixels + j;
+      if (foreground_[id] != cpu_foreground[id]) {
+        printf("Frame %lu, pixel %lu, expected %d, but was %d\n", i, j,
+          cpu_foreground[id], foreground_[id]);
+        has_error = true;
+        break;
+      }
+    }
+  }
+  if (!has_error) {
+    printf("Passed!\n");
+  }
 }
 
 void BeBenchmark::Summarize() {}

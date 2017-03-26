@@ -53,30 +53,42 @@ void BeHcBenchmark::Run() {
 }
 
 void BeHcBenchmark::CollaborativeRun() {
-  /*
-  hc::array_view<float, 1> background(num_pixels_, background_);
-  hc::array_view<uint8_t, 1> av_data(num_frames_ * num_pixels_, data_);
-  hc::array_view<uint8_t, 1> av_foreground(num_frames_ * num_pixels_,
-                                           foreground_);
+  uint32_t num_pixels = width_ * height_;
+  std::vector<uint8_t *> frames;
+  hc::array_view<float, 1> background(num_pixels, background_);
+  // hc::array_view<uint8_t, 1> av_foreground(num_frames_ * num_pixels, foreground_);
 
-  std::vector<hc::completion_future> futures(num_frames_);
-  for (uint32_t i = 0; i < num_frames_; i++) {
-    auto future = 
+  float alpha = alpha_;
+
+  hc::accelerator_view acc_view = hc::accelerator().get_default_view();
+
+  for (uint64_t i = 0; i < num_frames_; i++) {
+    uint8_t *frame = nextFrame();
+    frames.push_back(frame);
+    hc::array_view<uint8_t, 1> av_foreground(num_pixels, 
+        foreground_.data() + i * num_pixels);
+    hc::array_view<uint8_t, 1> av_frame(num_pixels, frame);
+    printf("Frame %lu\n", i);
+
     hc::parallel_for_each(
-      hc::extent<1>(num_pixels_), 
-      [=](hc::index<1> j)[[hc]] {
-        uint32_t id = i * num_pixels_ + j[0];
-        if (av_data[id] > background[j]) {
-          av_foreground[id] = av_data[id] - background[j];
+      acc_view,
+      hc::extent<1>(num_pixels), 
+      [=](hc::index<1> j) [[hc]] {
+        // uint64_t id = i * num_pixels + j[0];
+        if (av_frame[j] > background[j]) {
+          av_foreground[j] = av_frame[j] - background[j];
         } else {
-          av_foreground[id] = background[j] - av_data[id];
+          av_foreground[j] = background[j] - av_frame[j];
         }
 
-        background[j] = background[j] * (1 - alpha_) + av_data[id] * alpha_;
+        background[j] = background[j] * (1 - alpha) + av_frame[j] * alpha;
       });
+    av_foreground.synchronize();
   }
-  av_foreground.synchronize();
-  */
+
+  for (auto frame : frames) {
+    delete[] frame;
+  }
 }
 
 void BeHcBenchmark::NormalRun() {
