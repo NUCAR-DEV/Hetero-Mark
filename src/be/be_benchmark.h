@@ -52,10 +52,13 @@ class BeBenchmark : public Benchmark {
   uint32_t num_frames_;
   uint32_t width_;
   uint32_t height_;
+  uint32_t channel_;
   bool collaborative_execution_;
   std::string input_file_;
+  uint8_t threshold_ = 10;
 
   cv::VideoCapture video_;
+  cv::VideoWriter video_writer_;
 
   std::vector<uint8_t> foreground_;
   std::vector<float> background_;

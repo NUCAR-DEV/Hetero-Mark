@@ -49,12 +49,19 @@ void BeBenchmark::Initialize() {
 
   width_= static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_WIDTH));
   height_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_HEIGHT));
+  channel_ = 3;
   num_frames_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_COUNT));
-  printf("width %d, height %d, num_frames %d\n", width_, height_, num_frames_);
+  printf("width %d, height %d, channel %d, num_frames %d\n", 
+      width_, height_, channel_, num_frames_);
 
+  video_writer_.open("gpu_ouput.avi", 
+      CV_FOURCC('M', 'P', 'E', 'G'),
+      video_.get(CV_CAP_PROP_FPS), 
+      cv::Size(width_, height_), 
+      true);
 
-  foreground_.resize((uint64_t)width_ * height_ * num_frames_);
-  background_.resize(width_ * height_);
+  foreground_.resize((uint64_t)width_ * height_ * channel_ *  num_frames_);
+  background_.resize(width_ * height_ * channel_);
 
   collaborative_execution_ = true;
 }
@@ -62,7 +69,10 @@ void BeBenchmark::Initialize() {
 uint8_t *BeBenchmark::nextFrame() {
   cv::Mat image;
   if (video_.read(image)) {
-    uint8_t *buffer = new uint8_t[width_ * height_];
+    printf("Image type %d, dims %d, rows %d, cols %d\n", 
+        image.type(), image.dims, image.rows, image.cols);
+    uint8_t *buffer = new uint8_t[width_ * height_ * channel_];
+    memcpy(buffer, image.data, width_ * height_ * channel_);
     return buffer;
   } else {
     return NULL;
@@ -70,7 +80,7 @@ uint8_t *BeBenchmark::nextFrame() {
 }
 
 void BeBenchmark::Verify() {
-  int num_pixels = width_ * height_;
+  int num_pixels = width_ * height_ * channel_;
   uint8_t *cpu_foreground = new uint8_t[num_frames_ * num_pixels];
 
   // Reset background image
@@ -85,15 +95,23 @@ void BeBenchmark::Verify() {
   while(frame != NULL) {
     printf("Frame %lu\n", frame_count);
     for (int i = 0; i < num_pixels; i++) {
+      uint8_t diff = 0;
       if (frame[i] > background_[i]) {
-        cpu_foreground[frame_count * num_pixels + i] = 
-            frame[i] - background_[i];
+        diff = frame[i] - background_[i];
       } else {
-        cpu_foreground[frame_count * num_pixels + i] = 
-            - frame[i] + background_[i];
+        diff = -frame[i] + background_[i];
       } 
+      if (diff > threshold_) {
+        cpu_foreground[frame_count * num_pixels + i] = frame[i];
+      }
       background_[i] = background_[i] * (1 - alpha_) + frame[i] * alpha_;
     }
+
+    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, 
+        cpu_foreground + frame_count * num_pixels,
+        cv::Mat::AUTO_STEP);
+    video_writer_ << output_frame;
+
     frame_count++;
     delete[] frame;
     frame = nextFrame();
@@ -108,13 +126,15 @@ void BeBenchmark::Verify() {
         printf("Frame %lu, pixel %lu, expected %d, but was %d\n", i, j,
           cpu_foreground[id], foreground_[id]);
         has_error = true;
-        break;
+        return;
       }
     }
   }
   if (!has_error) {
     printf("Passed!\n");
   }
+
+  delete[] cpu_foreground;
 }
 
 void BeBenchmark::Summarize() {}
