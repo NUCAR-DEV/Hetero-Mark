@@ -57,7 +57,6 @@ class BeBenchmark : public Benchmark {
 
   cv::VideoCapture video_;
 
-  std::vector<uint8_t> data_;
   std::vector<uint8_t> foreground_;
   std::vector<float> background_;
 
