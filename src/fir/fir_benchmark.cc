@@ -88,7 +88,7 @@ void FirBenchmark::Verify() {
     printf("Passed! %d data points filtered\n", num_total_data_);
   }
 
-  delete cpu_output;
+  delete[] cpu_output;
 }
 
 void FirBenchmark::Summarize() {

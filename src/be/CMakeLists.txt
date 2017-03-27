@@ -13,6 +13,7 @@ set(HEADER_FILES
   be_command_line_options.h
 )
 
+include_directories("/usr/include/x86_64-linux-gnu")
 add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES})
 if (COMPILE_HCC)
   set_target_properties(${FOLDER_NAME} PROPERTIES

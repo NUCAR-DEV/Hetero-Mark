@@ -42,54 +42,118 @@
 #include "src/be/be_benchmark.h"
 
 void BeBenchmark::Initialize() {
-  foreground_.resize(num_frames_ * num_pixels_);
-  data_.resize(num_frames_ * num_pixels_);
-  for (uint32_t i = 0; i < num_frames_ * num_pixels_; i++) {
-    data_[i] = rand() % 255;
-  }
-  background_.resize(num_pixels_);
-  for (uint32_t i = 0; i < num_pixels_; i++) {
-    background_[i] = data_[i];
+  if (!video_.open(input_file_)) {
+    fprintf(stderr, "Fail to open input file.\n");
+    exit(1);
   }
 
+  width_= static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_WIDTH));
+  height_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_HEIGHT));
+  channel_ = 3;
+  num_frames_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_COUNT));
+  // printf("width %d, height %d, channel %d, num_frames %d\n",
+  //     width_, height_, channel_, num_frames_);
+  //
+  
+  int codec = CV_FOURCC('M', 'J', 'P', 'G');
+  video_writer_.open("gpu_output.avi", codec,
+      video_.get(CV_CAP_PROP_FPS), 
+      cv::Size(width_, height_), 
+      true);
+  cpu_video_writer_.open("cpu_output.avi", codec,
+      video_.get(CV_CAP_PROP_FPS), 
+      cv::Size(width_, height_), 
+      true);
+
+
+
+  foreground_.resize((uint64_t)width_ * height_ * channel_ *  num_frames_);
+  background_.resize(width_ * height_ * channel_);
+
+  collaborative_execution_ = true;
+}
+
+uint8_t *BeBenchmark::nextFrame() {
+  cv::Mat image;
+  if (video_.read(image)) {
+    // printf("Image type %d, dims %d, rows %d, cols %d\n",
+    //     image.type(), image.dims, image.rows, image.cols);
+    uint8_t *buffer = new uint8_t[width_ * height_ * channel_];
+    memcpy(buffer, image.data, width_ * height_ * channel_);
+    return buffer;
+  } else {
+    return NULL;
+  }
 }
 
 void BeBenchmark::Verify() {
-  uint8_t *cpu_foreground = new uint8_t[num_frames_ * num_pixels_];
+  int num_pixels = width_ * height_ * channel_;
+  uint8_t *cpu_foreground = new uint8_t[num_pixels];
 
   // Reset background image
-  for (uint32_t i = 0; i < num_pixels_; i++) {
-    background_[i] = data_[i];
+  video_.open(input_file_);
+  uint8_t *frame = nextFrame();
+  for (int i = 0; i < num_pixels; i++) {
+    background_[i] = static_cast<float>(frame[i]);
   }
 
   // Run on CPU
-  for (uint32_t i = 0; i < num_frames_; i++) {
-    for (uint32_t j = 0; j < num_pixels_; j++) {
-      uint32_t id = i * num_pixels_ + j;
-      if (data_[id] > background_[j]) {
-        cpu_foreground[id] = data_[id] - background_[j];
+  uint64_t frame_count = 0;
+  while(frame != NULL) {
+    printf("Frame %lu\n", frame_count);
+    for (int i = 0; i < num_pixels; i++) {
+      uint8_t diff = 0;
+      if (frame[i] > background_[i]) {
+        diff = frame[i] - background_[i];
       } else {
-        cpu_foreground[id] = background_[j] - data_[id];
+        diff = -frame[i] + background_[i];
+      } 
+      if (diff > threshold_) {
+        cpu_foreground[i] = frame[i];
+      } else {
+        cpu_foreground[i] = 0;
       }
-      background_[j] = background_[j] * (1 - alpha_) + data_[id] * alpha_;
+      background_[i] = background_[i] * (1 - alpha_) + frame[i] * alpha_;
     }
+
+    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, 
+        cpu_foreground,
+        cv::Mat::AUTO_STEP);
+    cpu_video_writer_ << output_frame;
+
+
+    frame_count++;
+    delete[] frame;
+    frame = nextFrame();
   }
+  cpu_video_writer_.release();
 
   // Match
   bool has_error = false;
-  for (uint32_t i = 0; i < num_frames_; i++) {
-    for (uint32_t j = 0; j < num_pixels_; j++) {
-      uint32_t id = i * num_pixels_ + j;
-      if (foreground_[id] != cpu_foreground[id]) {
-        printf("Frame %d, pixel %d, expected %d, but was %d\n", i, j,
-          cpu_foreground[id], foreground_[id]);
+  cv::VideoCapture cpu_video;
+  cv::VideoCapture gpu_video;
+  cv::Mat cpu_frame;
+  cv::Mat gpu_frame;
+  if (!cpu_video.open("cpu_output.avi") || !gpu_video.open("gpu_output.avi")) {
+    printf("Failed to open verification video.\n");
+    return;
+  }
+  for (uint64_t i = 0; i < num_frames_; i++) {
+    cpu_video.read(cpu_frame);
+    gpu_video.read(gpu_frame);
+    for (uint64_t j = 0; i < num_pixels; i++) {
+      if (cpu_frame.data[j] != gpu_frame.data[j]) {
+        printf("Frame %lu mismatch.\n", i);
         has_error = true;
+        return ;
       }
     }
   }
   if (!has_error) {
     printf("Passed!\n");
   }
+
+  delete[] cpu_foreground;
 }
 
 void BeBenchmark::Summarize() {}

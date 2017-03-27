@@ -48,7 +48,7 @@ class ArgumentValueFactory {
   std::unique_ptr<ArgumentValue> ProduceArgumentValue(const char *value) {
     auto argument_value = std::unique_ptr<ArgumentValue>(new ArgumentValue());
     argument_value->set_value(value);
-    return std::move(argument_value);
+    return argument_value;
   }
 };
 

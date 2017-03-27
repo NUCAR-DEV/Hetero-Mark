@@ -48,6 +48,12 @@ void BeCommandLineOptions::RegisterOptions() {
       "Extraction Algorithm. It learns the background of the video, and "
       "substract the background from each frame");
 
+  command_line_option_.AddArgument("InputFile", "string", "", "-i", 
+                                   "--input-video", 
+                                   "The video to be processed by the "
+                                   "background extractor.");
+
+  /*
   command_line_option_.AddArgument("NumPixels", "integer", "1024", "-x",
                                    "--num-pixels",
                                    "Number of pixels in each frame");
@@ -60,19 +66,23 @@ void BeCommandLineOptions::RegisterOptions() {
                                    "When enabled, the CPU will fetch and "
                                    "decode while GPU is doing back ground "
                                    "extraction.");
+  */
 }
 
 void BeCommandLineOptions::Parse(int argc, const char *argv[]) {
   BenchmarkCommandLineOptions::Parse(argc, argv);
 
-  num_pixels_ = command_line_option_.GetArgumentValue("NumPixels")->AsUInt32();
-  num_frames_ = command_line_option_.GetArgumentValue("NumFrames")->AsUInt32();
-  collaborative_execution_ =
-      command_line_option_.GetArgumentValue("Collaborative")->AsBool();
+  input_file_ = command_line_option_.GetArgumentValue("InputFile")->AsString();
+
+  // num_pixels_ = command_line_option_.GetArgumentValue("NumPixels")->AsUInt32();
+  // num_frames_ = command_line_option_.GetArgumentValue("NumFrames")->AsUInt32();
+  // collaborative_execution_ =
+  //     command_line_option_.GetArgumentValue("Collaborative")->AsBool();
 }
 
 void BeCommandLineOptions::ConfigureBenchmark(BeBenchmark *benchmark) {
-  benchmark->SetNumPixels(num_pixels_);
-  benchmark->SetNumFrames(num_frames_);
-  benchmark->SetCollaborativeExecution(collaborative_execution_);
+  benchmark->SetInputFile(input_file_);
+  // benchmark->SetNumPixels(num_pixels_);
+  // benchmark->SetNumFrames(num_frames_);
+  // benchmark->SetCollaborativeExecution(collaborative_execution_);
 }

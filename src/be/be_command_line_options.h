@@ -50,9 +50,10 @@ class BeCommandLineOptions : public BenchmarkCommandLineOptions {
   void ConfigureBenchmark(BeBenchmark *benchmark);
 
  private:
-  uint32_t num_pixels_;
-  uint32_t num_frames_;
-  bool collaborative_execution_;
+  // uint32_t num_pixels_;
+  // uint32_t num_frames_;
+  // bool collaborative_execution_;
+  std::string input_file_;
 };
 
 #endif  // SRC_BE_BE_COMMAND_LINE_OPTIONS_H_
