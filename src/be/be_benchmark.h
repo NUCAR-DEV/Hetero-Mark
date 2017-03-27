@@ -59,6 +59,7 @@ class BeBenchmark : public Benchmark {
 
   cv::VideoCapture video_;
   cv::VideoWriter video_writer_;
+  cv::VideoWriter cpu_video_writer_;
 
   std::vector<uint8_t> foreground_;
   std::vector<float> background_;
