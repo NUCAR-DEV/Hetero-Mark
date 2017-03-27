@@ -153,23 +153,6 @@ void BeBenchmark::Verify() {
     printf("Passed!\n");
   }
 
-  /*
-  for (uint64_t i = 0; i < num_frames_; i++) {
-    for (uint64_t j = 0; j < num_pixels; j++) {
-      uint64_t id = i * num_pixels + j;
-      if (foreground_[id] != cpu_foreground[id]) {
-        printf("Frame %lu, pixel %lu, expected %d, but was %d\n", i, j,
-          cpu_foreground[id], foreground_[id]);
-        has_error = true;
-        return;
-      }
-    }
-  }
-  if (!has_error) {
-    printf("Passed!\n");
-  }
-  */
-
   delete[] cpu_foreground;
 }
 
