@@ -145,12 +145,15 @@ void AesBenchmark::Verify() {
     encrypt_ptr += kBlockSizeInBytes;
   }
 
+  DumpText(ciphertext_cpu);
+
   bool passed = true;
   for (uint64_t i = 0; i < text_length_; i++) {
     if (ciphertext_cpu[i] != ciphertext_[i]) {
       passed = false;
       printf("Position: %" PRIu64 ", expected to be 0x%02x, but get 0x%02x\n",
              i, ciphertext_cpu[i], ciphertext_[i]);
+      return;
     }
   }
 

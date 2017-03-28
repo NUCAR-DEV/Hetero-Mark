@@ -141,7 +141,7 @@ void BeBenchmark::Verify() {
   for (uint64_t i = 0; i < num_frames_; i++) {
     cpu_video.read(cpu_frame);
     gpu_video.read(gpu_frame);
-    for (uint64_t j = 0; i < num_pixels; i++) {
+    for (int64_t j = 0; j < num_pixels; j++) {
       if (cpu_frame.data[j] != gpu_frame.data[j]) {
         printf("Frame %lu mismatch.\n", i);
         has_error = true;
