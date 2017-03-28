@@ -23,37 +23,24 @@ void SubBytes(uchar* input, uchar* s) {
 }
 
 void MixColumns(uchar* arr) {
-  uchar a[16] = {0};
-  uchar b[16] = {0};
-  uchar h[16] = {0};
-  int i = 0;
-
-  for (uchar c = 0; c < 16; c++) {
-    a[c] = arr[c];
-    h[c] = a[c] & 0x80;
-    b[c] = h[c] == 0x80 ? (a[c] << 1) ^ 0x1b : a[c] << 1;
+  for (int i = 0; i < 4; i++) {
+    uchar a[4];
+    uchar b[4];
+    uchar c;
+    uchar h;
+    for (c = 0; c < 4; c++) {
+      a[c] = arr[(4 * i + c)];
+      h = a[c] & 0x80;
+      b[c] = a[c] << 1;
+      if (h == 0x80) {
+        b[c] ^= 0x1b;
+      }
+    }
+    arr[i * 4 + 0] = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1];
+    arr[i * 4 + 1] = b[1] ^ a[0] ^ a[3] ^ b[2] ^ a[2];
+    arr[i * 4 + 2] = b[2] ^ a[1] ^ a[0] ^ b[3] ^ a[3];
+    arr[i * 4 + 3] = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0];
   }
-
-  arr[0] = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1];
-  arr[1] = b[1] ^ a[0] ^ a[3] ^ b[2] ^ a[2];
-  arr[2] = b[2] ^ a[1] ^ a[0] ^ b[3] ^ a[3];
-  arr[3] = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0];
-
-  arr[4] = b[4] ^ a[7] ^ a[6] ^ b[5] ^ a[5];
-  arr[5] = b[5] ^ a[4] ^ a[7] ^ b[6] ^ a[6];
-  arr[6] = b[6] ^ a[5] ^ a[4] ^ b[7] ^ a[7];
-  arr[7] = b[7] ^ a[6] ^ a[5] ^ b[4] ^ a[4];
-
-  arr[8] = b[8] ^ a[11] ^ a[10] ^ b[11] ^ a[9];
-  arr[9] = b[9] ^ a[8] ^ a[11] ^ b[10] ^ a[10];
-  arr[10] = b[10] ^ a[9] ^ a[8] ^ b[9] ^ a[11];
-  arr[11] = b[11] ^ a[10] ^ a[9] ^ b[8] ^ a[8];
-
-  arr[12] = b[12] ^ a[15] ^ a[14] ^ b[13] ^ a[13];
-  arr[13] = b[13] ^ a[12] ^ a[15] ^ b[14] ^ a[14];
-  arr[14] = b[14] ^ a[13] ^ a[12] ^ b[15] ^ a[15];
-  arr[15] = b[15] ^ a[14] ^ a[13] ^ b[12] ^ a[12];
-
 }
 
 void ShiftRows(uchar* input) {
@@ -94,7 +81,11 @@ void ShiftRows(uchar* input) {
 }
 
 void AddRoundKey(uchar* state, __global uchar* expanded_key, int offset) {
-  uchar *bytes = expanded_key + offset;
+  int i;
+  uint word;
+  uchar *bytes;
+
+  bytes = expanded_key + offset;
 
   // The reversed bytes order per 4-bytes matches the endianess of the host.
   state[0] ^= bytes[3];
@@ -129,7 +120,27 @@ __kernel void Encrypt(__global uchar* input,
   AddRoundKey(state, expanded_key, 0);
   SubBytes(state, s);
   ShiftRows(state);
-  MixColumns(state);
+
+  uchar *arr = state;
+  for (int i = 0; i < 4; i++) {
+    uchar a[4];
+    uchar b[4];
+    uchar c;
+    uchar h;
+    for (c = 0; c < 4; c++) {
+      a[c] = arr[(4 * i + c)];
+      h = a[c] & 0x80;
+      b[c] = a[c] << 1;
+      if (h == 0x80) {
+        b[c] ^= 0x1b;
+      }
+    }
+    arr[i * 4 + 0] = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1];
+    arr[i * 4 + 1] = b[1] ^ a[0] ^ a[3] ^ b[2] ^ a[2];
+    arr[i * 4 + 2] = b[2] ^ a[1] ^ a[0] ^ b[3] ^ a[3];
+    arr[i * 4 + 3] = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0];
+  }
+
 
   /*
   for (int i = 1; i < 14; i++) {
