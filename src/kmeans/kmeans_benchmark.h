@@ -48,7 +48,7 @@
 
 class KmeansBenchmark : public Benchmark {
  protected:
-  const unsigned kBlockSize = 64;
+  const unsigned kBlockSize = 256;
 
   std::string filename_ = "";
   double threshold_ = 0.001;
@@ -79,8 +79,8 @@ class KmeansBenchmark : public Benchmark {
   float CalculateRMSE();
   void TransposeFeaturesCpu();
   void KmeansClusteringCpu(unsigned num_clusters);
-  void InitializeClusters(unsigned num_clusters);
-  void InitializeMembership();
+  virtual void InitializeClusters(unsigned num_clusters);
+  virtual void InitializeMembership();
   void UpdateMembershipCpu(unsigned num_clusters);
   void UpdateClusterCentroids(unsigned num_clusters);
 

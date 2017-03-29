@@ -10,6 +10,7 @@ set(SUBDIRECTORIES
   fir
   ga
   hist
+  kmeans
 )
 
 foreach(subdir ${SUBDIRECTORIES})

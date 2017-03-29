@@ -158,9 +158,8 @@ void KmeansBenchmark::UpdateMembershipCpu(unsigned num_clusters) {
     for (uint32_t j = 0; j < num_clusters; j++) {
       float dist = 0;
       for (uint32_t k = 0; k < num_features_; k++) {
-        dist += pow(host_features_[i * num_features_ + k] -
-                        clusters_[j * num_features_ + k],
-                    2);
+        dist += pow(host_features_[i * num_features_ + k] - 
+            clusters_[j * num_features_ + k], 2);
       }
 
       if (dist < min_dist) {

@@ -45,12 +45,21 @@
 
 class KmeansHsaBenchmark : public KmeansBenchmark {
  private:
+  float *d_features_;
+  float *d_features_transpose_;
+  int *d_membership_;
+  float *d_clusters_;
+  
   void Clustering();
   void CreateTemporaryMemory();
   void FreeTemporaryMemory();
   void TransposeFeatures();
   void KmeansClustering(unsigned num_clusters);
   void UpdateMembership(unsigned num_clusters);
+  void UpdateClusterCentroidsGPU(unsigned num_clusters);
+  float CalculateRMSEGPU();
+  void InitializeClustersGPU(unsigned num_clusters);
+  void InitializeMembershipGPU();
 
  public:
   void Initialize() override;
