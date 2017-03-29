@@ -40,6 +40,7 @@
 #include "src/hist/hsa/hist_hsa_benchmark.h"
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 #include "src/hist/hsa/kernels.h"
 
 void HistHsaBenchmark::Initialize() {
@@ -48,11 +49,27 @@ void HistHsaBenchmark::Initialize() {
 }
 
 void HistHsaBenchmark::Run() {
+  uint32_t *pixels = reinterpret_cast<uint32_t *>(
+      malloc_global(num_pixel_ * sizeof(uint32_t)));
+  uint32_t *histogram = reinterpret_cast<uint32_t *>(
+      malloc_global(num_color_ * sizeof(uint32_t)));
+
+  memcpy(pixels, pixels_, num_pixel_ * sizeof(uint32_t));
+
   SNK_INIT_LPARM(lparm, 0);
   lparm->ndim = 1;
   lparm->gdims[0] = 1024;
   lparm->ldims[0] = 64;
-  HIST(pixels_, histogram_, num_color_, num_pixel_, lparm);
+  HIST(pixels, histogram, num_color_, num_pixel_, lparm);
+
+  for (int i = 0; i < 256; i++) {
+    printf("%d ", histogram[i]);
+  }
+
+  memcpy(histogram_, histogram, num_color_ * sizeof(uint32_t));
+
+  free_global(pixels);
+  free_global(histogram);
 }
 
 void HistHsaBenchmark::Cleanup() { HistBenchmark::Cleanup(); }

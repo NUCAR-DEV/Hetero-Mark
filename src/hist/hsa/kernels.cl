@@ -30,7 +30,8 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-__kernel void HIST(__global uint* input, __global volatile uint* output,
+__kernel void HIST(__global uint* input,
+                   __global uint* output,
                    uint colors, uint size) {
   uint tid = get_global_id(0);
   uint gsize = get_global_size(0);
