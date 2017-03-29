@@ -145,8 +145,6 @@ void AesBenchmark::Verify() {
     encrypt_ptr += kBlockSizeInBytes;
   }
 
-  DumpText(ciphertext_cpu);
-
   bool passed = true;
   for (uint64_t i = 0; i < text_length_; i++) {
     if (ciphertext_cpu[i] != ciphertext_[i]) {
