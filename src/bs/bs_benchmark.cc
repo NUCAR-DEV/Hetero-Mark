@@ -87,7 +87,7 @@ void BsBenchmark::Initialize() {
   // we take the num_elements as seed
   uint32_t seed = num_elements_;
   // Populate the random array with random variables
-  for (int i = 0; i < num_tiles_ * tile_size_; i++)
+  for (uint32_t i = 0; i < num_tiles_ * tile_size_; i++)
     rand_array_[i] =
         static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
 
@@ -150,7 +150,7 @@ void BsBenchmark::Verify() {
   fprintf(stderr, "[512]= %f\n", call_price_[512]);
 
   // Here we verify the results
-  for (int y = 0; y < num_tiles_ * tile_size_; ++y) {
+  for (uint32_t y = 0; y < num_tiles_ * tile_size_; ++y) {
     if (fabs(verify_call_price_[y] - call_price_[y]) > 1e-4f) {
       std::cerr << "Verification failed. Call Price Position " << y
                 << ": Expected to be " << std::fixed << std::setprecision(4)
@@ -181,19 +181,19 @@ void BsBenchmark::Summarize() {
 
   // Print the input random elements
   std::cout << "Random Array:" << std::endl;
-  for (int i = 0; i < num_tiles_ * tile_size_; ++i)
+  for (uint32_t i = 0; i < num_tiles_ * tile_size_; ++i)
     std::cout << rand_array_[i] << " ";
   std::cout << std::endl;
 
   // Print the output results for Call Price
   std::cout << "Call Price:" << std::endl;
-  for (int i = 0; i < num_tiles_ * tile_size_; ++i)
+  for (uint32_t i = 0; i < num_tiles_ * tile_size_; ++i)
     std::cout << call_price_[i] << " ";
   std::cout << std::endl;
 
   // Print the output results for Put Price
   std::cout << "Put Price:" << std::endl;
-  for (int i = 0; i < num_tiles_ * tile_size_; ++i)
+  for (uint32_t i = 0; i < num_tiles_ * tile_size_; ++i)
     std::cout << put_price_[i] << " ";
   std::cout << std::endl;
 }

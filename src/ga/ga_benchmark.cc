@@ -66,10 +66,10 @@ void GaBenchmark::Verify() {
   CoarseMatch();
 
   for (int pos : coarse_match_position_) {
-    int start = pos - query_sequence_.length();
+    uint32_t start = pos - query_sequence_.length();
     if (start < 0) start = 0;
 
-    int end = pos + query_sequence_.length();
+    uint32_t end = pos + query_sequence_.length();
     if (end > target_sequence_.length()) end = target_sequence_.length();
 
     FineMatch(start, end, cpu_matches_);
@@ -84,7 +84,8 @@ void GaBenchmark::Verify() {
 }
 
 void GaBenchmark::CoarseMatch() {
-  int max_searchable_length = target_sequence_.length() - coarse_match_length_;
+  uint32_t max_searchable_length = target_sequence_.length() 
+      - coarse_match_length_;
   for (uint32_t i = 0; i < max_searchable_length; i++) {
     if (CoarseMatchAtTargetPosition(i)) {
       coarse_match_position_.push_back(i);
@@ -93,9 +94,10 @@ void GaBenchmark::CoarseMatch() {
 }
 
 bool GaBenchmark::CoarseMatchAtTargetPosition(int target_index) {
-  int max_searchable_length = query_sequence_.length() - coarse_match_length_;
+  uint32_t max_searchable_length = query_sequence_.length() 
+    - coarse_match_length_;
   for (uint32_t i = 0; i <= max_searchable_length; i++) {
-    int distance =
+    uint32_t distance =
         HammingDistance(target_sequence_.c_str() + target_index,
                         query_sequence_.c_str() + i, coarse_match_length_);
 
@@ -104,9 +106,9 @@ bool GaBenchmark::CoarseMatchAtTargetPosition(int target_index) {
   return false;
 }
 
-int GaBenchmark::HammingDistance(const char *seq1, const char *seq2,
+uint32_t GaBenchmark::HammingDistance(const char *seq1, const char *seq2,
                                  int length) {
-  int distance = 0;
+  uint32_t distance = 0;
   for (int i = 0; i < length; i++) {
     if (seq1[i] != seq2[i]) distance++;
   }

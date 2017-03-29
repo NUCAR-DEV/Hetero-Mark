@@ -61,8 +61,8 @@ class GaBenchmark : public Benchmark {
   std::string target_sequence_;
   std::string query_sequence_;
 
-  int coarse_match_length_ = 11;
-  int coarse_match_threshold_ = 1;
+  uint32_t coarse_match_length_ = 11;
+  uint32_t coarse_match_threshold_ = 1;
 
   int mismatch_penalty = 1;
   int gap_penalty = 2;
@@ -74,7 +74,7 @@ class GaBenchmark : public Benchmark {
 
   void CoarseMatch();
   bool CoarseMatchAtTargetPosition(int target_index);
-  int HammingDistance(const char *seq1, const char *seq2, int length);
+  uint32_t HammingDistance(const char *seq1, const char *seq2, int length);
 
   typedef int **Matrix;
   void FineMatch(int start, int end, std::list<Match *> &matches);

@@ -45,7 +45,7 @@
 
 void EpBenchmark::Initialize() {
   srand(kSeed);
-  for (int i = 0; i < kNumVariables; i++) {
+  for (uint32_t i = 0; i < kNumVariables; i++) {
     fitness_function_[i] = 1.0 * rand() / RAND_MAX;
   }
 }
@@ -54,7 +54,7 @@ void EpBenchmark::Verify() {
   srand(kSeed);
   islands_1_.clear();
   islands_2_.clear();
-  for (int i = 0; i < max_generation_; i++) {
+  for (uint32_t i = 0; i < max_generation_; i++) {
     Reproduce();
     Evaluate();
     Select();
@@ -99,7 +99,7 @@ void EpBenchmark::ReproduceInIsland(std::vector<Creature> &island) {
 
 EpBenchmark::Creature EpBenchmark::CreateRandomCreature() {
   Creature creature;
-  for (int i = 0; i < kNumVariables; i++) {
+  for (uint32_t i = 0; i < kNumVariables; i++) {
     creature.parameters[i] = 1.0 * rand() / RAND_MAX;
   }
   return creature;
@@ -117,7 +117,7 @@ void EpBenchmark::Evaluate() {
 
 void EpBenchmark::ApplyFitnessFunction(Creature &creature) {
   double fitness = 0;
-  for (int i = 0; i < kNumVariables; i++) {
+  for (uint32_t i = 0; i < kNumVariables; i++) {
     fitness += pow(creature.parameters[i], i + 1) * fitness_function_[i];
   }
   creature.fitness = fitness;
@@ -148,7 +148,7 @@ void EpBenchmark::CrossoverInIsland(std::vector<Creature> &island) {
   for (auto &creature : island) {
     Creature best_creature = island[rand() % 10];
     Creature offspring;
-    for (int i = 0; i < kNumVariables; i++) {
+    for (uint32_t i = 0; i < kNumVariables; i++) {
       if (rand() % 2 == 0) {
         offspring.parameters[i] = best_creature.parameters[i];
       } else {
@@ -161,12 +161,12 @@ void EpBenchmark::CrossoverInIsland(std::vector<Creature> &island) {
 }
 
 void EpBenchmark::Mutate() {
-  for (int i = 0; i < islands_1_.size(); i++) {
+  for (uint32_t i = 0; i < islands_1_.size(); i++) {
     if (i % 7 != 0) continue;
     islands_1_[i].parameters[i % kNumVariables] *= 0.5;
   }
 
-  for (int i = 0; i < islands_2_.size(); i++) {
+  for (uint32_t i = 0; i < islands_2_.size(); i++) {
     if (i % 7 != 0) continue;
     islands_2_[i].parameters[i % kNumVariables] *= 0.5;
   }
