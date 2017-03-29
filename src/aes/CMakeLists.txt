@@ -1,7 +1,5 @@
 set(FOLDER_NAME aes)
 set(SUBDIRECTORIES 
-  cl12
-  cl20
   hsa
 )
 set(SRC_FILES

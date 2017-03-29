@@ -42,6 +42,8 @@ if (ENABLE_TEST)
   include_directories(${source_dir}/include)
 endif (ENABLE_TEST)
 
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
+
 
 set(SUBDIRECTORIES src)
 foreach(subdir ${SUBDIRECTORIES})

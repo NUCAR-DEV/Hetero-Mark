@@ -14,7 +14,7 @@ set(TEST_FILES
 set(EXTRA_FILES 
 )
 
-if (${COMPILE_HCC})
+if (COMPILE_HCC)
 
   # Unit test
   if (${TEST_FILES})
@@ -23,17 +23,14 @@ if (${COMPILE_HCC})
     add_test(${FOLDER_NAME}_unittest ${FOLDER_NAME}_unittest)
   endif (${TEST_FILES})
 
-  find_package(OpenCV)
 
-  if (${OpenCV_FOUND})
+  if (OpenCV_FOUND)
     add_executable(${FOLDER_NAME} ${SRC_FILES})
     target_link_libraries(${FOLDER_NAME} 
       be time_measurement command_line_option benchmark ${OpenCV_LIBS})
     set_target_properties(${FOLDER_NAME} PROPERTIES
       COMPILE_FLAGS ${COMPILER_FLAGS}
       LINK_FLAGS ${LINKER_FLAGS})
-  else (${OpenCV_FOUND})
-    message("OpenCV is not found, skipping the BE benchmark")
-  endif(${OpenCV_FOUND})
+  endif(OpenCV_FOUND)
 
-endif (${COMPILE_HCC})
+endif (COMPILE_HCC)

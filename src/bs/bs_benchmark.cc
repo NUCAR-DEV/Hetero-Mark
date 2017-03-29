@@ -169,8 +169,8 @@ void BsBenchmark::Verify() {
   std::cout << "Passed." << std::endl;
 
   // Delete the verification structures
-  delete verify_call_price_;
-  delete verify_put_price_;
+  delete[] verify_call_price_;
+  delete[] verify_put_price_;
 }
 
 void BsBenchmark::Summarize() {
