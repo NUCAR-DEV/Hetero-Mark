@@ -45,15 +45,31 @@
 
 void PrHsaBenchmark::Initialize() {
   PrBenchmark::Initialize();
-  page_rank_old_ = new float[num_nodes_];
+  page_rank_mtx_1_ = reinterpret_cast<float *>(
+      malloc_global(num_nodes_ * sizeof(float *)));
+  page_rank_mtx_2_ = reinterpret_cast<float *>(
+      malloc_global(num_nodes_ * sizeof(float *)));
 
   PageRankUpdateGpu_init(0);
 }
 
 void PrHsaBenchmark::Run() {
   uint32_t i;
+
+  uint32_t *row_offsets = reinterpret_cast<uint32_t *>(
+      malloc_global((num_nodes_ + 1) * sizeof(uint32_t)));
+  uint32_t *column_numbers = reinterpret_cast<uint32_t *>(
+      malloc_global(num_connections_ * sizeof(uint32_t)));
+  float *values = reinterpret_cast<float *>(
+      malloc_global(num_connections_ * sizeof(float))) ;
+
+  memcpy(row_offsets, row_offsets_, (num_nodes_ + 1) * sizeof(uint32_t));
+  memcpy(column_numbers, column_numbers_, num_connections_ * sizeof(uint32_t));
+  memcpy(values, values_, num_connections_ * sizeof(float));
+
+
   for (i = 0; i < num_nodes_; i++) {
-    page_rank_[i] = 1.0 / num_nodes_;
+    page_rank_mtx_1_[i] = 1.0 / num_nodes_;
   }
 
   SNK_INIT_LPARM(lparm, 0);
@@ -62,16 +78,20 @@ void PrHsaBenchmark::Run() {
 
   for (i = 0; i < max_iteration_; i++) {
     if (i % 2 == 0) {
-      PageRankUpdateGpu(num_nodes_, row_offsets_, column_numbers_, values_,
-                        sizeof(float) * 64, page_rank_, page_rank_old_, lparm);
+      PageRankUpdateGpu(num_nodes_, row_offsets, column_numbers, values,
+                        sizeof(float) * 64, page_rank_mtx_1_, page_rank_mtx_2_, 
+                        lparm);
     } else {
-      PageRankUpdateGpu(num_nodes_, row_offsets_, column_numbers_, values_,
-                        sizeof(float) * 64, page_rank_old_, page_rank_, lparm);
+      PageRankUpdateGpu(num_nodes_, row_offsets, column_numbers, values,
+                        sizeof(float) * 64, page_rank_mtx_2_, page_rank_mtx_1_, 
+                        lparm);
     }
   }
 
   if (i % 2 != 0) {
-    memcpy(page_rank_, page_rank_old_, num_nodes_ * sizeof(float));
+    memcpy(page_rank_, page_rank_mtx_2_, num_nodes_ * sizeof(float));
+  } else {
+    memcpy(page_rank_, page_rank_mtx_1_, num_nodes_ * sizeof(float));
   }
 }
 

@@ -45,7 +45,8 @@
 
 class PrHsaBenchmark : public PrBenchmark {
  private:
-  float *page_rank_old_;
+  float *page_rank_mtx_1_;
+  float *page_rank_mtx_2_;
 
  public:
   void Initialize() override;
