@@ -8,6 +8,7 @@ set(SUBDIRECTORIES
   bs
   ep
   fir
+  ga
 )
 
 foreach(subdir ${SUBDIRECTORIES})

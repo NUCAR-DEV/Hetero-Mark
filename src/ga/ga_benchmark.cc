@@ -42,6 +42,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <climits>
 #include "src/ga/ga_benchmark.h"
 
 void GaBenchmark::Initialize() {
@@ -59,9 +60,6 @@ void GaBenchmark::Initialize() {
     coarse_match_length_ = query_sequence_.length();
     coarse_match_threshold_ = 2;
   }
-
-  // printf("Coarse match length: %d\n", coarse_match_length_);
-  // printf("Coarse match threshold: %d\n", coarse_match_threshold_);
 }
 
 void GaBenchmark::Verify() {
@@ -76,6 +74,13 @@ void GaBenchmark::Verify() {
 
     FineMatch(start, end, cpu_matches_);
   }
+
+  if (matches_.size() != cpu_matches_.size()) {
+    fprintf(stderr, "Number of matches found by GPU %lu, by CPU %lu\n.",
+        matches_.size(), cpu_matches_.size());
+    exit(-1);
+  }
+  printf("Passed!\n");
 }
 
 void GaBenchmark::CoarseMatch() {
@@ -105,23 +110,6 @@ int GaBenchmark::HammingDistance(const char *seq1, const char *seq2,
   for (int i = 0; i < length; i++) {
     if (seq1[i] != seq2[i]) distance++;
   }
-
-  /*
-  printf("seq1: ");
-  for (int i = 0; i < length; i++) {
-    printf("%c", seq1[i]);
-  }
-  printf("\n");
-
-  printf("seq2: ");
-  for (int i = 0; i < length; i++) {
-    printf("%c", seq2[i]);
-  }
-  printf("\n");
-
-  printf("Distance: %d\n", distance);
-  */
-
   return distance;
 }
 
@@ -139,21 +127,6 @@ void GaBenchmark::FineMatch(int start, int end, std::list<Match *> &matches) {
       FillCell(score_matrix, action_matrix, i, j, start);
     }
   }
-
-  /*
-  printf("   ");
-  for (int i = 0; i < query_length; i++) {
-    printf(" %c ", query_sequence_[i]);
-  }
-  printf("\n");
-  for (int i = 0; i < target_length; i++) {
-    printf(" %c ", target_sequence_[i + start]);
-    for (int j = 0; j < query_length; j++) {
-      printf("%3d", score_matrix[j][i]);
-    }
-    printf("\n");
-  }
-  */
 
   Match *match = GenerateMatch(score_matrix, action_matrix, start, end);
   matches.push_back(match);
@@ -232,8 +205,6 @@ GaBenchmark::Match *GaBenchmark::GenerateMatch(Matrix score_matrix,
     }
   }
 
-  // std::cout << "Exit point: " << exit_x << ", " << exit_y << "\n";
-
   Match *match = new Match();
   int curr_x = exit_x;
   int curr_y = exit_y;
@@ -252,15 +223,6 @@ GaBenchmark::Match *GaBenchmark::GenerateMatch(Matrix score_matrix,
 
   match->target_index = target_start + curr_y;
   match->similarity = highest_score;
-  /*
-  std::cout << "Start index: " << target_start << "\n";
-  std::cout << "Target index: " << match->target_index << "\n";
-  std::cout << "Actions: ";
-  for (int action : match->directions) {
-    std::cout << action;
-  }
-  std::cout << "\n";
-  */
 
   return match;
 }

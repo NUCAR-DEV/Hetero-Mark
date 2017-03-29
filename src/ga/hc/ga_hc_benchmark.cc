@@ -137,21 +137,23 @@ void GaHcBenchmark::NormalRun() {
       end_position = max_searchable_length;
     }
     int length = end_position - current_position;
+    int coarse_match_length = coarse_match_length_;
+    int coarse_match_threshold = coarse_match_threshold_;
+    int query_sequence_length = query_sequence_.length();
 
     hc::parallel_for_each(hc::extent<1>(kBatchSize),
                           [=](hc::index<1> index)[[hc]] {
-
       bool match = false;
-      int max_length = query_sequence_.length() - coarse_match_length_;
+      int max_length = query_sequence_length - coarse_match_length;
       for (uint32_t i = 0; i <= max_length; i++) {
         int distance = 0;
-        for (int j = 0; j < coarse_match_length_; j++) {
+        for (int j = 0; j < coarse_match_length; j++) {
           if (av_target[current_position + index + j] != av_query[i + j]) {
             distance++;
           }
         }
 
-        if (distance < coarse_match_threshold_) {
+        if (distance < coarse_match_threshold) {
           match = true;
           break;
         }
