@@ -5,6 +5,7 @@ if (COMPILE_HCC)
   message("Compiling HCC benchmarks, skipping others.")
 
   include_directories("/opt/rocm/include/hcc")
+  include_directories("/opt/rocm/include/")
 
   # Thank for HCC-Example-Application for the following solution
   execute_process(COMMAND hcc-config  --cxxflags 

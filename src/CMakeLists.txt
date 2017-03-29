@@ -3,10 +3,11 @@ cmake_minimum_required(VERSION 3.2)
 set(FOLDER_NAME src)
 set(SUBDIRECTORIES
   common
+  aes
   be
   bs
+  ep
   fir
-  aes
 )
 
 foreach(subdir ${SUBDIRECTORIES})

@@ -115,6 +115,7 @@ void EpHcBenchmark::NormalRun() {
 
 void EpHcBenchmark::EvaluateGpu(std::vector<Creature> &island) {
   hc::array_view<Creature, 1> av_island(island.size(), island);
+  hc::array_view<double, 1> av_fitness_func(kNumVariables, fitness_function_);
   hc::parallel_for_each(hc::extent<1>(island.size()),
                         [=](hc::index<1> i)[[hc]] {
     double fitness = 0;
@@ -124,7 +125,7 @@ void EpHcBenchmark::EvaluateGpu(std::vector<Creature> &island) {
       for (int k = 0; k < j + 1; k++) {
         pow *= creature.parameters[j];
       }
-      fitness += pow * fitness_function_[j];
+      fitness += pow * av_fitness_func[j];
     }
     creature.fitness = fitness;
   });

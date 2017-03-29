@@ -40,6 +40,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
+#include <algorithm>
 #include "src/ep/ep_benchmark.h"
 
 void EpBenchmark::Initialize() {
