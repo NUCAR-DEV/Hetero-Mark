@@ -120,8 +120,8 @@ void PrBenchmark::Verify() {
   }
 
   // Cleanup
-  delete cpu_page_rank;
-  delete cpu_page_rank_old;
+  delete[] cpu_page_rank;
+  delete[] cpu_page_rank_old;
 }
 
 void PrBenchmark::CpuPageRankUpdate(float *input, float *output) {
