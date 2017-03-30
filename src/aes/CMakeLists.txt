@@ -1,6 +1,7 @@
 set(FOLDER_NAME aes)
 set(SUBDIRECTORIES 
   hsa
+  hc
 )
 set(SRC_FILES
   aes_benchmark.cc
