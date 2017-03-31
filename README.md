@@ -1,4 +1,4 @@
-#Hetero-Mark
+# Hetero-Mark
 A Benchmark Suite for Heterogeneous System Computation
 
 ## Prerequisite
@@ -27,18 +27,6 @@ that include AddRoundKey, SubBytes, ShiftRows and MixColumns. Key bits
  program is designed to have the host send array data to the FIR kernel
  on the OpenCL device. Then the FIR filter is calculated on the device,
  and the result is transferred back to the host.
-
-* Hidden Markov Model (HMM) - HMM is a static Markov model that can generate probabilistic meaning
- without knowing the hidden states. The implementation
-targets isolated word recognition. In order to achieve the
-best performance on the GPU device, we express the data-level
-and thread-level parallelism in the HMM algorithm.
-
-* Infinite Impulse Response (IIR) - An IIR filter requires less processing
-power than an FIR filter for
-the same design requirements. The implementation decomposes
-IIR into multiple parallel second-order IIR filters to achieve better
-performance.
 
 * KMeans - k-means clustering is a method of vector quantization, originally from
  signal processing, that is popular for cluster analysis in data mining.
@@ -69,6 +57,12 @@ Use the following commands to compile the benchmarks
     cd build
     cmake ../
     make
+```
+The previous commands will automitically detect your system environment and compile either 
+OpenCL benchmarks or the HSA benchmarks. To compile the HC++ benchmarks, you need to have 
+hcc available in your system and replace the `cmake ../` line with 
+```bash
+    CXX=hcc cmake -DCOMPILE_HCC=On ../
 ```
 
 ## Run the code
