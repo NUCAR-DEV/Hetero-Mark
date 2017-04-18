@@ -48,9 +48,6 @@ class GaHcBenchmark : public GaBenchmark {
   char *coarse_match_result_;
   static const uint32_t kBatchSize = 1024;
 
-  void NormalRun();
-  void CollaborativeRun();
-
  public:
   void Initialize() override;
   void Run() override;
