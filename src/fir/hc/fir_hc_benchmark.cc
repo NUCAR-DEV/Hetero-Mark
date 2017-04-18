@@ -59,8 +59,6 @@ void FirHcBenchmark::Run() {
   hc::array_view<float, 1> av_coeff(num_tap_, coeff_);
   hc::array_view<float, 1> av_output(num_total_data_, output_);
   hc::array_view<float, 1> av_history(num_tap_, history_);
-  std::vector<uint32_t> ids(num_total_data_);
-  hc::array_view<uint32_t, 1> av_ids(num_total_data_, ids);
 
   uint32_t num_tap = num_tap_;
   uint32_t num_data_per_block = num_data_per_block_;
@@ -73,45 +71,13 @@ void FirHcBenchmark::Run() {
         uint32_t id = i * num_data_per_block + j.global[0];
         float sum = 0;
         for (uint32_t k = 0; k < num_tap; k++) {
-          if (j.global[0] >= k) {
-            sum = sum + av_coeff[k] * av_input[id - k];
-          } else {
-            sum = sum + av_coeff[k] * av_history[num_tap - (k - j.global[0])];
-          }
+          sum = sum + av_coeff[k] * av_input[id - k];
         }
         av_output[id] = sum;
-        av_ids[id] = id;
-      
-        j.barrier.wait();
-      
-        if (j.global[0] >= num_data_per_block - num_tap) {
-          av_history[num_tap - (num_data_per_block - j.global[0])] = av_input[id];
-        }
-      
-        j.barrier.wait();
       });
-    av_ids.synchronize();
-    printf("Group %d\n", i);
-    bool has_error = false;
-    for (int j = i * num_data_per_block; j < (i + 1) * num_data_per_block; j++) {
-      if (j != av_ids[j]) {
-        printf("%d %d\n", j, av_ids[j]);
-        has_error = true;
-      }
-    }
-    if (has_error) exit(-1);
 
   }
   av_output.synchronize();
-  bool has_error = false;
-  for (int j = 0; j < num_total_data_; j++) {
-    if (j != av_ids[j]) {
-      printf("%d %d\n", j, av_ids[j]);
-      has_error = true;
-    }
-  }
-  if (has_error) exit(-1);
-
 }
 
 void FirHcBenchmark::Cleanup() {
