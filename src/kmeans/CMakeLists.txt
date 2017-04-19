@@ -3,6 +3,7 @@ set(FOLDER_NAME kmeans)
 set(SUBDIRECTORIES 
   cl12
   cl20
+  hc
   hsa
 )
 set(SRC_FILES

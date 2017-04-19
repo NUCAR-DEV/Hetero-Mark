@@ -214,9 +214,9 @@ void KmeansBenchmark::UpdateClusterCentroids(unsigned num_clusters) {
 
 void KmeansBenchmark::InitializeClusters(unsigned num_clusters) {
   clusters_ = new float[num_clusters * num_features_];
-  for (unsigned i = 1; i < num_clusters; i++)
-    clusters_[i] = clusters_[i - 1] + num_features_;
-
+  // for (unsigned i = 1; i < num_clusters; i++)
+  //   clusters_[i] = clusters_[i - 1] + num_features_;
+  //
   for (unsigned i = 0; i < num_clusters * num_features_; i++)
     clusters_[i] = host_features_[i];
 }
