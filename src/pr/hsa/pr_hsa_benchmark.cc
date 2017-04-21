@@ -93,6 +93,14 @@ void PrHsaBenchmark::Run() {
   } else {
     memcpy(page_rank_, page_rank_mtx_1_, num_nodes_ * sizeof(float));
   }
+
+  free_global(row_offsets);
+  free_global(column_numbers);
+  free_global(values);
 }
 
-void PrHsaBenchmark::Cleanup() { PrBenchmark::Cleanup(); }
+void PrHsaBenchmark::Cleanup() { 
+  free_global(page_rank_mtx_1_);
+  free_global(page_rank_mtx_2_);
+  PrBenchmark::Cleanup(); 
+}
