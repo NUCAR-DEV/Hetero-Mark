@@ -53,7 +53,7 @@ class Benchmark {
   bool quiet_mode_ = false;
 
   // WorkGroup Size
-  uint32_t work_group_size = 64;
+  uint32_t work_group_size = 256;
 
   // Number of compute units
   uint32_t num_compute_units_ = 8;

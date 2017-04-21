@@ -87,9 +87,10 @@ void BsBenchmark::Initialize() {
   // we take the num_elements as seed
   uint32_t seed = num_elements_;
   // Populate the random array with random variables
-  for (uint32_t i = 0; i < num_tiles_ * tile_size_; i++)
+  for (uint32_t i = 0; i < num_tiles_ * tile_size_; i++) {
     rand_array_[i] =
         static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
+  }
 
   // setup the call Price array
   call_price_ = new float[num_tiles_ * tile_size_];

@@ -46,7 +46,7 @@
 
 void BsHcBenchmark::Initialize() { BsBenchmark::Initialize(); }
 
-float BsHcBenchmark::Phi(float X)[[hc]] {
+float BsHcBenchmark::Phi(float X) [[hc]] {
   float y, absX, t;
 
   // the coefficients
@@ -128,6 +128,19 @@ void BsHcBenchmark::Run() {
       fprintf(stderr, "GPU tiles: %d to %d\n", done_tiles_,
               done_tiles_ + section_tiles);
       done_tiles_ += section_tiles;
+
+      // Convert member var to local var to use in the kenrel
+      float sLowerLimit = kSLowerLimit;
+      float kLowerLimit = kKLowerLimit;
+      float tLowerLimit = kTLowerLimit;
+      float rLowerLimit = kRLowerLimit;
+      float sigmaLowerLimit = kSigmaLowerLimit;
+      float sUpperLimit = kSUpperLimit;
+      float kUpperLimit = kKUpperLimit;
+      float tUpperLimit = kTUpperLimit;
+      float rUpperLimit = kRUpperLimit;
+      float sigmaUpperLimit = kSigmaUpperLimit;
+
       // Run the application
       fut = hc::parallel_for_each(hc::extent<1>(section_tiles * tile_size_),
                                   [=](hc::index<1> index)[[hc]] {
@@ -135,38 +148,36 @@ void BsHcBenchmark::Run() {
         float i_rand = section[index];
 
         // calculating the initial S,K,T, and R
-        float s = kSLowerLimit * i_rand + kSUpperLimit * (1.0f - i_rand);
-        float k = kKLowerLimit * i_rand + kKUpperLimit * (1.0f - i_rand);
-        float t = kTLowerLimit * i_rand + kTUpperLimit * (1.0f - i_rand);
-        float r = kRLowerLimit * i_rand + kRUpperLimit * (1.0f - i_rand);
+        float s = sLowerLimit * i_rand + sUpperLimit * (1.0f - i_rand);
+        float k = kLowerLimit * i_rand + kUpperLimit * (1.0f - i_rand);
+        float t = tLowerLimit * i_rand + tUpperLimit * (1.0f - i_rand);
+        float r = rLowerLimit * i_rand + rUpperLimit * (1.0f - i_rand);
         float sigma =
-            kSigmaLowerLimit * i_rand + kSigmaUpperLimit * (1.0f - i_rand);
-
+            sigmaLowerLimit * i_rand + sigmaUpperLimit * (1.0f - i_rand);
+        //
         // Calculating the sigmaSqrtT
-        float sigma_sqrt_t_ = sigma * sqrt(t);
+        float sigma_sqrt_t = sigma * sqrt(t);
 
         // Calculating the derivatives
         float d1 =
-            (log(s / k) + (r + sigma * sigma / 2.0f) * t) / sigma_sqrt_t_;
-        float d2 = d1 - sigma_sqrt_t_;
-
+            (log(s / k) + (r + sigma * sigma / 2.0f) * t) / sigma_sqrt_t;
+        float d2 = d1 - sigma_sqrt_t;
+        //
         // Calculating exponent
-        float k_exp_minus_rt_ = k * exp(-r * t);
+        float k_exp_minus_rt = k * exp(-r * t);
 
         // Getting the output call and put prices
-        av_call_price_section[index] = s * Phi(d1) - k_exp_minus_rt_ * Phi(d2);
-        av_put_price_section[index] = k_exp_minus_rt_ * Phi(-d2) - s * Phi(-d1);
+        av_call_price_section[index] = s * Phi(d1) - k_exp_minus_rt * Phi(d2);
+        av_put_price_section[index] = k_exp_minus_rt * Phi(-d2) - s * Phi(-d1);
       });
     } else {
-      {
-        // CPU portion of the code will run consecutive code until the
-        // GPU becomes ready
-        if (active_cpu_) {
-          last_tile_--;
-          fprintf(stderr, "CPU tile: %d \n", last_tile_);
-          BlackScholesCPU(rand_array_, call_price_, put_price_,
-                          last_tile_ * tile_size_, tile_size_);
-        }
+      // CPU portion of the code will run consecutive code until the
+      // GPU becomes ready
+      if (active_cpu_) {
+        last_tile_--;
+        fprintf(stderr, "CPU tile: %d \n", last_tile_);
+        BlackScholesCPU(rand_array_, call_price_, put_price_,
+                        last_tile_ * tile_size_, tile_size_);
       }
     }
   }
