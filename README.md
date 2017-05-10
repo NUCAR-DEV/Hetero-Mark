@@ -66,7 +66,7 @@ hcc available in your system and replace the `cmake ../` line with
 ```
 
 ## Run the code
-The executables are in the build folder under `Hetero-Mark/build/src/<application name>/<environment>` if you follow the default compile guide, where `<application name>` is the name of the application, such as, fir, be, bs etc and replace `<environment>` for cl12, cl20, hs or hc.
+The executables are in the build folder under `Hetero-Mark/build/src/<application name>/<environment>` if you follow the default compile guide, where `<application name>` is the name of the application, such as, fir, be, bs etc and replace `<environment>` for cl12, cl20, hsa or hc.
 
 All benchmark executables has a `-h` option.
 The help documentation of each benchmark explains how to use the benchmark and what parameter is needed.
