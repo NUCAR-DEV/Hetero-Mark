@@ -65,19 +65,19 @@ void FirHcBenchmark::Run() {
 
   for (unsigned int i = 0; i < num_block_; i++) {
     hc::extent<1> ex(num_data_per_block);
-    hc::tiled_extent<1> tiled_ex = ex.tile(256);
-    hc::parallel_for_each(tiled_ex,
-      [=](hc::tiled_index<1> j) [[hc]] {
-        uint32_t id = i * num_data_per_block + j.global[0];
+    hc::parallel_for_each(ex,
+      [=](hc::index<1> j) [[hc]] {
+        uint32_t id = i * num_data_per_block + j[0];
         float sum = 0;
         for (uint32_t k = 0; k < num_tap; k++) {
-          sum = sum + av_coeff[k] * av_input[id - k];
+          if (id >=  k) {
+            sum = sum + av_coeff[k] * av_input[id - k];
+          }
         }
         av_output[id] = sum;
       });
-
+    av_output.synchronize();
   }
-  av_output.synchronize();
 }
 
 void FirHcBenchmark::Cleanup() {
