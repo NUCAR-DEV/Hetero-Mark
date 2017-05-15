@@ -74,6 +74,14 @@ Use the following commands to compile the benchmarks
 ## Run the code
 The executables are in the build folder if you follow the default compile guide.
 
+The executables support the following arguments:
+
+`-t` is for timing information
+
+`-v` is for cpu verification 
+
+`-q` is for suppressing the output
+
 All benchmark executables has a `-h` option.
 The help documentation of each benchmark explains how to use the benchmark and what parameter is needed.
 
