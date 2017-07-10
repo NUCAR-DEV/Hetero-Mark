@@ -58,10 +58,6 @@ void HistHcBenchmark::Run() {
     uint32_t i = id[0];
     uint32_t local_hist[256] = {0};
 
-    if (id[0] >= num_pixel) {
-      return;
-    }
-
     while(i < num_pixel) {
       uint32_t color = av_pixels[i];
       local_hist[color]++;
@@ -70,7 +66,7 @@ void HistHcBenchmark::Run() {
 
     for (i = 0; i < num_color; i++) {
       if (local_hist[i] > 0) {
-        hc::atomic_fetch_add(&av_hist[i], local_hist[i]);
+         hc::atomic_fetch_add(av_hist.accelerator_pointer() + i, local_hist[i]);
       }
     }
 
