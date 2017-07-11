@@ -59,7 +59,13 @@ void FirCommandLineOptions::RegisterOptions() {
 }
 
 void FirCommandLineOptions::Parse(int argc, const char *argv[]) {
-  BenchmarkCommandLineOptions::Parse(argc, argv);
+
+  try {
+    BenchmarkCommandLineOptions::Parse(argc, argv);
+  } catch (const std::exception& e) {
+	std::cerr << e.what() << std::endl;
+	exit(-1);
+  }
 
   num_data_per_block_ =
       command_line_option_.GetArgumentValue("NumDataPerBlock")->AsUInt32();
