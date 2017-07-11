@@ -56,9 +56,9 @@ class KmeansCl20Benchmark : public KmeansBenchmark, public ClBenchmark {
   void FreeTemporaryMemory();
   void TransposeFeatures();
   void KmeansClustering(unsigned num_clusters);
-  void InitializeClusters(unsigned num_clusters);
+  void InitializeClusters(unsigned num_clusters) override;
   void FreeClusters();
-  void InitializeMembership();
+  void InitializeMembership() override;
   void UpdateMembership(unsigned num_clusters);
   void UpdateClusterCentroids(unsigned num_clusters);
   void DumpClusterCentroids(unsigned num_clusters);

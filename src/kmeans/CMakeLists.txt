@@ -15,8 +15,8 @@ set(HEADER_FILES
   kmeans_command_line_options.h
 )
 
-add_library( kmeans ${SRC_FILES} ${HEADER_FILES} )
+add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES} )
 
-foreach( subdir ${SUBDIRECTORIES} )
-    add_subdirectory( ${subdir} )
-endforeach( subdir )
+foreach(subdir ${SUBDIRECTORIES})
+  add_subdirectory(${subdir})
+endforeach(subdir)
