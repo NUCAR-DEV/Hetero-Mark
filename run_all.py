@@ -14,26 +14,49 @@ build_folder = os.getcwd() + '/build-auto-run/'
 benchmark_repeat_time = 5
 benchmarks = [
     ('aes', 'cl12', [
-        '-i', os.getcwd()+'/data/aes/medium.data',
+        '-i', os.getcwd() + '/data/aes/medium.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
     ('aes', 'cl20', [
-        '-i', os.getcwd()+'/data/aes/medium.data',
+        '-i', os.getcwd() + '/data/aes/medium.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
     ('aes', 'hc', [
-        '-i', os.getcwd()+'/data/aes/medium.data',
+        '-i', os.getcwd() + '/data/aes/medium.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
     ('aes', 'hsa', [
-        '-i', os.getcwd()+'/data/aes/medium.data',
+        '-i', os.getcwd() + '/data/aes/medium.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
+
+    ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4']),
+
+    ('bs', 'hc', ['-x', '1048576']),
+
+    ('ep', 'hc', ['-m', '5']),
 
     ('fir', 'cl12', []),
     ('fir', 'cl20', []),
     ('fir', 'hc', []),
     ('fir', 'hsa', []),
+
+    ('ga', 'hc', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
+
+    ('hist', 'cl12', ['-x', '1048576']),
+    ('hist', 'cl20', ['-x', '1048576']),
+    ('hist', 'hc', ['-x', '1048576']),
+    ('hist', 'hsa', ['-x', '1048576']),
+
+    ('kmeans', 'cl12', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
+    ('kmeans', 'cl20', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
+    ('kmeans', 'hc', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
+    ('kmeans', 'hsa', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
+
+    ('pr', 'cl12', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
+    ('pr', 'cl20', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
+    ('pr', 'hsa', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
+    ('pr', 'hc', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
 ]
 compiler='/opt/rocm/bin/hcc'
 
@@ -90,6 +113,7 @@ def verify():
         if p.returncode != 0:
             print(bcolors.FAIL, "error: ", executable_name, bcolors.ENDC, 
 		sep='')
+            print(p.communicate())
 
 def benchmark():
     runtime_regex = re.compile(r'Run: ((0|[1-9]\d*)?(\.\d+)?(?<=\d)) second')
