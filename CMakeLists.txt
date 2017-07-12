@@ -6,10 +6,10 @@ project(Hetero-Mark)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 include(ExternalProject)
+include(HCC)
 include(StyleCheck)
 include(OpenCL)
 include(HSA)
-include(HCC)
 
 set(FOLDER_NAME Hetero-Mark)
 

@@ -38,7 +38,7 @@ cmake-*
 bin
 Testing
 
-#ctags
+# ctags
 .tags*
 
 # vim tmp files
@@ -73,3 +73,6 @@ gtest
 # Data file
 data 
 data.tar.gz
+
+# Auto benchmarking
+compile_log.txt
