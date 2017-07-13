@@ -63,8 +63,7 @@ compiler='/opt/rocm/bin/hcc'
 
 def main():
     compile()
-    verify()
-    benchmark()
+    run()
 
 def compile():
     compile_log_filename = "compile_log.txt"
@@ -86,7 +85,7 @@ def compile():
                 "for detailed information", bcolors.ENDC)
         exit(-1)
 
-    p = subprocess.Popen('make VERBOSE=1',
+    p = subprocess.Popen('make -j VERBOSE=1',
         cwd=build_folder, shell=True, 
         stdout=compile_log, stderr=compile_log)
     p.wait()
@@ -97,7 +96,7 @@ def compile():
 
     print(bcolors.OKGREEN + "Compile completed." + bcolors.ENDC)
 
-def verify():
+def run():
     for benchmark in benchmarks:
         executable_name = benchmark[0] + '_' + benchmark[1]
         cwd = build_folder + 'src/' + benchmark[0] + '/' + benchmark[1] + '/'
@@ -107,42 +106,51 @@ def verify():
             print(executable_name, 'not found, skip.')
             continue;
 
-        p = subprocess.Popen([executable_full_path, '-q', '-v'] + benchmark[2],
-            cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        p.wait()
-        if p.returncode != 0:
-            print(bcolors.FAIL, "error: ", executable_name, bcolors.ENDC, 
-		sep='')
-            print(p.communicate())
+        validate = verify(benchmark)
+        if not validate:
+            continue
+            
+        run_benchmark(benchmark)
+    
+def verify(benchmark):
+    executable_name = benchmark[0] + '_' + benchmark[1]
+    cwd = build_folder + 'src/' + benchmark[0] + '/' + benchmark[1] + '/'
+    executable_full_path = cwd + executable_name
 
-def benchmark():
+    p = subprocess.Popen([executable_full_path, '-q', '-v'] + benchmark[2],
+        cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p.wait()
+    if p.returncode != 0:
+        print(bcolors.FAIL, "error: ", executable_name, bcolors.ENDC, 
+            sep='')
+        print(p.communicate())
+        return False
+
+    return True
+
+def run_benchmark(benchmark):
     runtime_regex = re.compile(r'Run: ((0|[1-9]\d*)?(\.\d+)?(?<=\d)) second')
 
-    for benchmark in benchmarks:
-        executable_name = benchmark[0] + '_' + benchmark[1]
-        cwd = build_folder + 'src/' + benchmark[0] + '/' + benchmark[1] + '/'
-        executable_full_path = cwd + executable_name
+    executable_name = benchmark[0] + '_' + benchmark[1]
+    cwd = build_folder + 'src/' + benchmark[0] + '/' + benchmark[1] + '/'
+    executable_full_path = cwd + executable_name
 
-        if not os.path.isfile(executable_full_path):
-            print(executable_name, 'not found, skip.')
-            continue;
+    print("Benchmarking ", executable_name, ": ", sep='', end='')
+    sys.stdout.flush()
 
-        print("Benchmarking ", executable_name, ": ", sep='', end='')
-        sys.stdout.flush()
+    perf = []
+    for i in range(0, benchmark_repeat_time):
+        p = subprocess.Popen([executable_full_path, '-q', '-t'] + benchmark[2],
+            cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        for line in p.stderr:
+            res = runtime_regex.search(line)
+            if res:
+                perf.append(float(res.group(1)))
+        print(".", end=''); sys.stdout.flush()
 
-        perf = []
-        for i in range(0, benchmark_repeat_time):
-            p = subprocess.Popen([executable_full_path, '-q', '-t'] + benchmark[2],
-                cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            for line in p.stderr:
-                res = runtime_regex.search(line)
-                if res:
-                    perf.append(float(res.group(1)))
-            print(".", end=''); sys.stdout.flush()
-
-        print("\n" + executable_name+ ": "
-                + str(np.mean(perf)) + ", "
-                + str(np.std(perf)))
+    print("\n" + executable_name+ ": "
+            + str(np.mean(perf)) + ", "
+            + str(np.std(perf)))
 
 
 class bcolors:

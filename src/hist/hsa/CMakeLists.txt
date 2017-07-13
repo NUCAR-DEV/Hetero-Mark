@@ -14,37 +14,28 @@ set( EXTRA_FILES
   kernels.cl
 )
 
-# Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
+if(have_snack AND HSA_RUNTIME)
+	set_source_files_properties(
+		${FOLDER_NAME}_kernels.o
+		PROPERTIES GENERATED TRUE
+		)
 
-# Unit test
-if (${TEST_FILES})
-  add_executable(${FOLDER_NAME}_unittest ${TEST_FILES} ${SRC_FILES} ${HEADER_FILES})
-  target_link_libraries(${FOLDER_NAME}_unittest gtest gtest_main)
-  add_test(${FOLDER_NAME}_unittest ${FOLDER_NAME}_unittest)
-endif (${TEST_FILES})
+	add_custom_target(
+		${FOLDER_NAME}_kernels.o
+		COMMAND ${CMAKE_COMMAND} -E copy 
+			${CMAKE_CURRENT_SOURCE_DIR}/kernels.cl
+			${CMAKE_CURRENT_BINARY_DIR}/kernels.cl
+		COMMAND ${SNACK} -c kernels.cl
+		COMMAND mv kernels.o ${FOLDER_NAME}_kernels.o
+		DEPENDS kernels.cl
+		COMMENT "Using snack to generate kernel library"
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		VERBATIM
+		)
 
-###############################################################
 
-if (have_snack AND HSA_RUNTIME)
-  foreach( extra_file ${EXTRA_FILES} )
-    add_custom_command(
-      OUTPUT ${extra_file}
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/${extra_file}  ${CMAKE_CURRENT_BINARY_DIR}
-    )
-  endforeach( extra_file )
-  add_custom_command(
-    OUTPUT kernels.o kernels.h
-    COMMAND ${SNACK} -c kernels.cl
-    DEPENDS kernels.cl
-    COMMENT "Using snack to generate kernel library"
-    WORKING_DIRECTORY ""
-    VERBATIM
-  )
-  add_executable(${FOLDER_NAME} kernels.h kernels.o ${HEADER_FILES} ${SRC_FILES})
-  target_link_libraries(${FOLDER_NAME}
-      hist time_measurement command_line_option benchmark ${HSA_RUNTIME})
-endif (have_snack AND HSA_RUNTIME)
-
+	add_executable(${FOLDER_NAME} ${FOLDER_NAME}_kernels.o ${HEADER_FILES} ${SRC_FILES})
+	target_link_libraries(${FOLDER_NAME}
+		hist time_measurement command_line_option benchmark ${HSA_RUNTIME})
+	add_dependencies(${FOLDER_NAME} ${FOLDER_NAME}_kernels.o)
+endif(have_snack AND HSA_RUNTIME)
