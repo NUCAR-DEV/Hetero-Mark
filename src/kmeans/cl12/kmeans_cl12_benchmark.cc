@@ -29,11 +29,11 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
-#include <cstdlib>
 #include "src/kmeans/cl12/kmeans_cl12_benchmark.h"
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <cstdlib>
 
 void KmeansCl12Benchmark::Initialize() {
   KmeansBenchmark::Initialize();
@@ -113,7 +113,6 @@ void KmeansCl12Benchmark::Clustering() {
     CreateTemporaryMemory();
     TransposeFeatures();
     KmeansClustering(num_clusters_);
-
     float rmse = CalculateRMSE();
     if (rmse < min_rmse_) {
       min_rmse_ = rmse;
@@ -148,16 +147,16 @@ void KmeansCl12Benchmark::TransposeFeatures() {
     global_work_size =
         (global_work_size / local_work_size + 1) * local_work_size;
 
-  err = clEnqueueNDRangeKernel(cmd_queue_, kmeans_kernel_swap_, 1, NULL,
-                               &global_work_size, &local_work_size, 0, 0, 0);
+  // err = clEnqueueNDRangeKernel(cmd_queue_, kmeans_kernel_swap_, 1, NULL,
+  //                              &global_work_size, &local_work_size, 0, 0, 0);
   checkOpenCLErrors(err, "ERROR: clEnqueueNDRangeKernel()");
 
-  std::unique_ptr<float[]> trans_result(
-      new float[num_points_ * num_features_]());
-
-  err = clEnqueueReadBuffer(cmd_queue_, device_features_swap_, CL_TRUE, 0,
-                            sizeof(float) * num_points_ * num_features_,
-                            trans_result.get(), 0, 0, NULL);
+  // std::unique_ptr<float[]> trans_result(
+  //     new float[num_points_ * num_features_]());
+  //
+  // err = clEnqueueReadBuffer(cmd_queue_, device_features_swap_, CL_TRUE, 0,
+  //                           sizeof(float) * num_points_ * num_features_,
+  //                           trans_result.get(), 0, 0, NULL);
 }
 
 void KmeansCl12Benchmark::KmeansClustering(unsigned num_clusters) {
@@ -174,7 +173,9 @@ void KmeansCl12Benchmark::KmeansClustering(unsigned num_clusters) {
 
   // Iterate until convergence
   do {
+	std::cout << "Start" << std::endl;
     UpdateMembership(num_clusters);
+	std::cout << "Done updating membership" << std::endl;
     UpdateClusterCentroids(num_clusters);
     num_iteration++;
   } while ((delta_ > 0) && (num_iteration < 500));
@@ -194,40 +195,40 @@ void KmeansCl12Benchmark::UpdateMembership(unsigned num_clusters) {
 
   cl_int err;
   err = clEnqueueWriteBuffer(cmd_queue_, device_clusters_, 1, 0,
-                             num_clusters_ * num_features_ * sizeof(float),
-                             clusters_, 0, 0, 0);
+							 num_clusters_ * num_features_ * sizeof(float),
+							 clusters_, 0, 0, 0);
   checkOpenCLErrors(err, "ERROR: clEnqueueWriteBuffer device_clusters_");
 
   int size = 0;
   int offset = 0;
 
   clSetKernelArg(kmeans_kernel_compute_, 0, sizeof(cl_mem),
-                 reinterpret_cast<void *>(&device_features_swap_));
+				 reinterpret_cast<void *>(&device_features_swap_));
   clSetKernelArg(kmeans_kernel_compute_, 1, sizeof(cl_mem),
-                 reinterpret_cast<void *>(&device_clusters_));
+				 reinterpret_cast<void *>(&device_clusters_));
   clSetKernelArg(kmeans_kernel_compute_, 2, sizeof(cl_mem),
-                 reinterpret_cast<void *>(&device_membership_));
+				 reinterpret_cast<void *>(&device_membership_));
   clSetKernelArg(kmeans_kernel_compute_, 3, sizeof(cl_int),
-                 reinterpret_cast<void *>(&num_points_));
+				 reinterpret_cast<void *>(&num_points_));
   clSetKernelArg(kmeans_kernel_compute_, 4, sizeof(cl_int),
-                 reinterpret_cast<void *>(&num_clusters));
+				 reinterpret_cast<void *>(&num_clusters));
   clSetKernelArg(kmeans_kernel_compute_, 5, sizeof(cl_int),
-                 reinterpret_cast<void *>(&num_features_));
+				 reinterpret_cast<void *>(&num_features_));
   clSetKernelArg(kmeans_kernel_compute_, 6, sizeof(cl_int),
-                 reinterpret_cast<void *>(&offset));
+				 reinterpret_cast<void *>(&offset));
   clSetKernelArg(kmeans_kernel_compute_, 7, sizeof(cl_int),
-                 reinterpret_cast<void *>(&size));
+				 reinterpret_cast<void *>(&size));
 
   err = clEnqueueNDRangeKernel(cmd_queue_, kmeans_kernel_compute_, 1, NULL,
-                               &global_work_size, &local_work_size, 0, 0, 0);
+							   &global_work_size, &local_work_size, 0, 0, 0);
   checkOpenCLErrors(err,
-                    "ERROR: clEnqueueNDRangeKernel kmeans_kernel_compute_");
+					"ERROR: clEnqueueNDRangeKernel kmeans_kernel_compute_");
 
   clFinish(cmd_queue_);
 
   err = clEnqueueReadBuffer(cmd_queue_, device_membership_, 1, 0,
-                            num_points_ * sizeof(int), new_membership.get(), 0,
-                            0, 0);
+							num_points_ * sizeof(int), new_membership.get(), 0,
+							0, 0);
   checkOpenCLErrors(err, "ERROR: Memcopy Out");
 
   delta_ = 0.0f;
