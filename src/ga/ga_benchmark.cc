@@ -80,7 +80,7 @@ void GaBenchmark::Verify() {
   }
 
   if (matches_.size() != cpu_matches_.size()) {
-    fprintf(stderr, "Number of matches found by GPU %lu, by CPU %lu\n.",
+    fprintf(stderr, "Number of matches found by GPU %lu, by CPU %lu.\n",
         matches_.size(), cpu_matches_.size());
     exit(-1);
   }

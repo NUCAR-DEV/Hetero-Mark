@@ -9,8 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
+ * * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal with the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -38,8 +37,8 @@
  */
 
 #include "src/ga/hc/ga_hc_benchmark.h"
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <hcc/hc.hpp>
 
 void GaHcBenchmark::Initialize() {
@@ -69,8 +68,7 @@ void GaHcBenchmark::Run() {
     int coarse_match_threshold = coarse_match_threshold_;
     int query_sequence_length = query_sequence_.length();
 
-    hc::parallel_for_each(hc::extent<1>(kBatchSize),
-                          [=](hc::index<1> index)[[hc]] {
+    hc::parallel_for_each(hc::extent<1>(length), [=](hc::index<1> index)[[hc]] {
       bool match = false;
       int max_length = query_sequence_length - coarse_match_length;
       for (uint32_t i = 0; i <= max_length; i++) {
@@ -111,7 +109,6 @@ void GaHcBenchmark::Run() {
   for (auto &thread : threads) {
     thread.join();
   }
-
 }
 
 void GaHcBenchmark::Cleanup() { GaBenchmark::Cleanup(); }
