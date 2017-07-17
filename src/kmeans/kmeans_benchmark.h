@@ -55,8 +55,6 @@ class KmeansBenchmark : public Benchmark {
   unsigned max_num_clusters_ = 5;
   unsigned min_num_clusters_ = 5;
   unsigned num_loops_ = 1;
-  bool is_rmse_ = false;
-  bool is_output_ = false;
 
   unsigned num_points_ = 0;
   unsigned num_features_ = 0;
@@ -100,8 +98,6 @@ class KmeansBenchmark : public Benchmark {
   void setMinNumClusters(unsigned min_num_clusters) {
     min_num_clusters_ = min_num_clusters;
   }
-  void setIsRMSE(bool is_rmse) { is_rmse_ = is_rmse; }
-  void setIsOutput(bool is_output) { is_output_ = is_output; }
   void setNumLoops(unsigned num_loops) { num_loops_ = num_loops; }
 };
 
