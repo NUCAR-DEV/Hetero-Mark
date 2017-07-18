@@ -49,10 +49,10 @@
 
 class BeBenchmark : public Benchmark {
  protected:
-  uint32_t num_frames_;
   uint32_t width_;
   uint32_t height_;
   uint32_t channel_;
+  uint32_t num_frames_;
   bool collaborative_execution_;
   std::string input_file_;
   uint8_t threshold_ = 10;
@@ -70,16 +70,13 @@ class BeBenchmark : public Benchmark {
 
  public:
   void Initialize() override;
-  void Run() override {};
+  void Run() override{};
   void Verify() override;
   void Summarize() override;
   void Cleanup() override;
 
   // Setters
-  void SetInputFile(const std::string &input_file) { 
-    input_file_ = input_file; 
-  }
-  void SetNumFrames(uint32_t num_frames) { num_frames_ = num_frames; }
+  void SetInputFile(const std::string &input_file) { input_file_ = input_file; }
   void SetCollaborativeExecution(bool collaborative_execution) {
     collaborative_execution_ = collaborative_execution;
   }

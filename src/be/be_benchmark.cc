@@ -65,12 +65,10 @@ void BeBenchmark::Initialize() {
       cv::Size(width_, height_), 
       true);
 
-
-
   foreground_.resize((uint64_t)width_ * height_ * channel_ *  num_frames_);
   background_.resize(width_ * height_ * channel_);
 
-  collaborative_execution_ = true;
+  // collaborative_execution_ = true;
 }
 
 uint8_t *BeBenchmark::nextFrame() {

@@ -38,9 +38,9 @@
  */
 
 #include "src/be/hc/be_hc_benchmark.h"
-#include <hc.hpp>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
+#include <hc.hpp>
 
 void BeHcBenchmark::Initialize() { BeBenchmark::Initialize(); }
 
@@ -53,18 +53,100 @@ void BeHcBenchmark::Run() {
 }
 
 void BeHcBenchmark::CollaborativeRun() {
+  printf("Collaborative run\n");
+  uint32_t num_pixels = width_ * height_ * channel_;
+  std::vector<uint8_t *> frames;
+  uint8_t *decoding = NULL;
+  uint8_t *extracting = NULL;
+  uint8_t *encoding = NULL;
+
+  std::vector<uint8_t> foreground;
+  foreground.resize(num_pixels);
+
+  // Initialize background
+  decoding = nextFrame();
+  frames.push_back(decoding);
+  for (int i = 0; i < num_pixels; i++) {
+    background_[i] = static_cast<float>(decoding[i]);
+  }
+  extracting = decoding;
+
+  float alpha = alpha_;
+  uint8_t threshold = threshold_;
+
+  hc::array_view<float, 1> background(num_pixels, background_);
+  hc::accelerator_view acc_view = hc::accelerator().get_default_view();
+  hc::array_view<uint8_t, 1> av_foreground(num_pixels, foreground);
+
+  for (uint64_t i = 0; i < num_frames_; i++) {
+    printf("Frame %ld\n", i);
+
+    // Extracting
+    if (extracting != NULL) {
+      hc::array_view<uint8_t, 1> av_frame(num_pixels, extracting);
+      av_foreground.discard_data();
+      hc::parallel_for_each(
+          acc_view, hc::extent<1>(num_pixels), [=](hc::index<1> j)[[hc]] {
+            uint8_t diff = 0;
+            if (av_frame[j] > background[j]) {
+              diff = av_frame[j] - background[j];
+            } else {
+              diff = -av_frame[j] + background[j];
+            }
+
+            if (diff > threshold) {
+              av_foreground[j] = av_frame[j];
+            } else {
+              av_foreground[j] = 0;
+            }
+            background[j] = background[j] * (1 - alpha) + av_frame[j] * alpha;
+          });
+    }
+
+    // encoding
+    if (encoding != NULL) {
+      cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, encoding,
+                           cv::Mat::AUTO_STEP);
+      video_writer_ << output_frame;
+    }
+
+    // Decoding
+    decoding = nextFrame();
+    frames.push_back(decoding);
+
+    // Extracting done
+    av_foreground.synchronize();
+    encoding = foreground.data();
+    extracting = decoding;
+  }
+
+  // Last frame
+  if (encoding != NULL) {
+    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, encoding,
+                         cv::Mat::AUTO_STEP);
+    video_writer_ << output_frame;
+  }
+
+  video_writer_.release();
+
+  for (auto frame : frames) {
+    delete[] frame;
+  }
+}
+
+void BeHcBenchmark::NormalRun() {
+  printf("Normal run\n");
   uint32_t num_pixels = width_ * height_ * channel_;
   std::vector<uint8_t *> frames;
   std::vector<uint8_t> foreground;
   foreground.resize(num_pixels);
- 
+
   // Initialize background
   uint8_t *frame = nextFrame();
   frames.push_back(frame);
   for (int i = 0; i < num_pixels; i++) {
     background_[i] = static_cast<float>(frame[i]);
   }
-
 
   float alpha = alpha_;
   uint8_t threshold = threshold_;
@@ -75,31 +157,28 @@ void BeHcBenchmark::CollaborativeRun() {
   for (uint64_t i = 0; i < num_frames_; i++) {
     hc::array_view<uint8_t, 1> av_foreground(num_pixels, foreground);
     hc::array_view<uint8_t, 1> av_frame(num_pixels, frame);
-    // printf("Frame %lu\n", i);
 
+    av_foreground.discard_data();
     hc::parallel_for_each(
-      acc_view,
-      hc::extent<1>(num_pixels), 
-      [=](hc::index<1> j) [[hc]] {
-        // uint64_t id = i * num_pixels + j[0];
-        uint8_t diff = 0;
-        if (av_frame[j] > background[j]) {
-          diff = av_frame[j] - background[j];
-        } else {
-          diff = -av_frame[j] + background[j];
-        }
-        
-        if (diff > threshold) {
-          av_foreground[j] = av_frame[j];
-        } else {
-          av_foreground[j] = 0;
-        }
-        background[j] = background[j] * (1 - alpha) + av_frame[j] * alpha;
-      });
+        acc_view, hc::extent<1>(num_pixels), [=](hc::index<1> j)[[hc]] {
+          uint8_t diff = 0;
+          if (av_frame[j] > background[j]) {
+            diff = av_frame[j] - background[j];
+          } else {
+            diff = -av_frame[j] + background[j];
+          }
+
+          if (diff > threshold) {
+            av_foreground[j] = av_frame[j];
+          } else {
+            av_foreground[j] = 0;
+          }
+          background[j] = background[j] * (1 - alpha) + av_frame[j] * alpha;
+        });
     av_foreground.synchronize();
 
-    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground.data(), 
-        cv::Mat::AUTO_STEP);
+    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground.data(),
+                         cv::Mat::AUTO_STEP);
     video_writer_ << output_frame;
 
     frame = nextFrame();
@@ -111,36 +190,6 @@ void BeHcBenchmark::CollaborativeRun() {
   for (auto frame : frames) {
     delete[] frame;
   }
-}
-
-void BeHcBenchmark::NormalRun() {
-  /*
-
-  hc::accelerator_view acc_view = hc::accelerator().get_default_view();
-
-  hc::array_view<float, 1> background(num_pixels_, background_);
-  hc::array_view<uint8_t, 1> av_data(num_frames_ * num_pixels_, data_);
-  hc::array_view<uint8_t, 1> av_foreground(num_frames_ * num_pixels_,
-                                           foreground_);
-  float alpha = alpha_;
-  uint32_t num_pixels = num_pixels_; 
- 
-  for (uint32_t i = 0; i < num_frames_; i++) {
-    hc::parallel_for_each(hc::extent<1>(num_pixels_), 
-                          [=](hc::index<1> j) [[hc]] {
-      uint32_t id = i * num_pixels + j[0];
-      if (av_data[id] > background[j]) {
-        av_foreground[id] = av_data[id] - background[j];
-      } else {
-        av_foreground[id] = - av_data[id] + background[j];
-      }
-      
-      background[j] = background[j] * (1 - alpha) + av_data[id] * alpha;
-    });
-  }
-
-  av_foreground.synchronize();
-  */
 }
 
 void BeHcBenchmark::Cleanup() { BeBenchmark::Cleanup(); }

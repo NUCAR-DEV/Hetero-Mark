@@ -69,6 +69,7 @@ gtest
 
 # IDE file
 .idea
+.vscode
 
 # Data file
 data 
