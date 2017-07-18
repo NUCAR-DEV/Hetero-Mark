@@ -37,9 +37,9 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
-#include <cstdio>
 #include "src/be/be_benchmark.h"
+#include <cstdio>
+#include <cstdlib>
 
 void BeBenchmark::Initialize() {
   if (!video_.open(input_file_)) {
@@ -47,25 +47,21 @@ void BeBenchmark::Initialize() {
     exit(1);
   }
 
-  width_= static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_WIDTH));
+  width_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_WIDTH));
   height_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_HEIGHT));
   channel_ = 3;
   num_frames_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_COUNT));
   // printf("width %d, height %d, channel %d, num_frames %d\n",
   //     width_, height_, channel_, num_frames_);
   //
-  
-  int codec = CV_FOURCC('M', 'J', 'P', 'G');
-  video_writer_.open("gpu_output.avi", codec,
-      video_.get(CV_CAP_PROP_FPS), 
-      cv::Size(width_, height_), 
-      true);
-  cpu_video_writer_.open("cpu_output.avi", codec,
-      video_.get(CV_CAP_PROP_FPS), 
-      cv::Size(width_, height_), 
-      true);
 
-  foreground_.resize((uint64_t)width_ * height_ * channel_ *  num_frames_);
+  int codec = CV_FOURCC('M', 'J', 'P', 'G');
+  video_writer_.open("gpu_output.avi", codec, video_.get(CV_CAP_PROP_FPS),
+                     cv::Size(width_, height_), true);
+  cpu_video_writer_.open("cpu_output.avi", codec, video_.get(CV_CAP_PROP_FPS),
+                         cv::Size(width_, height_), true);
+
+  foreground_.resize((uint64_t)width_ * height_ * channel_ * num_frames_);
   background_.resize(width_ * height_ * channel_);
 
   // collaborative_execution_ = true;
@@ -97,15 +93,15 @@ void BeBenchmark::Verify() {
 
   // Run on CPU
   uint64_t frame_count = 0;
-  while(frame != NULL) {
-    printf("Frame %lu\n", frame_count);
+  while (frame != NULL) {
+    // printf("Frame %lu\n", frame_count);
     for (int i = 0; i < num_pixels; i++) {
       uint8_t diff = 0;
       if (frame[i] > background_[i]) {
         diff = frame[i] - background_[i];
       } else {
         diff = -frame[i] + background_[i];
-      } 
+      }
       if (diff > threshold_) {
         cpu_foreground[i] = frame[i];
       } else {
@@ -114,11 +110,9 @@ void BeBenchmark::Verify() {
       background_[i] = background_[i] * (1 - alpha_) + frame[i] * alpha_;
     }
 
-    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, 
-        cpu_foreground,
-        cv::Mat::AUTO_STEP);
+    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, cpu_foreground,
+                         cv::Mat::AUTO_STEP);
     cpu_video_writer_ << output_frame;
-
 
     frame_count++;
     delete[] frame;
@@ -143,7 +137,7 @@ void BeBenchmark::Verify() {
       if (cpu_frame.data[j] != gpu_frame.data[j]) {
         printf("Frame %lu mismatch.\n", i);
         has_error = true;
-        return ;
+        return;
       }
     }
   }
@@ -156,5 +150,4 @@ void BeBenchmark::Verify() {
 
 void BeBenchmark::Summarize() {}
 
-void BeBenchmark::Cleanup() {
-}
+void BeBenchmark::Cleanup() {}

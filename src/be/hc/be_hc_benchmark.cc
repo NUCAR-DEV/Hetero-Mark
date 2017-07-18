@@ -79,7 +79,7 @@ void BeHcBenchmark::CollaborativeRun() {
   hc::array_view<uint8_t, 1> av_foreground(num_pixels, foreground);
 
   for (uint64_t i = 0; i < num_frames_; i++) {
-    printf("Frame %ld\n", i);
+    // printf("Frame %ld\n", i);
 
     // Extracting
     if (extracting != NULL) {
