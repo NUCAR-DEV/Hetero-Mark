@@ -31,6 +31,7 @@ benchmarks = [
     ]),
 
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4']),
+    ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
 
     ('bs', 'hc', ['-x', '1048576']),
 
