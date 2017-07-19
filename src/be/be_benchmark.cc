@@ -81,20 +81,22 @@ uint8_t *BeBenchmark::nextFrame() {
 }
 
 void BeBenchmark::Verify() {
+  cv::Mat image;
   int num_pixels = width_ * height_ * channel_;
   uint8_t *cpu_foreground = new uint8_t[num_pixels];
 
   // Reset background image
   video_.open(input_file_);
-  uint8_t *frame = nextFrame();
+  video_>>image;
+  uint8_t *frame = image.ptr();
   for (int i = 0; i < num_pixels; i++) {
     background_[i] = static_cast<float>(frame[i]);
   }
 
   // Run on CPU
   uint64_t frame_count = 0;
-  while (frame != NULL) {
-    // printf("Frame %lu\n", frame_count);
+  while (true) {
+    printf("Frame %lu\n", frame_count);
     for (int i = 0; i < num_pixels; i++) {
       uint8_t diff = 0;
       if (frame[i] > background_[i]) {
@@ -114,9 +116,12 @@ void BeBenchmark::Verify() {
                          cv::Mat::AUTO_STEP);
     cpu_video_writer_ << output_frame;
 
+	if (!video_.read(image)) {
+		break;
+	}
+	frame = image.ptr();
     frame_count++;
-    delete[] frame;
-    frame = nextFrame();
+    // frame = nextFrame();
   }
   cpu_video_writer_.release();
 

@@ -48,9 +48,12 @@ class BeHcBenchmark : public BeBenchmark {
   void NormalRun();
   void CollaborativeRun();
 
+  TimeMeasurement *timer_;
+
  public:
   void Initialize() override;
   void Run() override;
+  void Summarize() override;
   void Cleanup() override;
 };
 

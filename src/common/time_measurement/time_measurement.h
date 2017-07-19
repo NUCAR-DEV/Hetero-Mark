@@ -41,11 +41,11 @@
 #ifndef SRC_COMMON_TIME_MEASUREMENT_TIME_MEASUREMENT_H_
 #define SRC_COMMON_TIME_MEASUREMENT_TIME_MEASUREMENT_H_
 
+#include <initializer_list>
 #include <iostream>
 #include <memory>
-#include <initializer_list>
-#include "src/common/time_measurement/timer.h"
 #include "src/common/time_measurement/time_keeper.h"
+#include "src/common/time_measurement/timer.h"
 
 /**
  * A TimeMeasurement object is a facade for the time measurement system. It
@@ -53,6 +53,7 @@
  */
 class TimeMeasurement {
  public:
+  virtual ~TimeMeasurement() {}
   virtual void Start() = 0;
   virtual void End(std::initializer_list<const char *> catagories) = 0;
   virtual void Summarize(std::ostream *ostream = &std::cout) = 0;
