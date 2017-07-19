@@ -44,14 +44,17 @@
 #include "src/ga/ga_benchmark.h"
 
 class GaHcBenchmark : public GaBenchmark {
-   private:
-    char *coarse_match_result_;
-    static const uint32_t kBatchSize = 1024;
+ private:
+  char *coarse_match_result_;
+  static const uint32_t kBatchSize = 1024;
 
-   public:
-    void Initialize() override;
-    void Run() override;
-    void Cleanup() override;
+  void NonCollaborativeRun();
+  void CollaborativeRun();
+
+ public:
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
 };
 
 #endif  // SRC_GA_HC_GA_HC_BENCHMARK_H_
