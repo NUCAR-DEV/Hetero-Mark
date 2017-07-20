@@ -50,6 +50,9 @@ class BeHcBenchmark : public BeBenchmark {
 
   TimeMeasurement *timer_;
 
+  uint32_t extract_completed_;
+  void ExtractAndEncode(uint8_t *frame, uint32_t frame_id);
+
  public:
   void Initialize() override;
   void Run() override;

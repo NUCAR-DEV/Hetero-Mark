@@ -59,91 +59,73 @@ void BeHcBenchmark::Run() {
 void BeHcBenchmark::CollaborativeRun() {
   printf("Collaborative run\n");
   uint32_t num_pixels = width_ * height_ * channel_;
-  std::vector<uint8_t *> frames;
-  uint8_t *decoding = NULL;
-  uint8_t *extracting = NULL;
-  uint8_t *encoding = NULL;
+  uint8_t *frame = NULL;
 
   // Initialize background
   timer_->Start();
-  decoding = nextFrame();
+  frame = nextFrame();
   timer_->End({"Decoding"});
-  frames.push_back(decoding);
   for (int i = 0; i < num_pixels; i++) {
-    background_[i] = static_cast<float>(decoding[i]);
+    background_[i] = static_cast<float>(frame[i]);
   }
-  extracting = decoding;
+
+  int frame_count = 0;
+  while (true) {
+    printf("Frame %d\n", frame_count);
+    frame = nextFrame();
+    if (!frame) {
+      break;
+    }
+    frame_count++;
+
+    ExtractAndEncode(frame, frame_count);
+  }
+}
+
+void BeHcBenchmark::ExtractAndEncode(uint8_t *frame, uint32_t frame_id) {
+  uint32_t num_pixels = width_ * height_ * channel_;
+
+  while (true) {
+    if (extract_completed_ == frame_id - 1) {
+      break;
+    }
+  }
 
   float alpha = alpha_;
   uint8_t threshold = threshold_;
 
   hc::array_view<float, 1> background(num_pixels, background_);
-  hc::accelerator_view acc_view = hc::accelerator().get_default_view();
   hc::array_view<uint8_t, 1> av_foreground(num_pixels, foreground_);
+  hc::array_view<uint8_t, 1> av_frame(num_pixels, frame);
+  hc::accelerator_view acc_view = hc::accelerator().get_default_view();
 
-  for (uint64_t i = 0; i < num_frames_; i++) {
-    // printf("Frame %ld\n", i);
+  av_foreground.discard_data();
+  hc::parallel_for_each(
+      acc_view, hc::extent<1>(num_pixels), [=](hc::index<1> j)[[hc]] {
+        uint8_t diff = 0;
+        if (av_frame[j] > background[j]) {
+          diff = av_frame[j] - background[j];
+        } else {
+          diff = -av_frame[j] + background[j];
+        }
 
-    // Extracting
-    if (extracting != NULL) {
-      hc::array_view<uint8_t, 1> av_frame(num_pixels, extracting);
-      timer_->Start();
-      av_foreground.discard_data();
-      hc::parallel_for_each(
-          acc_view, hc::extent<1>(num_pixels), [=](hc::index<1> j)[[hc]] {
-            uint8_t diff = 0;
-            if (av_frame[j] > background[j]) {
-              diff = av_frame[j] - background[j];
-            } else {
-              diff = -av_frame[j] + background[j];
-            }
+        if (diff > threshold) {
+          av_foreground[j] = av_frame[j];
+        } else {
+          av_foreground[j] = 0;
+        }
+        background[j] = background[j] * (1 - alpha) + av_frame[j] * alpha;
+      });
+  av_foreground.synchronize();
 
-            if (diff > threshold) {
-              av_foreground[j] = av_frame[j];
-            } else {
-              av_foreground[j] = 0;
-            }
-            background[j] = background[j] * (1 - alpha) + av_frame[j] * alpha;
-          });
-    }
-    timer_->End({"Kernel Launch"});
-
-    // Encoding
-    timer_->Start();
-    if (encoding != NULL) {
-      cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, encoding,
-                           cv::Mat::AUTO_STEP);
-      video_writer_ << output_frame;
-    }
-    timer_->End({"Encoding"});
-
-    // Decoding
-    timer_->Start();
-    decoding = nextFrame();
-    frames.push_back(decoding);
-    timer_->End({"Decoding"});
-
-    // Extracting done
-    timer_->Start();
-    av_foreground.synchronize();
-    timer_->End({"Kernel Wait"});
-    delete[] extracting;
-    encoding = foreground_.data();
-    extracting = decoding;
-  }
-
-  // Last frame
-  if (encoding != NULL) {
-    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, encoding,
+  if (generate_output_) {
+    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground_.data(),
                          cv::Mat::AUTO_STEP);
     video_writer_ << output_frame;
   }
 
-  video_writer_.release();
-
-  // for (auto frame : frames) {
-  //   delete[] frame;
-  // }
+  delete[] frame;
+  extract_completed_++;
 }
 
 void BeHcBenchmark::NormalRun() {
