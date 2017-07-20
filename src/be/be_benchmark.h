@@ -54,6 +54,7 @@ class BeBenchmark : public Benchmark {
   uint32_t channel_;
   uint32_t num_frames_;
   bool collaborative_execution_;
+  bool generate_output_;
   std::string input_file_;
   uint8_t threshold_ = 10;
 
@@ -83,6 +84,9 @@ class BeBenchmark : public Benchmark {
   void SetInputFile(const std::string &input_file) { input_file_ = input_file; }
   void SetCollaborativeExecution(bool collaborative_execution) {
     collaborative_execution_ = collaborative_execution;
+  }
+  void SetGenerateOutput(bool generate_output) {
+    generate_output_ = generate_output;
   }
 };
 

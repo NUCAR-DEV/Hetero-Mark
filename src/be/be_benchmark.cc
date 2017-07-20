@@ -52,11 +52,13 @@ void BeBenchmark::Initialize() {
   channel_ = 3;
   num_frames_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_COUNT));
 
-  int codec = CV_FOURCC('M', 'J', 'P', 'G');
-  video_writer_.open("gpu_output.avi", codec, video_.get(CV_CAP_PROP_FPS),
-                     cv::Size(width_, height_), true);
-  cpu_video_writer_.open("cpu_output.avi", codec, video_.get(CV_CAP_PROP_FPS),
-                         cv::Size(width_, height_), true);
+  if (generate_output_) {
+    int codec = CV_FOURCC('M', 'J', 'P', 'G');
+    video_writer_.open("gpu_output.avi", codec, video_.get(CV_CAP_PROP_FPS),
+                       cv::Size(width_, height_), true);
+    cpu_video_writer_.open("cpu_output.avi", codec, video_.get(CV_CAP_PROP_FPS),
+                           cv::Size(width_, height_), true);
+  }
 
   background_.resize(width_ * height_ * channel_);
   foreground_.resize(width_ * height_ * channel_);
@@ -118,24 +120,30 @@ void BeBenchmark::CpuRun() {
       background_[i] = background_[i] * (1 - alpha_) + frame[i] * alpha_;
     }
 
-    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3,
-                         cpu_foreground_.data(), cv::Mat::AUTO_STEP);
-    cpu_video_writer_ << output_frame;
+    if (generate_output_) {
+      cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3,
+                           cpu_foreground_.data(), cv::Mat::AUTO_STEP);
+      cpu_video_writer_ << output_frame;
+    }
   }
-  cpu_video_writer_.release();
 }
 
 void BeBenchmark::Match() {
   uint32_t num_bytes = width_ * height_ * channel_;
   for (uint32_t i = 0; i < num_bytes; i++) {
     if (cpu_foreground_ != foreground_) {
-      printf("Mismatch in byte %u", i);
+      printf("Mismatch in byte %u\n", i);
       exit(-1);
     }
   }
-  printf("Passed!");
+  printf("Passed!\n");
 }
 
 void BeBenchmark::Summarize() {}
 
-void BeBenchmark::Cleanup() {}
+void BeBenchmark::Cleanup() {
+  if (generate_output_) {
+    cpu_video_writer_.release();
+    video_writer_.release();
+  }
+}

@@ -176,7 +176,7 @@ void BeHcBenchmark::NormalRun() {
       break;
     }
 
-	frame_count++;
+    frame_count++;
 
     timer_->Start();
     hc::array_view<uint8_t, 1> av_foreground(num_pixels, foreground_);
@@ -201,14 +201,14 @@ void BeHcBenchmark::NormalRun() {
     av_foreground.synchronize();
     timer_->End({"Kernel"});
 
-    timer_->Start();
-    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground_.data(),
-                         cv::Mat::AUTO_STEP);
-    video_writer_ << output_frame;
-    timer_->End({"Encoding"});
+    if (generate_output_) {
+      timer_->Start();
+      cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3,
+                           foreground_.data(), cv::Mat::AUTO_STEP);
+      video_writer_ << output_frame;
+      timer_->End({"Encoding"});
+    }
   }
-
-  video_writer_.release();
 }
 
 void BeHcBenchmark::Summarize() {

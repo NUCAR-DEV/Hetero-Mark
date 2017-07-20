@@ -53,11 +53,16 @@ void BeCommandLineOptions::RegisterOptions() {
                                    "The video to be processed by the "
                                    "background extractor.");
 
-  command_line_option_.AddArgument("Collaborative", "bool", "false", "",
+  command_line_option_.AddArgument("Collaborative", "bool", "false", "-c",
                                    "--collaborative",
                                    "When enabled, the CPU will fetch and "
                                    "decode while GPU is doing back ground "
                                    "extraction.");
+  command_line_option_.AddArgument("GenerateOutput", "bool", "false", "-g",
+                                   "--generate-output",
+                                   "When enabled, the CPU execution result "
+                                   "and the GPU result will be stored in "
+                                   "output videos.");
 }
 
 void BeCommandLineOptions::Parse(int argc, const char *argv[]) {
@@ -66,9 +71,12 @@ void BeCommandLineOptions::Parse(int argc, const char *argv[]) {
   input_file_ = command_line_option_.GetArgumentValue("InputFile")->AsString();
   collaborative_execution_ =
       command_line_option_.GetArgumentValue("Collaborative")->AsBool();
+  generate_output_ =
+      command_line_option_.GetArgumentValue("GenerateOutput")->AsBool();
 }
 
 void BeCommandLineOptions::ConfigureBenchmark(BeBenchmark *benchmark) {
   benchmark->SetInputFile(input_file_);
   benchmark->SetCollaborativeExecution(collaborative_execution_);
+  benchmark->SetGenerateOutput(generate_output_);
 }
