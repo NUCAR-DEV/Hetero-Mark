@@ -9,6 +9,9 @@ import re
 import sys
 import subprocess
 import numpy as np
+import argparse
+
+args = None
 
 build_folder = os.getcwd() + '/build-auto-run/'
 benchmark_repeat_time = 5
@@ -32,6 +35,8 @@ benchmarks = [
 
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4']),
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
+    ('be', 'hc', ['-i', os.getcwd() + '/data/be/1.mp4']),
+    ('be', 'hc', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
 
     ('bs', 'hc', ['-x', '1048576']),
 
@@ -63,8 +68,29 @@ compiler='/opt/rocm/bin/hcc'
 
 
 def main():
-    compile()
+    parse_args()
+    if not args.skip_compile:
+        compile()
     run()
+
+def parse_args():
+    global args
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--skip-compile", action="store_true", 
+            help=
+            """
+            Setting this argument will skip the compilation process. This is 
+            useful if you have the compiled with this script before.
+            """)
+    parser.add_argument("-b", "--benchmark",
+            help=
+            """
+            Benchmark to run. By default, this script will run all the 
+            benchmarks. Which this argument, you can specify a certain 
+            benchmark to run.
+            """)
+    args = parser.parse_args()
 
 def compile():
     compile_log_filename = "compile_log.txt"
@@ -99,6 +125,9 @@ def compile():
 
 def run():
     for benchmark in benchmarks:
+        if args.benchmark != None and args.benchmark != benchmark[0]:
+            continue;
+
         executable_name = benchmark[0] + '_' + benchmark[1]
         cwd = build_folder + 'src/' + benchmark[0] + '/' + benchmark[1] + '/'
         executable_full_path = cwd + executable_name
