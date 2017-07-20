@@ -61,7 +61,6 @@ class BeBenchmark : public Benchmark {
   cv::VideoWriter video_writer_;
   cv::VideoWriter cpu_video_writer_;
 
-  std::vector<uint8_t> foreground_;
   std::vector<float> background_;
 
   float alpha_ = 0.03;

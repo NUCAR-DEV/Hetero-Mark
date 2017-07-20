@@ -43,9 +43,9 @@
 #include <hc.hpp>
 #include "src/common/time_measurement/time_measurement_impl.h"
 
-void BeHcBenchmark::Initialize() { 
-	BeBenchmark::Initialize(); 
-	timer_ = new TimeMeasurementImpl();
+void BeHcBenchmark::Initialize() {
+  BeBenchmark::Initialize();
+  timer_ = new TimeMeasurementImpl();
 }
 
 void BeHcBenchmark::Run() {
@@ -68,7 +68,9 @@ void BeHcBenchmark::CollaborativeRun() {
   foreground.resize(num_pixels);
 
   // Initialize background
+  timer_->Start();
   decoding = nextFrame();
+  timer_->End({"Decoding"});
   frames.push_back(decoding);
   for (int i = 0; i < num_pixels; i++) {
     background_[i] = static_cast<float>(decoding[i]);
@@ -88,6 +90,7 @@ void BeHcBenchmark::CollaborativeRun() {
     // Extracting
     if (extracting != NULL) {
       hc::array_view<uint8_t, 1> av_frame(num_pixels, extracting);
+      timer_->Start();
       av_foreground.discard_data();
       hc::parallel_for_each(
           acc_view, hc::extent<1>(num_pixels), [=](hc::index<1> j)[[hc]] {
@@ -106,21 +109,28 @@ void BeHcBenchmark::CollaborativeRun() {
             background[j] = background[j] * (1 - alpha) + av_frame[j] * alpha;
           });
     }
+    timer_->End({"Kernel Launch"});
 
-    // encoding
+    // Encoding
+    timer_->Start();
     if (encoding != NULL) {
       cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, encoding,
                            cv::Mat::AUTO_STEP);
       video_writer_ << output_frame;
     }
+    timer_->End({"Encoding"});
 
     // Decoding
+    timer_->Start();
     decoding = nextFrame();
     frames.push_back(decoding);
+    timer_->End({"Decoding"});
 
     // Extracting done
+    timer_->Start();
     av_foreground.synchronize();
-	delete[] extracting;
+    timer_->End({"Kernel Wait"});
+    delete[] extracting;
     encoding = foreground.data();
     extracting = decoding;
   }
@@ -147,7 +157,9 @@ void BeHcBenchmark::NormalRun() {
   foreground.resize(num_pixels);
 
   // Initialize background
+  timer_->Start();
   uint8_t *frame = nextFrame();
+  timer_->End({"Decoding"});
   frames.push_back(frame);
   for (int i = 0; i < num_pixels; i++) {
     background_[i] = static_cast<float>(frame[i]);
@@ -160,7 +172,7 @@ void BeHcBenchmark::NormalRun() {
   hc::accelerator_view acc_view = hc::accelerator().get_default_view();
 
   for (uint64_t i = 0; i < num_frames_; i++) {
-	timer_->Start();
+    timer_->Start();
     hc::array_view<uint8_t, 1> av_foreground(num_pixels, foreground);
     hc::array_view<uint8_t, 1> av_frame(num_pixels, frame);
 
@@ -181,20 +193,20 @@ void BeHcBenchmark::NormalRun() {
           }
           background[j] = background[j] * (1 - alpha) + av_frame[j] * alpha;
         });
-	av_frame.discard_data();
+    av_frame.discard_data();
     av_foreground.synchronize();
-	timer_->End({"Kernel"});
+    timer_->End({"Kernel"});
 
-	timer_->Start();
+    timer_->Start();
     cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground.data(),
                          cv::Mat::AUTO_STEP);
     video_writer_ << output_frame;
-	timer_->End({"Encoding"});
-	
-	timer_->Start();
-	delete[] frame;
+    timer_->End({"Encoding"});
+
+    timer_->Start();
+    delete[] frame;
     frame = nextFrame();
-	timer_->End({"Decoding"});
+    timer_->End({"Decoding"});
     // frames.push_back(frame);
   }
 
@@ -206,11 +218,11 @@ void BeHcBenchmark::NormalRun() {
 }
 
 void BeHcBenchmark::Summarize() {
-	timer_->Summarize();
-	BeBenchmark::Summarize();
+  timer_->Summarize();
+  BeBenchmark::Summarize();
 }
 
-void BeHcBenchmark::Cleanup() { 
-	delete timer_;
-	BeBenchmark::Cleanup(); 
+void BeHcBenchmark::Cleanup() {
+  delete timer_;
+  BeBenchmark::Cleanup();
 }

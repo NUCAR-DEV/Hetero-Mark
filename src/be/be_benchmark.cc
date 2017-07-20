@@ -51,20 +51,14 @@ void BeBenchmark::Initialize() {
   height_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_HEIGHT));
   channel_ = 3;
   num_frames_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_COUNT));
-  // printf("width %d, height %d, channel %d, num_frames %d\n",
-  //     width_, height_, channel_, num_frames_);
-  //
 
-  int codec = CV_FOURCC('M', 'J', 'P', 'G');
+  int codec = CV_FOURCC('H', '2', '6', '4');
   video_writer_.open("gpu_output.avi", codec, video_.get(CV_CAP_PROP_FPS),
                      cv::Size(width_, height_), true);
   cpu_video_writer_.open("cpu_output.avi", codec, video_.get(CV_CAP_PROP_FPS),
                          cv::Size(width_, height_), true);
 
-  foreground_.resize((uint64_t)width_ * height_ * channel_ * num_frames_);
   background_.resize(width_ * height_ * channel_);
-
-  // collaborative_execution_ = true;
 }
 
 uint8_t *BeBenchmark::nextFrame() {
@@ -121,7 +115,6 @@ void BeBenchmark::Verify() {
 	}
 	frame = image.ptr();
     frame_count++;
-    // frame = nextFrame();
   }
   cpu_video_writer_.release();
 
