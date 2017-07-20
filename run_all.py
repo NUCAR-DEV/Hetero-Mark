@@ -136,6 +136,7 @@ def run():
             print(executable_name, 'not found, skip.')
             continue;
 
+        print("Runing", executable_name, *benchmark[2])
         validate = verify(benchmark)
         if not validate:
             continue
@@ -165,7 +166,6 @@ def run_benchmark(benchmark):
     cwd = build_folder + 'src/' + benchmark[0] + '/' + benchmark[1] + '/'
     executable_full_path = cwd + executable_name
 
-    print("Benchmarking ", executable_name, ": ", sep='', end='')
     sys.stdout.flush()
 
     perf = []
