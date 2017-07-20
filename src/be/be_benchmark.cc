@@ -96,6 +96,12 @@ void BeBenchmark::CpuRun() {
   // Run on CPU
   uint64_t frame_count = 0;
   while (true) {
+    if (!video_.read(image)) {
+      break;
+    }
+    frame = image.ptr();
+    frame_count++;
+
     printf("Frame %lu\n", frame_count);
     for (int i = 0; i < num_pixels; i++) {
       uint8_t diff = 0;
@@ -115,12 +121,6 @@ void BeBenchmark::CpuRun() {
     cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3,
                          cpu_foreground_.data(), cv::Mat::AUTO_STEP);
     cpu_video_writer_ << output_frame;
-
-    if (!video_.read(image)) {
-      break;
-    }
-    frame = image.ptr();
-    frame_count++;
   }
   cpu_video_writer_.release();
 }
@@ -128,10 +128,10 @@ void BeBenchmark::CpuRun() {
 void BeBenchmark::Match() {
   uint32_t num_bytes = width_ * height_ * channel_;
   for (uint32_t i = 0; i < num_bytes; i++) {
-	  if (cpu_foreground_ != foreground_) {
-		  printf("Mismatch in byte %u", i);
-		  exit(-1);
-	  }
+    if (cpu_foreground_ != foreground_) {
+      printf("Mismatch in byte %u", i);
+      exit(-1);
+    }
   }
   printf("Passed!");
 }
