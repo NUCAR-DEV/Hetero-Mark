@@ -62,10 +62,14 @@ class BeBenchmark : public Benchmark {
   cv::VideoWriter cpu_video_writer_;
 
   std::vector<float> background_;
+  std::vector<uint8_t> foreground_;
+  std::vector<uint8_t> cpu_foreground_;
 
   float alpha_ = 0.03;
 
   uint8_t *nextFrame();
+
+  void CpuRun();
 
  public:
   void Initialize() override;
