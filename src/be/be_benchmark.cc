@@ -59,6 +59,7 @@ void BeBenchmark::Initialize() {
                          cv::Size(width_, height_), true);
 
   background_.resize(width_ * height_ * channel_);
+  foreground_.resize(width_ * height_ * channel_);
 }
 
 uint8_t *BeBenchmark::nextFrame() {
@@ -76,32 +77,7 @@ uint8_t *BeBenchmark::nextFrame() {
 
 void BeBenchmark::Verify() {
   CpuRun();
-
-  // Match
-  int num_pixels = width_ * height_ * channel_;
-  bool has_error = false;
-  cv::VideoCapture cpu_video;
-  cv::VideoCapture gpu_video;
-  cv::Mat cpu_frame;
-  cv::Mat gpu_frame;
-  if (!cpu_video.open("cpu_output.avi") || !gpu_video.open("gpu_output.avi")) {
-    printf("Failed to open verification video.\n");
-    return;
-  }
-  for (uint64_t i = 0; i < num_frames_; i++) {
-    cpu_video.read(cpu_frame);
-    gpu_video.read(gpu_frame);
-    for (int64_t j = 0; j < num_pixels; j++) {
-      if (cpu_frame.data[j] != gpu_frame.data[j]) {
-        printf("Frame %lu mismatch.\n", i);
-        has_error = true;
-        return;
-      }
-    }
-  }
-  if (!has_error) {
-    printf("Passed!\n");
-  }
+  Match();
 }
 
 void BeBenchmark::CpuRun() {
@@ -147,6 +123,17 @@ void BeBenchmark::CpuRun() {
     frame_count++;
   }
   cpu_video_writer_.release();
+}
+
+void BeBenchmark::Match() {
+  uint32_t num_bytes = width_ * height_ * channel_;
+  for (uint32_t i = 0; i < num_bytes; i++) {
+	  if (cpu_foreground_ != foreground_) {
+		  printf("Mismatch in byte %u", i);
+		  exit(-1);
+	  }
+  }
+  printf("Passed!");
 }
 
 void BeBenchmark::Summarize() {}

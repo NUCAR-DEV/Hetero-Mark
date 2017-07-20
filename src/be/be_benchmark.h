@@ -70,6 +70,7 @@ class BeBenchmark : public Benchmark {
   uint8_t *nextFrame();
 
   void CpuRun();
+  void Match();
 
  public:
   void Initialize() override;

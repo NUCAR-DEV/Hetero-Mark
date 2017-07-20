@@ -83,6 +83,11 @@ def parse_args():
             Setting this argument will skip the compilation process. This is 
             useful if you have the compiled with this script before.
             """)
+    parser.add_argument("--fresh-build", action="store_true", 
+            help=
+            """
+            Remove the temp build folder and build from scratch.
+            """
     parser.add_argument("-b", "--benchmark",
             help=
             """
@@ -97,20 +102,20 @@ def compile():
 
     print("Compiling benchmark into", build_folder)
 
-    subprocess.call(['rm', '-rf', build_folder])
-    subprocess.call(['mkdir', build_folder])
+    if args.fresh_build:
+        subprocess.call(['rm', '-rf', build_folder])
+        subprocess.call(['mkdir', build_folder])
 
-    env = os.environ.copy()
-    env['CXX'] = compiler
-    compile_log = open(compile_log_filename, "w")
-    p = subprocess.Popen('cmake ' + os.getcwd(),
-        cwd=build_folder, env=env, shell=True,
-        stdout=compile_log, stderr=compile_log)
-    p.wait()
-    if p.returncode != 0:
-        print(bcolors.FAIL + "Compile failed, see", compile_log_filename,
-                "for detailed information", bcolors.ENDC)
-        exit(-1)
+        env = os.environ.copy()
+        env['CXX'] = compiler
+        compile_log = open(compile_log_filename, "w")
+        p = subprocess.Popen('cmake ' + os.getcwd(),
+            cwd=build_folder, env=env, shell=True,
+            stdout=compile_log, stderr=compile_log)
+        p.wait()
+        if p.returncode != 0:
+            print(bcolors.FAIL + "Compile failed, see", compile_log_filename, "for detailed information", bcolors.ENDC)
+            exit(-1)
 
     p = subprocess.Popen('make -j VERBOSE=1',
         cwd=build_folder, shell=True, 
