@@ -87,7 +87,7 @@ def parse_args():
             help=
             """
             Remove the temp build folder and build from scratch.
-            """
+            """)
     parser.add_argument("-b", "--benchmark",
             help=
             """
