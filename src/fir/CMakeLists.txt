@@ -2,7 +2,6 @@ set(FOLDER_NAME fir)
 set(SUBDIRECTORIES 
   cl12
   cl20
-  hsa
   hc
 )
 set(SRC_FILES

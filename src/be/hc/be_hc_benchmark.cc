@@ -61,6 +61,8 @@ void BeHcBenchmark::CollaborativeRun() {
   uint32_t num_pixels = width_ * height_ * channel_;
   uint8_t *frame = NULL;
 
+  std::thread gpuThread(&BeHcBenchmark::GPUThread, this);
+
   // Initialize background
   timer_->Start();
   frame = nextFrame();
@@ -71,25 +73,44 @@ void BeHcBenchmark::CollaborativeRun() {
 
   int frame_count = 0;
   while (true) {
-    printf("Frame %d\n", frame_count);
     frame = nextFrame();
     if (!frame) {
       break;
     }
     frame_count++;
 
-    ExtractAndEncode(frame, frame_count);
+    printf("Frame started %d\n", frame_count);
+    std::lock_guard<std::mutex> lk(queue_mutex_);
+    frame_queue_.push(frame);
+    queue_condition_variable_.notify_all();
+  }
+
+  {
+    std::lock_guard<std::mutex> lk(queue_mutex_);
+    printf("Finished.\n");
+    finished_ = true;
+  }
+  queue_condition_variable_.notify_all();
+
+  gpuThread.join();
+}
+
+void BeHcBenchmark::GPUThread() {
+  while (true) {
+    std::unique_lock<std::mutex> lk(queue_mutex_);
+    queue_condition_variable_.wait(
+        lk, [this] { return finished_ || !frame_queue_.empty(); });
+    while (!frame_queue_.empty()) {
+      ExtractAndEncode(frame_queue_.front());
+      frame_queue_.pop();
+    }
+    if (finished_) break;
   }
 }
 
-void BeHcBenchmark::ExtractAndEncode(uint8_t *frame, uint32_t frame_id) {
+void BeHcBenchmark::ExtractAndEncode(uint8_t *frame) {
+  printf("Extracting frame\n");
   uint32_t num_pixels = width_ * height_ * channel_;
-
-  while (true) {
-    if (extract_completed_ == frame_id - 1) {
-      break;
-    }
-  }
 
   float alpha = alpha_;
   uint8_t threshold = threshold_;
@@ -117,6 +138,7 @@ void BeHcBenchmark::ExtractAndEncode(uint8_t *frame, uint32_t frame_id) {
         background[j] = background[j] * (1 - alpha) + av_frame[j] * alpha;
       });
   av_foreground.synchronize();
+  av_frame.discard_data();
 
   if (generate_output_) {
     cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground_.data(),
@@ -125,7 +147,6 @@ void BeHcBenchmark::ExtractAndEncode(uint8_t *frame, uint32_t frame_id) {
   }
 
   delete[] frame;
-  extract_completed_++;
 }
 
 void BeHcBenchmark::NormalRun() {

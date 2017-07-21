@@ -9,7 +9,6 @@ include(ExternalProject)
 include(HCC)
 include(StyleCheck)
 include(OpenCL)
-include(HSA)
 
 set(FOLDER_NAME Hetero-Mark)
 
