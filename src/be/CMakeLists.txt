@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.2)
 set(FOLDER_NAME be)
 set(SUBDIRECTORIES 
   hc
+  cuda
 )
 set(SRC_FILES
   be_benchmark.cc

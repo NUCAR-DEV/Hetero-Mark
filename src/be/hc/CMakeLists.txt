@@ -9,21 +9,10 @@ set(SRC_FILES
 set(HEADER_FILES 
   be_hc_benchmark.h
 )
-set(TEST_FILES
-)
 set(EXTRA_FILES 
 )
 
 if (COMPILE_HCC)
-
-  # Unit test
-  if (${TEST_FILES})
-    add_executable(${FOLDER_NAME}_unittest ${TEST_FILES} ${SRC_FILES} ${HEADER_FILES})
-    target_link_libraries(${FOLDER_NAME}_unittest gtest gtest_main)
-    add_test(${FOLDER_NAME}_unittest ${FOLDER_NAME}_unittest)
-  endif (${TEST_FILES})
-
-
   if (OpenCV_FOUND)
     add_executable(${FOLDER_NAME} ${SRC_FILES})
     target_link_libraries(${FOLDER_NAME} 
@@ -32,5 +21,4 @@ if (COMPILE_HCC)
       COMPILE_FLAGS ${COMPILER_FLAGS}
       LINK_FLAGS ${LINKER_FLAGS})
   endif(OpenCV_FOUND)
-
 endif (COMPILE_HCC)
