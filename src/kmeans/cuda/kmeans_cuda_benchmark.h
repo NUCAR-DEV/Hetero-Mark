@@ -42,7 +42,7 @@ class KmeansCudaBenchmark : public KmeansBenchmark {
   float *device_features_;
   float *device_features_swap;
   int   *device_membership_;
-  int   *device_clusters_;
+  float *device_clusters_;
 
   void InitializeBuffers();
 

@@ -112,7 +112,7 @@ void KmeansBenchmark::Verify() {
 
   delete[] membership_;
 
-  if (cpu_min_rmse_ == min_rmse_) {
+  if (abs(cpu_min_rmse_ -  min_rmse_) < cpu_min_rmse_ * 0.001) {
     printf("Passed! (%f)\n", min_rmse_);
   } else {
     printf("Failed! Expected to be %f, but got %f\n", cpu_min_rmse_, min_rmse_);
@@ -130,7 +130,7 @@ void KmeansBenchmark::DumpClusterCentroids(unsigned num_clusters) {
   for (uint32_t i = 0; i < num_clusters; i++) {
     printf("Centroid[%d]: ", i);
     for (uint32_t j = 0; j < num_features_; j++) {
-      printf("%.0f, ", clusters_[i * num_features_ + j]);
+      printf("%.2f, ", clusters_[i * num_features_ + j]);
     }
     printf("\n");
   }
@@ -209,7 +209,6 @@ void KmeansBenchmark::UpdateClusterCentroids(unsigned num_clusters) {
     }
   }
 
-  DumpClusterCentroids(num_clusters);
   delete[] member_count;
 }
 
@@ -220,8 +219,6 @@ void KmeansBenchmark::InitializeClusters(unsigned num_clusters) {
   //
   for (unsigned i = 0; i < num_clusters * num_features_; i++)
     clusters_[i] = host_features_[i];
-
-  DumpClusterCentroids(num_clusters);
 }
 
 void KmeansBenchmark::InitializeMembership() {

@@ -73,6 +73,7 @@ gtest
 
 # Data file
 data 
+data/
 data.tar.gz
 
 # Auto benchmarking

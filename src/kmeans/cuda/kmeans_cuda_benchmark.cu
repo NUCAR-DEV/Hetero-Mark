@@ -51,10 +51,11 @@ __global__ void kmeans_swap_cuda(float *feature, float *feature_swap,
     feature_swap[i * npoints + tid] = feature[tid * nfeatures + i];
 }
 
-__global__ void kmeans_compute_cuda(float *feature, int *clusters,
+__global__ void kmeans_compute_cuda(float *feature, float *clusters,
                                     int *membership, int npoints, int nclusters,
                                     int nfeatures, int offset, int size) {
-  uint point_id = blockIdx.x * blockDim.x + threadIdx.x;
+  int point_id = blockIdx.x * blockDim.x + threadIdx.x;
+
   int index = 0;
   if (point_id < npoints) {
     float min_dist = FLT_MAX;
@@ -62,10 +63,6 @@ __global__ void kmeans_compute_cuda(float *feature, int *clusters,
       float dist = 0;
       float ans = 0;
       for (int l = 0; l < nfeatures; l++) {
-        /* printf("point %d, feature %d, value %f\n", point_id, l,  */
-        /*         feature[l * npoints+ point_id]); */
-        printf("cluster %d, feature %d, cluster ptr %p, offset %d, value %f\n",
-               i, l, clusters, i * nfeatures + l, clusters[i * nfeatures + l]);
         ans += (feature[l * npoints + point_id] - clusters[i * nfeatures + l]) *
                (feature[l * npoints + point_id] - clusters[i * nfeatures + l]);
       }
@@ -77,15 +74,12 @@ __global__ void kmeans_compute_cuda(float *feature, int *clusters,
       }
     }
     membership[point_id] = index;
-    /* printf("point %d, membership %d, min_dist %f\n", point_id, index,
-     * min_dist); */
   }
 
   return;
 }
 
 void KmeansCudaBenchmark::Initialize() {
-  printf("Init");
   KmeansBenchmark::Initialize();
 
   InitializeBuffers();
@@ -99,7 +93,7 @@ void KmeansCudaBenchmark::InitializeBuffers() {
 }
 
 void KmeansCudaBenchmark::CreateTemporaryMemory() {
-  cudaMalloc(&device_clusters_, num_clusters_ * sizeof(int));
+  cudaMalloc(&device_clusters_, num_clusters_ * num_features_ * sizeof(float));
 }
 
 void KmeansCudaBenchmark::FreeTemporaryMemory() { cudaFree(device_clusters_); }
@@ -120,8 +114,7 @@ void KmeansCudaBenchmark::Clustering() {
 
     float rmse = CalculateRMSE();
     if (rmse < min_rmse_) {
-      min_rmse_ = rmse;
-      best_num_clusters_ = num_clusters_;
+      min_rmse_ = rmse; best_num_clusters_ = num_clusters_;
     }
     FreeTemporaryMemory();
   }
@@ -142,11 +135,11 @@ void KmeansCudaBenchmark::TransposeFeatures() {
 
   cudaDeviceSynchronize();
 
-  float *trans_result = new float[num_points_ * num_features_];
-
-  cudaMemcpy(trans_result, device_features_swap,
-             num_points_ * num_features_ * sizeof(float),
-             cudaMemcpyDeviceToHost);
+  /* float *trans_result = new float[num_points_ * num_features_]; */
+  /*  */
+  /* cudaMemcpy(trans_result, device_features_swap, */
+  /*            num_points_ * num_features_ * sizeof(float), */
+  /*            cudaMemcpyDeviceToHost); */
 }
 
 void KmeansCudaBenchmark::KmeansClustering(unsigned num_clusters) {
@@ -166,7 +159,7 @@ void KmeansCudaBenchmark::KmeansClustering(unsigned num_clusters) {
     UpdateMembership(num_clusters);
     UpdateClusterCentroids(num_clusters);
     num_iteration++;
-  } while ((delta_ > 0) && (num_iteration < 1));
+  } while ((delta_ > 0) && (num_iteration < 500));
 
   printf("iterated %d times\n", num_iteration);
 }
@@ -193,6 +186,7 @@ void KmeansCudaBenchmark::UpdateMembership(unsigned num_clusters) {
 
   cudaMemcpy(new_membership, device_membership_, num_points_ * sizeof(int),
              cudaMemcpyDeviceToHost);
+  cudaDeviceSynchronize();
 
   delta_ = 0.0f;
   for (unsigned int i = 0; i < num_points_; i++) {
@@ -202,6 +196,7 @@ void KmeansCudaBenchmark::UpdateMembership(unsigned num_clusters) {
       membership_[i] = new_membership[i];
     }
   }
+
 }
 
 void KmeansCudaBenchmark::Run() { Clustering(); }
