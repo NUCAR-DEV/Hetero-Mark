@@ -37,11 +37,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <algorithm>
 #include "src/ep/ep_benchmark.h"
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 void EpBenchmark::Initialize() {
   srand(kSeed);
@@ -129,8 +129,9 @@ void EpBenchmark::Select() {
 }
 
 void EpBenchmark::SelectInIsland(std::vector<Creature> &island) {
-  auto comparator =
-      [](Creature &a, Creature &b) { return b.fitness < a.fitness; };
+  auto comparator = [](const Creature &a, const Creature &b) {
+    return b.fitness < a.fitness;
+  };
 
   std::sort(island.begin(), island.end(), comparator);
   for (int i = 0; i < kNumEliminate / 2; i++) {

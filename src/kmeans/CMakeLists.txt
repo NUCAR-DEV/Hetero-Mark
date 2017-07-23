@@ -4,6 +4,7 @@ set(SUBDIRECTORIES
   cl12
   cl20
   hc
+  cuda
 )
 set(SRC_FILES
   kmeans_benchmark.cc

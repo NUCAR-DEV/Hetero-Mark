@@ -37,13 +37,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
+#include "src/kmeans/kmeans_benchmark.h"
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include "src/kmeans/kmeans_benchmark.h"
 
 void KmeansBenchmark::Initialize() {
   std::ifstream file(filename_);
@@ -116,6 +116,7 @@ void KmeansBenchmark::Verify() {
     printf("Passed! (%f)\n", min_rmse_);
   } else {
     printf("Failed! Expected to be %f, but got %f\n", cpu_min_rmse_, min_rmse_);
+	exit(-1);
   }
 }
 
@@ -158,8 +159,9 @@ void KmeansBenchmark::UpdateMembershipCpu(unsigned num_clusters) {
     for (uint32_t j = 0; j < num_clusters; j++) {
       float dist = 0;
       for (uint32_t k = 0; k < num_features_; k++) {
-        dist += pow(host_features_[i * num_features_ + k] - 
-            clusters_[j * num_features_ + k], 2);
+        dist += pow(host_features_[i * num_features_ + k] -
+                        clusters_[j * num_features_ + k],
+                    2);
       }
 
       if (dist < min_dist) {
@@ -198,8 +200,7 @@ void KmeansBenchmark::UpdateClusterCentroids(unsigned num_clusters) {
       clusters_[index_cluster] += host_features_[index_feature];
     }
     member_count[membership_[i]]++;
-  }
-
+  } 
   // For each cluster, divide by the number of points in the cluster
   for (unsigned i = 0; i < num_clusters; i++) {
     for (unsigned j = 0; j < num_features_; j++) {
@@ -208,7 +209,7 @@ void KmeansBenchmark::UpdateClusterCentroids(unsigned num_clusters) {
     }
   }
 
-  // DumpClusterCentroids(num_clusters);
+  DumpClusterCentroids(num_clusters);
   delete[] member_count;
 }
 
@@ -219,6 +220,8 @@ void KmeansBenchmark::InitializeClusters(unsigned num_clusters) {
   //
   for (unsigned i = 0; i < num_clusters * num_features_; i++)
     clusters_[i] = host_features_[i];
+
+  DumpClusterCentroids(num_clusters);
 }
 
 void KmeansBenchmark::InitializeMembership() {

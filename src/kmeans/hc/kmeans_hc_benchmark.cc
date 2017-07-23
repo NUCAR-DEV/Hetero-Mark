@@ -38,37 +38,35 @@
  */
 
 #include "src/kmeans/hc/kmeans_hc_benchmark.h"
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <hcc/hc.hpp>
 
-void KmeansHcBenchmark::Initialize() {
-  KmeansBenchmark::Initialize();
-}
+void KmeansHcBenchmark::Initialize() { KmeansBenchmark::Initialize(); }
 
-void KmeansHcBenchmark::TransposeFeatures() {
-}
+void KmeansHcBenchmark::TransposeFeatures() {}
 
 void KmeansHcBenchmark::UpdateMembership(unsigned num_clusters) {
   int *new_membership = new int[num_points_];
   hc::array_view<int, 1> av_membership(num_points_, new_membership);
-  hc::array_view<float, 1> av_features(num_points_ * num_features_, host_features_);
+  hc::array_view<float, 1> av_features(num_points_ * num_features_,
+                                       host_features_);
   hc::array_view<float, 1> av_clusters(num_clusters * num_features_, clusters_);
 
   unsigned num_features = num_features_;
 
   hc::extent<1> ex(num_points_);
 
-  parallel_for_each(ex, [=](hc::index<1> i) [[hc]] {
+  parallel_for_each(ex, [=](hc::index<1> i)[[hc]] {
     float min_dist = FLT_MAX;
     int index = 0;
     for (uint32_t j = 0; j < num_clusters; j++) {
       float dist = 0;
       for (uint32_t k = 0; k < num_features; k++) {
-        float diff = av_features[i[0] * num_features + k] - 
-            av_clusters[j * num_features + k];
+        float diff = av_features[i[0] * num_features + k] -
+                     av_clusters[j * num_features + k];
         dist += diff * diff;
       }
 
@@ -92,12 +90,9 @@ void KmeansHcBenchmark::UpdateMembership(unsigned num_clusters) {
   delete[] new_membership;
 }
 
-void KmeansHcBenchmark::CreateTemporaryMemory() {
+void KmeansHcBenchmark::CreateTemporaryMemory() {}
 
-}
-
-void KmeansHcBenchmark::FreeTemporaryMemory() {
-}
+void KmeansHcBenchmark::FreeTemporaryMemory() {}
 
 void KmeansHcBenchmark::KmeansClustering(unsigned num_clusters) {
   unsigned num_iteration = 0;
@@ -119,9 +114,7 @@ void KmeansHcBenchmark::KmeansClustering(unsigned num_clusters) {
   } while ((delta_ > 0) && (num_iteration < 500));
 
   printf("iterated %d times\n", num_iteration);
-
 }
-
 
 void KmeansHcBenchmark::Clustering() {
   min_rmse_ = FLT_MAX;
