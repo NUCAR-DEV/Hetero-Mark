@@ -37,18 +37,61 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HIST_HC_HIST_HC_BENCHMARK_H_
-#define SRC_HIST_HC_HIST_HC_BENCHMARK_H_
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include "src/hist/cuda/hist_cuda_benchmark.h"
 
-#include "src/hist/hist_benchmark.h"
-#include "src/common/time_measurement/time_measurement.h"
+__global__ void Histogram(uint32_t *pixels, uint32_t *histogram,
+                          uint32_t num_colors, uint32_t num_pixels) {
+  int tid = blockIdx.x * blockDim.x + threadIdx.x;
+  int gsize = gridDim.x * blockDim.x;
 
-class HistHcBenchmark : public HistBenchmark {
- private:
- public:
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
+  if (tid >= num_pixels) {
+    return;
+  }
 
-#endif  // SRC_HIST_HC_HIST_HC_BENCHMARK_H_
+  uint32_t priv_hist[256];
+  for (uint32_t i = 0; i < num_colors; i++) {
+    priv_hist[i] = 0;
+  }
+
+  // Private histogram
+  uint32_t index = tid;
+  while (index < num_pixels) {
+    uint32_t color = pixels[index];
+    priv_hist[color]++;
+    index += gsize;
+  }
+
+  __syncthreads();
+
+  // Copy to global memory
+  for (uint32_t i = 0; i < num_colors; i++) {
+    if (priv_hist[i] > 0) {
+      atomicAdd(histogram + i, priv_hist[i]);
+    }
+  }
+}
+
+void HistCudaBenchmark::Initialize() {
+  HistBenchmark::Initialize();
+
+  cudaMalloc(&d_pixels_, num_pixel_ * sizeof(uint32_t));
+  cudaMalloc(&d_histogram_, num_color_ * sizeof(uint32_t));
+}
+
+void HistCudaBenchmark::Run() {
+  cudaMemcpy(d_pixels_, pixels_, num_pixel_ * sizeof(uint32_t),
+             cudaMemcpyHostToDevice);
+  cudaMemset(d_histogram_, 0, num_color_ * sizeof(uint32_t));
+  Histogram<<<8192 / 64, 64>>>(d_pixels_, d_histogram_, num_color_, num_pixel_);
+  cudaMemcpy(histogram_, d_histogram_, num_color_ * sizeof(uint32_t),
+             cudaMemcpyDeviceToHost);
+}
+
+void HistCudaBenchmark::Cleanup() {
+  cudaFree(d_pixels_);
+  cudaFree(d_histogram_);
+  HistBenchmark::Cleanup();
+}

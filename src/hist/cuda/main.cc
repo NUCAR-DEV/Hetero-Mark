@@ -37,18 +37,24 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_HIST_HC_HIST_HC_BENCHMARK_H_
-#define SRC_HIST_HC_HIST_HC_BENCHMARK_H_
-
-#include "src/hist/hist_benchmark.h"
+#include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/hist/hist_command_line_options.h"
+#include "src/hist/cuda/hist_cuda_benchmark.h"
 
-class HistHcBenchmark : public HistBenchmark {
- private:
- public:
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
+int main(int argc, const char **argv) {
+  std::unique_ptr<HistCudaBenchmark> benchmark(new HistCudaBenchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
-#endif  // SRC_HIST_HC_HIST_HC_BENCHMARK_H_
+  HistCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
+
+  runner.Run();
+
+  return 0;
+}

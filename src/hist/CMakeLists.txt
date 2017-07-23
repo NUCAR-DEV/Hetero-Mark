@@ -3,6 +3,7 @@ set( SUBDIRECTORIES
   cl12
   cl20
   hc
+  cuda
 )
 set( SRC_FILES
   hist_benchmark.cc
