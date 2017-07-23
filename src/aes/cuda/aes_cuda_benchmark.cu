@@ -31,28 +31,26 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/aes/cuda/aes_cuda_benchmark.h"
 #include <cstring>
-#include <string>
 #include <memory>
+#include <string>
+#include "src/aes/cuda/aes_cuda_benchmark.h"
 
 void AesCudaBenchmark::Initialize() {
-	AesBenchmark::Initialize();
-	ExpandKey();
+  AesBenchmark::Initialize();
+  ExpandKey();
 
-        cudaMallocManaged((void**)&dev_ciphertext_, text_length_ * sizeof(uint8_t));
-        cudaMallocManaged((void**)&dev_key_,kExpandedKeyLengthInBytes);
-        cudaMallocManaged((void**)&dev_s_, 256*sizeof(uint8_t));
+  cudaMallocManaged((void **)&dev_ciphertext_, text_length_ * sizeof(uint8_t));
+  cudaMallocManaged((void **)&dev_key_, kExpandedKeyLengthInBytes);
+  cudaMallocManaged((void **)&dev_s_, 256 * sizeof(uint8_t));
 
-        memcpy(dev_ciphertext_, ciphertext_,text_length_);
-        memcpy(dev_key_, expanded_key_, kExpandedKeyLengthInBytes);
-        memcpy(dev_s_, s, 256*sizeof(uint8_t));
+  memcpy(dev_ciphertext_, ciphertext_, text_length_);
+  memcpy(dev_key_, expanded_key_, kExpandedKeyLengthInBytes);
+  memcpy(dev_s_, s, 256 * sizeof(uint8_t));
 }
 
-
-__device__ void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset) 
-{
-  uint8_t *key_bytes = (uint8_t *)(exp_key) +  16 * offset;
+__device__ void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset) {
+  uint8_t *key_bytes = (uint8_t *)(exp_key) + 16 * offset;
   state[0] ^= key_bytes[3];
   state[1] ^= key_bytes[2];
   state[2] ^= key_bytes[1];
@@ -114,9 +112,8 @@ __device__ void ShiftRowsGpu(uint8_t *state) {
   state[15] = new_state[15];
 }
 
-
 __device__ void MixColumnsGpu(uint8_t *state) {
-	 for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     uint8_t *word = state + 4 * i;
     uint8_t a[4];
     uint8_t b[4];
@@ -136,47 +133,44 @@ __device__ void MixColumnsGpu(uint8_t *state) {
   }
 }
 
+__global__ void aes_cuda(uint8_t *input, uint32_t *expanded_key, uint8_t *s) {
+  uint8_t state[16];
 
-__global__ void aes_cuda(uint8_t *input, uint32_t *expanded_key, uint8_t *s){
-        uint8_t state[16];
+  uint tid = blockIdx.x * blockDim.x + threadIdx.x;
 
-        uint tid = blockIdx.x * blockDim.x + threadIdx.x;
+  for (int i = 0; i < 16; i++) {
+    state[i] = input[tid * 16 + i];
+  }
 
-        for(int i = 0; i < 16; i++){
-                state[i] = input[tid * 16 + i];
-        }
+  AddRoundKeyGpu(state, expanded_key, 0);
 
-        AddRoundKeyGpu(state, expanded_key, 0);
+  for (int i = 1; i < 14; i++) {
+    SubBytesGpu(state, s);
+    ShiftRowsGpu(state);
+    MixColumnsGpu(state);
+    AddRoundKeyGpu(state, expanded_key, i);
+  }
 
-        for (int i = 1; i < 14; i++) {
-                SubBytesGpu(state, s);
-                ShiftRowsGpu(state);
-                MixColumnsGpu(state);
-                AddRoundKeyGpu(state, expanded_key,i);
-        }
+  SubBytesGpu(state, s);
+  ShiftRowsGpu(state);
+  AddRoundKeyGpu(state, expanded_key, 14);
 
-        SubBytesGpu(state,s);
-        ShiftRowsGpu(state);
-        AddRoundKeyGpu(state, expanded_key, 14);
-
-        for (int i = 0; i < 16; i++) {
-                input[tid * 16 + i] = state[i];
-        }
+  for (int i = 0; i < 16; i++) {
+    input[tid * 16 + i] = state[i];
+  }
 }
 
-
 void AesCudaBenchmark::Run() {
-	int num_blocks = text_length_ / 16;
+  int num_blocks = text_length_ / 16;
 
-	dim3 grid_size(static_cast<size_t> (num_blocks / 64.00));
-        dim3 block_size(64);
+  dim3 grid_size(static_cast<size_t>(num_blocks / 64.00));
+  dim3 block_size(64);
 
-        aes_cuda<<<grid_size, block_size>>>(dev_ciphertext_, dev_key_,dev_s_);
+  aes_cuda<<<grid_size, block_size>>>(dev_ciphertext_, dev_key_, dev_s_);
 
-	cudaDeviceSynchronize();
+  cudaDeviceSynchronize();
 
-	memcpy(ciphertext_,dev_ciphertext_,text_length_);
-
+  memcpy(ciphertext_, dev_ciphertext_, text_length_);
 }
 
 void AesCudaBenchmark::Cleanup() {
@@ -184,4 +178,3 @@ void AesCudaBenchmark::Cleanup() {
   cudaFree(dev_ciphertext_);
   cudaFree(dev_key_);
 }
-
