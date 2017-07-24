@@ -28,11 +28,21 @@ benchmarks = [
         '-i', os.getcwd() + '/data/aes/medium.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
+    ('aes', 'cuda', [
+        '-i', os.getcwd() + '/data/aes/medium.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+
+    
 
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4']),
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/1.mp4']),
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
+    ('be', 'cuda', ['-i', os.getcwd() + '/data/be/0.mp4']),
+    ('be', 'cuda', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
+    ('be', 'cuda', ['-i', os.getcwd() + '/data/be/1.mp4']),
+    ('be', 'cuda', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
 
     ('bs', 'hc', ['-x', '1048576']),
 
@@ -41,23 +51,27 @@ benchmarks = [
     ('fir', 'cl12', []),
     ('fir', 'cl20', []),
     ('fir', 'hc', []),
+    ('fir', 'cuda', []),
 
     ('ga', 'hc', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
+    ('ga', 'hc', ['-i', os.getcwd() + '/data/gene_alignment/medium.data', '--collaborative']),
+    ('ga', 'cuda', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
+    ('ga', 'cuda', ['-i', os.getcwd() + '/data/gene_alignment/medium.data', '--collaborative']),
 
     ('hist', 'cl12', ['-x', '1048576']),
     ('hist', 'cl20', ['-x', '1048576']),
     ('hist', 'hc', ['-x', '1048576']),
+    ('hist', 'cuda', ['-x', '1048576']),
 
     ('kmeans', 'cl12', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
     ('kmeans', 'cl20', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
     ('kmeans', 'hc', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
+    ('kmeans', 'cuda', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
 
     ('pr', 'cl12', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
     ('pr', 'cl20', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
     ('pr', 'hc', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
 ]
-compiler='/opt/rocm/bin/hcc'
-
 
 def main():
     parse_args()
@@ -91,6 +105,12 @@ def parse_args():
             Use this option to set the flags to pass to cmake. 
             Set "-DCOMPILE_CUDA=On" to enable CUDA compilation.
             """)
+    parser.add_argument("-i", "--ignore-error", action="store_true",
+            help=
+            """
+            Use this option to ignore errors in the compilation and 
+            verification process.
+            """)
     parser.add_argument("-b", "--benchmark",
             help=
             """
@@ -99,8 +119,6 @@ def parse_args():
             benchmark to run.
             """)
     args = parser.parse_args()
-
-    
 
 def compile():
     compile_log_filename = "compile_log.txt"
@@ -129,9 +147,10 @@ def compile():
     if p.returncode != 0:
         print(bcolors.FAIL + "Compile failed, see", compile_log_filename,
                 "for detailed information", bcolors.ENDC)
-        exit(-1)
-
-    print(bcolors.OKGREEN + "Compile completed." + bcolors.ENDC)
+        if not args.ignore_error:
+            exit(-1)
+    else:
+        print(bcolors.OKGREEN + "Compile completed." + bcolors.ENDC)
 
 def run():
     for benchmark in benchmarks:
