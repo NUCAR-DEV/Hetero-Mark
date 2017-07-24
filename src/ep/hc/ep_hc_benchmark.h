@@ -40,10 +40,10 @@
 #ifndef SRC_EP_HC_EP_HC_BENCHMARK_H_
 #define SRC_EP_HC_EP_HC_BENCHMARK_H_
 
-#include "src/ep/ep_benchmark.h"
 #include <hcc/hc.hpp>
 #include <hcc/hc_math.hpp>
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/ep/ep_benchmark.h"
 
 class EpHcBenchmark : public EpBenchmark {
  private:

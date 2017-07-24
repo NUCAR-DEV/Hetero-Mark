@@ -62,8 +62,8 @@ void OptionParserImpl::Parse(int argc, const char **argv) {
     // Therefore, the length must greater than 2
     if (arg.length() == 0) {
       // throw std::runtime_error(std::string("Argument size is 0"));
-	  // Empty args, skip
-	  continue;
+      // Empty args, skip
+      continue;
     } else if (arg.length() == 1) {
       throw std::invalid_argument((std::string("Invalid argument ") + arg));
     }

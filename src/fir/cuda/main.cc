@@ -41,8 +41,8 @@
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/fir/fir_command_line_options.h"
 #include "src/fir/cuda/fir_cuda_benchmark.h"
+#include "src/fir/fir_command_line_options.h"
 
 int main(int argc, const char **argv) {
   std::unique_ptr<FirCudaBenchmark> benchmark(new FirCudaBenchmark());

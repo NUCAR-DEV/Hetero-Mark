@@ -40,10 +40,10 @@
 #ifndef SRC_BE_CUDA_BE_CUDA_BENCHMARK_H_
 #define SRC_BE_CUDA_BE_CUDA_BENCHMARK_H_
 
-#include <thread>
-#include <queue>
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
+#include <queue>
+#include <thread>
 #include "src/be/be_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
@@ -53,10 +53,10 @@ class BeCudaBenchmark : public BeBenchmark {
   void CollaborativeRun();
 
   TimeMeasurement *timer_;
-  
+
   float *d_bg_;
   uint8_t *d_fg_;
- 
+
   std::mutex queue_mutex_;
   std::condition_variable queue_condition_variable_;
   std::queue<uint8_t *> frame_queue_;

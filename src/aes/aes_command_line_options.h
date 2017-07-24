@@ -42,8 +42,8 @@
 #define SRC_AES_AES_COMMAND_LINE_OPTIONS_H_
 
 #include <string>
-#include "src/common/command_line_option/benchmark_command_line_options.h"
 #include "src/aes/aes_benchmark.h"
+#include "src/common/command_line_option/benchmark_command_line_options.h"
 
 class AesCommandLineOptions : public BenchmarkCommandLineOptions {
  public:

@@ -40,13 +40,14 @@
 #ifndef SRC_HIST_CUDA_HIST_CUDA_BENCHMARK_H_
 #define SRC_HIST_CUDA_HIST_CUDA_BENCHMARK_H_
 
-#include "src/hist/hist_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/hist/hist_benchmark.h"
 
 class HistCudaBenchmark : public HistBenchmark {
  private:
   uint32_t *d_pixels_;
   uint32_t *d_histogram_;
+
  public:
   void Initialize() override;
   void Run() override;

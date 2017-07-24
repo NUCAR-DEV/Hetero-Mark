@@ -37,9 +37,9 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
-#include <cstdio>
 #include "src/hist/hist_benchmark.h"
+#include <cstdio>
+#include <cstdlib>
 
 void HistBenchmark::Initialize() {
   pixels_ = new uint32_t[num_pixel_];

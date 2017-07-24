@@ -40,8 +40,8 @@
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/pr/pr_command_line_options.h"
 #include "src/pr/cl20/pr_cl20_benchmark.h"
+#include "src/pr/pr_command_line_options.h"
 
 int main(int argc, const char **argv) {
   std::unique_ptr<PrCl20Benchmark> benchmark(new PrCl20Benchmark());

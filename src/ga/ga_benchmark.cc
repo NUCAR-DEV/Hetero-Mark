@@ -37,13 +37,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
-#include <cstdio>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <climits>
 #include "src/ga/ga_benchmark.h"
+#include <climits>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <string>
 
 void GaBenchmark::Initialize() {
   std::ifstream input(input_file_);
@@ -81,15 +81,15 @@ void GaBenchmark::Verify() {
 
   if (matches_.size() != cpu_matches_.size()) {
     fprintf(stderr, "Number of matches found by GPU %lu, by CPU %lu.\n",
-        matches_.size(), cpu_matches_.size());
+            matches_.size(), cpu_matches_.size());
     exit(-1);
   }
   printf("Passed!\n");
 }
 
 void GaBenchmark::CoarseMatch() {
-  uint32_t max_searchable_length = target_sequence_.length() 
-      - coarse_match_length_;
+  uint32_t max_searchable_length =
+      target_sequence_.length() - coarse_match_length_;
   for (uint32_t i = 0; i < max_searchable_length; i++) {
     if (CoarseMatchAtTargetPosition(i)) {
       coarse_match_position_.push_back(i);
@@ -98,8 +98,8 @@ void GaBenchmark::CoarseMatch() {
 }
 
 bool GaBenchmark::CoarseMatchAtTargetPosition(int target_index) {
-  uint32_t max_searchable_length = query_sequence_.length() 
-    - coarse_match_length_;
+  uint32_t max_searchable_length =
+      query_sequence_.length() - coarse_match_length_;
   for (uint32_t i = 0; i <= max_searchable_length; i++) {
     uint32_t distance =
         HammingDistance(target_sequence_.c_str() + target_index,
@@ -111,7 +111,7 @@ bool GaBenchmark::CoarseMatchAtTargetPosition(int target_index) {
 }
 
 uint32_t GaBenchmark::HammingDistance(const char *seq1, const char *seq2,
-                                 int length) {
+                                      int length) {
   uint32_t distance = 0;
   for (int i = 0; i < length; i++) {
     if (seq1[i] != seq2[i]) distance++;

@@ -37,12 +37,12 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cmath>
-#include <cstdlib>
-#include <cstdio>
-#include <iostream>
-#include <iomanip>
 #include "src/bs/bs_benchmark.h"
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <iomanip>
+#include <iostream>
 
 float BsBenchmark::Phi(float X) {
   float y, absX, t;
@@ -177,7 +177,7 @@ void BsBenchmark::Verify() {
 void BsBenchmark::Summarize() {
   // Print the input size
   std::cout << "The number of elements are extended from " << num_elements_
-            << " to " << num_tiles_ *tile_size_ << " so it fits in blocks of "
+            << " to " << num_tiles_ * tile_size_ << " so it fits in blocks of "
             << GetWorkGroupSize() << std::endl;
 
   // Print the input random elements

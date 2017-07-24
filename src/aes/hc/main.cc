@@ -40,12 +40,12 @@
 
 #include <cstdlib>
 #include <string>
-#include "src/aes/hc/aes_hc_benchmark.h"
 #include "src/aes/aes_command_line_options.h"
+#include "src/aes/hc/aes_hc_benchmark.h"
 #include "src/common/benchmark/benchmark_runner.h"
+#include "src/common/command_line_option/command_line_option.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/common/command_line_option/command_line_option.h"
 
 int main(int argc, char const *argv[]) {
   std::unique_ptr<AesHcBenchmark> benchmark(new AesHcBenchmark());

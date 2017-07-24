@@ -36,12 +36,10 @@
 #include <cstring>
 #include <hcc/hc.hpp>
 
-void AesHcBenchmark::Initialize() {
-  AesBenchmark::Initialize();
-}
+void AesHcBenchmark::Initialize() { AesBenchmark::Initialize(); }
 
-void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset) [[hc]] {
-  uint8_t *key_bytes = (uint8_t *)(exp_key) +  16 * offset;
+void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset)[[hc]] {
+  uint8_t *key_bytes = (uint8_t *)(exp_key) + 16 * offset;
   state[0] ^= key_bytes[3];
   state[1] ^= key_bytes[2];
   state[2] ^= key_bytes[1];
@@ -60,13 +58,13 @@ void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset) [[hc]] {
   state[15] ^= key_bytes[12];
 }
 
-void SubBytesGpu(uint8_t *state, uint8_t *s) [[hc]] {
+void SubBytesGpu(uint8_t *state, uint8_t *s)[[hc]] {
   for (int i = 0; i < 16; i++) {
     state[i] = s[state[i]];
   }
 }
 
-void ShiftRowsGpu(uint8_t *state) [[hc]] {
+void ShiftRowsGpu(uint8_t *state)[[hc]] {
   uint8_t new_state[16];
   new_state[0] = state[0];
   new_state[1] = state[5];
@@ -103,8 +101,7 @@ void ShiftRowsGpu(uint8_t *state) [[hc]] {
   state[15] = new_state[15];
 }
 
-
-void MixColumnsGpu(uint8_t *state) [[hc]] {
+void MixColumnsGpu(uint8_t *state)[[hc]] {
   for (int i = 0; i < 4; i++) {
     uint8_t *word = state + 4 * i;
     uint8_t a[4];
@@ -125,20 +122,19 @@ void MixColumnsGpu(uint8_t *state) [[hc]] {
   }
 }
 
-
 void AesHcBenchmark::Run() {
   ExpandKey();
 
   int num_blocks = text_length_ / 16;
   hc::array_view<uint8_t, 1> av_cipher(text_length_, ciphertext_);
-  hc::array_view<uint32_t, 1> av_exp_key(kExpandedKeyLengthInWords, 
-      expanded_key_);
+  hc::array_view<uint32_t, 1> av_exp_key(kExpandedKeyLengthInWords,
+                                         expanded_key_);
   hc::array_view<uint8_t, 1> av_s(256, s);
 
   hc::extent<1> ex(num_blocks);
   hc::tiled_extent<1> tiled_ex = ex.tile(64);
-  
-  parallel_for_each(tiled_ex, [=](hc::index<1> index) [[hc]] {
+
+  parallel_for_each(tiled_ex, [=](hc::index<1> index)[[hc]] {
     uint8_t state[16];
 
     for (int i = 0; i < 16; i++) {
@@ -161,8 +157,6 @@ void AesHcBenchmark::Run() {
     for (int i = 0; i < 16; i++) {
       av_cipher[index[0] * 16 + i] = state[i];
     }
-   
+
   });
 }
-
-

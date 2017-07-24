@@ -40,8 +40,8 @@
 #ifndef SRC_PR_HC_PR_HC_BENCHMARK_H_
 #define SRC_PR_HC_PR_HC_BENCHMARK_H_
 
-#include "src/pr/pr_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/pr/pr_benchmark.h"
 
 class PrHcBenchmark : public PrBenchmark {
  private:

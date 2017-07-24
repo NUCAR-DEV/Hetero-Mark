@@ -40,8 +40,8 @@
 #ifndef SRC_KMEANS_HC_KMEANS_HC_BENCHMARK_H_
 #define SRC_KMEANS_HC_KMEANS_HC_BENCHMARK_H_
 
-#include "src/kmeans/kmeans_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/kmeans/kmeans_benchmark.h"
 
 class KmeansHcBenchmark : public KmeansBenchmark {
  private:

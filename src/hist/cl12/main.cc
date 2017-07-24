@@ -40,8 +40,8 @@
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/hist/hist_command_line_options.h"
 #include "src/hist/cl12/hist_cl12_benchmark.h"
+#include "src/hist/hist_command_line_options.h"
 
 int main(int argc, const char **argv) {
   std::unique_ptr<HistCl12Benchmark> benchmark(new HistCl12Benchmark());

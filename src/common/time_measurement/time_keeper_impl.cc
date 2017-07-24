@@ -38,9 +38,9 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <stdexcept>
-#include <memory>
 #include "src/common/time_measurement/time_keeper_impl.h"
+#include <memory>
+#include <stdexcept>
 
 TimeKeeperImpl::Iterator::Iterator(
     std::map<std::string, double>::iterator begin,

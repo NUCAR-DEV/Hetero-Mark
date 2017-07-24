@@ -41,17 +41,16 @@
 #ifndef SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
 #define SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
 
-#include "src/fir/fir_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/fir/fir_benchmark.h"
 
 class FirCudaBenchmark : public FirBenchmark {
  private:
- 
   float *input_buffer_ = nullptr;
   float *output_buffer_ = nullptr;
   float *coeff_buffer_ = nullptr;
   float *history_buffer_ = nullptr;
- 
+
   void InitializeData();
   void InitializeBuffers();
 

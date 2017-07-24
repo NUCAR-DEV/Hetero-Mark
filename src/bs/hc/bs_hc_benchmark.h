@@ -45,8 +45,7 @@
 
 class BsHcBenchmark : public BsBenchmark {
  private:
-
-  float Phi(float x) [[hc]];
+  float Phi(float x)[[hc]];
 
  public:
   void Initialize() override;

@@ -39,9 +39,9 @@
  */
 
 #include "src/fir/hc/fir_hc_benchmark.h"
-#include <hc.hpp>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
+#include <hc.hpp>
 
 void FirHcBenchmark::Initialize() {
   FirBenchmark::Initialize();
@@ -51,7 +51,6 @@ void FirHcBenchmark::Initialize() {
   for (unsigned int i = 0; i < num_tap_; i++) {
     history_[i] = 0.0;
   }
-
 }
 
 void FirHcBenchmark::Run() {
@@ -65,17 +64,16 @@ void FirHcBenchmark::Run() {
 
   for (unsigned int i = 0; i < num_block_; i++) {
     hc::extent<1> ex(num_data_per_block);
-    hc::parallel_for_each(ex,
-      [=](hc::index<1> j) [[hc]] {
-        uint32_t id = i * num_data_per_block + j[0];
-        float sum = 0;
-        for (uint32_t k = 0; k < num_tap; k++) {
-          if (id >=  k) {
-            sum = sum + av_coeff[k] * av_input[id - k];
-          }
+    hc::parallel_for_each(ex, [=](hc::index<1> j)[[hc]] {
+      uint32_t id = i * num_data_per_block + j[0];
+      float sum = 0;
+      for (uint32_t k = 0; k < num_tap; k++) {
+        if (id >= k) {
+          sum = sum + av_coeff[k] * av_input[id - k];
         }
-        av_output[id] = sum;
-      });
+      }
+      av_output[id] = sum;
+    });
     av_output.synchronize();
   }
 }

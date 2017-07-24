@@ -38,12 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <iostream>
 #include "src/common/command_line_option/option_setting_help_printer.h"
+#include <iostream>
 
 void OptionSettingHelpPrinter::Print(std::ostream *ostream) {
   // Print program information
-  (*ostream) << "\n" << option_setting_->GetProgramName() << "\n"
+  (*ostream) << "\n"
+             << option_setting_->GetProgramName() << "\n"
              << option_setting_->GetProgramDescription() << "\n\n";
 
   // Print argument information

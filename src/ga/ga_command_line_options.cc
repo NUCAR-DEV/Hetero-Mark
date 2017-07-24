@@ -47,8 +47,8 @@ void GaCommandLineOptions::RegisterOptions() {
 
   command_line_option_.AddArgument("InputFile", "string", "", "-i",
                                    "--input-file", "The input file.");
-  command_line_option_.AddArgument("Collaborative", "bool", "false",
-                                   "", "--collaborative", 
+  command_line_option_.AddArgument("Collaborative", "bool", "false", "",
+                                   "--collaborative",
                                    "Enable CPU GPU collaborative execution.");
 }
 
@@ -56,7 +56,8 @@ void GaCommandLineOptions::Parse(int argc, const char *argv[]) {
   BenchmarkCommandLineOptions::Parse(argc, argv);
 
   input_file_ = command_line_option_.GetArgumentValue("InputFile")->AsString();
-  collaborative_ = command_line_option_.GetArgumentValue("Collaborative")->AsBool();
+  collaborative_ =
+      command_line_option_.GetArgumentValue("Collaborative")->AsBool();
 }
 
 void GaCommandLineOptions::ConfigureBenchmark(GaBenchmark *benchmark) {

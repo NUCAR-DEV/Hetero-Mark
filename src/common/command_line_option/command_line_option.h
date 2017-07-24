@@ -42,9 +42,9 @@
 #define SRC_COMMON_COMMAND_LINE_OPTION_COMMAND_LINE_OPTION_H_
 
 #include <iostream>
-#include "src/common/command_line_option/option_setting.h"
-#include "src/common/command_line_option/option_parser.h"
 #include "src/common/command_line_option/argument_value.h"
+#include "src/common/command_line_option/option_parser.h"
+#include "src/common/command_line_option/option_setting.h"
 
 /**
  * A CommandLineOption is a facade for the command line argument parsing

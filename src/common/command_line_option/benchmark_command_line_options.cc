@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
 #include "src/common/command_line_option/benchmark_command_line_options.h"
+#include <cstdlib>
 
 void BenchmarkCommandLineOptions::RegisterOptions() {
   command_line_option_.AddArgument("Help", "bool", "false", "-h", "--help",

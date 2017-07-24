@@ -41,9 +41,9 @@
 #ifndef SRC_COMMON_TIME_MEASUREMENT_TIME_KEEPER_H_
 #define SRC_COMMON_TIME_MEASUREMENT_TIME_KEEPER_H_
 
+#include <memory>
 #include <string>
 #include <utility>
-#include <memory>
 
 /**
  * A TimeKeeper is responsible for keep track of how time is used

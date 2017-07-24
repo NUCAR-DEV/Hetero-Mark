@@ -40,8 +40,8 @@
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/kmeans/kmeans_command_line_options.h"
 #include "src/kmeans/cl20/kmeans_cl20_benchmark.h"
+#include "src/kmeans/kmeans_command_line_options.h"
 
 int main(int argc, const char **argv) {
   std::unique_ptr<KmeansCl20Benchmark> benchmark(new KmeansCl20Benchmark());

@@ -40,20 +40,19 @@
 #ifndef SRC_PR_CUDA_PR_CUDA_BENCHMARK_H_
 #define SRC_PR_CUDA_PR_CUDA_BENCHMARK_H_
 
-#include "src/pr/pr_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/pr/pr_benchmark.h"
 
 class PrCudaBenchmark : public PrBenchmark {
  private:
   float *page_rank_mtx_1_;
   float *page_rank_mtx_2_;
-  
+
   float *device_row_offsets;
   float *device_column_numbers;
   float *device_values;
   float *device_mtx_1;
   float *device_mtx_2;
-
 
  public:
   void Initialize() override;
@@ -62,4 +61,3 @@ class PrCudaBenchmark : public PrBenchmark {
 };
 
 #endif  // SRC_PR_CUDA_PR_CUDA_BENCHMARK_H_
-

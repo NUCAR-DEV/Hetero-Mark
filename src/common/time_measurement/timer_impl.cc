@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <time.h>
 #include "src/common/time_measurement/timer_impl.h"
+#include <time.h>
 
 double TimerImpl::GetTimeInSec() {
   struct timespec time;

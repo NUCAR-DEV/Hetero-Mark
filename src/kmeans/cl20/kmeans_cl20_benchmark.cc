@@ -29,12 +29,12 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/kmeans/cl20/kmeans_cl20_benchmark.h"
 #include <assert.h>
-#include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 #include <cstdlib>
-#include "src/kmeans/cl20/kmeans_cl20_benchmark.h"
 
 void KmeansCl20Benchmark::Initialize() {
   KmeansBenchmark::Initialize();

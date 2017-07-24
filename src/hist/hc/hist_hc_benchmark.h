@@ -40,8 +40,8 @@
 #ifndef SRC_HIST_HC_HIST_HC_BENCHMARK_H_
 #define SRC_HIST_HC_HIST_HC_BENCHMARK_H_
 
-#include "src/hist/hist_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/hist/hist_benchmark.h"
 
 class HistHcBenchmark : public HistBenchmark {
  private:

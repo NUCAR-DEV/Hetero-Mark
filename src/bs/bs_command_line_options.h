@@ -40,8 +40,8 @@
 #ifndef SRC_BS_BS_COMMAND_LINE_OPTIONS_H_
 #define SRC_BS_BS_COMMAND_LINE_OPTIONS_H_
 
-#include "src/common/command_line_option/benchmark_command_line_options.h"
 #include "src/bs/bs_benchmark.h"
+#include "src/common/command_line_option/benchmark_command_line_options.h"
 
 class BsCommandLineOptions : public BenchmarkCommandLineOptions {
  public:

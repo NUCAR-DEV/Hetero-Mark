@@ -38,10 +38,10 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
 #include "src/fir/fir_benchmark.h"
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 void FirBenchmark::Initialize() {
   num_total_data_ = num_data_per_block_ * num_block_;

@@ -114,7 +114,8 @@ void KmeansCudaBenchmark::Clustering() {
 
     float rmse = CalculateRMSE();
     if (rmse < min_rmse_) {
-      min_rmse_ = rmse; best_num_clusters_ = num_clusters_;
+      min_rmse_ = rmse;
+      best_num_clusters_ = num_clusters_;
     }
     FreeTemporaryMemory();
   }
@@ -196,7 +197,6 @@ void KmeansCudaBenchmark::UpdateMembership(unsigned num_clusters) {
       membership_[i] = new_membership[i];
     }
   }
-
 }
 
 void KmeansCudaBenchmark::Run() { Clustering(); }

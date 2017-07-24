@@ -41,8 +41,8 @@
 #ifndef SRC_AES_CL12_AES_CL12_BENCHMARK_H_
 #define SRC_AES_CL12_AES_CL12_BENCHMARK_H_
 
-#include "src/common/cl_util/cl_benchmark.h"
 #include "src/aes/aes_benchmark.h"
+#include "src/common/cl_util/cl_benchmark.h"
 
 class AesCl12Benchmark : public AesBenchmark, public ClBenchmark {
   cl_kernel kernel_;

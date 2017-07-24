@@ -38,9 +38,9 @@
  */
 
 #include "src/pr/hc/pr_hc_benchmark.h"
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstdio>
 #include <hcc/hc.hpp>
 
 void PrHcBenchmark::Initialize() {
@@ -53,8 +53,8 @@ void PrHcBenchmark::Run() {
   uint32_t i;
 
   hc::array_view<uint32_t, 1> av_row_offsets(num_nodes_ + 1, row_offsets_);
-  hc::array_view<uint32_t, 1> av_column_numbers(num_connections_, 
-      column_numbers_);
+  hc::array_view<uint32_t, 1> av_column_numbers(num_connections_,
+                                                column_numbers_);
   hc::array_view<float, 1> av_values(num_connections_, values_);
   // TODO: We can use the output vector as mtx_1
   hc::array_view<float, 1> av_mtx_1(num_nodes_, page_rank_mtx_1_);
@@ -67,7 +67,7 @@ void PrHcBenchmark::Run() {
 
   for (i = 0; i < max_iteration_; i++) {
     if (i % 2 == 0) {
-      parallel_for_each(hc::extent<1>(num_nodes_), [=](hc::index<1> i) [[hc]] {
+      parallel_for_each(hc::extent<1>(num_nodes_), [=](hc::index<1> i)[[hc]] {
         float new_value = 0;
         for (uint32_t j = av_row_offsets[i]; j < av_row_offsets[i + 1]; j++) {
           new_value += av_values[j] * av_mtx_1[av_column_numbers[j]];
@@ -75,7 +75,7 @@ void PrHcBenchmark::Run() {
         av_mtx_2[i] = new_value;
       });
     } else {
-      parallel_for_each(hc::extent<1>(num_nodes_), [=](hc::index<1> i) [[hc]] {
+      parallel_for_each(hc::extent<1>(num_nodes_), [=](hc::index<1> i)[[hc]] {
         float new_value = 0;
         for (uint32_t j = av_row_offsets[i]; j < av_row_offsets[i + 1]; j++) {
           new_value += av_values[j] * av_mtx_2[av_column_numbers[j]];
@@ -84,7 +84,7 @@ void PrHcBenchmark::Run() {
       });
     }
   }
-  
+
   if (i % 2 != 0) {
     av_mtx_1.synchronize();
     memcpy(page_rank_, page_rank_mtx_1_, num_nodes_ * sizeof(float));
@@ -92,11 +92,10 @@ void PrHcBenchmark::Run() {
     av_mtx_2.synchronize();
     memcpy(page_rank_, page_rank_mtx_2_, num_nodes_ * sizeof(float));
   }
-  
 }
 
-void PrHcBenchmark::Cleanup() { 
+void PrHcBenchmark::Cleanup() {
   delete[] page_rank_mtx_1_;
   delete[] page_rank_mtx_2_;
-  PrBenchmark::Cleanup(); 
+  PrBenchmark::Cleanup();
 }

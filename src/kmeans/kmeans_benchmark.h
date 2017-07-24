@@ -40,9 +40,9 @@
 #ifndef SRC_KMEANS_KMEANS_BENCHMARK_H_
 #define SRC_KMEANS_KMEANS_BENCHMARK_H_
 
-#include <string>
 #include <cfloat>
 #include <cmath>
+#include <string>
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 

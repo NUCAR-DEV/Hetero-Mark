@@ -38,14 +38,12 @@
  */
 
 #include "src/hist/hc/hist_hc_benchmark.h"
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <hcc/hc.hpp>
 
-void HistHcBenchmark::Initialize() {
-  HistBenchmark::Initialize();
-}
+void HistHcBenchmark::Initialize() { HistBenchmark::Initialize(); }
 
 void HistHcBenchmark::Run() {
   hc::array_view<uint32_t, 1> av_pixels(num_pixel_, pixels_);
@@ -54,11 +52,11 @@ void HistHcBenchmark::Run() {
   int num_color = num_color_;
   int num_wi = 8192;
 
-  parallel_for_each(hc::extent<1>(num_wi), [=](hc::index<1> id) [[hc]] {
+  parallel_for_each(hc::extent<1>(num_wi), [=](hc::index<1> id)[[hc]] {
     uint32_t i = id[0];
     uint32_t local_hist[256] = {0};
 
-    while(i < num_pixel) {
+    while (i < num_pixel) {
       uint32_t color = av_pixels[i];
       local_hist[color]++;
       i += num_wi;
@@ -66,14 +64,11 @@ void HistHcBenchmark::Run() {
 
     for (i = 0; i < num_color; i++) {
       if (local_hist[i] > 0) {
-         hc::atomic_fetch_add(av_hist.accelerator_pointer() + i, local_hist[i]);
+        hc::atomic_fetch_add(av_hist.accelerator_pointer() + i, local_hist[i]);
       }
     }
 
   });
-
 }
 
-void HistHcBenchmark::Cleanup() { 
-  HistBenchmark::Cleanup(); 
-}
+void HistHcBenchmark::Cleanup() { HistBenchmark::Cleanup(); }

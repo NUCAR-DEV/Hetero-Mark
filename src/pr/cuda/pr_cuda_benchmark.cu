@@ -66,14 +66,14 @@ void PrCudaBenchmark::Run() {
   memcpy(device_mtx_1, page_rank_mtx_1_, (num_nodes_) * sizeof(float));
   memcpy(device_mtx_2, page_rank_mtx_2_, (num_nodes_) * sizeof(float));
 
-  dim3  block_size(64);
-  dim3  grid_size(num_nodes_ / 64);
+  dim3 block_size(64);
+  dim3 grid_size(num_nodes_ / 64);
 
-  for(i = 0 ; i < num_nodes_; i++) {
-    device_mtx_1[i] = 1.0 / num_nodes_;  
+  for (i = 0; i < num_nodes_; i++) {
+    device_mtx_1[i] = 1.0 / num_nodes_;
   }
 
-  for(i = 0 ; i < max_iteration_; i++) {
+  for (i = 0; i < max_iteration_; i++) {
     if (i % 2 == 0) {
       pr1_cuda<<<grid_size, block_size>>>(device_row_offsets,
                                           device_column_numbers, device_values,
@@ -85,10 +85,10 @@ void PrCudaBenchmark::Run() {
                                           device_column_numbers, device_values,
                                           device_mtx_1, device_mtx_2);
     }
- }
+  }
 
-void PrCudaBenchmark::Cleanup() {
+  void PrCudaBenchmark::Cleanup() {
     delete[] page_rank_mtx_1_;
     delete[] page_rank_mtx_2_;
     PrBenchmark::Cleanup();
-}
+  }

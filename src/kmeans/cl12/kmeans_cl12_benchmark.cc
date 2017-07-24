@@ -148,7 +148,7 @@ void KmeansCl12Benchmark::TransposeFeatures() {
         (global_work_size / local_work_size + 1) * local_work_size;
 
   err = clEnqueueNDRangeKernel(cmd_queue_, kmeans_kernel_swap_, 1, NULL,
-							   &global_work_size, &local_work_size, 0, 0, 0);
+                               &global_work_size, &local_work_size, 0, 0, 0);
   checkOpenCLErrors(err, "ERROR: clEnqueueNDRangeKernel()");
 
   // std::unique_ptr<float[]> trans_result(

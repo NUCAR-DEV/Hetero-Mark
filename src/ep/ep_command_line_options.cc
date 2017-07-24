@@ -55,8 +55,8 @@ void EpCommandLineOptions::RegisterOptions() {
                                    "Number of identities to be generated in "
                                    "each generation");
 
-  command_line_option_.AddArgument("Collaborative", "bool", "false", 
-                                   "", "--collaborative",
+  command_line_option_.AddArgument("Collaborative", "bool", "false", "",
+                                   "--collaborative",
                                    "Execute in CPU-GPU pipelined mode");
 }
 

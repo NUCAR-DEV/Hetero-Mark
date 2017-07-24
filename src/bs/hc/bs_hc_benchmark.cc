@@ -38,15 +38,15 @@
  */
 
 #include "src/bs/hc/bs_hc_benchmark.h"
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 #include <hcc/hc.hpp>
 #include <hcc/hc_math.hpp>
-#include <cstdlib>
-#include <cstdio>
-#include <ctime>
 
 void BsHcBenchmark::Initialize() { BsBenchmark::Initialize(); }
 
-float BsHcBenchmark::Phi(float X) [[hc]] {
+float BsHcBenchmark::Phi(float X)[[hc]] {
   float y, absX, t;
 
   // the coefficients
@@ -142,8 +142,8 @@ void BsHcBenchmark::Run() {
       float sigmaUpperLimit = kSigmaUpperLimit;
 
       // Run the application
-      fut = hc::parallel_for_each(hc::extent<1>(section_tiles * tile_size_),
-                                  [=](hc::index<1> index)[[hc]] {
+      fut = hc::parallel_for_each(hc::extent<1>(section_tiles * tile_size_), [=
+      ](hc::index<1> index)[[hc]] {
         // the variable representing the value in the array[i]
         float i_rand = section[index];
 
@@ -159,8 +159,7 @@ void BsHcBenchmark::Run() {
         float sigma_sqrt_t = sigma * sqrt(t);
 
         // Calculating the derivatives
-        float d1 =
-            (log(s / k) + (r + sigma * sigma / 2.0f) * t) / sigma_sqrt_t;
+        float d1 = (log(s / k) + (r + sigma * sigma / 2.0f) * t) / sigma_sqrt_t;
         float d2 = d1 - sigma_sqrt_t;
         //
         // Calculating exponent

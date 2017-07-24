@@ -40,8 +40,8 @@
 
 #include "src/common/time_measurement/time_measurement_impl.h"
 #include "src/common/time_measurement/time_keeper_impl.h"
-#include "src/common/time_measurement/timer_impl.h"
 #include "src/common/time_measurement/time_keeper_summary_printer.h"
+#include "src/common/time_measurement/timer_impl.h"
 
 TimeMeasurementImpl::TimeMeasurementImpl() {
   timer_.reset(new TimerImpl());

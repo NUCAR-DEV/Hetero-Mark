@@ -38,14 +38,12 @@
 
 class KmeansCudaBenchmark : public KmeansBenchmark {
  private:
-
   float *device_features_;
   float *device_features_swap;
-  int   *device_membership_;
+  int *device_membership_;
   float *device_clusters_;
 
   void InitializeBuffers();
-
 
   void Clustering();
   void CreateTemporaryMemory();
@@ -54,7 +52,7 @@ class KmeansCudaBenchmark : public KmeansBenchmark {
   void KmeansClustering(unsigned num_clusters);
   void UpdateMembership(unsigned num_clusters);
 
- public: 
+ public:
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

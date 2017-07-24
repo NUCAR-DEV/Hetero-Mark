@@ -45,7 +45,6 @@
 
 class AesHcBenchmark : public AesBenchmark {
  private:
-
  public:
   AesHcBenchmark() {}
   ~AesHcBenchmark() {}

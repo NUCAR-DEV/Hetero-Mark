@@ -31,10 +31,10 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/aes/aes_benchmark.h"
 #include <inttypes.h>
 #include <cstdio>
 #include <cstring>
-#include "src/aes/aes_benchmark.h"
 
 void AesBenchmark::Initialize() {
   LoadPlaintext();

@@ -40,15 +40,15 @@
 #ifndef SRC_GA_CUDA_GA_CUDA_BENCHMARK_H_
 #define SRC_GA_CUDA_GA_CUDA_BENCHMARK_H_
 
-#include "src/ga/ga_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/ga/ga_benchmark.h"
 
 class GaCudaBenchmark : public GaBenchmark {
  private:
   char *coarse_match_result_;
   static const uint32_t kBatchSize = 1024;
   char *device_target = nullptr;
-  char *device_query  = nullptr;
+  char *device_query = nullptr;
   char *device_batch_result = nullptr;
 
  public:
@@ -58,4 +58,3 @@ class GaCudaBenchmark : public GaBenchmark {
 };
 
 #endif  // SRC_GA_CUDA_GA_CUDA_BENCHMARK_H_
-

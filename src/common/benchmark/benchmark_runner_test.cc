@@ -38,13 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/common/benchmark/benchmark_runner.h"
 #include <string>
 #include "gtest/gtest.h"
-#include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/benchmark/benchmark.h"
+#include "src/common/time_measurement/time_keeper_impl.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/timer.h"
-#include "src/common/time_measurement/time_keeper_impl.h"
 
 TEST(BenchmarkRunner, run_benchmark) {
   class MockupTimeMeasurement : public TimeMeasurement {

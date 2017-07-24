@@ -41,12 +41,12 @@
 #ifndef SRC_COMMON_CL_UTIL_CL_PROFILER_H_
 #define SRC_COMMON_CL_UTIL_CL_PROFILER_H_
 
-#include <sys/time.h>
 #include <CL/cl.h>
-#include <map>
-#include <memory>
+#include <sys/time.h>
 #include <iomanip>
 #include <iostream>
+#include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>

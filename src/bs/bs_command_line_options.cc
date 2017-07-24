@@ -57,8 +57,8 @@ void BsCommandLineOptions::RegisterOptions() {
                                    "Number of samples to be calculated");
 
   // Registering the option to turn of the CPU
-  command_line_option_.AddArgument("Collaborative", "bool", "false", 
-                                   "", "--collaborative",
+  command_line_option_.AddArgument("Collaborative", "bool", "false", "",
+                                   "--collaborative",
                                    "Involving CPU in the computation. This "
                                    "option only works for HSA implementation");
 
@@ -77,7 +77,8 @@ void BsCommandLineOptions::Parse(int argc, const char *argv[]) {
   num_elements_ =
       command_line_option_.GetArgumentValue("NumElements")->AsUInt32();
 
-  active_cpu_ = command_line_option_.GetArgumentValue("Collaborative")->AsBool();
+  active_cpu_ =
+      command_line_option_.GetArgumentValue("Collaborative")->AsBool();
 
   gpu_chunk_ = command_line_option_.GetArgumentValue("GpuChunk")->AsUInt32();
 }

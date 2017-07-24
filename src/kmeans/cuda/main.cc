@@ -40,8 +40,8 @@
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/kmeans/kmeans_command_line_options.h"
 #include "src/kmeans/cuda/kmeans_cuda_benchmark.h"
+#include "src/kmeans/kmeans_command_line_options.h"
 
 int main(int argc, const char **argv) {
   std::unique_ptr<KmeansCudaBenchmark> benchmark(new KmeansCudaBenchmark());

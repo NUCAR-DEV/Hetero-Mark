@@ -42,8 +42,8 @@
 #define SRC_COMMON_CL_UTIL_CL_ERROR_H_
 
 #include <CL/cl.h>
-#include <string>
 #include <iostream>
+#include <string>
 
 #define checkOpenCLSVMBuffer(buffer)                          \
   if (!(buffer))                                              \

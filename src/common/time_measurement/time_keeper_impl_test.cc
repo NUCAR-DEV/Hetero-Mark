@@ -38,10 +38,10 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <gtest/gtest.h>
-#include "src/common/time_measurement/timer.h"
 #include "src/common/time_measurement/time_keeper.h"
+#include <gtest/gtest.h>
 #include "src/common/time_measurement/time_keeper_impl.h"
+#include "src/common/time_measurement/timer.h"
 
 TEST(TimeKeeperImpl, keep_time) {
   class MockupTimer : public Timer {

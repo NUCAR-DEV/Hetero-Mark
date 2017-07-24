@@ -41,8 +41,8 @@
 #define SRC_COMMON_CL_UTIL_CL_FILE_H_
 
 #include <stdio.h>
-#include <memory>
 #include <fstream>
+#include <memory>
 #include <string>
 
 namespace clHelper {

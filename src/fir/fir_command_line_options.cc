@@ -59,12 +59,11 @@ void FirCommandLineOptions::RegisterOptions() {
 }
 
 void FirCommandLineOptions::Parse(int argc, const char *argv[]) {
-
   try {
     BenchmarkCommandLineOptions::Parse(argc, argv);
-  } catch (const std::exception& e) {
-	std::cerr << e.what() << std::endl;
-	exit(-1);
+  } catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
+    exit(-1);
   }
 
   num_data_per_block_ =

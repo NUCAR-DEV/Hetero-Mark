@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <CL/cl.h>
 #include "src/common/cl_util/cl_profiler.h"
+#include <CL/cl.h>
 
 namespace clHelper {
 

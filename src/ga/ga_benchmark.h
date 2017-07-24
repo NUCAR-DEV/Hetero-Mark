@@ -40,9 +40,9 @@
 #ifndef SRC_GA_GA_BENCHMARK_H_
 #define SRC_GA_GA_BENCHMARK_H_
 
-#include <vector>
 #include <list>
 #include <string>
+#include <vector>
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
@@ -87,16 +87,15 @@ class GaBenchmark : public Benchmark {
 
  public:
   void Initialize() override;
-  void Run() override {};
+  void Run() override{};
   void Verify() override;
   void Summarize() override;
   void Cleanup() override;
 
   // Setters
   void SetInputFile(const std::string &input_file) { input_file_ = input_file; }
-  void SetCollaborativeExecution(bool collaborative) 
-  { 
-    collaborative_ = collaborative; 
+  void SetCollaborativeExecution(bool collaborative) {
+    collaborative_ = collaborative;
   }
 };
 

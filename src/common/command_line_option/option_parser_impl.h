@@ -42,12 +42,12 @@
 #define SRC_COMMON_COMMAND_LINE_OPTION_OPTION_PARSER_IMPL_H_
 
 #include <map>
-#include <string>
 #include <memory>
+#include <string>
 
+#include "src/common/command_line_option/argument_value_factory.h"
 #include "src/common/command_line_option/option_parser.h"
 #include "src/common/command_line_option/option_setting.h"
-#include "src/common/command_line_option/argument_value_factory.h"
 
 /**
  * An option parser is responsible for parsing user input for a particular
