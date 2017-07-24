@@ -45,6 +45,9 @@ benchmarks = [
     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
 
     ('bs', 'hc', ['-x', '1048576']),
+    ('bs', 'cuda', ['-x', '1048576', '--collaborative']),
+    ('bs', 'cuda', ['-x', '1048576']),
+    ('bs', 'cuda', ['-x', '1048576', '--collaborative']),
 
     ('ep', 'hc', ['-m', '5']),
 

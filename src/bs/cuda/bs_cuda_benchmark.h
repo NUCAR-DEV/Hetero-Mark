@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,19 +37,24 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_FACTORY_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_FACTORY_H_
+#ifndef SRC_BS_HC_BS_HC_BENCHMARK_H_
+#define SRC_BS_HC_BS_HC_BENCHMARK_H_
 
-#include <memory>
-#include "src/common/command_line_option/argument_value.h"
+#include "src/bs/bs_benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
 
-class ArgumentValueFactory {
+class BsCudaBenchmark : public BsBenchmark {
+ private:
+
+ float Phi(float x);
+ float *rand_array    = nullptr; 
+ float *av_call_price = nullptr;
+ float *av_put_price  = nullptr;
+
  public:
-  std::unique_ptr<ArgumentValue> ProduceArgumentValue(const char *value) {
-    auto argument_value = std::unique_ptr<ArgumentValue>(new ArgumentValue());
-    argument_value->set_value(value);
-    return argument_value;
-  }
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
 };
+#endif  // SRC_BS_HC_BS_HC_BENCHMARK_H_
 
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_FACTORY_H_

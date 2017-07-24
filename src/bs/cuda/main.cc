@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,19 +37,22 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_FACTORY_H_
-#define SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_FACTORY_H_
+#include "src/common/benchmark/benchmark_runner.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/bs/bs_command_line_options.h"
+#include "src/bs/cuda/bs_cuda_benchmark.h"
 
-#include <memory>
-#include "src/common/command_line_option/argument_value.h"
+int main(int argc, const char **argv) {
+  std::unique_ptr<BsCudaBenchmark> benchmark(new BsCudaBenchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
-class ArgumentValueFactory {
- public:
-  std::unique_ptr<ArgumentValue> ProduceArgumentValue(const char *value) {
-    auto argument_value = std::unique_ptr<ArgumentValue>(new ArgumentValue());
-    argument_value->set_value(value);
-    return argument_value;
-  }
-};
+  BsCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
 
-#endif  // SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_FACTORY_H_
+  runner.Run();
+}
