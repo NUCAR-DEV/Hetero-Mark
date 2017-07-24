@@ -75,10 +75,21 @@ def parse_args():
             Setting this argument will skip the compilation process. This is 
             useful if you have the compiled with this script before.
             """)
+    parser.add_argument("--cxx", default="g++",
+            help=
+            """
+            The compiler to be used to compile the benchmark. 
+            """)
     parser.add_argument("--fresh-build", action="store_true", 
             help=
             """
             Remove the temp build folder and build from scratch.
+            """)
+    parser.add_argument("--cmake-flag", 
+            help=
+            """
+            Use this option to set the flags to pass to cmake. 
+            Set "-DCOMPILE_CUDA=On" to enable CUDA compilation.
             """)
     parser.add_argument("-b", "--benchmark",
             help=
@@ -88,6 +99,8 @@ def parse_args():
             benchmark to run.
             """)
     args = parser.parse_args()
+
+    
 
 def compile():
     compile_log_filename = "compile_log.txt"
@@ -100,8 +113,8 @@ def compile():
         subprocess.call(['mkdir', build_folder])
 
         env = os.environ.copy()
-        env['CXX'] = compiler
-        p = subprocess.Popen('cmake ' + os.getcwd(),
+        env['CXX'] = args.cxx
+        p = subprocess.Popen('cmake ' + args.cmake_flag + ' ' + os.getcwd(),
             cwd=build_folder, env=env, shell=True,
             stdout=compile_log, stderr=compile_log)
         p.wait()
