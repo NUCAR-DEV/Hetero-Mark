@@ -39,6 +39,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <thread>
 #include "src/be/cuda/be_cuda_benchmark.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
 
@@ -83,7 +84,82 @@ __global__ void BackgroundExtraction(uint8_t *frame, float *bg, uint8_t *fg,
   bg[tid] = bg[tid] * (1 - alpha) + frame[tid] * alpha;
 }
 
-void BeCudaBenchmark::CollaborativeRun() { printf("Collaborative run\n"); }
+void BeCudaBenchmark::CollaborativeRun() {
+  printf("Collaborative run\n");
+  uint32_t num_pixels = width_ * height_;
+  uint8_t *frame = NULL;
+
+  std::thread gpuThread(&BeCudaBenchmark::GPUThread, this);
+
+  // Initialize background
+  frame = nextFrame();
+  float *temp_bg = new float[num_pixels * channel_];
+  for (uint32_t i = 0; i < num_pixels * channel_; i++) {
+    temp_bg[i] = static_cast<float>(frame[i]);
+  }
+  cudaMemcpy(d_bg_, temp_bg, num_pixels * channel_ * sizeof(float),
+             cudaMemcpyHostToDevice);
+  free(temp_bg);
+
+  int frame_count = 0;
+  while (true) {
+    frame = nextFrame();
+    if (!frame) {
+      break;
+    }
+    frame_count++;
+
+    printf("Frame started %d\n", frame_count);
+    std::lock_guard<std::mutex> lk(queue_mutex_);
+    frame_queue_.push(frame);
+    queue_condition_variable_.notify_all();
+  }
+
+  {
+    std::lock_guard<std::mutex> lk(queue_mutex_);
+    printf("Finished.\n");
+    finished_ = true;
+  }
+  queue_condition_variable_.notify_all();
+
+  gpuThread.join();
+}
+
+void BeCudaBenchmark::GPUThread() {
+  while (true) {
+    std::unique_lock<std::mutex> lk(queue_mutex_);
+    queue_condition_variable_.wait(
+        lk, [this] { return finished_ || !frame_queue_.empty(); });
+    while (!frame_queue_.empty()) {
+      ExtractAndEncode(frame_queue_.front());
+      frame_queue_.pop();
+    }
+    if (finished_) break;
+  }
+}
+
+void BeCudaBenchmark::ExtractAndEncode(uint8_t *frame) {
+  uint8_t *d_frame;
+  uint32_t num_pixels = width_ * height_;
+  cudaMalloc(&d_frame, num_pixels * channel_ * sizeof(uint8_t));
+
+  cudaMemcpy(d_frame, frame, num_pixels * channel_ * sizeof(uint8_t),
+             cudaMemcpyHostToDevice);
+
+  dim3 block_size(64);
+  dim3 grid_size((num_pixels * channel_ + block_size.x - 1) / block_size.x);
+
+  BackgroundExtraction<<<grid_size, block_size>>>(
+      d_frame, d_bg_, d_fg_, width_, height_, channel_, threshold_, alpha_);
+
+  cudaMemcpy(foreground_.data(), d_fg_, num_pixels * channel_ * sizeof(uint8_t),
+             cudaMemcpyDeviceToHost);
+  if (generate_output_) {
+    cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground_.data(),
+                         cv::Mat::AUTO_STEP);
+    video_writer_ << output_frame;
+  }
+}
 
 void BeCudaBenchmark::NormalRun() {
   printf("Normal run\n");
@@ -99,6 +175,7 @@ void BeCudaBenchmark::NormalRun() {
   }
   cudaMemcpy(d_bg_, temp_bg, num_pixels * channel_ * sizeof(float),
              cudaMemcpyHostToDevice);
+  free(temp_bg);
 
   uint8_t *d_frame;
   cudaMalloc(&d_frame, num_pixels * channel_ * sizeof(uint8_t));
@@ -124,7 +201,11 @@ void BeCudaBenchmark::NormalRun() {
                            foreground_.data(), cv::Mat::AUTO_STEP);
       video_writer_ << output_frame;
     }
+
+    delete[] frame;
   }
+
+  cudaFree(d_frame);
 }
 
 void BeCudaBenchmark::Summarize() {
