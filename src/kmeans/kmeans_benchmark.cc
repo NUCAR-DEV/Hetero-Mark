@@ -112,7 +112,7 @@ void KmeansBenchmark::Verify() {
 
   delete[] membership_;
 
-  if (abs(cpu_min_rmse_ - min_rmse_) < cpu_min_rmse_ * 0.001) {
+  if (std::abs(cpu_min_rmse_ - min_rmse_) < cpu_min_rmse_ * 0.001) {
     printf("Passed! (%f)\n", min_rmse_);
   } else {
     printf("Failed! Expected to be %f, but got %f\n", cpu_min_rmse_, min_rmse_);

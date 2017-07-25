@@ -135,7 +135,10 @@ def compile():
 
         env = os.environ.copy()
         env['CXX'] = args.cxx
-        p = subprocess.Popen('cmake ' + args.cmake_flag + ' ' + os.getcwd(),
+        cmake_command = 'cmake '
+        if args.cmake_flag:
+            cmake_command += str(args.cmake_flag)
+        p = subprocess.Popen(cmake_command + ' ' + os.getcwd(),
             cwd=build_folder, env=env, shell=True,
             stdout=compile_log, stderr=compile_log)
         p.wait()
