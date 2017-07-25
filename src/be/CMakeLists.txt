@@ -4,6 +4,7 @@ set(FOLDER_NAME be)
 set(SUBDIRECTORIES 
   hc
   cuda
+  hip
 )
 set(SRC_FILES
   be_benchmark.cc
