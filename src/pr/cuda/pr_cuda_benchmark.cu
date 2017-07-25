@@ -48,6 +48,34 @@ void PrCudaBenchmark::Initialize() {
   page_rank_mtx_2_ = new float[num_nodes_];
 }
 
+__global__ void pr1_cuda(uint32_t *device_row_offsets, uint32_t *device_column_numbers, float *device_values, float *device_mtx_1, float *device_mtx_2)
+{
+	uint tid = blockIdx.x * blockDim.x + threadIdx.x;
+	uint32_t initialize = device_row_offsets[tid];
+	uint32_t limit = device_row_offsets[tid+1];
+	float new_value = 0;
+	for(uint32_t j = initialize; j < limit; j++)
+	{
+		uint32_t index = device_column_numbers[j];
+		new_value += device_values[j] * device_mtx_1[index];
+	}
+	device_mtx_2[tid] = new_value;
+}
+
+__global__ void pr2_cuda(uint32_t *device_row_offsets, uint32_t *device_column_numbers, float *device_values, float *device_mtx_1, float *device_mtx_2)
+{
+	uint tid = blockIdx.x * blockDim.x + threadIdx.x;
+	uint32_t initialize = device_row_offsets[tid];
+        uint32_t limit = device_row_offsets[tid+1];
+	float new_value = 0;
+	for(uint32_t j = initialize; j < limit; j++)
+	{
+		uint32_t index = device_column_numbers[j];
+		new_value += device_values[j] * device_mtx_2[index];
+	}
+	device_mtx_1[tid] = new_value;
+}
+
 void PrCudaBenchmark::Run() {
   uint32_t i;
 
@@ -86,8 +114,24 @@ void PrCudaBenchmark::Run() {
                                           device_mtx_1, device_mtx_2);
     }
   }
+  cudaDeviceSynchronize();
 
-  void PrCudaBenchmark::Cleanup() {
+  for(uint32_t j = 0; j < num_nodes_; j++)
+  {
+	  page_rank_mtx_1_[j] = device_mtx_1[j];
+	  page_rank_mtx_2_[j] = device_mtx_2[j];
+  }
+  if ( i % 2 != 0)
+  {
+	  memcpy(page_rank_, page_rank_mtx_1_, num_nodes_ * sizeof(float));
+  }
+  else
+  {
+     	  memcpy(page_rank_, page_rank_mtx_2_, num_nodes_ * sizeof(float));
+  }
+}
+
+ void PrCudaBenchmark::Cleanup() {
     delete[] page_rank_mtx_1_;
     delete[] page_rank_mtx_2_;
     PrBenchmark::Cleanup();
