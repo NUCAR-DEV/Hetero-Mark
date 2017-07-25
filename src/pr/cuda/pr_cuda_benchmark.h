@@ -48,8 +48,8 @@ class PrCudaBenchmark : public PrBenchmark {
   float *page_rank_mtx_1_;
   float *page_rank_mtx_2_;
 
-  float *device_row_offsets;
-  float *device_column_numbers;
+  uint32_t  *device_row_offsets;
+  uint32_t  *device_column_numbers;
   float *device_values;
   float *device_mtx_1;
   float *device_mtx_2;
