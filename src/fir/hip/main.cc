@@ -9,6 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,68 +38,24 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_KMEANS_KMEANS_BENCHMARK_H_
-#define SRC_KMEANS_KMEANS_BENCHMARK_H_
-
-#include <cfloat>
-#include <cmath>
-#include <string>
-#include "src/common/benchmark/benchmark.h"
+#include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/fir/hip/fir_hip_benchmark.h"
+#include "src/fir/fir_command_line_options.h"
 
-class KmeansBenchmark : public Benchmark {
- protected:
-  const unsigned kBlockSize = 256;
+int main(int argc, const char **argv) {
+  std::unique_ptr<FirHipBenchmark> benchmark(new FirHipBenchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
-  std::string filename_ = "";
-  double threshold_ = 0.001;
-  unsigned max_num_clusters_ = 5;
-  unsigned min_num_clusters_ = 5;
-  unsigned num_loops_ = 1;
+  FirCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
 
-  unsigned num_points_ = 0;
-  unsigned num_features_ = 0;
+  runner.Run();
 
-  float *host_features_;
-  float *feature_transpose_;
-  int *membership_;
-  float *clusters_;
-
-  float cpu_min_rmse_;
-
-  unsigned num_clusters_ = 0;
-  float delta_;
-  float min_rmse_;
-  int best_num_clusters_;
-
-  void DumpMembership();
-  void DumpClusterCentroids(unsigned num_clusters);
-  void DumpFeatures();
-  float CalculateRMSE();
-  void TransposeFeaturesCpu();
-  void KmeansClusteringCpu(unsigned num_clusters);
-  virtual void InitializeClusters(unsigned num_clusters);
-  virtual void InitializeMembership();
-  void UpdateMembershipCpu(unsigned num_clusters);
-  void UpdateClusterCentroids(unsigned num_clusters);
-
- public:
-  void Initialize() override;
-  void Run() override {}
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
-
-  // Setters
-  void setFilename(std::string filename) { filename_ = filename; }
-  void setThreshold(double threshold) { threshold_ = threshold; }
-  void setMaxNumClusters(unsigned max_num_clusters) {
-    max_num_clusters_ = max_num_clusters;
-  }
-  void setMinNumClusters(unsigned min_num_clusters) {
-    min_num_clusters_ = min_num_clusters;
-  }
-  void setNumLoops(unsigned num_loops) { num_loops_ = num_loops; }
-};
-
-#endif  // SRC_KMEANS_KMEANS_BENCHMARK_H_
+  return 0;
+}
