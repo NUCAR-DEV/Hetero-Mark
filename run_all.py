@@ -17,11 +17,27 @@ build_folder = os.getcwd() + '/build-auto-run/'
 benchmark_repeat_time = 5
 benchmarks = [
     ('aes', 'cl12', [
+        '-i', os.getcwd() + '/data/aes/small.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'cl12', [
         '-i', os.getcwd() + '/data/aes/medium.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'cl12', [
+        '-i', os.getcwd() + '/data/aes/large.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'cl20', [
+        '-i', os.getcwd() + '/data/aes/small.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
     ('aes', 'cl20', [
         '-i', os.getcwd() + '/data/aes/medium.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'cl20', [
+        '-i', os.getcwd() + '/data/aes/large.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
     ('aes', 'hc', [
