@@ -64,7 +64,6 @@ __global__ void fir_cuda(float *input, float *output, float *coeff,
   if (tid >= num_data - num_tap) {
     history[num_tap - (num_data - tid)] = input[tid];
   }
-  __syncthreads();
 }
 
 void FirCudaBenchmark::Initialize() {
