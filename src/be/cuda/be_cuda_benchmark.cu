@@ -49,6 +49,9 @@ void BeCudaBenchmark::Initialize() {
 
   cudaMalloc(&d_bg_, width_ * height_ * channel_ * sizeof(float));
   cudaMalloc(&d_fg_, width_ * height_ * channel_ * sizeof(uint8_t));
+  cudaMalloc(&d_frame_, width_ * height_ * channel_ * sizeof(uint8_t));
+
+  cudaStreamCreate(&stream_);
 }
 
 void BeCudaBenchmark::Run() {
@@ -109,7 +112,7 @@ void BeCudaBenchmark::CollaborativeRun() {
     }
     frame_count++;
 
-    printf("Frame started %d\n", frame_count);
+    // printf("Frame started %d\n", frame_count);
     std::lock_guard<std::mutex> lk(queue_mutex_);
     frame_queue_.push(frame);
     queue_condition_variable_.notify_all();
@@ -117,12 +120,13 @@ void BeCudaBenchmark::CollaborativeRun() {
 
   {
     std::lock_guard<std::mutex> lk(queue_mutex_);
-    printf("Finished.\n");
+    // printf("Finished.\n");
     finished_ = true;
   }
   queue_condition_variable_.notify_all();
 
   gpuThread.join();
+  cudaStreamSynchronize(stream_);
 }
 
 void BeCudaBenchmark::GPUThread() {
@@ -139,21 +143,22 @@ void BeCudaBenchmark::GPUThread() {
 }
 
 void BeCudaBenchmark::ExtractAndEncode(uint8_t *frame) {
-  uint8_t *d_frame;
   uint32_t num_pixels = width_ * height_;
-  cudaMalloc(&d_frame, num_pixels * channel_ * sizeof(uint8_t));
 
-  cudaMemcpy(d_frame, frame, num_pixels * channel_ * sizeof(uint8_t),
-             cudaMemcpyHostToDevice);
+  cudaMemcpyAsync(d_frame_, frame, num_pixels * channel_ * sizeof(uint8_t),
+                  cudaMemcpyHostToDevice, stream_);
 
   dim3 block_size(64);
   dim3 grid_size((num_pixels * channel_ + block_size.x - 1) / block_size.x);
 
-  BackgroundExtraction<<<grid_size, block_size>>>(
-      d_frame, d_bg_, d_fg_, width_, height_, channel_, threshold_, alpha_);
+  BackgroundExtraction<<<grid_size, block_size, 0, stream_>>>(
+      d_frame_, d_bg_, d_fg_, width_, height_, channel_, threshold_, alpha_);
 
-  cudaMemcpy(foreground_.data(), d_fg_, num_pixels * channel_ * sizeof(uint8_t),
-             cudaMemcpyDeviceToHost);
+  cudaMemcpyAsync(foreground_.data(), d_fg_,
+                  num_pixels * channel_ * sizeof(uint8_t),
+                  cudaMemcpyDeviceToHost, stream_);
+  cudaStreamSynchronize(stream_);
+  delete[] frame;
   if (generate_output_) {
     cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground_.data(),
                          cv::Mat::AUTO_STEP);
@@ -217,5 +222,7 @@ void BeCudaBenchmark::Cleanup() {
   delete timer_;
   cudaFree(d_bg_);
   cudaFree(d_fg_);
+  cudaFree(d_frame_);
+  cudaStreamDestroy(stream_);
   BeBenchmark::Cleanup();
 }

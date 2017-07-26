@@ -25,15 +25,29 @@ benchmarks = [
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
     ('aes', 'hc', [
+        '-i', os.getcwd() + '/data/aes/small.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'hc', [
         '-i', os.getcwd() + '/data/aes/medium.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'hc', [
+        '-i', os.getcwd() + '/data/aes/large.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'cuda', [
+        '-i', os.getcwd() + '/data/aes/small.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
     ('aes', 'cuda', [
         '-i', os.getcwd() + '/data/aes/medium.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
-
-    
+    ('aes', 'cuda', [
+        '-i', os.getcwd() + '/data/aes/large.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
 
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4']),
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),

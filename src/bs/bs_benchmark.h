@@ -46,7 +46,6 @@
 class BsBenchmark : public Benchmark {
  protected:
   // fixed constants, used in the calculations
-  // fixed constants, used in the calculations
   const float kSLowerLimit = 10.0;
   const float kSUpperLimit = 100.0;
   const float kKLowerLimit = 10.0;

@@ -1,4 +1,3 @@
-
 /*
  * Hetero-mark
  *
