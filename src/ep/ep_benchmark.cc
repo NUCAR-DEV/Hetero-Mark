@@ -100,7 +100,10 @@ void EpBenchmark::ReproduceInIsland(std::vector<Creature> &island) {
 EpBenchmark::Creature EpBenchmark::CreateRandomCreature() {
   Creature creature;
   for (uint32_t i = 0; i < kNumVariables; i++) {
-    creature.parameters[i] = 1.0 * rand() / RAND_MAX;
+    // creature.parameters[i] = 1.0 * rand() / RAND_MAX;
+
+    // For deterministic benchmarking result
+    creature.parameters[i] = 0.5;
   }
   return creature;
 }
