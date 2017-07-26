@@ -43,9 +43,13 @@ benchmarks = [
     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/1.mp4']),
     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
+    ('be', 'hip', ['-i', os.getcwd() + '/data/be/0.mp4']),
+    ('be', 'hip', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
+    ('be', 'hip', ['-i', os.getcwd() + '/data/be/1.mp4']),
+    ('be', 'hip', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
 
     ('bs', 'hc', ['-x', '1048576']),
-    ('bs', 'cuda', ['-x', '1048576', '--collaborative']),
+    ('bs', 'jc', ['-x', '1048576', '--collaborative']),
     ('bs', 'cuda', ['-x', '1048576']),
     ('bs', 'cuda', ['-x', '1048576', '--collaborative']),
 
@@ -65,6 +69,7 @@ benchmarks = [
     ('hist', 'cl20', ['-x', '1048576']),
     ('hist', 'hc', ['-x', '1048576']),
     ('hist', 'cuda', ['-x', '1048576']),
+    ('hist', 'hip', ['-x', '1048576']),
 
     ('kmeans', 'cl12', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
     ('kmeans', 'cl20', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
@@ -96,6 +101,11 @@ def parse_args():
             help=
             """
             The compiler to be used to compile the benchmark. 
+            """)
+    parser.add_argument("--skip-verification", action="store_true", 
+            help=
+            """
+            Setting this argument will skip the CPU verification process.
             """)
     parser.add_argument("--fresh-build", action="store_true", 
             help=
@@ -172,9 +182,11 @@ def run():
             continue;
 
         print("Runing", executable_name, *benchmark[2])
-        validate = verify(benchmark)
-        if not validate:
-            continue
+        if not args.skip_verification:
+            validate = verify(benchmark)
+            if not validate:
+                print(bcolors.FAIL, "Verification failed", bcolors.ENDC, sep='')
+                continue
             
         run_benchmark(benchmark)
     
