@@ -37,67 +37,24 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_EP_EP_BENCHMARK_H_
-#define SRC_EP_EP_BENCHMARK_H_
-
-#include <vector>
-#include "src/common/benchmark/benchmark.h"
+#include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/ep/ep_command_line_options.h"
+#include "src/ep/cuda/ep_cuda_benchmark.h"
 
-#define NUM_VARIABLES 1500
+int main(int argc, const char **argv) {
+  std::unique_ptr<EpCudaBenchmark> benchmark(new EpCudaBenchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  std::unique_ptr<TimeMeasurement> timer2(new TimeMeasurementImpl());
+  benchmark->SetTimer(timer2.get());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
-class Creature {
- public:
-  double fitness;
-  double parameters[NUM_VARIABLES];
+  EpCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
 
-  void Dump();
-};
-
-class EpBenchmark : public Benchmark {
- protected:
-  static const uint32_t kNumVariables = NUM_VARIABLES;
-  static const uint32_t kNumEliminate = 0;
-  static const unsigned int kSeed = 1;
-
-  uint32_t max_generation_;
-  uint32_t population_;
-  bool pipelined_;
-
-  double fitness_function_[kNumVariables];
-  std::vector<Creature> islands_1_;
-  std::vector<Creature> islands_2_;
-  double result_island_1_;
-  double cpu_result_island_1_;
-  double result_island_2_;
-  double cpu_result_island_2_;
-
-  void Reproduce();
-  void ReproduceInIsland(std::vector<Creature> &island);
-  Creature CreateRandomCreature();
-  void Evaluate();
-  void ApplyFitnessFunction(Creature &creature);
-  void Select();
-  void SelectInIsland(std::vector<Creature> &island);
-  void Crossover();
-  void CrossoverInIsland(std::vector<Creature> &island);
-  void Mutate();
-
- public:
-  void Initialize() override;
-  void Run() override{};
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
-
-  // Setters
-  void SetMaxGeneration(uint32_t max_generation) {
-    max_generation_ = max_generation;
-  }
-
-  void SetPopulation(uint32_t population) { population_ = population; }
-
-  void SetPipelined(bool pipelined) { pipelined_ = pipelined; }
-};
-
-#endif  // SRC_EP_EP_BENCHMARK_H_
+  runner.Run();
+}

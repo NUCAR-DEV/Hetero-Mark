@@ -37,67 +37,26 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_EP_EP_BENCHMARK_H_
-#define SRC_EP_EP_BENCHMARK_H_
+#ifndef SRC_EP_CUDA_EP_CUDA_BENCHMARK_H_
+#define SRC_EP_CUDA_EP_CUDA_BENCHMARK_H_
 
-#include <vector>
-#include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/ep/ep_benchmark.h"
 
-#define NUM_VARIABLES 1500
+class EpCudaBenchmark : public EpBenchmark {
+ private:
+  void PipelinedRun();
+  void NormalRun();
+  void EvaluateGpu(std::vector<Creature> &island);
+  void MutateGpu(std::vector<Creature> &island);
 
-class Creature {
- public:
-  double fitness;
-  double parameters[NUM_VARIABLES];
-
-  void Dump();
-};
-
-class EpBenchmark : public Benchmark {
- protected:
-  static const uint32_t kNumVariables = NUM_VARIABLES;
-  static const uint32_t kNumEliminate = 0;
-  static const unsigned int kSeed = 1;
-
-  uint32_t max_generation_;
-  uint32_t population_;
-  bool pipelined_;
-
-  double fitness_function_[kNumVariables];
-  std::vector<Creature> islands_1_;
-  std::vector<Creature> islands_2_;
-  double result_island_1_;
-  double cpu_result_island_1_;
-  double result_island_2_;
-  double cpu_result_island_2_;
-
-  void Reproduce();
-  void ReproduceInIsland(std::vector<Creature> &island);
-  Creature CreateRandomCreature();
-  void Evaluate();
-  void ApplyFitnessFunction(Creature &creature);
-  void Select();
-  void SelectInIsland(std::vector<Creature> &island);
-  void Crossover();
-  void CrossoverInIsland(std::vector<Creature> &island);
-  void Mutate();
+  Creature *d_island_;
+  double *d_fitness_func_;
 
  public:
   void Initialize() override;
-  void Run() override{};
-  void Verify() override;
-  void Summarize() override;
+  void Run() override;
   void Cleanup() override;
-
-  // Setters
-  void SetMaxGeneration(uint32_t max_generation) {
-    max_generation_ = max_generation;
-  }
-
-  void SetPopulation(uint32_t population) { population_ = population; }
-
-  void SetPipelined(bool pipelined) { pipelined_ = pipelined; }
 };
 
-#endif  // SRC_EP_EP_BENCHMARK_H_
+#endif  // SRC_EP_CUDA_EP_CUDA_BENCHMARK_H_
