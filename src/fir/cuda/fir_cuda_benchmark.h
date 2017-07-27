@@ -50,6 +50,7 @@ class FirCudaBenchmark : public FirBenchmark {
   float *output_buffer_ = nullptr;
   float *coeff_buffer_ = nullptr;
   float *history_buffer_ = nullptr;
+  float *history_ = nullptr;
 
   void InitializeData();
   void InitializeBuffers();
