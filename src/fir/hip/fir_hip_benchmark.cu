@@ -1,4 +1,3 @@
-#include "hip/hip_runtime.h"
 /*
  * Hetero-mark
  *
@@ -42,6 +41,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include "hip/hip_runtime.h"
 #include "src/fir/hip/fir_hip_benchmark.h"
 
 __global__ void fir_hip(hipLaunchParm lp, float *input, float *output,
