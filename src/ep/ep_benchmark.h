@@ -44,7 +44,7 @@
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
-#define NUM_VARIABLES 1500
+#define NUM_VARIABLES 500
 
 class Creature {
  public:

@@ -59,12 +59,6 @@ __global__ void fir_hip(hipLaunchParm lp, float *input, float *output,
     }
   }
   output[tid] = sum;
-
-  __syncthreads();
-
-  if (tid >= num_data - num_tap) {
-    history[num_tap - (num_data - tid)] = input[tid];
-  }
 }
 
 void FirHipBenchmark::Initialize() {
@@ -74,6 +68,7 @@ void FirHipBenchmark::Initialize() {
 }
 
 void FirHipBenchmark::InitializeBuffers() {
+  history_ = reinterpret_cast<float *>(malloc(num_tap_ * sizeof(float)));
   hipMalloc((void **)&input_buffer_, sizeof(float) * num_data_per_block_);
   hipMalloc((void **)&output_buffer_, sizeof(float) * num_data_per_block_);
   hipMalloc((void **)&coeff_buffer_, sizeof(float) * num_tap_);
@@ -84,14 +79,11 @@ void FirHipBenchmark::InitializeData() {
   hipMemcpy(coeff_buffer_, coeff_, num_tap_ * sizeof(float),
             hipMemcpyHostToDevice);
 
-  float *temp_history =
-      reinterpret_cast<float *> (malloc(num_tap_ * sizeof(float)));
   for (unsigned i = 0; i < num_tap_; i++) {
-    temp_history[i] = 0.0;
+    history_[i] = 0.0;
   }
-  hipMemcpy(history_buffer_, temp_history, num_tap_ * sizeof(float),
+  hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
             hipMemcpyHostToDevice);
-  free(temp_history);
 }
 
 void FirHipBenchmark::Run() {
@@ -103,17 +95,26 @@ void FirHipBenchmark::Run() {
   while (count < num_block_) {
     hipMemcpy(input_buffer_, input_ + (count * num_data_per_block_),
               (num_data_per_block_) * sizeof(float), hipMemcpyHostToDevice);
+    hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
+              hipMemcpyHostToDevice);
     hipLaunchKernel(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
                     0, 0, input_buffer_, output_buffer_, coeff_buffer_,
                     history_buffer_, num_tap_);
     hipMemcpy(output_ + count * num_data_per_block_, output_buffer_,
               num_data_per_block_ * sizeof(float), hipMemcpyDeviceToHost);
+
+    for (uint32_t i = 0; i < num_tap_; i++) {
+      history_[i] = input_[count * num_data_per_block_ + num_data_per_block_ -
+                          num_tap_ + i];
+    }
+
     count++;
   }
 }
 
 void FirHipBenchmark::Cleanup() {
   FirBenchmark::Cleanup();
+  free(history_);
   hipFree(output_buffer_);
   hipFree(coeff_buffer_);
   hipFree(input_buffer_);
