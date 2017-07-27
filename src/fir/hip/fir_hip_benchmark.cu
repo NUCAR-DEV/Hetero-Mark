@@ -45,9 +45,9 @@
 #include "src/fir/hip/fir_hip_benchmark.h"
 
 __global__ void fir_hip(hipLaunchParm lp, float *input, float *output,
-                        float *coeff, float *history, uint32_t num_tap) {
+                        float *coeff, float *history, uint32_t num_tap, uint32_t num_data) {
   uint32_t tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-  uint32_t num_data = hipGridDim_x * hipBlockDim_x;
+  if (tid > num_data) return;
 
   float sum = 0;
   uint32_t i = 0;
@@ -99,7 +99,7 @@ void FirHipBenchmark::Run() {
               hipMemcpyHostToDevice);
     hipLaunchKernel(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
                     0, 0, input_buffer_, output_buffer_, coeff_buffer_,
-                    history_buffer_, num_tap_);
+                    history_buffer_, num_tap_, num_data_per_block_);
     hipMemcpy(output_ + count * num_data_per_block_, output_buffer_,
               num_data_per_block_ * sizeof(float), hipMemcpyDeviceToHost);
 

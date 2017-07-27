@@ -14,7 +14,6 @@ import argparse
 args = None
 
 build_folder = os.getcwd() + '/build-auto-run/'
-benchmark_repeat_time = 5
 benchmarks = [
     ('aes', 'cl12', [
         '-i', os.getcwd() + '/data/aes/small.data',
@@ -241,6 +240,11 @@ def parse_args():
             benchmarks. Which this argument, you can specify a certain 
             benchmark to run.
             """)
+    parser.add_argument("-r", "--repeat-time", default=5, type=int,
+            help=
+            """
+            The number of times to run a benchmark. Default is 5 times.
+            """)
     args = parser.parse_args()
 
 def compile():
@@ -326,7 +330,7 @@ def run_benchmark(benchmark):
     sys.stdout.flush()
 
     perf = []
-    for i in range(0, benchmark_repeat_time):
+    for i in range(0, args.repeat_time):
         p = subprocess.Popen([executable_full_path, '-q', '-t'] + benchmark[2],
             cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         for line in p.stderr:
@@ -336,7 +340,7 @@ def run_benchmark(benchmark):
         print(".", end=''); sys.stdout.flush()
 
     print("\n" + executable_name+ ": "
-            + str(np.mean(perf)) + ", "
+            + str(np.mean(perf)) + " "
             + str(np.std(perf)))
 
 
