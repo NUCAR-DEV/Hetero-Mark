@@ -14,26 +14,55 @@ import argparse
 args = None
 
 build_folder = os.getcwd() + '/build-auto-run/'
-benchmark_repeat_time = 5
 benchmarks = [
     ('aes', 'cl12', [
+        '-i', os.getcwd() + '/data/aes/small.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'cl12', [
         '-i', os.getcwd() + '/data/aes/medium.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'cl12', [
+        '-i', os.getcwd() + '/data/aes/large.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'cl20', [
+        '-i', os.getcwd() + '/data/aes/small.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
     ('aes', 'cl20', [
         '-i', os.getcwd() + '/data/aes/medium.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
+    ('aes', 'cl20', [
+        '-i', os.getcwd() + '/data/aes/large.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'hc', [
+        '-i', os.getcwd() + '/data/aes/small.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
     ('aes', 'hc', [
         '-i', os.getcwd() + '/data/aes/medium.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'hc', [
+        '-i', os.getcwd() + '/data/aes/large.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
+    ('aes', 'cuda', [
+        '-i', os.getcwd() + '/data/aes/small.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
     ('aes', 'cuda', [
         '-i', os.getcwd() + '/data/aes/medium.data',
         '-k', os.getcwd() + '/data/aes/key.data'
     ]),
-
-    
+    ('aes', 'cuda', [
+        '-i', os.getcwd() + '/data/aes/large.data',
+        '-k', os.getcwd() + '/data/aes/key.data'
+    ]),
 
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4']),
     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
@@ -43,18 +72,86 @@ benchmarks = [
     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/1.mp4']),
     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
+    ('be', 'hip', ['-i', os.getcwd() + '/data/be/0.mp4']),
+    ('be', 'hip', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
+    ('be', 'hip', ['-i', os.getcwd() + '/data/be/1.mp4']),
+    ('be', 'hip', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
 
     ('bs', 'hc', ['-x', '1048576']),
-    ('bs', 'cuda', ['-x', '1048576', '--collaborative']),
+    ('bs', 'hc', ['-x', '1048576', '--collaborative']),
     ('bs', 'cuda', ['-x', '1048576']),
     ('bs', 'cuda', ['-x', '1048576', '--collaborative']),
 
-    ('ep', 'hc', ['-m', '5']),
+    ('ep', 'hc', ['-x', '128', '-m', '20']),
+    ('ep', 'hc', ['-x', '256', '-m', '20']),
+    ('ep', 'hc', ['-x', '512', '-m', '20']),
+    ('ep', 'hc', ['-x', '1024', '-m', '20']),
+    ('ep', 'hc', ['-x', '2048', '-m', '20']),
+    ('ep', 'hc', ['-x', '4096', '-m', '20']),
+    ('ep', 'hc', ['-x', '8192', '-m', '20']),
+    ('ep', 'hc', ['-x', '16384', '-m', '20']),
+    ('ep', 'hc', ['-x', '32768', '-m', '20']),
+    ('ep', 'hc', ['-x', '65536', '-m', '20']),
+    ('ep', 'hc', ['-x', '128', '-m', '20', '-c']),
+    ('ep', 'hc', ['-x', '256', '-m', '20', '-c']),
+    ('ep', 'hc', ['-x', '512', '-m', '20', '-c']),
+    ('ep', 'hc', ['-x', '1024', '-m', '20', '-c']),
+    ('ep', 'hc', ['-x', '2048', '-m', '20', '-c']),
+    ('ep', 'hc', ['-x', '4096', '-m', '20', '-c']),
+    ('ep', 'hc', ['-x', '8192', '-m', '20', '-c']),
+    ('ep', 'hc', ['-x', '16384', '-m', '20', '-c']),
+    ('ep', 'hc', ['-x', '32768', '-m', '20', '-c']),
+    ('ep', 'hc', ['-x', '65536', '-m', '20', '-c']),
+    ('ep', 'cuda', ['-x', '128', '-m', '20']),
+    ('ep', 'cuda', ['-x', '256', '-m', '20']),
+    ('ep', 'cuda', ['-x', '512', '-m', '20']),
+    ('ep', 'cuda', ['-x', '1024', '-m', '20']),
+    ('ep', 'cuda', ['-x', '2048', '-m', '20']),
+    ('ep', 'cuda', ['-x', '4096', '-m', '20']),
+    ('ep', 'cuda', ['-x', '8192', '-m', '20']),
+    ('ep', 'cuda', ['-x', '16384', '-m', '20']),
+    ('ep', 'cuda', ['-x', '32768', '-m', '20']),
+    ('ep', 'cuda', ['-x', '65536', '-m', '20']),
+    ('ep', 'cuda', ['-x', '128', '-m', '20', '-c']),
+    ('ep', 'cuda', ['-x', '256', '-m', '20', '-c']),
+    ('ep', 'cuda', ['-x', '512', '-m', '20', '-c']),
+    ('ep', 'cuda', ['-x', '1024', '-m', '20', '-c']),
+    ('ep', 'cuda', ['-x', '2048', '-m', '20', '-c']),
+    ('ep', 'cuda', ['-x', '4096', '-m', '20', '-c']),
+    ('ep', 'cuda', ['-x', '8192', '-m', '20', '-c']),
+    ('ep', 'cuda', ['-x', '16384', '-m', '20', '-c']),
+    ('ep', 'cuda', ['-x', '32768', '-m', '20', '-c']),
+    ('ep', 'cuda', ['-x', '65536', '-m', '20', '-c']),
 
     ('fir', 'cl12', []),
     ('fir', 'cl20', []),
-    ('fir', 'hc', []),
-    ('fir', 'cuda', []),
+    ('fir', 'hc', ['-y', '1024', '-x', '1024']),
+    ('fir', 'hc', ['-y', '1024', '-x', '2048']),
+    ('fir', 'hc', ['-y', '1024', '-x', '3072']),
+    ('fir', 'hc', ['-y', '1024', '-x', '4096']),
+    ('fir', 'hc', ['-y', '1024', '-x', '5120']),
+    ('fir', 'hc', ['-y', '1024', '-x', '6144']),
+    ('fir', 'hc', ['-y', '1024', '-x', '7168']),
+    ('fir', 'hc', ['-y', '1024', '-x', '8192']),
+    ('fir', 'cuda', ['-y', '1024', '-x', '1024']),
+    ('fir', 'cuda', ['-y', '1024', '-x', '2048']),
+    ('fir', 'cuda', ['-y', '1024', '-x', '3072']),
+    ('fir', 'cuda', ['-y', '1024', '-x', '4096']),
+    ('fir', 'cuda', ['-y', '1024', '-x', '5120']),
+    ('fir', 'cuda', ['-y', '1024', '-x', '6144']),
+    ('fir', 'cuda', ['-y', '1024', '-x', '7168']),
+    ('fir', 'cuda', ['-y', '1024', '-x', '8192']),
+    ('fir', 'hip', ['-y', '1024', '-x', '1024']),
+    ('fir', 'hip', ['-y', '1024', '-x', '2048']),
+    ('fir', 'hip', ['-y', '1024', '-x', '3072']),
+    ('fir', 'hip', ['-y', '1024', '-x', '4096']),
+    ('fir', 'hip', ['-y', '1024', '-x', '5120']),
+    ('fir', 'hip', ['-y', '1024', '-x', '6144']),
+    ('fir', 'hip', ['-y', '1024', '-x', '7168']),
+    ('fir', 'hip', ['-y', '1024', '-x', '8192']),
+
+
+
 
     ('ga', 'hc', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
     ('ga', 'hc', ['-i', os.getcwd() + '/data/gene_alignment/medium.data', '--collaborative']),
@@ -64,7 +161,24 @@ benchmarks = [
     ('hist', 'cl12', ['-x', '1048576']),
     ('hist', 'cl20', ['-x', '1048576']),
     ('hist', 'hc', ['-x', '1048576']),
-    ('hist', 'cuda', ['-x', '1048576']),
+    ('hist', 'cuda', ['-x', '65536']),
+    ('hist', 'cuda', ['-x', '131072']),
+    ('hist', 'cuda', ['-x', '196608']),
+    ('hist', 'cuda', ['-x', '262144']),
+    ('hist', 'cuda', ['-x', '327680']),
+    ('hist', 'cuda', ['-x', '393216']),
+    ('hist', 'cuda', ['-x', '458752']),
+    ('hist', 'cuda', ['-x', '524288']),
+    ('hist', 'hip', ['-x', '65536']),
+    ('hist', 'hip', ['-x', '131072']),
+    ('hist', 'hip', ['-x', '196608']),
+    ('hist', 'hip', ['-x', '262144']),
+    ('hist', 'hip', ['-x', '327680']),
+    ('hist', 'hip', ['-x', '393216']),
+    ('hist', 'hip', ['-x', '458752']),
+    ('hist', 'hip', ['-x', '524288']),
+
+
 
     ('kmeans', 'cl12', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
     ('kmeans', 'cl20', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
@@ -97,6 +211,11 @@ def parse_args():
             """
             The compiler to be used to compile the benchmark. 
             """)
+    parser.add_argument("--skip-verification", action="store_true", 
+            help=
+            """
+            Setting this argument will skip the CPU verification process.
+            """)
     parser.add_argument("--fresh-build", action="store_true", 
             help=
             """
@@ -120,6 +239,11 @@ def parse_args():
             Benchmark to run. By default, this script will run all the 
             benchmarks. Which this argument, you can specify a certain 
             benchmark to run.
+            """)
+    parser.add_argument("-r", "--repeat-time", default=5, type=int,
+            help=
+            """
+            The number of times to run a benchmark. Default is 5 times.
             """)
     args = parser.parse_args()
 
@@ -172,9 +296,11 @@ def run():
             continue;
 
         print("Runing", executable_name, *benchmark[2])
-        validate = verify(benchmark)
-        if not validate:
-            continue
+        if not args.skip_verification:
+            validate = verify(benchmark)
+            if not validate:
+                print(bcolors.FAIL, "Verification failed", bcolors.ENDC, sep='')
+                continue
             
         run_benchmark(benchmark)
     
@@ -204,7 +330,7 @@ def run_benchmark(benchmark):
     sys.stdout.flush()
 
     perf = []
-    for i in range(0, benchmark_repeat_time):
+    for i in range(0, args.repeat_time):
         p = subprocess.Popen([executable_full_path, '-q', '-t'] + benchmark[2],
             cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         for line in p.stderr:
@@ -214,7 +340,7 @@ def run_benchmark(benchmark):
         print(".", end=''); sys.stdout.flush()
 
     print("\n" + executable_name+ ": "
-            + str(np.mean(perf)) + ", "
+            + str(np.mean(perf)) + " "
             + str(np.std(perf)))
 
 

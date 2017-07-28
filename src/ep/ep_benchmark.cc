@@ -43,6 +43,18 @@
 #include <cstdio>
 #include <cstdlib>
 
+void Creature::Dump() {
+  printf("creature: ");
+  for (uint32_t i = 0; i < NUM_VARIABLES; i++) {
+	if (i > 8) {
+		printf("...");
+		break;
+	}
+    printf("%0.2f ", this->parameters[i]);
+  }
+  printf(", fitness %0.3f\n", this->fitness);
+}
+
 void EpBenchmark::Initialize() {
   srand(kSeed);
   for (uint32_t i = 0; i < kNumVariables; i++) {
@@ -97,10 +109,13 @@ void EpBenchmark::ReproduceInIsland(std::vector<Creature> &island) {
   }
 }
 
-EpBenchmark::Creature EpBenchmark::CreateRandomCreature() {
+Creature EpBenchmark::CreateRandomCreature() {
   Creature creature;
   for (uint32_t i = 0; i < kNumVariables; i++) {
-    creature.parameters[i] = 1.0 * rand() / RAND_MAX;
+    // creature.parameters[i] = 1.0 * rand() / RAND_MAX;
+
+    // For deterministic benchmarking result
+    creature.parameters[i] = 0.5;
   }
   return creature;
 }
@@ -162,15 +177,15 @@ void EpBenchmark::CrossoverInIsland(std::vector<Creature> &island) {
 }
 
 void EpBenchmark::Mutate() {
-  for (uint32_t i = 0; i < islands_1_.size(); i++) {
-    if (i % 7 != 0) continue;
-    islands_1_[i].parameters[i % kNumVariables] *= 0.5;
-  }
-
-  for (uint32_t i = 0; i < islands_2_.size(); i++) {
-    if (i % 7 != 0) continue;
-    islands_2_[i].parameters[i % kNumVariables] *= 0.5;
-  }
+  // for (uint32_t i = 0; i < islands_1_.size(); i++) {
+  //   if (i % 7 != 0) continue;
+  //   islands_1_[i].parameters[i % kNumVariables] *= 0.5;
+  // }
+  //
+  // for (uint32_t i = 0; i < islands_2_.size(); i++) {
+  //   if (i % 7 != 0) continue;
+  //   islands_2_[i].parameters[i % kNumVariables] *= 0.5;
+  // }
 }
 
 void EpBenchmark::Summarize() {}

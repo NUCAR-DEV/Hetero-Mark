@@ -38,27 +38,24 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
-#define SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
-
+#include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/fir/fir_benchmark.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/fir/hip/fir_hip_benchmark.h"
+#include "src/fir/fir_command_line_options.h"
 
-class FirCudaBenchmark : public FirBenchmark {
- private:
-  float *input_buffer_ = nullptr;
-  float *output_buffer_ = nullptr;
-  float *coeff_buffer_ = nullptr;
-  float *history_buffer_ = nullptr;
-  float *history_ = nullptr;
+int main(int argc, const char **argv) {
+  std::unique_ptr<FirHipBenchmark> benchmark(new FirHipBenchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
-  void InitializeData();
-  void InitializeBuffers();
+  FirCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
 
- public:
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
+  runner.Run();
 
-#endif  // SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+  return 0;
+}

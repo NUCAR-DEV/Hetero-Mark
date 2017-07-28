@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,22 +37,16 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
-#define SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+#ifndef SRC_HIST_HIP_HIST_HIP_BENCHMARK_H_
+#define SRC_HIST_HIP_HIST_HIP_BENCHMARK_H_
 
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/fir/fir_benchmark.h"
+#include "src/hist/hist_benchmark.h"
 
-class FirCudaBenchmark : public FirBenchmark {
+class HistHipBenchmark : public HistBenchmark {
  private:
-  float *input_buffer_ = nullptr;
-  float *output_buffer_ = nullptr;
-  float *coeff_buffer_ = nullptr;
-  float *history_buffer_ = nullptr;
-  float *history_ = nullptr;
-
-  void InitializeData();
-  void InitializeBuffers();
+  uint32_t *d_pixels_;
+  uint32_t *d_histogram_;
 
  public:
   void Initialize() override;
@@ -61,4 +54,4 @@ class FirCudaBenchmark : public FirBenchmark {
   void Cleanup() override;
 };
 
-#endif  // SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+#endif  // SRC_HIST_HIP_HIST_HIP_BENCHMARK_H_

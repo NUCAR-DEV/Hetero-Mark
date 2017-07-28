@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,22 +37,21 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
-#define SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+#ifndef SRC_EP_CUDA_EP_CUDA_BENCHMARK_H_
+#define SRC_EP_CUDA_EP_CUDA_BENCHMARK_H_
 
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/fir/fir_benchmark.h"
+#include "src/ep/ep_benchmark.h"
 
-class FirCudaBenchmark : public FirBenchmark {
+class EpCudaBenchmark : public EpBenchmark {
  private:
-  float *input_buffer_ = nullptr;
-  float *output_buffer_ = nullptr;
-  float *coeff_buffer_ = nullptr;
-  float *history_buffer_ = nullptr;
-  float *history_ = nullptr;
+  void PipelinedRun();
+  void NormalRun();
+  void EvaluateGpu(std::vector<Creature> &island);
+  void MutateGpu(std::vector<Creature> &island);
 
-  void InitializeData();
-  void InitializeBuffers();
+  Creature *d_island_;
+  double *d_fitness_func_;
 
  public:
   void Initialize() override;
@@ -61,4 +59,4 @@ class FirCudaBenchmark : public FirBenchmark {
   void Cleanup() override;
 };
 
-#endif  // SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+#endif  // SRC_EP_CUDA_EP_CUDA_BENCHMARK_H_

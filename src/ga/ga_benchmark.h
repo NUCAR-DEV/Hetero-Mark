@@ -43,6 +43,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include <mutex>
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
@@ -69,6 +70,7 @@ class GaBenchmark : public Benchmark {
   int match_reward = 4;
 
   std::vector<int> coarse_match_position_;
+  std::mutex match_mutex_;
   std::list<Match *> matches_;
   std::list<Match *> cpu_matches_;
 

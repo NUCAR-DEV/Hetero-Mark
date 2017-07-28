@@ -44,17 +44,21 @@
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
+#define NUM_VARIABLES 500
+
+class Creature {
+ public:
+  double fitness;
+  double parameters[NUM_VARIABLES];
+
+  void Dump();
+};
+
 class EpBenchmark : public Benchmark {
  protected:
-  static const uint32_t kNumVariables = 1500;
+  static const uint32_t kNumVariables = NUM_VARIABLES;
   static const uint32_t kNumEliminate = 0;
   static const unsigned int kSeed = 1;
-
-  class Creature {
-   public:
-    double fitness;
-    double parameters[kNumVariables];
-  };
 
   uint32_t max_generation_;
   uint32_t population_;

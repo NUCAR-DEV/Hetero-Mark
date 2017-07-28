@@ -135,7 +135,9 @@ void GaBenchmark::FineMatch(int start, int end, std::list<Match *> &matches) {
   }
 
   Match *match = GenerateMatch(score_matrix, action_matrix, start, end);
+  match_mutex_.lock();
   matches.push_back(match);
+  match_mutex_.unlock();
 
   DestroyMatrix(&score_matrix, query_length, target_length);
   DestroyMatrix(&action_matrix, query_length, target_length);

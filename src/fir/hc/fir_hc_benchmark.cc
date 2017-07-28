@@ -54,27 +54,38 @@ void FirHcBenchmark::Initialize() {
 }
 
 void FirHcBenchmark::Run() {
-  hc::array_view<float, 1> av_input(num_total_data_, input_);
+  // hc::array_view<float, 1> av_input(num_total_data_, input_);
   hc::array_view<float, 1> av_coeff(num_tap_, coeff_);
-  hc::array_view<float, 1> av_output(num_total_data_, output_);
+  // hc::array_view<float, 1> av_output(num_total_data_, output_);
   hc::array_view<float, 1> av_history(num_tap_, history_);
 
   uint32_t num_tap = num_tap_;
-  uint32_t num_data_per_block = num_data_per_block_;
 
   for (unsigned int i = 0; i < num_block_; i++) {
-    hc::extent<1> ex(num_data_per_block);
+    hc::array_view<float, 1> av_input_sec(num_data_per_block_,
+                                          input_ + i * num_data_per_block_);
+    hc::array_view<float, 1> av_output_sec(num_data_per_block_,
+                                           output_ + i * num_data_per_block_);
+    av_output_sec.discard_data();
+
+    hc::extent<1> ex(num_data_per_block_);
     hc::parallel_for_each(ex, [=](hc::index<1> j)[[hc]] {
-      uint32_t id = i * num_data_per_block + j[0];
       float sum = 0;
       for (uint32_t k = 0; k < num_tap; k++) {
-        if (id >= k) {
-          sum = sum + av_coeff[k] * av_input[id - k];
+        if (j[0] >= k) {
+          sum = sum + av_coeff[k] * av_input_sec[j[0] - k];
+        } else {
+          sum = sum + av_coeff[k] * av_history[num_tap - (k - j[0])];
         }
       }
-      av_output[id] = sum;
+      av_output_sec[j[0]] = sum;
     });
-    av_output.synchronize();
+
+    av_output_sec.synchronize();
+
+    for (uint32_t i = 0; i < num_tap_; i++) {
+      av_history[i] = av_input_sec[num_data_per_block_ - num_tap_ + i];
+    }
   }
 }
 

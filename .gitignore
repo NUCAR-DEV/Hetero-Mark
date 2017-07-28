@@ -78,3 +78,6 @@ data.tar.gz
 
 # Auto benchmarking
 compile_log.txt
+
+# HIP
+*.prehip

@@ -4,6 +4,7 @@ set(SUBDIRECTORIES
   cl20
   hc
   cuda
+  hip
 )
 set(SRC_FILES
   fir_benchmark.cc

@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Hetero-mark
  *
@@ -9,7 +10,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,27 +38,63 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
-#define SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include "src/hist/hip/hist_hip_benchmark.h"
 
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/fir/fir_benchmark.h"
+__global__ void Histogram(hipLaunchParm lp, uint32_t *pixels,
+                          uint32_t *histogram, uint32_t num_colors,
+                          uint32_t num_pixels) {
+  int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+  int gsize = hipGridDim_x * hipBlockDim_x;
 
-class FirCudaBenchmark : public FirBenchmark {
- private:
-  float *input_buffer_ = nullptr;
-  float *output_buffer_ = nullptr;
-  float *coeff_buffer_ = nullptr;
-  float *history_buffer_ = nullptr;
-  float *history_ = nullptr;
+  if (tid >= num_pixels) {
+    return;
+  }
 
-  void InitializeData();
-  void InitializeBuffers();
+  uint32_t priv_hist[256];
+  for (uint32_t i = 0; i < num_colors; i++) {
+    priv_hist[i] = 0;
+  }
 
- public:
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
+  // Private histogram
+  uint32_t index = tid;
+  while (index < num_pixels) {
+    uint32_t color = pixels[index];
+    priv_hist[color]++;
+    index += gsize;
+  }
 
-#endif  // SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+  __syncthreads();
+
+  // Copy to global memory
+  for (uint32_t i = 0; i < num_colors; i++) {
+    if (priv_hist[i] > 0) {
+      atomicAdd(histogram + i, priv_hist[i]);
+    }
+  }
+}
+
+void HistHipBenchmark::Initialize() {
+  HistBenchmark::Initialize();
+
+  hipMalloc(&d_pixels_, num_pixel_ * sizeof(uint32_t));
+  hipMalloc(&d_histogram_, num_color_ * sizeof(uint32_t));
+}
+
+void HistHipBenchmark::Run() {
+  hipMemcpy(d_pixels_, pixels_, num_pixel_ * sizeof(uint32_t),
+            hipMemcpyHostToDevice);
+  hipMemset(d_histogram_, 0, num_color_ * sizeof(uint32_t));
+  hipLaunchKernel(HIP_KERNEL_NAME(Histogram), dim3(8192 / 64), dim3(64), 0, 0,
+                  d_pixels_, d_histogram_, num_color_, num_pixel_);
+  hipMemcpy(histogram_, d_histogram_, num_color_ * sizeof(uint32_t),
+            hipMemcpyDeviceToHost);
+}
+
+void HistHipBenchmark::Cleanup() {
+  hipFree(d_pixels_);
+  hipFree(d_histogram_);
+  HistBenchmark::Cleanup();
+}

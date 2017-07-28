@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,27 +37,38 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
-#define SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+#ifndef SRC_BE_HIP_BE_HIP_BENCHMARK_H_
+#define SRC_BE_HIP_BE_HIP_BENCHMARK_H_
 
+#include <condition_variable>
+#include <mutex>
+#include <queue>
+#include <thread>
+#include "src/be/be_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/fir/fir_benchmark.h"
 
-class FirCudaBenchmark : public FirBenchmark {
+class BeHipBenchmark : public BeBenchmark {
  private:
-  float *input_buffer_ = nullptr;
-  float *output_buffer_ = nullptr;
-  float *coeff_buffer_ = nullptr;
-  float *history_buffer_ = nullptr;
-  float *history_ = nullptr;
+  void NormalRun();
+  void CollaborativeRun();
 
-  void InitializeData();
-  void InitializeBuffers();
+  TimeMeasurement *timer_;
+
+  float *d_bg_;
+  uint8_t *d_fg_;
+
+  std::mutex queue_mutex_;
+  std::condition_variable queue_condition_variable_;
+  std::queue<uint8_t *> frame_queue_;
+  bool finished_;
+  void GPUThread();
+  void ExtractAndEncode(uint8_t *frame);
 
  public:
   void Initialize() override;
   void Run() override;
+  void Summarize() override;
   void Cleanup() override;
 };
 
-#endif  // SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+#endif  // SRC_BE_HIP_BE_HIP_BENCHMARK_H_

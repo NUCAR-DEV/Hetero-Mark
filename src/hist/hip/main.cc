@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,27 +37,24 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
-#define SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
-
+#include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/fir/fir_benchmark.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/hist/hip/hist_hip_benchmark.h"
+#include "src/hist/hist_command_line_options.h"
 
-class FirCudaBenchmark : public FirBenchmark {
- private:
-  float *input_buffer_ = nullptr;
-  float *output_buffer_ = nullptr;
-  float *coeff_buffer_ = nullptr;
-  float *history_buffer_ = nullptr;
-  float *history_ = nullptr;
+int main(int argc, const char **argv) {
+  std::unique_ptr<HistHipBenchmark> benchmark(new HistHipBenchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
-  void InitializeData();
-  void InitializeBuffers();
+  HistCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
 
- public:
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
+  runner.Run();
 
-#endif  // SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+  return 0;
+}

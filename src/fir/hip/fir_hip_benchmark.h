@@ -38,13 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
-#define SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+#ifndef SRC_FIR_HIP_FIR_HIP_BENCHMARK_H_
+#define SRC_FIR_HIP_FIR_HIP_BENCHMARK_H_
 
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/fir/fir_benchmark.h"
 
-class FirCudaBenchmark : public FirBenchmark {
+class FirHipBenchmark : public FirBenchmark {
  private:
   float *input_buffer_ = nullptr;
   float *output_buffer_ = nullptr;
@@ -61,4 +61,4 @@ class FirCudaBenchmark : public FirBenchmark {
   void Cleanup() override;
 };
 
-#endif  // SRC_FIR_CUDA_FIR_CUDA_BENCHMARK_H_
+#endif  // SRC_FIR_HIP_FIR_HIP_BENCHMARK_H_

@@ -44,6 +44,7 @@
 #include <mutex>
 #include <queue>
 #include <thread>
+#include <cuda_runtime.h>
 #include "src/be/be_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
@@ -56,6 +57,7 @@ class BeCudaBenchmark : public BeBenchmark {
 
   float *d_bg_;
   uint8_t *d_fg_;
+  uint8_t *d_frame_;
 
   std::mutex queue_mutex_;
   std::condition_variable queue_condition_variable_;
@@ -63,6 +65,7 @@ class BeCudaBenchmark : public BeBenchmark {
   bool finished_;
   void GPUThread();
   void ExtractAndEncode(uint8_t *frame);
+  cudaStream_t stream_;
 
  public:
   void Initialize() override;

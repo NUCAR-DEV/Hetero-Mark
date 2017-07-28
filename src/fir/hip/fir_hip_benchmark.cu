@@ -41,11 +41,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "src/fir/cuda/fir_cuda_benchmark.h"
+#include "hip/hip_runtime.h"
+#include "src/fir/hip/fir_hip_benchmark.h"
 
-__global__ void fir_cuda(float *input, float *output, float *coeff,
-                         float *history, uint32_t num_tap, uint32_t num_data) {
-  uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+__global__ void fir_hip(hipLaunchParm lp, float *input, float *output,
+                        float *coeff, float *history, uint32_t num_tap, uint32_t num_data) {
+  uint32_t tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
   if (tid > num_data) return;
 
   float sum = 0;
@@ -60,47 +61,47 @@ __global__ void fir_cuda(float *input, float *output, float *coeff,
   output[tid] = sum;
 }
 
-void FirCudaBenchmark::Initialize() {
+void FirHipBenchmark::Initialize() {
   FirBenchmark::Initialize();
   InitializeBuffers();
   InitializeData();
 }
 
-void FirCudaBenchmark::InitializeBuffers() {
+void FirHipBenchmark::InitializeBuffers() {
   history_ = reinterpret_cast<float *>(malloc(num_tap_ * sizeof(float)));
-  cudaMalloc((void **)&input_buffer_, sizeof(float) * num_data_per_block_);
-  cudaMalloc((void **)&output_buffer_, sizeof(float) * num_data_per_block_);
-  cudaMalloc((void **)&coeff_buffer_, sizeof(float) * num_tap_);
-  cudaMalloc((void **)&history_buffer_, sizeof(float) * num_tap_);
+  hipMalloc((void **)&input_buffer_, sizeof(float) * num_data_per_block_);
+  hipMalloc((void **)&output_buffer_, sizeof(float) * num_data_per_block_);
+  hipMalloc((void **)&coeff_buffer_, sizeof(float) * num_tap_);
+  hipMalloc((void **)&history_buffer_, sizeof(float) * num_tap_);
 }
 
-void FirCudaBenchmark::InitializeData() {
+void FirHipBenchmark::InitializeData() {
+  hipMemcpy(coeff_buffer_, coeff_, num_tap_ * sizeof(float),
+            hipMemcpyHostToDevice);
+
   for (unsigned i = 0; i < num_tap_; i++) {
     history_[i] = 0.0;
   }
-
-  cudaMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(coeff_buffer_, coeff_, num_tap_ * sizeof(float),
-             cudaMemcpyHostToDevice);
+  hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
+            hipMemcpyHostToDevice);
 }
 
-void FirCudaBenchmark::Run() {
+void FirHipBenchmark::Run() {
   unsigned int count = 0;
 
   dim3 grid_size(num_data_per_block_ / 64);
   dim3 block_size(64);
 
   while (count < num_block_) {
-    cudaMemcpy(input_buffer_, input_ + (count * num_data_per_block_),
-               (num_data_per_block_) * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
-               cudaMemcpyHostToDevice);
-    fir_cuda<<<grid_size, block_size>>>(input_buffer_, output_buffer_,
-                                        coeff_buffer_, history_buffer_,
-                                        num_tap_, num_data_per_block_);
-    cudaMemcpy(output_ + count * num_data_per_block_, output_buffer_,
-               num_data_per_block_ * sizeof(float), cudaMemcpyDeviceToHost);
+    hipMemcpy(input_buffer_, input_ + (count * num_data_per_block_),
+              (num_data_per_block_) * sizeof(float), hipMemcpyHostToDevice);
+    hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
+              hipMemcpyHostToDevice);
+    hipLaunchKernel(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
+                    0, 0, input_buffer_, output_buffer_, coeff_buffer_,
+                    history_buffer_, num_tap_, num_data_per_block_);
+    hipMemcpy(output_ + count * num_data_per_block_, output_buffer_,
+              num_data_per_block_ * sizeof(float), hipMemcpyDeviceToHost);
 
     for (uint32_t i = 0; i < num_tap_; i++) {
       history_[i] = input_[count * num_data_per_block_ + num_data_per_block_ -
@@ -111,11 +112,11 @@ void FirCudaBenchmark::Run() {
   }
 }
 
-void FirCudaBenchmark::Cleanup() {
+void FirHipBenchmark::Cleanup() {
   FirBenchmark::Cleanup();
   free(history_);
-  cudaFree(output_buffer_);
-  cudaFree(coeff_buffer_);
-  cudaFree(input_buffer_);
-  cudaFree(history_buffer_);
+  hipFree(output_buffer_);
+  hipFree(coeff_buffer_);
+  hipFree(input_buffer_);
+  hipFree(history_buffer_);
 }
