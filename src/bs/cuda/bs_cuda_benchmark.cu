@@ -126,10 +126,8 @@ void BsCudaBenchmark::Run() {
   cudaStream_t stream1;
   cudaStreamCreate(&stream1);
   int stream_ids[2];
-
-  for (int i = 0; i < 3; i++) {
     // the boolean object for the first lunch
-    bool first_launch_ = true;
+  bool first_launch_ = true;
 
     // The main while loop
     uint32_t done_tiles_ = 0;
@@ -186,7 +184,7 @@ void BsCudaBenchmark::Run() {
     for (unsigned int i = 0; i < done_tiles_ * tile_size_; i++) {
       put_price_[i] = av_put_price[i];
     }
-  }
+  
 }
 
 void BsCudaBenchmark::Cleanup() { BsBenchmark::Cleanup(); }
