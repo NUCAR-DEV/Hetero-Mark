@@ -189,4 +189,7 @@ void GaHcBenchmark::NonCollaborativeRun() {
   }
 }
 
-void GaHcBenchmark::Cleanup() { GaBenchmark::Cleanup(); }
+void GaHcBenchmark::Cleanup() { 
+	free(coarse_match_result_);
+	GaBenchmark::Cleanup(); 
+}

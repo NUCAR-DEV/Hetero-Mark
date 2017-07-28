@@ -51,6 +51,9 @@ class GaCudaBenchmark : public GaBenchmark {
   char *device_query = nullptr;
   char *device_batch_result = nullptr;
 
+  void CollaborativeRun();
+  void NonCollaborativeRun();
+
  public:
   void Initialize() override;
   void Run() override;

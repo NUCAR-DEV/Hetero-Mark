@@ -128,6 +128,7 @@ void KmeansCudaBenchmark::TransposeFeatures() {
              num_points_ * num_features_ * sizeof(float),
              cudaMemcpyHostToDevice);
 
+ 
   dim3 block_size(64);
   dim3 grid_size((num_points_ + block_size.x - 1) / block_size.x);
 
