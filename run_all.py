@@ -150,13 +150,12 @@ benchmarks = [
     ('fir', 'hip', ['-y', '1024', '-x', '7168']),
     ('fir', 'hip', ['-y', '1024', '-x', '8192']),
 
-
-
-
     ('ga', 'hc', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
     ('ga', 'hc', ['-i', os.getcwd() + '/data/gene_alignment/medium.data', '--collaborative']),
     ('ga', 'cuda', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
     ('ga', 'cuda', ['-i', os.getcwd() + '/data/gene_alignment/medium.data', '--collaborative']),
+    ('ga', 'hip', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
+    ('ga', 'hip', ['-i', os.getcwd() + '/data/gene_alignment/medium.data', '--collaborative']),
 
     ('hist', 'cl12', ['-x', '1048576']),
     ('hist', 'cl20', ['-x', '1048576']),

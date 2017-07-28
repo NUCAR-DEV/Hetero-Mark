@@ -4,6 +4,7 @@ set(FOLDER_NAME ga)
 set(SUBDIRECTORIES 
   hc
   cuda
+  hip
 )
 set(SRC_FILES
   ga_benchmark.cc

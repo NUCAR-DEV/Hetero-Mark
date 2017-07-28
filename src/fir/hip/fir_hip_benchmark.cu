@@ -45,7 +45,8 @@
 #include "src/fir/hip/fir_hip_benchmark.h"
 
 __global__ void fir_hip(hipLaunchParm lp, float *input, float *output,
-                        float *coeff, float *history, uint32_t num_tap, uint32_t num_data) {
+                        float *coeff, float *history, uint32_t num_tap,
+                        uint32_t num_data) {
   uint32_t tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
   if (tid > num_data) return;
 
@@ -105,7 +106,7 @@ void FirHipBenchmark::Run() {
 
     for (uint32_t i = 0; i < num_tap_; i++) {
       history_[i] = input_[count * num_data_per_block_ + num_data_per_block_ -
-                          num_tap_ + i];
+                           num_tap_ + i];
     }
 
     count++;
