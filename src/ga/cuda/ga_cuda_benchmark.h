@@ -47,9 +47,9 @@ class GaCudaBenchmark : public GaBenchmark {
  private:
   char *coarse_match_result_;
   static const uint32_t kBatchSize = 1024;
-  char *device_target = nullptr;
-  char *device_query = nullptr;
-  char *device_batch_result = nullptr;
+  char *d_target_ = nullptr;
+  char *d_query_ = nullptr;
+  char *d_batch_result_ = nullptr;
 
   void CollaborativeRun();
   void NonCollaborativeRun();

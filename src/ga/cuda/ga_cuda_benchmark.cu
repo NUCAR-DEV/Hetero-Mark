@@ -73,16 +73,14 @@ void GaCudaBenchmark::Initialize() {
   GaBenchmark::Initialize();
   coarse_match_result_ = new char[target_sequence_.length()]();
 
-  cudaMallocManaged((void **)&device_target,
-                    target_sequence_.length() * sizeof(char));
-  cudaMallocManaged((void **)&device_query,
-                    query_sequence_.length() * sizeof(char));
-  cudaMallocManaged((void **)&device_batch_result, kBatchSize * sizeof(char));
+  cudaMalloc(&d_target_, target_sequence_.length() * sizeof(char));
+  cudaMalloc(&d_query_, query_sequence_.length() * sizeof(char));
+  cudaMalloc(&d_batch_result_, kBatchSize * sizeof(char));
 
-  memcpy(device_target, target_sequence_.c_str(),
-         target_sequence_.length() * sizeof(char));
-  memcpy(device_query, query_sequence_.c_str(),
-         query_sequence_.length() * sizeof(char));
+  cudaMemcpy(d_target_, target_sequence_.c_str(),
+             target_sequence_.length() * sizeof(char), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_query_, query_sequence_.c_str(),
+             query_sequence_.length() * sizeof(char), cudaMemcpyHostToDevice);
 }
 
 void GaCudaBenchmark::Run() {
@@ -94,13 +92,14 @@ void GaCudaBenchmark::Run() {
 }
 
 void GaCudaBenchmark::CollaborativeRun() {
-  uint32_t max_searchable_length = target_sequence_.length() - coarse_match_length_;
+  uint32_t max_searchable_length =
+      target_sequence_.length() - coarse_match_length_;
   std::vector<std::thread> threads;
   uint32_t current_position = 0;
 
   while (current_position < max_searchable_length) {
     char batch_result[kBatchSize] = {0};
-    memcpy(device_batch_result, batch_result, kBatchSize * sizeof(char));
+    cudaMemset(d_batch_result_, 0, kBatchSize);
 
     uint32_t end_position = current_position + kBatchSize;
     if (end_position >= max_searchable_length) {
@@ -112,11 +111,12 @@ void GaCudaBenchmark::CollaborativeRun() {
     dim3 grid_size((length + block_size.x - 1) / block_size.x);
 
     ga_cuda<<<grid_size, block_size>>>(
-        device_target, device_query, device_batch_result, length,
+        d_target_, d_query_, d_batch_result_, length,
         query_sequence_.length(), coarse_match_length_, coarse_match_threshold_,
         current_position);
     cudaDeviceSynchronize();
-    memcpy(batch_result, device_batch_result, kBatchSize * sizeof(char));
+    cudaMemcpy(batch_result, d_batch_result_, kBatchSize * sizeof(char), 
+			cudaMemcpyDeviceToHost);
 
     for (uint32_t i = 0; i < length; i++) {
       if (batch_result[i] != 0) {
@@ -135,7 +135,8 @@ void GaCudaBenchmark::CollaborativeRun() {
 }
 
 void GaCudaBenchmark::NonCollaborativeRun() {
-  uint32_t max_searchable_length = target_sequence_.length() - coarse_match_length_;
+  uint32_t max_searchable_length =
+      target_sequence_.length() - coarse_match_length_;
   std::vector<std::thread> threads;
   uint32_t current_position = 0;
 
@@ -149,15 +150,15 @@ void GaCudaBenchmark::NonCollaborativeRun() {
     dim3 block_size(64);
     dim3 grid_size((length + block_size.x - 1) / block_size.x);
 
-	memset(device_batch_result, 0, kBatchSize);
+    cudaMemset(d_batch_result_, 0, kBatchSize);
 
     ga_cuda<<<grid_size, block_size>>>(
-        device_target, device_query, device_batch_result, length,
+        d_target_, d_query_, d_batch_result_, length,
         query_sequence_.length(), coarse_match_length_, coarse_match_threshold_,
         current_position);
     cudaDeviceSynchronize();
-    memcpy(coarse_match_result_ + current_position,
-           device_batch_result, kBatchSize * sizeof(char));
+    cudaMemcpy(coarse_match_result_ + current_position, d_batch_result_,
+           kBatchSize * sizeof(char), cudaMemcpyDeviceToHost);
     current_position = end_position;
   }
 
@@ -174,7 +175,7 @@ void GaCudaBenchmark::NonCollaborativeRun() {
   }
 }
 
-void GaCudaBenchmark::Cleanup() { 
-	free(coarse_match_result_);
-	GaBenchmark::Cleanup(); 
+void GaCudaBenchmark::Cleanup() {
+  free(coarse_match_result_);
+  GaBenchmark::Cleanup();
 }
