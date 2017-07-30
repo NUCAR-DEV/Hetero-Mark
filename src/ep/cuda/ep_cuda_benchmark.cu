@@ -160,14 +160,14 @@ __global__ void Mutate_Kernel(Creature *creatures, uint32_t count,
 }
 
 void EpCudaBenchmark::MutateGpu(std::vector<Creature> &island) {
-  /* cudaMemcpy(d_island_, island.data(), population_ / 2 * sizeof(Creature), */
-  /*            cudaMemcpyHostToDevice); */
-  /* dim3 block_size(64); */
-  /* dim3 grid_size((population_ / 2 * + block_size.x - 1) / block_size.x); */
-  /* Mutate_Kernel<<<grid_size, block_size>>>(d_island_, population_ / 2, */
-  /*                                          kNumVariables); */
-  /* cudaMemcpy(island.data(), d_island_, population_ / 2 * sizeof(Creature), */
-  /*            cudaMemcpyDeviceToHost); */
+  cudaMemcpy(d_island_, island.data(), population_ / 2 * sizeof(Creature),
+			 cudaMemcpyHostToDevice);
+  dim3 block_size(64);
+  dim3 grid_size((population_ / 2 * + block_size.x - 1) / block_size.x);
+  Mutate_Kernel<<<grid_size, block_size>>>(d_island_, population_ / 2,
+										   kNumVariables);
+  cudaMemcpy(island.data(), d_island_, population_ / 2 * sizeof(Creature),
+			 cudaMemcpyDeviceToHost);
 }
 
 void EpCudaBenchmark::Cleanup() {
