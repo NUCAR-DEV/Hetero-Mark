@@ -39,7 +39,7 @@
 class KmeansHipBenchmark : public KmeansBenchmark {
  private:
   float *device_features_;
-  float *device_features_swap;
+  float *device_features_swap_;
   int *device_membership_;
   float *device_clusters_;
 

@@ -48,6 +48,7 @@ __global__ void kmeans_swap_hip(hipLaunchParm lp, float *feature,
                                 float *feature_swap, int npoints,
                                 int nfeatures) {
   uint tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+  if (tid > npoints) return;
 
   for (int i = 0; i < nfeatures; i++)
     feature_swap[i * npoints + tid] = feature[tid * nfeatures + i];
@@ -58,6 +59,7 @@ __global__ void kmeans_compute_hip(hipLaunchParm lp, float *feature,
                                    int npoints, int nclusters, int nfeatures,
                                    int offset, int size) {
   int point_id = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+  if (point_id > npoints) return;
 
   int index = 0;
   if (point_id < npoints) {
@@ -91,7 +93,8 @@ void KmeansHipBenchmark::Initialize() {
 void KmeansHipBenchmark::InitializeBuffers() {
   hipMalloc(&device_membership_, num_points_ * sizeof(int));
   hipMalloc(&device_features_, num_points_ * num_features_ * sizeof(float));
-  hipMalloc(&device_features_swap, num_points_ * num_features_ * sizeof(float));
+  hipMalloc(&device_features_swap_,
+            num_points_ * num_features_ * sizeof(float));
 }
 
 void KmeansHipBenchmark::CreateTemporaryMemory() {
@@ -114,11 +117,11 @@ void KmeansHipBenchmark::Clustering() {
     TransposeFeatures();
     KmeansClustering(num_clusters_);
 
-    float rmse = CalculateRMSE();
-    if (rmse < min_rmse_) {
-      min_rmse_ = rmse;
-      best_num_clusters_ = num_clusters_;
-    }
+	float rmse = CalculateRMSE();
+	if (rmse < min_rmse_) {
+	  min_rmse_ = rmse;
+	  best_num_clusters_ = num_clusters_;
+	}
     FreeTemporaryMemory();
   }
 
@@ -134,7 +137,7 @@ void KmeansHipBenchmark::TransposeFeatures() {
 
   hipLaunchKernel(HIP_KERNEL_NAME(kmeans_swap_hip), dim3(grid_size),
                   dim3(block_size), 0, 0, device_features_,
-                  device_features_swap, num_points_, num_features_);
+                  device_features_swap_, num_points_, num_features_);
 }
 
 void KmeansHipBenchmark::KmeansClustering(unsigned num_clusters) {
@@ -151,9 +154,9 @@ void KmeansHipBenchmark::KmeansClustering(unsigned num_clusters) {
 
   // iterate until converge
   do {
-    UpdateMembership(num_clusters);
-    UpdateClusterCentroids(num_clusters);
-    num_iteration++;
+	UpdateMembership(num_clusters);
+	UpdateClusterCentroids(num_clusters);
+	num_iteration++;
   } while ((delta_ > 0) && (num_iteration < 500));
 
   printf("iterated %d times\n", num_iteration);
@@ -166,30 +169,34 @@ void KmeansHipBenchmark::UpdateMembership(unsigned num_clusters) {
   dim3 grid_size((num_points_ + block_size.x - 1) / block_size.x);
 
   hipMemcpy(device_clusters_, clusters_,
-            num_clusters_ * num_features_ * sizeof(float),
-            hipMemcpyHostToDevice);
+			num_clusters_ * num_features_ * sizeof(float),
+			hipMemcpyHostToDevice);
 
   int size = 0;
   int offset = 0;
 
   hipLaunchKernel(HIP_KERNEL_NAME(kmeans_compute_hip), dim3(grid_size),
-                  dim3(block_size), 0, 0, device_features_swap,
-                  device_clusters_, device_membership_, num_points_,
-                  num_clusters_, num_features_, offset, size);
+				  dim3(block_size), 0, 0, device_features_swap_,
+				  device_clusters_, device_membership_, num_points_,
+				  num_clusters_, num_features_, offset, size);
 
   hipMemcpy(new_membership, device_membership_, num_points_ * sizeof(int),
-            hipMemcpyDeviceToHost);
+			hipMemcpyDeviceToHost);
 
   delta_ = 0.0f;
   for (unsigned int i = 0; i < num_points_; i++) {
-    /* printf("number %d, merbership %d\n", i, new_membership[i]); */
-    if (new_membership[i] != membership_[i]) {
-      delta_++;
-      membership_[i] = new_membership[i];
-    }
+	/* printf("number %d, merbership %d\n", i, new_membership[i]); */
+	if (new_membership[i] != membership_[i]) {
+	  delta_++;
+	  membership_[i] = new_membership[i];
+	}
   }
 }
 
 void KmeansHipBenchmark::Run() { Clustering(); }
 
-void KmeansHipBenchmark::Cleanup() {}
+void KmeansHipBenchmark::Cleanup() {
+  hipFree(device_features_);
+  hipFree(device_features_swap_);
+  hipFree(device_membership_);
+}
