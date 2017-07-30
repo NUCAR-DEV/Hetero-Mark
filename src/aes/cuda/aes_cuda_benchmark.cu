@@ -40,13 +40,14 @@ void AesCudaBenchmark::Initialize() {
   AesBenchmark::Initialize();
   ExpandKey();
 
-  cudaMallocManaged((void **)&dev_ciphertext_, text_length_ * sizeof(uint8_t));
-  cudaMallocManaged((void **)&dev_key_, kExpandedKeyLengthInBytes);
-  cudaMallocManaged((void **)&dev_s_, 256 * sizeof(uint8_t));
+  cudaMalloc((void **)&d_ciphertext_, text_length_ * sizeof(uint8_t));
+  cudaMalloc((void **)&d_key_, kExpandedKeyLengthInBytes);
+  cudaMalloc((void **)&d_s_, 256 * sizeof(uint8_t));
 
-  memcpy(dev_ciphertext_, ciphertext_, text_length_);
-  memcpy(dev_key_, expanded_key_, kExpandedKeyLengthInBytes);
-  memcpy(dev_s_, s, 256 * sizeof(uint8_t));
+  cudaMemcpy(d_ciphertext_, ciphertext_, text_length_, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_key_, expanded_key_, kExpandedKeyLengthInBytes,
+             cudaMemcpyHostToDevice);
+  cudaMemcpy(d_s_, s, 256 * sizeof(uint8_t), cudaMemcpyHostToDevice);
 }
 
 __device__ void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset) {
@@ -166,15 +167,13 @@ void AesCudaBenchmark::Run() {
   dim3 grid_size(static_cast<size_t>(num_blocks / 64.00));
   dim3 block_size(64);
 
-  aes_cuda<<<grid_size, block_size>>>(dev_ciphertext_, dev_key_, dev_s_);
+  aes_cuda<<<grid_size, block_size>>>(d_ciphertext_, d_key_, d_s_);
 
-  cudaDeviceSynchronize();
-
-  memcpy(ciphertext_, dev_ciphertext_, text_length_);
+  cudaMemcpy(ciphertext_, d_ciphertext_, text_length_, cudaMemcpyDeviceToHost);
 }
 
 void AesCudaBenchmark::Cleanup() {
   AesBenchmark::Cleanup();
-  cudaFree(dev_ciphertext_);
-  cudaFree(dev_key_);
+  cudaFree(d_ciphertext_);
+  cudaFree(d_key_);
 }

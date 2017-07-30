@@ -45,9 +45,9 @@
 #include "src/common/time_measurement/time_measurement.h"
 
 class AesCudaBenchmark : public AesBenchmark {
-  uint8_t *dev_ciphertext_;
-  uint32_t *dev_key_;
-  uint8_t *dev_s_;
+  uint8_t *d_ciphertext_;
+  uint32_t *d_key_;
+  uint8_t *d_s_;
 
  public:
   void Initialize() override;
