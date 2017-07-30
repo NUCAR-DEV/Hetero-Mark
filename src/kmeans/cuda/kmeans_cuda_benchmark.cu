@@ -45,7 +45,8 @@
 
 __global__ void kmeans_swap_cuda(float *feature, float *feature_swap,
                                  int npoints, int nfeatures) {
-  uint tid = blockIdx.x * blockDim.x + threadIdx.x;
+  uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid > npoints) return;
 
   for (int i = 0; i < nfeatures; i++)
     feature_swap[i * npoints + tid] = feature[tid * nfeatures + i];
@@ -54,7 +55,8 @@ __global__ void kmeans_swap_cuda(float *feature, float *feature_swap,
 __global__ void kmeans_compute_cuda(float *feature, float *clusters,
                                     int *membership, int npoints, int nclusters,
                                     int nfeatures, int offset, int size) {
-  int point_id = blockIdx.x * blockDim.x + threadIdx.x;
+  uint32_t point_id = blockIdx.x * blockDim.x + threadIdx.x;
+  if (point_id > npoints) return;
 
   int index = 0;
   if (point_id < npoints) {
@@ -189,4 +191,8 @@ void KmeansCudaBenchmark::UpdateMembership(unsigned num_clusters) {
 
 void KmeansCudaBenchmark::Run() { Clustering(); }
 
-void KmeansCudaBenchmark::Cleanup() {}
+void KmeansCudaBenchmark::Cleanup() {
+  cudaFree(device_membership_);
+  cudaFree(device_features_);
+  cudaFree(device_features_swap);
+}
