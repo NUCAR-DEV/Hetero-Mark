@@ -2,6 +2,7 @@ set( FOLDER_NAME ep )
 set( SUBDIRECTORIES 
   hc
   cuda
+  hip
 )
 set( SRC_FILES
   ep_benchmark.cc
