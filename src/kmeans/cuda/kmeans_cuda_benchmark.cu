@@ -90,7 +90,7 @@ void KmeansCudaBenchmark::Initialize() {
 void KmeansCudaBenchmark::InitializeBuffers() {
   cudaMalloc(&device_membership_, num_points_ * sizeof(int));
   cudaMalloc(&device_features_, num_points_ * num_features_ * sizeof(float));
-  cudaMalloc(&device_features_swap,
+  cudaMalloc(&device_features_swap_,
              num_points_ * num_features_ * sizeof(float));
 }
 
@@ -129,12 +129,12 @@ void KmeansCudaBenchmark::TransposeFeatures() {
   cudaMemcpy(device_features_, host_features_,
              num_points_ * num_features_ * sizeof(float),
              cudaMemcpyHostToDevice);
- 
+
   dim3 block_size(64);
   dim3 grid_size((num_points_ + block_size.x - 1) / block_size.x);
 
   kmeans_swap_cuda<<<grid_size, block_size>>>(
-      device_features_, device_features_swap, num_points_, num_features_);
+      device_features_, device_features_swap_, num_points_, num_features_);
 }
 
 void KmeansCudaBenchmark::KmeansClustering(unsigned num_clusters) {
@@ -173,7 +173,7 @@ void KmeansCudaBenchmark::UpdateMembership(unsigned num_clusters) {
   int offset = 0;
 
   kmeans_compute_cuda<<<grid_size, block_size>>>(
-      device_features_swap, device_clusters_, device_membership_, num_points_,
+      device_features_swap_, device_clusters_, device_membership_, num_points_,
       num_clusters_, num_features_, offset, size);
 
   cudaMemcpy(new_membership, device_membership_, num_points_ * sizeof(int),
@@ -194,5 +194,5 @@ void KmeansCudaBenchmark::Run() { Clustering(); }
 void KmeansCudaBenchmark::Cleanup() {
   cudaFree(device_membership_);
   cudaFree(device_features_);
-  cudaFree(device_features_swap);
+  cudaFree(device_features_swap_);
 }
