@@ -45,11 +45,10 @@
 
 class BsCudaBenchmark : public BsBenchmark {
  private:
-
- float Phi(float x);
- float *rand_array    = nullptr; 
- float *av_call_price = nullptr;
- float *av_put_price  = nullptr;
+  float Phi(float x);
+  float *d_rand_array_ = nullptr;
+  float *d_call_price_ = nullptr;
+  float *d_put_price_ = nullptr;
 
  public:
   void Initialize() override;
@@ -57,4 +56,3 @@ class BsCudaBenchmark : public BsBenchmark {
   void Cleanup() override;
 };
 #endif  // SRC_BS_HC_BS_HC_BENCHMARK_H_
-

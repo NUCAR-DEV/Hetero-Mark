@@ -57,10 +57,9 @@ void BsCommandLineOptions::RegisterOptions() {
                                    "Number of samples to be calculated");
 
   // Registering the option to turn of the CPU
-  command_line_option_.AddArgument("Collaborative", "bool", "false", "",
+  command_line_option_.AddArgument("Collaborative", "bool", "false", "-c",
                                    "--collaborative",
-                                   "Involving CPU in the computation. This "
-                                   "option only works for HSA implementation");
+                                   "Involving CPU in the computation.");
 
   // Registering the Chunk of tiles that run on GPU separately
   command_line_option_.AddArgument(

@@ -73,17 +73,13 @@ __device__ float Phi(float X) {
   return (X < 0) ? (1.0f - y) : y;
 }
 
-__global__ void bs_cuda(float *rand_array, float *av_call_price,
-                        float *av_put_price) {
+__global__ void bs_cuda(float *rand_array, float *d_call_price_,
+                        float *d_put_price_) {
   uint tid = blockIdx.x * blockDim.x + threadIdx.x;
 
   // the variable representing the value in the array[i]
   float i_rand = rand_array[tid];
 
-  //	if(tid == 1024)
-  //		printf("vAL IS %f \n", rand_array[tid]);
-
-  // calculating the initial S,K,T, and R
   // calculating the initial S,K,T, and R
   float s = 10.0 * i_rand + 100.0 * (1.0f - i_rand);
   float k = 10.0 * i_rand + 100.0 * (1.0f - i_rand);
@@ -102,22 +98,21 @@ __global__ void bs_cuda(float *rand_array, float *av_call_price,
   float k_exp_minus_rt_ = k * exp(-r * t);
 
   // Getting the output call and put prices
-  av_call_price[tid] = s * Phi(d1) - k_exp_minus_rt_ * Phi(d2);
-  av_put_price[tid] = k_exp_minus_rt_ * Phi(-d2) - s * Phi(-d1);
+  d_call_price_[tid] = s * Phi(d1) - k_exp_minus_rt_ * Phi(d2);
+  d_put_price_[tid] = k_exp_minus_rt_ * Phi(-d2) - s * Phi(-d1);
 }
 
 void BsCudaBenchmark::Initialize() {
   BsBenchmark::Initialize();
-  cudaMallocManaged((void **)&rand_array,
-                    num_tiles_ * tile_size_ * sizeof(float));
-  cudaMallocManaged((void **)&av_call_price,
-                    num_tiles_ * tile_size_ * sizeof(float));
-  cudaMallocManaged((void **)&av_put_price,
-                    num_tiles_ * tile_size_ * sizeof(float));
+
+  cudaMalloc((void **)&d_rand_array_, num_tiles_ * tile_size_ * sizeof(float));
+  cudaMalloc((void **)&d_call_price_, num_tiles_ * tile_size_ * sizeof(float));
+  cudaMalloc((void **)&d_put_price_, num_tiles_ * tile_size_ * sizeof(float));
+
   for (unsigned int i = 0; i < num_tiles_ * tile_size_; i++) {
-    rand_array[i] = rand_array_[i];
-    av_call_price[i] = 0;
-    av_put_price[i] = 0;
+    d_rand_array_[i] = rand_array_[i];
+    d_call_price_[i] = 0;
+    d_put_price_[i] = 0;
   }
 }
 
@@ -125,65 +120,69 @@ void BsCudaBenchmark::Run() {
   cudaStream_t stream1;
   cudaStreamCreate(&stream1);
   int stream_ids[2];
-    // the boolean object for the first lunch
+  // the boolean object for the first lunch
   bool first_launch_ = true;
 
-    // The main while loop
-    uint32_t done_tiles_ = 0;
-    uint32_t last_tile_ = num_tiles_;
+  // The main while loop
+  uint32_t done_tiles_ = 0;
+  uint32_t last_tile_ = num_tiles_;
 
-    // while the done tiles are less than num_tiles, continue
-    while (done_tiles_ < last_tile_) {
-      // First check to make sure that we are launching the first set
-      if (first_launch_ || completion_flag == 1) {
-        // No longer the first lunch after this point so
-        // turn it off
-        //	printf("Completion set to 1. GPU running \n");
-        first_launch_ = false;
-        completion_flag = 0;
-        // Set the size of the section based on the number of tiles
-        // and the number of compute units
-        uint32_t section_tiles = (gpu_chunk_ < last_tile_ - done_tiles_)
-                                     ? gpu_chunk_
-                                     : last_tile_ - done_tiles_;
+  // while the done tiles are less than num_tiles, continue
+  while (done_tiles_ < last_tile_) {
+    // First check to make sure that we are launching the first set
+    if (first_launch_ || completion_flag == 1) {
+      // No longer the first lunch after this point so
+      // turn it off
+      //	printf("Completion set to 1. GPU running \n");
+      first_launch_ = false;
+      completion_flag = 0;
+      // Set the size of the section based on the number of tiles
+      // and the number of compute units
+      uint32_t section_tiles = (gpu_chunk_ < last_tile_ - done_tiles_)
+                                   ? gpu_chunk_
+                                   : last_tile_ - done_tiles_;
 
-        unsigned int offset = done_tiles_ * tile_size_;
-        //               printf("Section tile is %d \n", section_tiles);
+      unsigned int offset = done_tiles_ * tile_size_;
+      //               printf("Section tile is %d \n", section_tiles);
 
-        // GPU is running the following tiles
-        // fprintf(stderr, "GPU tiles: %d to %d\n", done_tiles_,
-        //       done_tiles_ + section_tiles);
-        done_tiles_ += section_tiles;
+      // GPU is running the following tiles
+      // fprintf(stderr, "GPU tiles: %d to %d\n", done_tiles_,
+      //       done_tiles_ + section_tiles);
+      done_tiles_ += section_tiles;
 
-        dim3 block_size(64);
-        dim3 grid_size((section_tiles * tile_size_) / 64.00);
+      dim3 block_size(64);
+      dim3 grid_size((section_tiles * tile_size_) / 64.00);
 
-        stream_ids[0] = 1;
+      stream_ids[0] = 1;
 
-        bs_cuda<<<grid_size, block_size, 0, stream1>>>(
-            rand_array + offset, av_call_price + offset, av_put_price + offset);
-        cudaStreamAddCallback(stream1, completion_status,
-                              (void *)(stream_ids + 0), 0);
-      } else {
-        if (active_cpu_) {
-          // printf("CPU is running now \n");
-          last_tile_--;
-          //	fprintf(stderr, "CPU tile: %d \n", last_tile_);
-          BlackScholesCPU(rand_array_, call_price_, put_price_,
-                          last_tile_ * tile_size_, tile_size_);
-        }
+      bs_cuda<<<grid_size, block_size, 0, stream1>>>(
+          d_rand_array_ + offset, d_call_price_ + offset, d_put_price_ + offset);
+      cudaStreamAddCallback(stream1, completion_status,
+                            (void *)(stream_ids + 0), 0);
+    } else {
+      if (active_cpu_) {
+        // printf("CPU is running now \n");
+        last_tile_--;
+        //	fprintf(stderr, "CPU tile: %d \n", last_tile_);
+        BlackScholesCPU(rand_array_, call_price_, put_price_,
+                        last_tile_ * tile_size_, tile_size_);
       }
     }
+  }
 
-    cudaDeviceSynchronize();
-    for (unsigned int i = 0; i < done_tiles_ * tile_size_; i++) {
-      call_price_[i] = av_call_price[i];
-    }
+  cudaDeviceSynchronize();
+  for (unsigned int i = 0; i < done_tiles_ * tile_size_; i++) {
+    call_price_[i] = d_call_price_[i];
+  }
 
-    for (unsigned int i = 0; i < done_tiles_ * tile_size_; i++) {
-      put_price_[i] = av_put_price[i];
-    }
-  
+  for (unsigned int i = 0; i < done_tiles_ * tile_size_; i++) {
+    put_price_[i] = d_put_price_[i];
+  }
 }
 
-void BsCudaBenchmark::Cleanup() { BsBenchmark::Cleanup(); }
+void BsCudaBenchmark::Cleanup() {
+  cudaFree(d_rand_array_);
+  cudaFree(d_call_price_);
+  cudaFree(d_put_price_);
+  BsBenchmark::Cleanup();
+}
