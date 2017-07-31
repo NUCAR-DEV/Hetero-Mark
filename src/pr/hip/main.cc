@@ -37,27 +37,22 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_PR_CUDA_PR_CUDA_BENCHMARK_H_
-#define SRC_PR_CUDA_PR_CUDA_BENCHMARK_H_
-
+#include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/pr/pr_benchmark.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/pr/hip/pr_hip_benchmark.h"
+#include "src/pr/pr_command_line_options.h"
 
-class PrCudaBenchmark : public PrBenchmark {
- private:
-  // float *page_rank_mtx_1_;
-  // float *page_rank_mtx_2_;
-  //
-  uint32_t  *device_row_offsets;
-  uint32_t  *device_column_numbers;
-  float *device_values;
-  float *device_mtx_1;
-  float *device_mtx_2;
+int main(int argc, const char **argv) {
+  std::unique_ptr<PrHipBenchmark> benchmark(new PrHipBenchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
- public:
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
+  PrCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
 
-#endif  // SRC_PR_CUDA_PR_CUDA_BENCHMARK_H_
+  runner.Run();
+}
