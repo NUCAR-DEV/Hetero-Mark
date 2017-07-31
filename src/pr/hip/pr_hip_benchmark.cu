@@ -40,25 +40,23 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "src/pr/cuda/pr_cuda_benchmark.h"
+#include "hip/hip_runtime.h"
+#include "src/pr/hip/pr_hip_benchmark.h"
 
-void PrCudaBenchmark::Initialize() {
+void PrHipBenchmark::Initialize() {
   PrBenchmark::Initialize();
-  /* page_rank_mtx_1_ = new float[num_nodes_]; */
-  /* page_rank_mtx_2_ = new float[num_nodes_]; */
-  /*  */
-  cudaMalloc((void **)&device_row_offsets, (num_nodes_ + 1) * sizeof(uint32_t));
-  cudaMalloc((void **)&device_column_numbers,
-             (num_connections_) * sizeof(uint32_t));
-  cudaMalloc((void **)&device_values, (num_connections_) * sizeof(float));
-  cudaMalloc((void **)&device_mtx_1, (num_nodes_) * sizeof(float));
-  cudaMalloc((void **)&device_mtx_2, (num_nodes_) * sizeof(float));
+  hipMalloc((void **)&device_row_offsets, (num_nodes_ + 1) * sizeof(uint32_t));
+  hipMalloc((void **)&device_column_numbers,
+            (num_connections_) * sizeof(uint32_t));
+  hipMalloc((void **)&device_values, (num_connections_) * sizeof(float));
+  hipMalloc((void **)&device_mtx_1, (num_nodes_) * sizeof(float));
+  hipMalloc((void **)&device_mtx_2, (num_nodes_) * sizeof(float));
 }
 
-__global__ void pr_cuda(uint32_t *device_row_offsets,
+__global__ void pr_hip(hipLaunchParm lp, uint32_t *device_row_offsets,
                         uint32_t *device_column_numbers, float *device_values,
                         float *device_mtx_1, float *device_mtx_2) {
-  uint tid = blockIdx.x * blockDim.x + threadIdx.x;
+  uint tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
   uint32_t initialize = device_row_offsets[tid];
   uint32_t limit = device_row_offsets[tid + 1];
   float new_value = 0;
@@ -69,58 +67,59 @@ __global__ void pr_cuda(uint32_t *device_row_offsets,
   device_mtx_2[tid] = new_value;
 }
 
-void PrCudaBenchmark::Run() {
+void PrHipBenchmark::Run() {
   uint32_t i;
 
-  cudaMemcpy(device_row_offsets, row_offsets_,
-             (num_nodes_ + 1) * sizeof(uint32_t), cudaMemcpyHostToDevice);
-  cudaMemcpy(device_column_numbers, column_numbers_,
-             (num_connections_) * sizeof(uint32_t), cudaMemcpyHostToDevice);
-  cudaMemcpy(device_values, values_, (num_connections_) * sizeof(float),
-             cudaMemcpyHostToDevice);
-    
+  hipMemcpy(device_row_offsets, row_offsets_,
+            (num_nodes_ + 1) * sizeof(uint32_t), hipMemcpyHostToDevice);
+  hipMemcpy(device_column_numbers, column_numbers_,
+            (num_connections_) * sizeof(uint32_t), hipMemcpyHostToDevice);
+  hipMemcpy(device_values, values_, (num_connections_) * sizeof(float),
+            hipMemcpyHostToDevice);
+
   dim3 block_size(64);
   dim3 grid_size(num_nodes_ / 64);
 
-  float *temp_mtx = reinterpret_cast<float *>(malloc(num_nodes_ * sizeof(float)));
+  float *temp_mtx =
+      reinterpret_cast<float *>(malloc(num_nodes_ * sizeof(float)));
   for (i = 0; i < num_nodes_; i++) {
     temp_mtx[i] = 1.0 / num_nodes_;
   }
-  cudaMemcpy(device_mtx_1, temp_mtx, num_nodes_ * sizeof(float),
-             cudaMemcpyHostToDevice);
+  hipMemcpy(device_mtx_1, temp_mtx, num_nodes_ * sizeof(float),
+            hipMemcpyHostToDevice);
   free(temp_mtx);
 
   for (i = 0; i < max_iteration_; i++) {
     if (i % 2 == 0) {
-      pr_cuda<<<grid_size, block_size>>>(device_row_offsets,
-                                         device_column_numbers, device_values,
-                                         device_mtx_1, device_mtx_2);
+      hipLaunchKernel(HIP_KERNEL_NAME(pr_hip), dim3(grid_size),
+                      dim3(block_size), 0, 0, device_row_offsets,
+                      device_column_numbers, device_values, device_mtx_1,
+                      device_mtx_2);
     }
 
     else {
-      pr_cuda<<<grid_size, block_size>>>(device_row_offsets,
-                                         device_column_numbers, device_values,
-                                         device_mtx_2, device_mtx_1);
+      hipLaunchKernel(HIP_KERNEL_NAME(pr_hip), dim3(grid_size),
+                      dim3(block_size), 0, 0, device_row_offsets,
+                      device_column_numbers, device_values, device_mtx_2,
+                      device_mtx_1);
     }
   }
 
   if (i % 2 != 0) {
-    cudaMemcpy(page_rank_, device_mtx_1, num_nodes_ * sizeof(float),
-               cudaMemcpyDeviceToHost);
+    hipMemcpy(page_rank_, device_mtx_1, num_nodes_ * sizeof(float),
+              hipMemcpyDeviceToHost);
   } else {
-    cudaMemcpy(page_rank_, device_mtx_2, num_nodes_ * sizeof(float),
-               cudaMemcpyDeviceToHost);
+    hipMemcpy(page_rank_, device_mtx_2, num_nodes_ * sizeof(float),
+              hipMemcpyDeviceToHost);
   }
 }
 
-void PrCudaBenchmark::Cleanup() {
-  cudaFree(device_row_offsets);
-  cudaFree(device_column_numbers);
-  cudaFree(device_values);
-  cudaFree(device_mtx_1);
-  cudaFree(device_mtx_2);
+void PrHipBenchmark::Cleanup() {
+  hipFree(device_row_offsets);
+  hipFree(device_column_numbers);
+  hipFree(device_values);
+  hipFree(device_mtx_1);
+  hipFree(device_mtx_2);
 
-  /* delete[] page_rank_mtx_1_; */
-  /* delete[] page_rank_mtx_2_; */
   PrBenchmark::Cleanup();
 }

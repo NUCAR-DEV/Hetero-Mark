@@ -37,13 +37,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_PR_CUDA_PR_CUDA_BENCHMARK_H_
-#define SRC_PR_CUDA_PR_CUDA_BENCHMARK_H_
+#ifndef SRC_PR_HIP_PR_HIP_BENCHMARK_H_
+#define SRC_PR_HIP_PR_HIP_BENCHMARK_H_
 
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/pr/pr_benchmark.h"
 
-class PrCudaBenchmark : public PrBenchmark {
+class PrHipBenchmark : public PrBenchmark {
  private:
   // float *page_rank_mtx_1_;
   // float *page_rank_mtx_2_;
@@ -60,4 +60,4 @@ class PrCudaBenchmark : public PrBenchmark {
   void Cleanup() override;
 };
 
-#endif  // SRC_PR_CUDA_PR_CUDA_BENCHMARK_H_
+#endif  // SRC_PR_HIP_PR_HIP_BENCHMARK_H_
