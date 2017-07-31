@@ -40,8 +40,8 @@
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/ga/hip/ga_hip_benchmark.h"
 #include "src/ga/ga_command_line_options.h"
+#include "src/ga/hip/ga_hip_benchmark.h"
 
 int main(int argc, const char **argv) {
   std::unique_ptr<GaHipBenchmark> benchmark(new GaHipBenchmark());

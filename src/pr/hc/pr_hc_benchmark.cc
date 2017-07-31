@@ -38,10 +38,12 @@
  */
 
 #include "src/pr/hc/pr_hc_benchmark.h"
+
+#include <hcc/hc.hpp>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <hcc/hc.hpp>
 
 void PrHcBenchmark::Initialize() {
   PrBenchmark::Initialize();
@@ -56,11 +58,11 @@ void PrHcBenchmark::Run() {
   hc::array_view<uint32_t, 1> av_column_numbers(num_connections_,
                                                 column_numbers_);
   hc::array_view<float, 1> av_values(num_connections_, values_);
-  // TODO: We can use the output vector as mtx_1
+  // TODO(yifan): We can use the output vector as mtx_1
   hc::array_view<float, 1> av_mtx_1(num_nodes_, page_rank_mtx_1_);
   hc::array_view<float, 1> av_mtx_2(num_nodes_, page_rank_mtx_2_);
 
-  // TODO: this can be converted to a kernel
+  // TODO(yifan): this can be converted to a kernel
   for (i = 0; i < num_nodes_; i++) {
     av_mtx_1[i] = 1.0 / num_nodes_;
   }

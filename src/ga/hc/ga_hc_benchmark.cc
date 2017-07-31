@@ -37,13 +37,16 @@
  */
 
 #include "src/ga/hc/ga_hc_benchmark.h"
+
+#include <hcc/hc.hpp>
+
 #include <cstdio>
 #include <cstdlib>
-#include <hcc/hc.hpp>
+#include <vector>
 
 void GaHcBenchmark::Initialize() {
   GaBenchmark::Initialize();
-  coarse_match_result_ = new char[target_sequence_.length()]();
+  coarse_match_result_ = new char[target_sequence_.size()]();
 }
 
 void GaHcBenchmark::Run() {
@@ -57,12 +60,12 @@ void GaHcBenchmark::Run() {
 void GaHcBenchmark::CollaborativeRun() {
   printf("Collaborative\n");
   std::vector<std::thread> threads;
-  int max_searchable_length = target_sequence_.length() - coarse_match_length_;
+  int max_searchable_length = target_sequence_.size() - coarse_match_length_;
 
-  hc::array_view<char, 1> av_target(target_sequence_.length(),
-                                    (char *)target_sequence_.c_str());
-  hc::array_view<char, 1> av_query(query_sequence_.length(),
-                                   (char *)query_sequence_.c_str());
+  hc::array_view<char, 1> av_target(target_sequence_.size(),
+                                    target_sequence_.data());
+  hc::array_view<char, 1> av_query(query_sequence_.size(),
+                                   query_sequence_.data());
 
   int current_position = 0;
   while (current_position < max_searchable_length) {
@@ -76,7 +79,7 @@ void GaHcBenchmark::CollaborativeRun() {
     int length = end_position - current_position;
     int coarse_match_length = coarse_match_length_;
     int coarse_match_threshold = coarse_match_threshold_;
-    int query_sequence_length = query_sequence_.length();
+    int query_sequence_length = query_sequence_.size();
 
     // av_batch_result.discard_data();
     hc::parallel_for_each(hc::extent<1>(length), [=](hc::index<1> index)[[hc]] {
@@ -107,9 +110,9 @@ void GaHcBenchmark::CollaborativeRun() {
     for (int i = 0; i < length; i++) {
       if (av_batch_result[i] == 1) {
         int start = i + current_position;
-        int end = start + query_sequence_.length();
-        if (end > target_sequence_.length()) {
-          end = target_sequence_.length();
+        int end = start + query_sequence_.size();
+        if (end > target_sequence_.size()) {
+          end = target_sequence_.size();
         }
         threads.push_back(std::thread(&GaHcBenchmark::FineMatch, this, start,
                                       end, std::ref(matches_)));
@@ -125,12 +128,12 @@ void GaHcBenchmark::CollaborativeRun() {
 }
 
 void GaHcBenchmark::NonCollaborativeRun() {
-  int max_searchable_length = target_sequence_.length() - coarse_match_length_;
+  int max_searchable_length = target_sequence_.size() - coarse_match_length_;
 
-  hc::array_view<char, 1> av_target(target_sequence_.length(),
-                                    (char *)target_sequence_.c_str());
-  hc::array_view<char, 1> av_query(query_sequence_.length(),
-                                   (char *)query_sequence_.c_str());
+  hc::array_view<char, 1> av_target(target_sequence_.size(),
+                                    target_sequence_.data());
+  hc::array_view<char, 1> av_query(query_sequence_.size(),
+                                   query_sequence_.data());
 
   int current_position = 0;
   while (current_position < max_searchable_length) {
@@ -144,7 +147,7 @@ void GaHcBenchmark::NonCollaborativeRun() {
     int length = end_position - current_position;
     int coarse_match_length = coarse_match_length_;
     int coarse_match_threshold = coarse_match_threshold_;
-    int query_sequence_length = query_sequence_.length();
+    int query_sequence_length = query_sequence_.size();
 
     hc::parallel_for_each(hc::extent<1>(length), [=](hc::index<1> index)[[hc]] {
       bool match = false;
@@ -175,10 +178,10 @@ void GaHcBenchmark::NonCollaborativeRun() {
   }
 
   std::vector<std::thread> threads;
-  for (int i = 0; i < target_sequence_.length(); i++) {
+  for (int i = 0; i < target_sequence_.size(); i++) {
     if (coarse_match_result_[i] == 1) {
-      int end = i + query_sequence_.length();
-      if (end > target_sequence_.length()) end = target_sequence_.length();
+      int end = i + query_sequence_.size();
+      if (end > target_sequence_.size()) end = target_sequence_.size();
       threads.push_back(std::thread(&GaHcBenchmark::FineMatch, this, i, end,
                                     std::ref(matches_)));
     }
@@ -189,7 +192,7 @@ void GaHcBenchmark::NonCollaborativeRun() {
   }
 }
 
-void GaHcBenchmark::Cleanup() { 
-	free(coarse_match_result_);
-	GaBenchmark::Cleanup(); 
+void GaHcBenchmark::Cleanup() {
+  free(coarse_match_result_);
+  GaBenchmark::Cleanup();
 }

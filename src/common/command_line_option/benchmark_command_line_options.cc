@@ -55,7 +55,7 @@ void BenchmarkCommandLineOptions::RegisterOptions() {
                                    "Show timing information");
 
   command_line_option_.AddArgument("Repeat", "integer", "1", "-r", "--repeat",
-								   "Repeat the benchmark execution.");
+                                   "Repeat the benchmark execution.");
 }
 
 void BenchmarkCommandLineOptions::Parse(int argc, const char *argv[]) {

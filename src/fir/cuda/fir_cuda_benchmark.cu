@@ -38,10 +38,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/fir/cuda/fir_cuda_benchmark.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "src/fir/cuda/fir_cuda_benchmark.h"
 
 __global__ void fir_cuda(float *input, float *output, float *coeff,
                          float *history, uint32_t num_tap, uint32_t num_data) {
@@ -68,10 +69,10 @@ void FirCudaBenchmark::Initialize() {
 
 void FirCudaBenchmark::InitializeBuffers() {
   history_ = reinterpret_cast<float *>(malloc(num_tap_ * sizeof(float)));
-  cudaMalloc((void **)&input_buffer_, sizeof(float) * num_data_per_block_);
-  cudaMalloc((void **)&output_buffer_, sizeof(float) * num_data_per_block_);
-  cudaMalloc((void **)&coeff_buffer_, sizeof(float) * num_tap_);
-  cudaMalloc((void **)&history_buffer_, sizeof(float) * num_tap_);
+  cudaMalloc(&input_buffer_, sizeof(float) * num_data_per_block_);
+  cudaMalloc(&output_buffer_, sizeof(float) * num_data_per_block_);
+  cudaMalloc(&coeff_buffer_, sizeof(float) * num_tap_);
+  cudaMalloc(&history_buffer_, sizeof(float) * num_tap_);
 }
 
 void FirCudaBenchmark::InitializeData() {
@@ -104,7 +105,7 @@ void FirCudaBenchmark::Run() {
 
     for (uint32_t i = 0; i < num_tap_; i++) {
       history_[i] = input_[count * num_data_per_block_ + num_data_per_block_ -
-                          num_tap_ + i];
+                           num_tap_ + i];
     }
 
     count++;

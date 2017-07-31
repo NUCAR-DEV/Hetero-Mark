@@ -38,11 +38,14 @@
  */
 
 #include "src/bs/hc/bs_hc_benchmark.h"
+
+#include <hcc/hc.hpp>
+#include <hcc/hc_math.hpp>
+
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
-#include <hcc/hc.hpp>
-#include <hcc/hc_math.hpp>
 
 void BsHcBenchmark::Initialize() { BsBenchmark::Initialize(); }
 

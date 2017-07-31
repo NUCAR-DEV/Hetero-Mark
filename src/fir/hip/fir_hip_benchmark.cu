@@ -38,11 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/fir/hip/fir_hip_benchmark.h"
+
+#include <hip/hip_runtime.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "hip/hip_runtime.h"
-#include "src/fir/hip/fir_hip_benchmark.h"
 
 __global__ void fir_hip(hipLaunchParm lp, float *input, float *output,
                         float *coeff, float *history, uint32_t num_tap,
@@ -70,10 +72,10 @@ void FirHipBenchmark::Initialize() {
 
 void FirHipBenchmark::InitializeBuffers() {
   history_ = reinterpret_cast<float *>(malloc(num_tap_ * sizeof(float)));
-  hipMalloc((void **)&input_buffer_, sizeof(float) * num_data_per_block_);
-  hipMalloc((void **)&output_buffer_, sizeof(float) * num_data_per_block_);
-  hipMalloc((void **)&coeff_buffer_, sizeof(float) * num_tap_);
-  hipMalloc((void **)&history_buffer_, sizeof(float) * num_tap_);
+  hipMalloc(&input_buffer_, sizeof(float) * num_data_per_block_);
+  hipMalloc(&output_buffer_, sizeof(float) * num_data_per_block_);
+  hipMalloc(&coeff_buffer_, sizeof(float) * num_tap_);
+  hipMalloc(&history_buffer_, sizeof(float) * num_tap_);
 }
 
 void FirHipBenchmark::InitializeData() {

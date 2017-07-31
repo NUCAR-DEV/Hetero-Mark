@@ -40,6 +40,9 @@
 
 #include "src/common/command_line_option/option_setting_impl.h"
 
+#include <memory>
+#include <utility>
+
 void OptionSettingImpl::AddArgument(std::unique_ptr<Argument> argument) {
   arguments_.emplace(argument->get_name(), std::move(argument));
 }

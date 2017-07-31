@@ -59,6 +59,7 @@ void EpCudaBenchmark::Run() {
 }
 
 void EpCudaBenchmark::PipelinedRun() {
+  seed_ = kSeedInitValue;
   ReproduceInIsland(islands_1_);
   for (uint32_t i = 0; i < max_generation_; i++) {
     timer_->Start();
@@ -106,7 +107,7 @@ void EpCudaBenchmark::PipelinedRun() {
 }
 
 void EpCudaBenchmark::NormalRun() {
-  srand(kSeed);
+  seed_ = kSeedInitValue;
   for (uint32_t i = 0; i < max_generation_; i++) {
     Reproduce();
     EvaluateGpu(islands_1_);
@@ -161,13 +162,13 @@ __global__ void Mutate_Kernel(Creature *creatures, uint32_t count,
 
 void EpCudaBenchmark::MutateGpu(std::vector<Creature> &island) {
   cudaMemcpy(d_island_, island.data(), population_ / 2 * sizeof(Creature),
-			 cudaMemcpyHostToDevice);
+             cudaMemcpyHostToDevice);
   dim3 block_size(64);
-  dim3 grid_size((population_ / 2 * + block_size.x - 1) / block_size.x);
+  dim3 grid_size((population_ / 2 * +block_size.x - 1) / block_size.x);
   Mutate_Kernel<<<grid_size, block_size>>>(d_island_, population_ / 2,
-										   kNumVariables);
+                                           kNumVariables);
   cudaMemcpy(island.data(), d_island_, population_ / 2 * sizeof(Creature),
-			 cudaMemcpyDeviceToHost);
+             cudaMemcpyDeviceToHost);
 }
 
 void EpCudaBenchmark::Cleanup() {

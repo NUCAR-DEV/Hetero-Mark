@@ -1,4 +1,3 @@
-#include "hip/hip_runtime.h"
 /*
  * Hetero-mark
  *
@@ -38,10 +37,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/hist/hip/hist_hip_benchmark.h"
+
+#include <hip/hip_runtime.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "src/hist/hip/hist_hip_benchmark.h"
 
 __global__ void Histogram(hipLaunchParm lp, uint32_t *pixels,
                           uint32_t *histogram, uint32_t num_colors,

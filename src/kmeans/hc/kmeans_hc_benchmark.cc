@@ -38,11 +38,13 @@
  */
 
 #include "src/kmeans/hc/kmeans_hc_benchmark.h"
+
+#include <hcc/hc.hpp>
+
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <hcc/hc.hpp>
 
 void KmeansHcBenchmark::Initialize() { KmeansBenchmark::Initialize(); }
 

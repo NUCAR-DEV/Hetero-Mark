@@ -32,18 +32,19 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/aes/hip/aes_hip_benchmark.h"
+
 #include <cstring>
 #include <memory>
 #include <string>
-#include "src/aes/hip/aes_hip_benchmark.h"
 
 void AesHipBenchmark::Initialize() {
   AesBenchmark::Initialize();
   ExpandKey();
 
-  hipMalloc((void **)&d_ciphertext_, text_length_ * sizeof(uint8_t));
-  hipMalloc((void **)&d_key_, kExpandedKeyLengthInBytes);
-  hipMalloc((void **)&d_s_, 256 * sizeof(uint8_t));
+  hipMalloc(&d_ciphertext_, text_length_ * sizeof(uint8_t));
+  hipMalloc(&d_key_, kExpandedKeyLengthInBytes);
+  hipMalloc(&d_s_, 256 * sizeof(uint8_t));
 
   hipMemcpy(d_ciphertext_, ciphertext_, text_length_, hipMemcpyHostToDevice);
   hipMemcpy(d_key_, expanded_key_, kExpandedKeyLengthInBytes,
@@ -52,7 +53,7 @@ void AesHipBenchmark::Initialize() {
 }
 
 __device__ void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset) {
-  uint8_t *key_bytes = (uint8_t *)(exp_key) + 16 * offset;
+  uint8_t *key_bytes = reinterpret_cast<uint8_t *>((exp_key) + 16 * offset);
   state[0] ^= key_bytes[3];
   state[1] ^= key_bytes[2];
   state[2] ^= key_bytes[1];

@@ -46,24 +46,23 @@
 void Creature::Dump() {
   printf("creature: ");
   for (uint32_t i = 0; i < NUM_VARIABLES; i++) {
-	if (i > 8) {
-		printf("...");
-		break;
-	}
+    if (i > 8) {
+      printf("...");
+      break;
+    }
     printf("%0.2f ", this->parameters[i]);
   }
   printf(", fitness %0.3f\n", this->fitness);
 }
 
 void EpBenchmark::Initialize() {
-  srand(kSeed);
   for (uint32_t i = 0; i < kNumVariables; i++) {
-    fitness_function_[i] = 1.0 * rand() / RAND_MAX;
+    fitness_function_[i] = 1.0 * rand_r(&kSeed) / RAND_MAX;
   }
 }
 
 void EpBenchmark::Verify() {
-  srand(kSeed);
+  seed_ = kSeedInitValue;
   islands_1_.clear();
   islands_2_.clear();
   for (uint32_t i = 0; i < max_generation_; i++) {
@@ -162,10 +161,10 @@ void EpBenchmark::Crossover() {
 void EpBenchmark::CrossoverInIsland(std::vector<Creature> &island) {
   std::vector<Creature> new_creatures;
   for (auto &creature : island) {
-    Creature best_creature = island[rand() % 10];
+    Creature best_creature = island[rand_r(&kSeed) % 10];
     Creature offspring;
     for (uint32_t i = 0; i < kNumVariables; i++) {
-      if (rand() % 2 == 0) {
+      if (rand_r() % 2 == 0) {
         offspring.parameters[i] = best_creature.parameters[i];
       } else {
         offspring.parameters[i] = creature.parameters[i];
@@ -177,15 +176,15 @@ void EpBenchmark::CrossoverInIsland(std::vector<Creature> &island) {
 }
 
 void EpBenchmark::Mutate() {
-  // for (uint32_t i = 0; i < islands_1_.size(); i++) {
-  //   if (i % 7 != 0) continue;
-  //   islands_1_[i].parameters[i % kNumVariables] *= 0.5;
-  // }
-  //
-  // for (uint32_t i = 0; i < islands_2_.size(); i++) {
-  //   if (i % 7 != 0) continue;
-  //   islands_2_[i].parameters[i % kNumVariables] *= 0.5;
-  // }
+  for (uint32_t i = 0; i < islands_1_.size(); i++) {
+    if (i % 7 != 0) continue;
+    islands_1_[i].parameters[i % kNumVariables] *= 0.5;
+  }
+
+  for (uint32_t i = 0; i < islands_2_.size(); i++) {
+    if (i % 7 != 0) continue;
+    islands_2_[i].parameters[i % kNumVariables] *= 0.5;
+  }
 }
 
 void EpBenchmark::Summarize() {}

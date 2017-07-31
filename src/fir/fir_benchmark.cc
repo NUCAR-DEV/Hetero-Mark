@@ -55,15 +55,15 @@ void FirBenchmark::Initialize() {
   // Initialize input data
   for (unsigned int i = 0; i < num_total_data_; i++) {
     // input_[i] = 1;
-	input_[i] =
-		static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
+    input_[i] =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 
   // Initialize coefficient
   for (unsigned int i = 0; i < num_tap_; i++) {
-	// coeff_[i] = 1;
-	coeff_[i] =
-		static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
+    // coeff_[i] = 1;
+    coeff_[i] =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 }
 

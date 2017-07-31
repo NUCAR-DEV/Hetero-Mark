@@ -32,14 +32,16 @@
  */
 
 #include "src/aes/hc/aes_hc_benchmark.h"
+
+#include <hcc/hc.hpp>
+
 #include <cstdio>
 #include <cstring>
-#include <hcc/hc.hpp>
 
 void AesHcBenchmark::Initialize() { AesBenchmark::Initialize(); }
 
 void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset)[[hc]] {
-  uint8_t *key_bytes = (uint8_t *)(exp_key) + 16 * offset;
+  uint8_t *key_bytes = reinterpret_cast<uint8_t *>((exp_key) + 16 * offset);
   state[0] ^= key_bytes[3];
   state[1] ^= key_bytes[2];
   state[2] ^= key_bytes[1];
@@ -157,6 +159,5 @@ void AesHcBenchmark::Run() {
     for (int i = 0; i < 16; i++) {
       av_cipher[index[0] * 16 + i] = state[i];
     }
-
   });
 }

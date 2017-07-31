@@ -58,7 +58,9 @@ class EpBenchmark : public Benchmark {
  protected:
   static const uint32_t kNumVariables = NUM_VARIABLES;
   static const uint32_t kNumEliminate = 0;
-  static const unsigned int kSeed = 1;
+  static const int kSeedInitValue = 1;
+
+  unsigned int seed_ = 1;
 
   uint32_t max_generation_;
   uint32_t population_;

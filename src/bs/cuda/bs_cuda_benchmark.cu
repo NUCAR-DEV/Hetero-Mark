@@ -38,10 +38,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/bs/cuda/bs_cuda_benchmark.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "src/bs/cuda/bs_cuda_benchmark.h"
 
 __device__ float Phi(float X) {
   float y, absX, t;
@@ -97,9 +98,9 @@ __global__ void bs_cuda(float *rand_array, float *d_call_price_,
 void BsCudaBenchmark::Initialize() {
   BsBenchmark::Initialize();
 
-  cudaMalloc((void **)&d_rand_array_, num_tiles_ * tile_size_ * sizeof(float));
-  cudaMalloc((void **)&d_call_price_, num_tiles_ * tile_size_ * sizeof(float));
-  cudaMalloc((void **)&d_put_price_, num_tiles_ * tile_size_ * sizeof(float));
+  cudaMalloc(&d_rand_array_, num_tiles_ * tile_size_ * sizeof(float));
+  cudaMalloc(&d_call_price_, num_tiles_ * tile_size_ * sizeof(float));
+  cudaMalloc(&d_put_price_, num_tiles_ * tile_size_ * sizeof(float));
 
   cudaMemcpy(d_rand_array_, rand_array_,
              num_tiles_ * tile_size_ * sizeof(float), cudaMemcpyHostToDevice);
@@ -133,7 +134,7 @@ void BsCudaBenchmark::Run() {
     if (IsGpuCompleted()) {
       // No longer the first lunch after this point so
       // turn it off
-      //	printf("Completion set to 1. GPU running \n");
+      // printf("Completion set to 1. GPU running \n");
 
       // Set the size of the section based on the number of tiles
       // and the number of compute units
@@ -158,7 +159,7 @@ void BsCudaBenchmark::Run() {
     } else {
       if (active_cpu_) {
         last_tile_--;
-        //	fprintf(stderr, "CPU tile: %d \n", last_tile_);
+        // fprintf(stderr, "CPU tile: %d \n", last_tile_);
         BlackScholesCPU(rand_array_, call_price_, put_price_,
                         last_tile_ * tile_size_, tile_size_);
       }

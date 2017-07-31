@@ -39,7 +39,10 @@
  */
 
 #include "src/common/command_line_option/option_setting_help_printer.h"
+
 #include <iostream>
+#include <memory>
+#include <utility>
 
 void OptionSettingHelpPrinter::Print(std::ostream *ostream) {
   // Print program information

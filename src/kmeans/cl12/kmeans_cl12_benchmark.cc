@@ -30,10 +30,13 @@
  */
 
 #include "src/kmeans/cl12/kmeans_cl12_benchmark.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+
 #include <cstdlib>
+#include <memory>
 
 void KmeansCl12Benchmark::Initialize() {
   KmeansBenchmark::Initialize();

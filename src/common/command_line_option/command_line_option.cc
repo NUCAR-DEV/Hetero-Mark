@@ -38,8 +38,10 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #include "src/common/command_line_option/argument.h"
 #include "src/common/command_line_option/command_line_option.h"

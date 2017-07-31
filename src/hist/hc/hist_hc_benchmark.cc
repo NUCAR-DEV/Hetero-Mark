@@ -38,10 +38,12 @@
  */
 
 #include "src/hist/hc/hist_hc_benchmark.h"
+
+#include <hcc/hc.hpp>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <hcc/hc.hpp>
 
 void HistHcBenchmark::Initialize() { HistBenchmark::Initialize(); }
 
@@ -67,7 +69,6 @@ void HistHcBenchmark::Run() {
         hc::atomic_fetch_add(av_hist.accelerator_pointer() + i, local_hist[i]);
       }
     }
-
   });
 }
 

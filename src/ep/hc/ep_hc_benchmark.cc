@@ -38,8 +38,10 @@
  */
 
 #include "src/ep/hc/ep_hc_benchmark.h"
+
 #include <cstdio>
 #include <cstdlib>
+#include <vector>
 
 void EpHcBenchmark::Initialize() { EpBenchmark::Initialize(); }
 
@@ -52,6 +54,7 @@ void EpHcBenchmark::Run() {
 }
 
 void EpHcBenchmark::PipelinedRun() {
+  seed_ = kSeedInitValue;
   ReproduceInIsland(islands_1_);
   for (int i = 0; i < max_generation_; i++) {
     timer_->Start();
@@ -97,7 +100,7 @@ void EpHcBenchmark::PipelinedRun() {
 }
 
 void EpHcBenchmark::NormalRun() {
-  srand(kSeed);
+  seed_ = kSeedInitValue;
   for (int i = 0; i < max_generation_; i++) {
     Reproduce();
     EvaluateGpu(islands_1_);
@@ -116,29 +119,29 @@ void EpHcBenchmark::NormalRun() {
 void EpHcBenchmark::EvaluateGpu(std::vector<Creature> &island) {
   hc::array_view<Creature, 1> av_island(island.size(), island);
   hc::array_view<double, 1> av_fitness_func(kNumVariables, fitness_function_);
-  hc::parallel_for_each(
-      hc::extent<1>(island.size()), [=](hc::index<1> i)[[hc]] {
-        double fitness = 0;
-        Creature &creature = av_island[i];
-        for (int j = 0; j < kNumVariables; j++) {
-          double pow = 1;
-          for (int k = 0; k < j + 1; k++) {
-            pow *= creature.parameters[j];
-          }
-          fitness += pow * av_fitness_func[j];
-        }
-        creature.fitness = fitness;
-      });
+  hc::parallel_for_each(hc::extent<1>(island.size()),
+                        [=](hc::index<1> i)[[hc]] {
+                          double fitness = 0;
+                          Creature &creature = av_island[i];
+                          for (int j = 0; j < kNumVariables; j++) {
+                            double pow = 1;
+                            for (int k = 0; k < j + 1; k++) {
+                              pow *= creature.parameters[j];
+                            }
+                            fitness += pow * av_fitness_func[j];
+                          }
+                          creature.fitness = fitness;
+                        });
   av_island.synchronize();
 }
 
 void EpHcBenchmark::MutateGpu(std::vector<Creature> &island) {
   hc::array_view<Creature, 1> av_island(island.size(), island);
-  hc::parallel_for_each(
-      hc::extent<1>(island.size()), [=](hc::index<1> i)[[hc]] {
-        if (i[0] % 7 != 0) return;
-        av_island[i].parameters[i[0] % kNumVariables] *= 0.5;
-      });
+  hc::parallel_for_each(hc::extent<1>(island.size()),
+                        [=](hc::index<1> i)[[hc]] {
+                          if (i[0] % 7 != 0) return;
+                          av_island[i].parameters[i[0] % kNumVariables] *= 0.5;
+                        });
   av_island.synchronize();
 }
 

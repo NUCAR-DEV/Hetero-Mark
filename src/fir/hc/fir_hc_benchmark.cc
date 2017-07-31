@@ -39,9 +39,11 @@
  */
 
 #include "src/fir/hc/fir_hc_benchmark.h"
+
+#include <hc.hpp>
+
 #include <cstdio>
 #include <cstdlib>
-#include <hc.hpp>
 
 void FirHcBenchmark::Initialize() {
   FirBenchmark::Initialize();

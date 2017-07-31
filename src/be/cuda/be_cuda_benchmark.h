@@ -40,11 +40,11 @@
 #ifndef SRC_BE_CUDA_BE_CUDA_BENCHMARK_H_
 #define SRC_BE_CUDA_BE_CUDA_BENCHMARK_H_
 
+#include <cuda_runtime.h>
 #include <condition_variable>
 #include <mutex>
 #include <queue>
 #include <thread>
-#include <cuda_runtime.h>
 #include "src/be/be_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 

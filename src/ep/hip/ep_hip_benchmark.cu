@@ -60,6 +60,7 @@ void EpHipBenchmark::Run() {
 }
 
 void EpHipBenchmark::PipelinedRun() {
+  seed_ = kSeedInitValue;
   ReproduceInIsland(islands_1_);
   for (uint32_t i = 0; i < max_generation_; i++) {
     timer_->Start();
@@ -105,7 +106,7 @@ void EpHipBenchmark::PipelinedRun() {
 }
 
 void EpHipBenchmark::NormalRun() {
-  srand(kSeed);
+  seed_ = kSeedInitValue;
   for (uint32_t i = 0; i < max_generation_; i++) {
     Reproduce();
     EvaluateGpu(islands_1_);
@@ -162,14 +163,14 @@ __global__ void Mutate_Kernel(hipLaunchParm lp, Creature *creatures,
 
 void EpHipBenchmark::MutateGpu(std::vector<Creature> &island) {
   hipMemcpy(d_island_, island.data(), population_ / 2 * sizeof(Creature),
-			 hipMemcpyHostToDevice);
+            hipMemcpyHostToDevice);
   dim3 block_size(64);
-  dim3 grid_size((population_ / 2 * + block_size.x - 1) / block_size.x);
+  dim3 grid_size((population_ / 2 * +block_size.x - 1) / block_size.x);
   hipLaunchKernel(HIP_KERNEL_NAME(Mutate_Kernel), dim3(grid_size),
-  dim3(block_size), 0, 0, d_island_, population_ / 2,
-										   kNumVariables);
+                  dim3(block_size), 0, 0, d_island_, population_ / 2,
+                  kNumVariables);
   hipMemcpy(island.data(), d_island_, population_ / 2 * sizeof(Creature),
-			 hipMemcpyDeviceToHost);
+            hipMemcpyDeviceToHost);
 }
 
 void EpHipBenchmark::Cleanup() {

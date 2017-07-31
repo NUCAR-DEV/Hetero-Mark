@@ -36,18 +36,22 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS WITH THE SOFTWARE.
  */
+
+#include "src/ga/hip/ga_hip_benchmark.h"
+
+#include <hip/hip_runtime.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <thread>
-#include "hip/hip_runtime.h"
-#include "src/ga/hip/ga_hip_benchmark.h"
+#include <vector>
 
 __global__ void ga_hip(hipLaunchParm lp, char *device_target,
-                        char *device_query, char *device_batch_result,
-                        uint32_t length, int query_sequence_length,
-                        int coarse_match_length, int coarse_match_threshold,
-                        int current_position) {
+                       char *device_query, char *device_batch_result,
+                       uint32_t length, int query_sequence_length,
+                       int coarse_match_length, int coarse_match_threshold,
+                       int current_position) {
   uint tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
   if (tid > length) return;
   bool match = false;
@@ -73,16 +77,16 @@ __global__ void ga_hip(hipLaunchParm lp, char *device_target,
 
 void GaHipBenchmark::Initialize() {
   GaBenchmark::Initialize();
-  coarse_match_result_ = new char[target_sequence_.length()]();
+  coarse_match_result_ = new char[target_sequence_.size()]();
 
-  hipMalloc(&d_target_, target_sequence_.length() * sizeof(char));
-  hipMalloc(&d_query_, query_sequence_.length() * sizeof(char));
+  hipMalloc(&d_target_, target_sequence_.size() * sizeof(char));
+  hipMalloc(&d_query_, query_sequence_.size() * sizeof(char));
   hipMalloc(&d_batch_result_, kBatchSize * sizeof(char));
 
-  hipMemcpy(d_target_, target_sequence_.c_str(),
-            target_sequence_.length() * sizeof(char), hipMemcpyHostToDevice);
-  hipMemcpy(d_query_, query_sequence_.c_str(),
-            query_sequence_.length() * sizeof(char), hipMemcpyHostToDevice);
+  hipMemcpy(d_target_, target_sequence_.data(),
+            target_sequence_.size() * sizeof(char), hipMemcpyHostToDevice);
+  hipMemcpy(d_query_, query_sequence_.data(),
+            query_sequence_.size() * sizeof(char), hipMemcpyHostToDevice);
 }
 
 void GaHipBenchmark::Run() {
@@ -95,7 +99,7 @@ void GaHipBenchmark::Run() {
 
 void GaHipBenchmark::CollaborativeRun() {
   uint32_t max_searchable_length =
-      target_sequence_.length() - coarse_match_length_;
+      target_sequence_.size() - coarse_match_length_;
   std::vector<std::thread> threads;
   uint32_t current_position = 0;
 
@@ -114,7 +118,7 @@ void GaHipBenchmark::CollaborativeRun() {
 
     hipLaunchKernel(HIP_KERNEL_NAME(ga_hip), dim3(grid_size), dim3(block_size),
                     0, 0, d_target_, d_query_, d_batch_result_, length,
-                    query_sequence_.length(), coarse_match_length_,
+                    query_sequence_.size(), coarse_match_length_,
                     coarse_match_threshold_, current_position);
     hipDeviceSynchronize();
     hipMemcpy(batch_result, d_batch_result_, kBatchSize * sizeof(char),
@@ -122,8 +126,8 @@ void GaHipBenchmark::CollaborativeRun() {
 
     for (uint32_t i = 0; i < length; i++) {
       if (batch_result[i] != 0) {
-        uint32_t end = i + current_position + query_sequence_.length();
-        if (end > target_sequence_.length()) end = target_sequence_.length();
+        uint32_t end = i + current_position + query_sequence_.size();
+        if (end > target_sequence_.size()) end = target_sequence_.size();
         threads.push_back(std::thread(&GaHipBenchmark::FineMatch, this,
                                       i + current_position, end,
                                       std::ref(matches_)));
@@ -138,7 +142,7 @@ void GaHipBenchmark::CollaborativeRun() {
 
 void GaHipBenchmark::NonCollaborativeRun() {
   uint32_t max_searchable_length =
-      target_sequence_.length() - coarse_match_length_;
+      target_sequence_.size() - coarse_match_length_;
   std::vector<std::thread> threads;
   uint32_t current_position = 0;
 
@@ -156,7 +160,7 @@ void GaHipBenchmark::NonCollaborativeRun() {
 
     hipLaunchKernel(HIP_KERNEL_NAME(ga_hip), dim3(grid_size), dim3(block_size),
                     0, 0, d_target_, d_query_, d_batch_result_, length,
-                    query_sequence_.length(), coarse_match_length_,
+                    query_sequence_.size(), coarse_match_length_,
                     coarse_match_threshold_, current_position);
     hipDeviceSynchronize();
     hipMemcpy(coarse_match_result_ + current_position, d_batch_result_,
@@ -164,10 +168,10 @@ void GaHipBenchmark::NonCollaborativeRun() {
     current_position = end_position;
   }
 
-  for (uint32_t i = 0; i < target_sequence_.length(); i++) {
+  for (uint32_t i = 0; i < target_sequence_.size(); i++) {
     if (coarse_match_result_[i] != 0) {
-      uint32_t end = i + query_sequence_.length();
-      if (end > target_sequence_.length()) end = target_sequence_.length();
+      uint32_t end = i + query_sequence_.size();
+      if (end > target_sequence_.size()) end = target_sequence_.size();
       threads.push_back(std::thread(&GaHipBenchmark::FineMatch, this, i, end,
                                     std::ref(matches_)));
     }

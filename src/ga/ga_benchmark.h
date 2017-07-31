@@ -41,9 +41,9 @@
 #define SRC_GA_GA_BENCHMARK_H_
 
 #include <list>
+#include <mutex>
 #include <string>
 #include <vector>
-#include <mutex>
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
@@ -59,8 +59,8 @@ class GaBenchmark : public Benchmark {
   std::string input_file_;
   bool collaborative_;
 
-  std::string target_sequence_;
-  std::string query_sequence_;
+  std::vector<char> target_sequence_;
+  std::vector<char> query_sequence_;
 
   uint32_t coarse_match_length_ = 11;
   uint32_t coarse_match_threshold_ = 1;

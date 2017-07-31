@@ -38,10 +38,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/common/command_line_option/option_parser_impl.h"
+
 #include <iostream>
 #include <stdexcept>
-
-#include "src/common/command_line_option/option_parser_impl.h"
+#include <utility>
 
 void OptionParserImpl::Parse(int argc, const char **argv) {
   // First of all, set all argument with default values

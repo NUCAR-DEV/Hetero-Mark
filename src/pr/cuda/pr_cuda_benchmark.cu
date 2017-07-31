@@ -37,22 +37,20 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/pr/cuda/pr_cuda_benchmark.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "src/pr/cuda/pr_cuda_benchmark.h"
 
 void PrCudaBenchmark::Initialize() {
   PrBenchmark::Initialize();
-  /* page_rank_mtx_1_ = new float[num_nodes_]; */
-  /* page_rank_mtx_2_ = new float[num_nodes_]; */
-  /*  */
-  cudaMalloc((void **)&device_row_offsets, (num_nodes_ + 1) * sizeof(uint32_t));
-  cudaMalloc((void **)&device_column_numbers,
-             (num_connections_) * sizeof(uint32_t));
-  cudaMalloc((void **)&device_values, (num_connections_) * sizeof(float));
-  cudaMalloc((void **)&device_mtx_1, (num_nodes_) * sizeof(float));
-  cudaMalloc((void **)&device_mtx_2, (num_nodes_) * sizeof(float));
+
+  cudaMalloc(&device_row_offsets, (num_nodes_ + 1) * sizeof(uint32_t));
+  cudaMalloc(&device_column_numbers, (num_connections_) * sizeof(uint32_t));
+  cudaMalloc(&device_values, (num_connections_) * sizeof(float));
+  cudaMalloc(&device_mtx_1, (num_nodes_) * sizeof(float));
+  cudaMalloc(&device_mtx_2, (num_nodes_) * sizeof(float));
 }
 
 __global__ void pr_cuda(uint32_t *device_row_offsets,
@@ -78,11 +76,12 @@ void PrCudaBenchmark::Run() {
              (num_connections_) * sizeof(uint32_t), cudaMemcpyHostToDevice);
   cudaMemcpy(device_values, values_, (num_connections_) * sizeof(float),
              cudaMemcpyHostToDevice);
-    
+
   dim3 block_size(64);
   dim3 grid_size(num_nodes_ / 64);
 
-  float *temp_mtx = reinterpret_cast<float *>(malloc(num_nodes_ * sizeof(float)));
+  float *temp_mtx =
+      reinterpret_cast<float *>(malloc(num_nodes_ * sizeof(float)));
   for (i = 0; i < num_nodes_; i++) {
     temp_mtx[i] = 1.0 / num_nodes_;
   }
@@ -95,9 +94,7 @@ void PrCudaBenchmark::Run() {
       pr_cuda<<<grid_size, block_size>>>(device_row_offsets,
                                          device_column_numbers, device_values,
                                          device_mtx_1, device_mtx_2);
-    }
-
-    else {
+    } else {
       pr_cuda<<<grid_size, block_size>>>(device_row_offsets,
                                          device_column_numbers, device_values,
                                          device_mtx_2, device_mtx_1);
@@ -120,7 +117,5 @@ void PrCudaBenchmark::Cleanup() {
   cudaFree(device_mtx_1);
   cudaFree(device_mtx_2);
 
-  /* delete[] page_rank_mtx_1_; */
-  /* delete[] page_rank_mtx_2_; */
   PrBenchmark::Cleanup();
 }

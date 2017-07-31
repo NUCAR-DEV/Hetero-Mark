@@ -38,9 +38,13 @@
  */
 
 #include "src/be/hc/be_hc_benchmark.h"
+
+#include <hc.hpp>
+
 #include <cstdio>
 #include <cstdlib>
-#include <hc.hpp>
+#include <vector>
+
 #include "src/common/time_measurement/time_measurement_impl.h"
 
 void BeHcBenchmark::Initialize() {
@@ -100,8 +104,8 @@ void BeHcBenchmark::GPUThread() {
     std::unique_lock<std::mutex> lk(queue_mutex_);
     queue_condition_variable_.wait(
         lk, [this] { return finished_ || !frame_queue_.empty(); });
-	while (!frame_queue_.empty()) {
-		ExtractAndEncode(frame_queue_.front());
+    while (!frame_queue_.empty()) {
+      ExtractAndEncode(frame_queue_.front());
       frame_queue_.pop();
     }
     if (finished_) break;

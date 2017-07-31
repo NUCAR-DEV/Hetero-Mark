@@ -1,4 +1,3 @@
-#include "hip/hip_runtime.h"
 /*
  * Hetero-mark
  *
@@ -38,10 +37,14 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/be/hip/be_hip_benchmark.h"
+
+#include <hip/hip_runtime.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <thread>
-#include "src/be/hip/be_hip_benchmark.h"
+
 #include "src/common/time_measurement/time_measurement_impl.h"
 
 void BeHipBenchmark::Initialize() {
@@ -74,7 +77,7 @@ __global__ void BackgroundExtraction(hipLaunchParm lp, uint8_t *frame,
     diff = frame[tid] - bg[tid];
   } else {
     diff = bg[tid] - frame[tid];
-  } 
+  }
   if (diff > threshold) {
     fg[tid] = frame[tid];
   } else {
@@ -129,7 +132,10 @@ void BeHipBenchmark::GPUThread() {
   while (true) {
     std::unique_lock<std::mutex> lk(queue_mutex_);
     queue_condition_variable_.wait(
-        lk, [this] { return finished_ || !frame_queue_.empty(); });
+        lk,
+        [this] {
+          return finished_ || !frame_queue_.empty();
+        });
     while (!frame_queue_.empty()) {
       ExtractAndEncode(frame_queue_.front());
       frame_queue_.pop();

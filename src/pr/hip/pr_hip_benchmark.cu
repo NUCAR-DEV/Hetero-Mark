@@ -37,25 +37,26 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/pr/hip/pr_hip_benchmark.h"
+
+#include <hip/hip_runtime.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "hip/hip_runtime.h"
-#include "src/pr/hip/pr_hip_benchmark.h"
 
 void PrHipBenchmark::Initialize() {
   PrBenchmark::Initialize();
-  hipMalloc((void **)&device_row_offsets, (num_nodes_ + 1) * sizeof(uint32_t));
-  hipMalloc((void **)&device_column_numbers,
-            (num_connections_) * sizeof(uint32_t));
-  hipMalloc((void **)&device_values, (num_connections_) * sizeof(float));
-  hipMalloc((void **)&device_mtx_1, (num_nodes_) * sizeof(float));
-  hipMalloc((void **)&device_mtx_2, (num_nodes_) * sizeof(float));
+  hipMalloc(&device_row_offsets, (num_nodes_ + 1) * sizeof(uint32_t));
+  hipMalloc(&device_column_numbers, (num_connections_) * sizeof(uint32_t));
+  hipMalloc(&device_values, (num_connections_) * sizeof(float));
+  hipMalloc(&device_mtx_1, (num_nodes_) * sizeof(float));
+  hipMalloc(&device_mtx_2, (num_nodes_) * sizeof(float));
 }
 
 __global__ void pr_hip(hipLaunchParm lp, uint32_t *device_row_offsets,
-                        uint32_t *device_column_numbers, float *device_values,
-                        float *device_mtx_1, float *device_mtx_2) {
+                       uint32_t *device_column_numbers, float *device_values,
+                       float *device_mtx_1, float *device_mtx_2) {
   uint tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
   uint32_t initialize = device_row_offsets[tid];
   uint32_t limit = device_row_offsets[tid + 1];
@@ -95,9 +96,7 @@ void PrHipBenchmark::Run() {
                       dim3(block_size), 0, 0, device_row_offsets,
                       device_column_numbers, device_values, device_mtx_1,
                       device_mtx_2);
-    }
-
-    else {
+    } else {
       hipLaunchKernel(HIP_KERNEL_NAME(pr_hip), dim3(grid_size),
                       dim3(block_size), 0, 0, device_row_offsets,
                       device_column_numbers, device_values, device_mtx_2,

@@ -41,8 +41,8 @@
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/fir/hip/fir_hip_benchmark.h"
 #include "src/fir/fir_command_line_options.h"
+#include "src/fir/hip/fir_hip_benchmark.h"
 
 int main(int argc, const char **argv) {
   std::unique_ptr<FirHipBenchmark> benchmark(new FirHipBenchmark());

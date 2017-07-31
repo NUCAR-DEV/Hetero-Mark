@@ -38,10 +38,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/common/command_line_option/option_setting_impl.h"
+#include <memory>
+#include <utility>
+
 #include "gtest/gtest.h"
 #include "src/common/command_line_option/argument.h"
 #include "src/common/command_line_option/option_setting.h"
+#include "src/common/command_line_option/option_setting_impl.h"
 
 TEST(OptionSettingImpl, Iterator) {
   // Create environment

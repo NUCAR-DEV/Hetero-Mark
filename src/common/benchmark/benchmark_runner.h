@@ -82,7 +82,9 @@ class BenchmarkRunner {
   /**
    * Set the number of times that the benchmark runs
    */
-  virtual void SetRepeatTime(uint32_t repeat_time) { repeat_time_ = repeat_time; }
+  virtual void SetRepeatTime(uint32_t repeat_time) {
+    repeat_time_ = repeat_time;
+  }
 
  protected:
   Benchmark *benchmark_;
