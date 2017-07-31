@@ -63,7 +63,7 @@ void BsCommandLineOptions::RegisterOptions() {
 
   // Registering the Chunk of tiles that run on GPU separately
   command_line_option_.AddArgument(
-      "GpuChunk", "integer", "0", "-c", "--chunk",
+      "GpuChunk", "integer", "0", "", "--chunk",
       "The chunk of 64 thread tiles that are lunched "
       "on the GPU on every parralel/kernel launch");
 }

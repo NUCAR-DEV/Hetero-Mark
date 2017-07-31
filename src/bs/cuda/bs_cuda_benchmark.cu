@@ -109,11 +109,23 @@ void BsCudaBenchmark::Initialize() {
   cudaMalloc((void **)&d_call_price_, num_tiles_ * tile_size_ * sizeof(float));
   cudaMalloc((void **)&d_put_price_, num_tiles_ * tile_size_ * sizeof(float));
 
+  cudaMemcpy(d_rand_array_, rand_array_,
+             num_tiles_ * tile_size_ * sizeof(float), cudaMemcpyHostToDevice);
+
+  float *temp_call_price = reinterpret_cast<float *>(
+      malloc(num_tiles_ * tile_size_ * sizeof(float)));
+  float *temp_put_price = reinterpret_cast<float *>(
+      malloc(num_tiles_ * tile_size_ * sizeof(float)));
   for (unsigned int i = 0; i < num_tiles_ * tile_size_; i++) {
-    d_rand_array_[i] = rand_array_[i];
-    d_call_price_[i] = 0;
-    d_put_price_[i] = 0;
+    temp_call_price[i] = 0;
+    temp_put_price[i] = 0;
   }
+  cudaMemcpy(d_call_price_, temp_call_price,
+             num_tiles_ * tile_size_ * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_put_price_, temp_put_price,
+             num_tiles_ * tile_size_ * sizeof(float), cudaMemcpyHostToDevice);
+  free(temp_call_price);
+  free(temp_put_price);
 }
 
 void BsCudaBenchmark::Run() {
@@ -155,13 +167,13 @@ void BsCudaBenchmark::Run() {
 
       stream_ids[0] = 1;
 
-      bs_cuda<<<grid_size, block_size, 0, stream1>>>(
-          d_rand_array_ + offset, d_call_price_ + offset, d_put_price_ + offset);
+      bs_cuda<<<grid_size, block_size, 0, stream1>>>(d_rand_array_ + offset,
+                                                     d_call_price_ + offset,
+                                                     d_put_price_ + offset);
       cudaStreamAddCallback(stream1, completion_status,
                             (void *)(stream_ids + 0), 0);
     } else {
       if (active_cpu_) {
-        // printf("CPU is running now \n");
         last_tile_--;
         //	fprintf(stderr, "CPU tile: %d \n", last_tile_);
         BlackScholesCPU(rand_array_, call_price_, put_price_,
@@ -171,13 +183,11 @@ void BsCudaBenchmark::Run() {
   }
 
   cudaDeviceSynchronize();
-  for (unsigned int i = 0; i < done_tiles_ * tile_size_; i++) {
-    call_price_[i] = d_call_price_[i];
-  }
 
-  for (unsigned int i = 0; i < done_tiles_ * tile_size_; i++) {
-    put_price_[i] = d_put_price_[i];
-  }
+  cudaMemcpy(call_price_, d_call_price_,
+             done_tiles_ * tile_size_ * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(put_price_, d_put_price_, done_tiles_ * tile_size_ * sizeof(float),
+             cudaMemcpyDeviceToHost);
 }
 
 void BsCudaBenchmark::Cleanup() {
