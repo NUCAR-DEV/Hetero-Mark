@@ -43,14 +43,6 @@
 #include <cstring>
 #include "src/bs/cuda/bs_cuda_benchmark.h"
 
-int completion_flag = 0;
-
-void CUDART_CB completion_status(cudaStream_t stream, cudaError_t status,
-                                 void *data) {
-  //  printf("Stream callback \n");
-  completion_flag = 1;
-}
-
 __device__ float Phi(float X) {
   float y, absX, t;
 
@@ -126,15 +118,11 @@ void BsCudaBenchmark::Initialize() {
              num_tiles_ * tile_size_ * sizeof(float), cudaMemcpyHostToDevice);
   free(temp_call_price);
   free(temp_put_price);
+
+  cudaStreamCreate(&stream_);
 }
 
 void BsCudaBenchmark::Run() {
-  cudaStream_t stream1;
-  cudaStreamCreate(&stream1);
-  int stream_ids[2];
-  // the boolean object for the first lunch
-  bool first_launch_ = true;
-
   // The main while loop
   uint32_t done_tiles_ = 0;
   uint32_t last_tile_ = num_tiles_;
@@ -142,12 +130,11 @@ void BsCudaBenchmark::Run() {
   // while the done tiles are less than num_tiles, continue
   while (done_tiles_ < last_tile_) {
     // First check to make sure that we are launching the first set
-    if (first_launch_ || completion_flag == 1) {
+    if (IsGpuCompleted()) {
       // No longer the first lunch after this point so
       // turn it off
       //	printf("Completion set to 1. GPU running \n");
-      first_launch_ = false;
-      completion_flag = 0;
+
       // Set the size of the section based on the number of tiles
       // and the number of compute units
       uint32_t section_tiles = (gpu_chunk_ < last_tile_ - done_tiles_)
@@ -165,13 +152,9 @@ void BsCudaBenchmark::Run() {
       dim3 block_size(64);
       dim3 grid_size((section_tiles * tile_size_) / 64.00);
 
-      stream_ids[0] = 1;
-
-      bs_cuda<<<grid_size, block_size, 0, stream1>>>(d_rand_array_ + offset,
+      bs_cuda<<<grid_size, block_size, 0, stream_>>>(d_rand_array_ + offset,
                                                      d_call_price_ + offset,
                                                      d_put_price_ + offset);
-      cudaStreamAddCallback(stream1, completion_status,
-                            (void *)(stream_ids + 0), 0);
     } else {
       if (active_cpu_) {
         last_tile_--;
@@ -190,7 +173,14 @@ void BsCudaBenchmark::Run() {
              cudaMemcpyDeviceToHost);
 }
 
+bool BsCudaBenchmark::IsGpuCompleted() {
+  cudaError_t ret = cudaStreamQuery(stream_);
+  if (ret == cudaSuccess) return true;
+  return false;
+}
+
 void BsCudaBenchmark::Cleanup() {
+  cudaStreamDestroy(stream_);
   cudaFree(d_rand_array_);
   cudaFree(d_call_price_);
   cudaFree(d_put_price_);

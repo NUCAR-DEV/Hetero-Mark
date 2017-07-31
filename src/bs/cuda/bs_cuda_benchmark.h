@@ -40,6 +40,7 @@
 #ifndef SRC_BS_HC_BS_HC_BENCHMARK_H_
 #define SRC_BS_HC_BS_HC_BENCHMARK_H_
 
+#include <cuda_runtime.h>
 #include "src/bs/bs_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
@@ -49,6 +50,10 @@ class BsCudaBenchmark : public BsBenchmark {
   float *d_rand_array_ = nullptr;
   float *d_call_price_ = nullptr;
   float *d_put_price_ = nullptr;
+
+  cudaStream_t stream_;
+
+  bool IsGpuCompleted();
 
  public:
   void Initialize() override;
