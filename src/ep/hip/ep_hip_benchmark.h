@@ -40,6 +40,7 @@
 #ifndef SRC_EP_HIP_EP_HIP_BENCHMARK_H_
 #define SRC_EP_HIP_EP_HIP_BENCHMARK_H_
 
+#include <vector>
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/ep/ep_benchmark.h"
 
@@ -47,8 +48,8 @@ class EpHipBenchmark : public EpBenchmark {
  private:
   void PipelinedRun();
   void NormalRun();
-  void EvaluateGpu(std::vector<Creature> &island);
-  void MutateGpu(std::vector<Creature> &island);
+  void EvaluateGpu(std::vector<Creature> *island);
+  void MutateGpu(std::vector<Creature> *island);
 
   Creature *d_island_;
   double *d_fitness_func_;

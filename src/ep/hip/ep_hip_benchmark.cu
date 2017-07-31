@@ -37,11 +37,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/ep/hip/ep_hip_benchmark.h"
+
+#include <hip/hip_runtime.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <thread>
-#include "hip/hip_runtime.h"
-#include "src/ep/hip/ep_hip_benchmark.h"
 
 void EpHipBenchmark::Initialize() {
   EpBenchmark::Initialize();
@@ -61,42 +63,38 @@ void EpHipBenchmark::Run() {
 
 void EpHipBenchmark::PipelinedRun() {
   seed_ = kSeedInitValue;
-  ReproduceInIsland(islands_1_);
+  ReproduceInIsland(&islands_1_);
   for (uint32_t i = 0; i < max_generation_; i++) {
     timer_->Start();
-    std::thread t1(&EpHipBenchmark::ReproduceInIsland, this,
-                   std::ref(islands_2_));
-    std::thread t2(&EpHipBenchmark::EvaluateGpu, this, std::ref(islands_1_));
+    std::thread t1(&EpHipBenchmark::ReproduceInIsland, this, &islands_2_));
+    std::thread t2(&EpHipBenchmark::EvaluateGpu, this, &islands_1_);
     t1.join();
     t2.join();
     timer_->End({"Stage 1"});
 
     timer_->Start();
-    std::thread t3(&EpHipBenchmark::EvaluateGpu, this, std::ref(islands_2_));
-    std::thread t4(&EpHipBenchmark::SelectInIsland, this, std::ref(islands_1_));
+    std::thread t3(&EpHipBenchmark::EvaluateGpu, this, &islands_2_);
+    std::thread t4(&EpHipBenchmark::SelectInIsland, this, &islands_1_);
     t4.join();
     result_island_1_ = islands_1_[0].fitness;
-    std::thread t5(&EpHipBenchmark::CrossoverInIsland, this,
-                   std::ref(islands_1_));
+    std::thread t5(&EpHipBenchmark::CrossoverInIsland, this, &islands_1_);
     t5.join();
     t3.join();
     timer_->End({"Stage 2"});
 
     timer_->Start();
-    std::thread t6(&EpHipBenchmark::SelectInIsland, this, std::ref(islands_2_));
-    std::thread t7(&EpHipBenchmark::MutateGpu, this, std::ref(islands_1_));
+    std::thread t6(&EpHipBenchmark::SelectInIsland, this, &islands_2_);
+    std::thread t7(&EpHipBenchmark::MutateGpu, this, &islands_1_);
     t6.join();
     result_island_2_ = islands_2_[0].fitness;
-    std::thread t8(&EpHipBenchmark::CrossoverInIsland, this,
-                   std::ref(islands_2_));
+    std::thread t8(&EpHipBenchmark::CrossoverInIsland, this, &islands_2_);
     t7.join();
     t8.join();
     timer_->End({"Stage 3"});
 
     timer_->Start();
-    std::thread t9(&EpHipBenchmark::MutateGpu, this, std::ref(islands_2_));
-    std::thread t10(&EpHipBenchmark::ReproduceInIsland, this,
-                    std::ref(islands_1_));
+    std::thread t9(&EpHipBenchmark::MutateGpu, this, &islands_2_);
+    std::thread t10(&EpHipBenchmark::ReproduceInIsland, this, &islands_1_);
     t9.join();
     t10.join();
     timer_->End({"Stage 4"});
@@ -109,16 +107,16 @@ void EpHipBenchmark::NormalRun() {
   seed_ = kSeedInitValue;
   for (uint32_t i = 0; i < max_generation_; i++) {
     Reproduce();
-    EvaluateGpu(islands_1_);
-    EvaluateGpu(islands_2_);
+    EvaluateGpu(&islands_1_);
+    EvaluateGpu(&islands_2_);
     Select();
 
     result_island_1_ = islands_1_[0].fitness;
     result_island_2_ = islands_2_[0].fitness;
 
     Crossover();
-    MutateGpu(islands_1_);
-    MutateGpu(islands_2_);
+    MutateGpu(&islands_1_);
+    MutateGpu(&islands_2_);
   }
 }
 
@@ -140,15 +138,15 @@ __global__ void Evaluate_Kernel(hipLaunchParm lp, Creature *creatures,
   creature.fitness = fitness;
 }
 
-void EpHipBenchmark::EvaluateGpu(std::vector<Creature> &island) {
-  hipMemcpy(d_island_, island.data(), population_ / 2 * sizeof(Creature),
+void EpHipBenchmark::EvaluateGpu(std::vector<Creature> *island) {
+  hipMemcpy(d_island_, island->data(), population_ / 2 * sizeof(Creature),
             hipMemcpyHostToDevice);
   dim3 block_size(64);
   dim3 grid_size((population_ / 2 * +block_size.x - 1) / block_size.x);
   hipLaunchKernel(HIP_KERNEL_NAME(Evaluate_Kernel), dim3(grid_size),
                   dim3(block_size), 0, 0, d_island_, d_fitness_func_,
                   population_ / 2, kNumVariables);
-  hipMemcpy(island.data(), d_island_, population_ / 2 * sizeof(Creature),
+  hipMemcpy(island->data(), d_island_, population_ / 2 * sizeof(Creature),
             hipMemcpyDeviceToHost);
 }
 
@@ -161,15 +159,15 @@ __global__ void Mutate_Kernel(hipLaunchParm lp, Creature *creatures,
   creatures[i].parameters[i % num_vars] *= 0.5;
 }
 
-void EpHipBenchmark::MutateGpu(std::vector<Creature> &island) {
-  hipMemcpy(d_island_, island.data(), population_ / 2 * sizeof(Creature),
+void EpHipBenchmark::MutateGpu(std::vector<Creature> *island) {
+  hipMemcpy(d_island_, island->data(), population_ / 2 * sizeof(Creature),
             hipMemcpyHostToDevice);
   dim3 block_size(64);
   dim3 grid_size((population_ / 2 * +block_size.x - 1) / block_size.x);
   hipLaunchKernel(HIP_KERNEL_NAME(Mutate_Kernel), dim3(grid_size),
                   dim3(block_size), 0, 0, d_island_, population_ / 2,
                   kNumVariables);
-  hipMemcpy(island.data(), d_island_, population_ / 2 * sizeof(Creature),
+  hipMemcpy(island->data(), d_island_, population_ / 2 * sizeof(Creature),
             hipMemcpyDeviceToHost);
 }
 

@@ -75,14 +75,14 @@ class EpBenchmark : public Benchmark {
   double cpu_result_island_2_;
 
   void Reproduce();
-  void ReproduceInIsland(std::vector<Creature> &island);
+  void ReproduceInIsland(std::vector<Creature> *island);
   Creature CreateRandomCreature();
   void Evaluate();
-  void ApplyFitnessFunction(Creature &creature);
+  void ApplyFitnessFunction(Creature *creature);
   void Select();
-  void SelectInIsland(std::vector<Creature> &island);
+  void SelectInIsland(std::vector<Creature> *island);
   void Crossover();
-  void CrossoverInIsland(std::vector<Creature> &island);
+  void CrossoverInIsland(std::vector<Creature> *island);
   void Mutate();
 
  public:

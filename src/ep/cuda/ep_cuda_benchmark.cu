@@ -37,10 +37,12 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/ep/cuda/ep_cuda_benchmark.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <thread>
-#include "src/ep/cuda/ep_cuda_benchmark.h"
+#include <vector>
 
 void EpCudaBenchmark::Initialize() {
   EpBenchmark::Initialize();
@@ -60,44 +62,38 @@ void EpCudaBenchmark::Run() {
 
 void EpCudaBenchmark::PipelinedRun() {
   seed_ = kSeedInitValue;
-  ReproduceInIsland(islands_1_);
+  ReproduceInIsland(&islands_1_);
   for (uint32_t i = 0; i < max_generation_; i++) {
     timer_->Start();
-    std::thread t1(&EpCudaBenchmark::ReproduceInIsland, this,
-                   std::ref(islands_2_));
-    std::thread t2(&EpCudaBenchmark::EvaluateGpu, this, std::ref(islands_1_));
+    std::thread t1(&EpCudaBenchmark::ReproduceInIsland, this, &islands_2_);
+    std::thread t2(&EpCudaBenchmark::EvaluateGpu, this, &islands_1_);
     t1.join();
     t2.join();
     timer_->End({"Stage 1"});
 
     timer_->Start();
-    std::thread t3(&EpCudaBenchmark::EvaluateGpu, this, std::ref(islands_2_));
-    std::thread t4(&EpCudaBenchmark::SelectInIsland, this,
-                   std::ref(islands_1_));
+    std::thread t3(&EpCudaBenchmark::EvaluateGpu, this, &islands_2_);
+    std::thread t4(&EpCudaBenchmark::SelectInIsland, this, &islands_1_);
     t4.join();
     result_island_1_ = islands_1_[0].fitness;
-    std::thread t5(&EpCudaBenchmark::CrossoverInIsland, this,
-                   std::ref(islands_1_));
+    std::thread t5(&EpCudaBenchmark::CrossoverInIsland, this, &islands_1_);
     t5.join();
     t3.join();
     timer_->End({"Stage 2"});
 
     timer_->Start();
-    std::thread t6(&EpCudaBenchmark::SelectInIsland, this,
-                   std::ref(islands_2_));
-    std::thread t7(&EpCudaBenchmark::MutateGpu, this, std::ref(islands_1_));
+    std::thread t6(&EpCudaBenchmark::SelectInIsland, this, &islands_2_);
+    std::thread t7(&EpCudaBenchmark::MutateGpu, this, &islands_1_);
     t6.join();
     result_island_2_ = islands_2_[0].fitness;
-    std::thread t8(&EpCudaBenchmark::CrossoverInIsland, this,
-                   std::ref(islands_2_));
+    std::thread t8(&EpCudaBenchmark::CrossoverInIsland, this, &islands_2_);
     t7.join();
     t8.join();
     timer_->End({"Stage 3"});
 
     timer_->Start();
-    std::thread t9(&EpCudaBenchmark::MutateGpu, this, std::ref(islands_2_));
-    std::thread t10(&EpCudaBenchmark::ReproduceInIsland, this,
-                    std::ref(islands_1_));
+    std::thread t9(&EpCudaBenchmark::MutateGpu, this, &islands_2_);
+    std::thread t10(&EpCudaBenchmark::ReproduceInIsland, this, &islands_1_);
     t9.join();
     t10.join();
     timer_->End({"Stage 4"});
@@ -110,16 +106,16 @@ void EpCudaBenchmark::NormalRun() {
   seed_ = kSeedInitValue;
   for (uint32_t i = 0; i < max_generation_; i++) {
     Reproduce();
-    EvaluateGpu(islands_1_);
-    EvaluateGpu(islands_2_);
+    EvaluateGpu(&islands_1_);
+    EvaluateGpu(&islands_2_);
     Select();
 
     result_island_1_ = islands_1_[0].fitness;
     result_island_2_ = islands_2_[0].fitness;
 
     Crossover();
-    MutateGpu(islands_1_);
-    MutateGpu(islands_2_);
+    MutateGpu(&islands_1_);
+    MutateGpu(&islands_2_);
   }
 }
 
@@ -140,14 +136,14 @@ __global__ void Evaluate_Kernel(Creature *creatures, double *fitness_function,
   creature.fitness = fitness;
 }
 
-void EpCudaBenchmark::EvaluateGpu(std::vector<Creature> &island) {
-  cudaMemcpy(d_island_, island.data(), population_ / 2 * sizeof(Creature),
+void EpCudaBenchmark::EvaluateGpu(std::vector<Creature> *island) {
+  cudaMemcpy(d_island_, island->data(), population_ / 2 * sizeof(Creature),
              cudaMemcpyHostToDevice);
   dim3 block_size(64);
   dim3 grid_size((population_ / 2 * +block_size.x - 1) / block_size.x);
   Evaluate_Kernel<<<grid_size, block_size>>>(d_island_, d_fitness_func_,
                                              population_ / 2, kNumVariables);
-  cudaMemcpy(island.data(), d_island_, population_ / 2 * sizeof(Creature),
+  cudaMemcpy(island->data(), d_island_, population_ / 2 * sizeof(Creature),
              cudaMemcpyDeviceToHost);
 }
 
@@ -160,14 +156,14 @@ __global__ void Mutate_Kernel(Creature *creatures, uint32_t count,
   creatures[i].parameters[i % num_vars] *= 0.5;
 }
 
-void EpCudaBenchmark::MutateGpu(std::vector<Creature> &island) {
-  cudaMemcpy(d_island_, island.data(), population_ / 2 * sizeof(Creature),
+void EpCudaBenchmark::MutateGpu(std::vector<Creature> *island) {
+  cudaMemcpy(d_island_, island->data(), population_ / 2 * sizeof(Creature),
              cudaMemcpyHostToDevice);
   dim3 block_size(64);
   dim3 grid_size((population_ / 2 * +block_size.x - 1) / block_size.x);
   Mutate_Kernel<<<grid_size, block_size>>>(d_island_, population_ / 2,
                                            kNumVariables);
-  cudaMemcpy(island.data(), d_island_, population_ / 2 * sizeof(Creature),
+  cudaMemcpy(island->data(), d_island_, population_ / 2 * sizeof(Creature),
              cudaMemcpyDeviceToHost);
 }
 

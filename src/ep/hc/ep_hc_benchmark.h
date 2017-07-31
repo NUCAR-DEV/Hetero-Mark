@@ -42,6 +42,9 @@
 
 #include <hcc/hc.hpp>
 #include <hcc/hc_math.hpp>
+
+#include <vector>
+
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/ep/ep_benchmark.h"
 
@@ -49,8 +52,8 @@ class EpHcBenchmark : public EpBenchmark {
  private:
   void PipelinedRun();
   void NormalRun();
-  void EvaluateGpu(std::vector<Creature> &island);
-  void MutateGpu(std::vector<Creature> &island);
+  void EvaluateGpu(std::vector<Creature> *island);
+  void MutateGpu(std::vector<Creature> *island);
 
  public:
   void Initialize() override;
