@@ -67,7 +67,7 @@ void EpHipBenchmark::PipelinedRun() {
   ReproduceInIsland(&islands_1_);
   for (uint32_t i = 0; i < max_generation_; i++) {
     timer_->Start();
-    std::thread t1(&EpHipBenchmark::ReproduceInIsland, this, &islands_2_));
+    std::thread t1(&EpHipBenchmark::ReproduceInIsland, this, &islands_2_);
     std::thread t2(&EpHipBenchmark::EvaluateGpu, this, &islands_1_);
     t1.join();
     t2.join();
