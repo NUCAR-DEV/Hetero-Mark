@@ -31,18 +31,19 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/aes/cuda/aes_cuda_benchmark.h"
+
 #include <cstring>
 #include <memory>
 #include <string>
-#include "src/aes/cuda/aes_cuda_benchmark.h"
 
 void AesCudaBenchmark::Initialize() {
   AesBenchmark::Initialize();
   ExpandKey();
 
-  cudaMalloc((void **)&d_ciphertext_, text_length_ * sizeof(uint8_t));
-  cudaMalloc((void **)&d_key_, kExpandedKeyLengthInBytes);
-  cudaMalloc((void **)&d_s_, 256 * sizeof(uint8_t));
+  cudaMalloc(&d_ciphertext_, text_length_ * sizeof(uint8_t));
+  cudaMalloc(&d_key_, kExpandedKeyLengthInBytes);
+  cudaMalloc(&d_s_, 256 * sizeof(uint8_t));
 
   cudaMemcpy(d_ciphertext_, ciphertext_, text_length_, cudaMemcpyHostToDevice);
   cudaMemcpy(d_key_, expanded_key_, kExpandedKeyLengthInBytes,
@@ -51,7 +52,7 @@ void AesCudaBenchmark::Initialize() {
 }
 
 __device__ void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset) {
-  uint8_t *key_bytes = (uint8_t *)(exp_key) + 16 * offset;
+  uint8_t *key_bytes = reinterpret_cast<uint8_t *>(exp_key) + 16 * offset;
   state[0] ^= key_bytes[3];
   state[1] ^= key_bytes[2];
   state[2] ^= key_bytes[1];

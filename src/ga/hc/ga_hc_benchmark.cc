@@ -115,7 +115,7 @@ void GaHcBenchmark::CollaborativeRun() {
           end = target_sequence_.size();
         }
         threads.push_back(std::thread(&GaHcBenchmark::FineMatch, this, start,
-                                      end, std::ref(matches_)));
+                                      end, &matches_));
       }
     }
 
@@ -182,8 +182,8 @@ void GaHcBenchmark::NonCollaborativeRun() {
     if (coarse_match_result_[i] == 1) {
       int end = i + query_sequence_.size();
       if (end > target_sequence_.size()) end = target_sequence_.size();
-      threads.push_back(std::thread(&GaHcBenchmark::FineMatch, this, i, end,
-                                    std::ref(matches_)));
+      threads.push_back(
+          std::thread(&GaHcBenchmark::FineMatch, this, i, end, &matches_));
     }
   }
 

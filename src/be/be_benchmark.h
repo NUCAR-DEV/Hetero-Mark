@@ -40,9 +40,10 @@
 #ifndef SRC_BE_BE_BENCHMARK_H_
 #define SRC_BE_BE_BENCHMARK_H_
 
-#include <vector>
-// #include <libavcodec/avcodec.h>
 #include <opencv2/opencv.hpp>
+
+#include <string>
+#include <vector>
 
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"

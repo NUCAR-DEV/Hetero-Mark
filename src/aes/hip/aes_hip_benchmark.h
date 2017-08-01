@@ -55,4 +55,4 @@ class AesHipBenchmark : public AesBenchmark {
   void Cleanup() override;
 };
 
-#endif  // SRC_AES_CL20_AES_HIP_BENCHMARK_H_
+#endif  // SRC_AES_HIP_AES_HIP_BENCHMARK_H_

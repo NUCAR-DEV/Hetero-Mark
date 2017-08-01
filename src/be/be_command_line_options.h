@@ -40,6 +40,8 @@
 #ifndef SRC_BE_BE_COMMAND_LINE_OPTIONS_H_
 #define SRC_BE_BE_COMMAND_LINE_OPTIONS_H_
 
+#include <string>
+
 #include "src/be/be_benchmark.h"
 #include "src/common/command_line_option/benchmark_command_line_options.h"
 

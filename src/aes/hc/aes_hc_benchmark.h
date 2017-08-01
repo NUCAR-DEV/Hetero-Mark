@@ -53,4 +53,4 @@ class AesHcBenchmark : public AesBenchmark {
   void Run() override;
 };
 
-#endif  // SRC_AES_HSA_AES_HSA_BENCHMARK_H_
+#endif  // SRC_AES_HC_AES_HC_BENCHMARK_H_

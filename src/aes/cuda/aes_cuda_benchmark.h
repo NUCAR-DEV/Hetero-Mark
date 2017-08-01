@@ -55,4 +55,4 @@ class AesCudaBenchmark : public AesBenchmark {
   void Cleanup() override;
 };
 
-#endif  // SRC_AES_CL20_AES_CUDA_BENCHMARK_H_
+#endif  // SRC_AES_CUDA_AES_CUDA_BENCHMARK_H_

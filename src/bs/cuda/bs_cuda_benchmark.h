@@ -37,11 +37,13 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_BS_HC_BS_HC_BENCHMARK_H_
-#define SRC_BS_HC_BS_HC_BENCHMARK_H_
+#ifndef SRC_BS_CUDA_BS_CUDA_BENCHMARK_H_
+#define SRC_BS_CUDA_BS_CUDA_BENCHMARK_H_
+
+#include "src/bs/bs_benchmark.h"
 
 #include <cuda_runtime.h>
-#include "src/bs/bs_benchmark.h"
+
 #include "src/common/time_measurement/time_measurement.h"
 
 class BsCudaBenchmark : public BsBenchmark {
@@ -60,4 +62,4 @@ class BsCudaBenchmark : public BsBenchmark {
   void Run() override;
   void Cleanup() override;
 };
-#endif  // SRC_BS_HC_BS_HC_BENCHMARK_H_
+#endif  // SRC_BS_CUDA_BS_CUDA_BENCHMARK_H_

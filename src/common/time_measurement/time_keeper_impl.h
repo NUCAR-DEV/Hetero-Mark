@@ -42,8 +42,10 @@
 #define SRC_COMMON_TIME_MEASUREMENT_TIME_KEEPER_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
+
 #include "src/common/time_measurement/time_keeper.h"
 #include "src/common/time_measurement/timer.h"
 

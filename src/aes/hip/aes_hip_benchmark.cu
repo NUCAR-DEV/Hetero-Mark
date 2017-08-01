@@ -1,4 +1,3 @@
-#include "hip/hip_runtime.h"
 /* Copyright (c) 2015 Northeastern University
  * All rights reserved.
  *
@@ -34,6 +33,8 @@
 
 #include "src/aes/hip/aes_hip_benchmark.h"
 
+#include <hip/hip_runtime.h>
+
 #include <cstring>
 #include <memory>
 #include <string>
@@ -53,7 +54,7 @@ void AesHipBenchmark::Initialize() {
 }
 
 __device__ void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset) {
-  uint8_t *key_bytes = reinterpret_cast<uint8_t *>((exp_key) + 16 * offset);
+  uint8_t *key_bytes = reinterpret_cast<uint8_t *>(exp_key) + 16 * offset;
   state[0] ^= key_bytes[3];
   state[1] ^= key_bytes[2];
   state[2] ^= key_bytes[1];

@@ -44,6 +44,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <thread>
+#include <vector>
 
 void EpHipBenchmark::Initialize() {
   EpBenchmark::Initialize();

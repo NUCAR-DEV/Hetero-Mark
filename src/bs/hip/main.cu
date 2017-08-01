@@ -37,6 +37,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include <memory>
+
 #include "src/bs/bs_command_line_options.h"
 #include "src/bs/hip/bs_hip_benchmark.h"
 #include "src/common/benchmark/benchmark_runner.h"

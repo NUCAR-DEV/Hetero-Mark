@@ -42,6 +42,8 @@
 #define SRC_COMMON_COMMAND_LINE_OPTION_COMMAND_LINE_OPTION_H_
 
 #include <iostream>
+#include <memory>
+
 #include "src/common/command_line_option/argument_value.h"
 #include "src/common/command_line_option/option_parser.h"
 #include "src/common/command_line_option/option_setting.h"

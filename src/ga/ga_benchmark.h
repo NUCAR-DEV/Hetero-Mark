@@ -79,7 +79,7 @@ class GaBenchmark : public Benchmark {
   uint32_t HammingDistance(const char *seq1, const char *seq2, int length);
 
   typedef int **Matrix;
-  void FineMatch(int start, int end, std::list<Match *> &matches);
+  void FineMatch(int start, int end, std::list<Match *> *matches);
   void FillCell(Matrix score_matrix, Matrix action_matrix, int i, int j,
                 int target_offset);
   Match *GenerateMatch(Matrix score_matrix, Matrix action_matrix,

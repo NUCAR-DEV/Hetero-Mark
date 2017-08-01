@@ -125,8 +125,7 @@ void GaCudaBenchmark::CollaborativeRun() {
         uint32_t end = i + current_position + query_sequence_.size();
         if (end > target_sequence_.size()) end = target_sequence_.size();
         threads.push_back(std::thread(&GaCudaBenchmark::FineMatch, this,
-                                      i + current_position, end,
-                                      std::ref(matches_)));
+                                      i + current_position, end, &matches_));
       }
     }
     current_position = end_position;
@@ -167,8 +166,8 @@ void GaCudaBenchmark::NonCollaborativeRun() {
     if (coarse_match_result_[i] != 0) {
       uint32_t end = i + query_sequence_.size();
       if (end > target_sequence_.size()) end = target_sequence_.size();
-      threads.push_back(std::thread(&GaCudaBenchmark::FineMatch, this, i, end,
-                                    std::ref(matches_)));
+      threads.push_back(
+          std::thread(&GaCudaBenchmark::FineMatch, this, i, end, &matches_));
     }
   }
   for (auto &thread : threads) {
