@@ -71,12 +71,12 @@ void GaBenchmark::Verify() {
   CoarseMatch();
 
   for (uint32_t pos : coarse_match_position_) {
-    uint32_t start = pos - query_sequence_.size();
+    int start = pos - query_sequence_.size();
     if (start < 0) {
       start = 0;
     }
 
-    uint32_t end = pos + query_sequence_.size();
+    int end = pos + query_sequence_.size();
     if (end > target_sequence_.size()) {
       end = target_sequence_.size();
     }
