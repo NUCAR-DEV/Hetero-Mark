@@ -46,7 +46,7 @@
 __global__ void kmeans_swap_cuda(float *feature, float *feature_swap,
                                  int npoints, int nfeatures) {
   uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
-  if (tid > npoints) return;
+  if (tid >= npoints) return;
 
   for (int i = 0; i < nfeatures; i++)
     feature_swap[i * npoints + tid] = feature[tid * nfeatures + i];

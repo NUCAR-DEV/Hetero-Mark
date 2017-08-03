@@ -40,6 +40,7 @@ __kernel void kmeans_kernel_compute(__global float *feature,
                                     int nclusters, int nfeatures, int offset,
                                     int size) {
   unsigned int point_id = get_global_id(0);
+
   int index = 0;
   if (point_id < npoints) {
     float min_dist = FLT_MAX;
@@ -68,6 +69,8 @@ __kernel void kmeans_kernel_swap(__global float *feature,
                                  __global float *feature_swap, int npoints,
                                  int nfeatures) {
   unsigned int tid = get_global_id(0);
+  if (tid >= npoints) return;
+
   for (int i = 0; i < nfeatures; i++)
     feature_swap[i * npoints + tid] = feature[tid * nfeatures + i];
 }

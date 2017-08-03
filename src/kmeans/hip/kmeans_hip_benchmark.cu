@@ -48,7 +48,7 @@ __global__ void kmeans_swap_hip(hipLaunchParm lp, float *feature,
                                 float *feature_swap, int npoints,
                                 int nfeatures) {
   uint tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-  if (tid > npoints) return;
+  if (tid >= npoints) return;
 
   for (int i = 0; i < nfeatures; i++)
     feature_swap[i * npoints + tid] = feature[tid * nfeatures + i];
@@ -59,7 +59,7 @@ __global__ void kmeans_compute_hip(hipLaunchParm lp, float *feature,
                                    int npoints, int nclusters, int nfeatures,
                                    int offset, int size) {
   int point_id = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-  if (point_id > npoints) return;
+  if (point_id >= npoints) return;
 
   int index = 0;
   if (point_id < npoints) {
