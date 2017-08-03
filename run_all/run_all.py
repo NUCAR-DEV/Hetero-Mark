@@ -12,6 +12,11 @@ import argparse
 from bcolors import bcolors
 from benchmark import FirBenchmark
 from benchmark import AesBenchmark
+from benchmark import HistBenchmark
+from benchmark import PRBenchmark
+from benchmark import KMeansBenchmark
+from benchmark import BSBenchmark
+from benchmark import EPBenchmark
 
 build_folder = os.getcwd() + '/build-auto-run/'
 # benchmarks = [
@@ -28,52 +33,6 @@ build_folder = os.getcwd() + '/build-auto-run/'
 #     ('be', 'hip', ['-i', os.getcwd() + '/data/be/1.mp4']),
 #     ('be', 'hip', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
 
-#     ('bs', 'hc', ['-x', '1048576']),
-#     ('bs', 'hc', ['-x', '1048576', '--collaborative']),
-#     ('bs', 'cuda', ['-x', '1048576']),
-#     ('bs', 'cuda', ['-x', '1048576', '--collaborative']),
-
-#     ('ep', 'hc', ['-x', '128', '-m', '20']),
-#     ('ep', 'hc', ['-x', '256', '-m', '20']),
-#     ('ep', 'hc', ['-x', '512', '-m', '20']),
-#     ('ep', 'hc', ['-x', '1024', '-m', '20']),
-#     ('ep', 'hc', ['-x', '2048', '-m', '20']),
-#     ('ep', 'hc', ['-x', '4096', '-m', '20']),
-#     ('ep', 'hc', ['-x', '8192', '-m', '20']),
-#     ('ep', 'hc', ['-x', '16384', '-m', '20']),
-#     ('ep', 'hc', ['-x', '32768', '-m', '20']),
-#     ('ep', 'hc', ['-x', '65536', '-m', '20']),
-#     ('ep', 'hc', ['-x', '128', '-m', '20', '-c']),
-#     ('ep', 'hc', ['-x', '256', '-m', '20', '-c']),
-#     ('ep', 'hc', ['-x', '512', '-m', '20', '-c']),
-#     ('ep', 'hc', ['-x', '1024', '-m', '20', '-c']),
-#     ('ep', 'hc', ['-x', '2048', '-m', '20', '-c']),
-#     ('ep', 'hc', ['-x', '4096', '-m', '20', '-c']),
-#     ('ep', 'hc', ['-x', '8192', '-m', '20', '-c']),
-#     ('ep', 'hc', ['-x', '16384', '-m', '20', '-c']),
-#     ('ep', 'hc', ['-x', '32768', '-m', '20', '-c']),
-#     ('ep', 'hc', ['-x', '65536', '-m', '20', '-c']),
-#     ('ep', 'cuda', ['-x', '128', '-m', '20']),
-#     ('ep', 'cuda', ['-x', '256', '-m', '20']),
-#     ('ep', 'cuda', ['-x', '512', '-m', '20']),
-#     ('ep', 'cuda', ['-x', '1024', '-m', '20']),
-#     ('ep', 'cuda', ['-x', '2048', '-m', '20']),
-#     ('ep', 'cuda', ['-x', '4096', '-m', '20']),
-#     ('ep', 'cuda', ['-x', '8192', '-m', '20']),
-#     ('ep', 'cuda', ['-x', '16384', '-m', '20']),
-#     ('ep', 'cuda', ['-x', '32768', '-m', '20']),
-#     ('ep', 'cuda', ['-x', '65536', '-m', '20']),
-#     ('ep', 'cuda', ['-x', '128', '-m', '20', '-c']),
-#     ('ep', 'cuda', ['-x', '256', '-m', '20', '-c']),
-#     ('ep', 'cuda', ['-x', '512', '-m', '20', '-c']),
-#     ('ep', 'cuda', ['-x', '1024', '-m', '20', '-c']),
-#     ('ep', 'cuda', ['-x', '2048', '-m', '20', '-c']),
-#     ('ep', 'cuda', ['-x', '4096', '-m', '20', '-c']),
-#     ('ep', 'cuda', ['-x', '8192', '-m', '20', '-c']),
-#     ('ep', 'cuda', ['-x', '16384', '-m', '20', '-c']),
-#     ('ep', 'cuda', ['-x', '32768', '-m', '20', '-c']),
-#     ('ep', 'cuda', ['-x', '65536', '-m', '20', '-c']),
-
 #     ('ga', 'hc', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
 #     ('ga', 'hc', ['-i', os.getcwd() +
 #                   '/data/gene_alignment/medium.data', '--collaborative']),
@@ -84,31 +43,6 @@ build_folder = os.getcwd() + '/build-auto-run/'
 #     ('ga', 'hip', ['-i', os.getcwd() +
 #                    '/data/gene_alignment/medium.data', '--collaborative']),
 
-#     ('hist', 'cl12', ['-x', '1048576']),
-#     ('hist', 'cl20', ['-x', '1048576']),
-#     ('hist', 'hc', ['-x', '1048576']),
-#     ('hist', 'cuda', ['-x', '65536']),
-#     ('hist', 'cuda', ['-x', '131072']),
-#     ('hist', 'cuda', ['-x', '196608']),
-#     ('hist', 'cuda', ['-x', '262144']),
-#     ('hist', 'cuda', ['-x', '327680']),
-#     ('hist', 'cuda', ['-x', '393216']),
-#     ('hist', 'cuda', ['-x', '458752']),
-#     ('hist', 'cuda', ['-x', '524288']),
-#     ('hist', 'hip', ['-x', '65536']),
-#     ('hist', 'hip', ['-x', '131072']),
-#     ('hist', 'hip', ['-x', '196608']),
-#     ('hist', 'hip', ['-x', '262144']),
-#     ('hist', 'hip', ['-x', '327680']),
-#     ('hist', 'hip', ['-x', '393216']),
-#     ('hist', 'hip', ['-x', '458752']),
-#     ('hist', 'hip', ['-x', '524288']),
-
-
-#     ('kmeans', 'cl12', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
-#     ('kmeans', 'cl20', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
-#     ('kmeans', 'hc', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
-#     ('kmeans', 'cuda', ['-i', os.getcwd() + '/data/kmeans/10000_34.txt']),
 
 #     ('pr', 'cl12', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
 #     ('pr', 'cl20', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
@@ -118,7 +52,7 @@ build_folder = os.getcwd() + '/build-auto-run/'
 def main():
     """main function"""
     args = parse_args()
-    if not args.skip_compile:
+    if not args.skip_build:
         compile(args)
 
     benchmarks = []
@@ -130,18 +64,11 @@ def parse_args():
     """parse user input arguments"""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--skip-compile", action="store_true",
+    parser.add_argument("--skip-build", action="store_true",
                         help="""
+            By default, the script performs an incremental build. 
             Setting this argument will skip the compilation process. This is 
             useful if you have the compiled with this script before.
-            """)
-    parser.add_argument("--cxx", default="g++",
-                        help="""
-            The compiler to be used to compile the benchmark. 
-            """)
-    parser.add_argument("--skip-verification", action="store_true",
-                        help="""
-            Setting this argument will skip the CPU verification process.
             """)
     parser.add_argument("--fresh-build", action="store_true",
                         help="""
@@ -152,10 +79,24 @@ def parse_args():
             Use this option to set the flags to pass to cmake. 
             Set "-DCOMPILE_CUDA=On" to enable CUDA compilation.
             """)
-    parser.add_argument("-i", "--ignore-error", action="store_true",
+    parser.add_argument("--cxx", default="g++",
                         help="""
+            The compiler to be used to compile the benchmark. 
+            """)
+    parser.add_argument("-i", "--ignore-error", action="store_true",
+                            help="""
             Use this option to ignore errors in the compilation and 
             verification process.
+            """)
+
+
+    parser.add_argument("--skip-verification", action="store_true",
+                        help="""
+            Setting this argument will skip the CPU verification process.
+            """)
+    parser.add_argument("--full-verification", action="store_true",
+                        help="""
+            Perform a full verification on different input values. 
             """)
     parser.add_argument("-b", "--benchmark",
                         help="""
@@ -214,6 +155,11 @@ def setup_benchmarks(benchmarks, args):
     """List all the benchmarks"""
     benchmarks.append(FirBenchmark(args))
     benchmarks.append(AesBenchmark(args))
+    benchmarks.append(HistBenchmark(args))
+    benchmarks.append(PRBenchmark(args))
+    benchmarks.append(KMeansBenchmark(args))
+    benchmarks.append(BSBenchmark(args))
+    benchmarks.append(EPBenchmark(args))
 
 
 def run(benchmarks, args):

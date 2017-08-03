@@ -81,6 +81,10 @@ class Benchmark(object):
             self._benchmark_specific_input(run)
 
     def _benchmark_specific_input(self, args):
+
+        if self.options.full_verification:
+            self._verify(args)
+
         print("Benchmarking", self.executable, *args, sep=' ', end=' ')
 
         runtime_regex = re.compile(
@@ -204,4 +208,111 @@ class AesBenchmark(Benchmark):
                 '-i', os.getcwd() + '/data/aes/32MB.data',
                 '-k', os.getcwd() + '/data/aes/key.data'
             ],
+        ]
+
+
+class HistBenchmark(Benchmark):
+    """Hist benchmark"""
+
+    def __init__(self, options):
+        super(HistBenchmark, self).__init__(options)
+        self.benchmark_name = 'hist'
+        self.benchmark_platforms = ['cl12', 'cl20', 'hc', 'cuda', 'hip']
+        self.verify_run = []
+        self.benchmark_runs = [
+            ['-x', '65536'],
+            ['-x', '131072'],
+            ['-x', '262144'],
+            ['-x', '524288'],
+            ['-x', '1048576'],
+            ['-x', '2097152'],
+            ['-x', '4194304'],
+            ['-x', '8388608'],
+            ['-x', '1677216'],
+            ['-x', '33554432'],
+        ]
+
+
+class PRBenchmark(Benchmark):
+    """KMeans benchmark"""
+
+    def __init__(self, options):
+        super(PRBenchmark, self).__init__(options)
+        self.benchmark_name = 'pr'
+        self.benchmark_platforms = ['cl12', 'cl20', 'hc', 'cuda', 'hip']
+        self.verify_run = ['-i', os.getcwd() + '/data/pr/1024.data']
+        self.benchmark_runs = [
+            ['-i', os.getcwd() + '/data/pr/1024.data'],
+            ['-i', os.getcwd() + '/data/pr/2048.data'],
+            ['-i', os.getcwd() + '/data/pr/4096.data'],
+            ['-i', os.getcwd() + '/data/pr/8192.data'],
+            ['-i', os.getcwd() + '/data/pr/16384.data'],
+        ]
+
+
+class KMeansBenchmark(Benchmark):
+    """KMeans benchmark"""
+
+    def __init__(self, options):
+        super(KMeansBenchmark, self).__init__(options)
+        self.benchmark_name = 'kmeans'
+        self.benchmark_platforms = ['cl12', 'cl20', 'hc', 'cuda', 'hip']
+        self.verify_run = ['-i', os.getcwd() + '/data/kmeans/1000_34.txt']
+        self.benchmark_runs = [
+            ['-i', os.getcwd() + '/data/kmeans/100_34.txt'],
+            ['-i', os.getcwd() + '/data/kmeans/1000_34.txt'],
+            ['-i', os.getcwd() + '/data/kmeans/10000_34.txt'],
+            ['-i', os.getcwd() + '/data/kmeans/100000_34.txt'],
+            ['-i', os.getcwd() + '/data/kmeans/1000000_34.txt'],
+            ['-i', os.getcwd() + '/data/kmeans/10000000_34.txt'],
+        ]
+
+
+class BSBenchmark(Benchmark):
+    """BS benchmark"""
+
+    def __init__(self, options):
+        super(BSBenchmark, self).__init__(options)
+        self.benchmark_name = 'bs'
+        self.benchmark_platforms = ['hc', 'cuda', 'hip']
+        self.verify_run = []
+        self.benchmark_runs = [
+            ['-x', '131072'],
+            ['-x', '262144'],
+            ['-x', '524288'],
+            ['-x', '1048576'],
+            ['-x', '2097152'],
+            ['-x', '4194304'],
+            ['-x', '8388608'],
+            ['-x', '131072', '-c', '--chunk', '4096'],
+            ['-x', '262144', '-c', '--chunk', '4096'],
+            ['-x', '524288', '-c', '--chunk', '4096'],
+            ['-x', '1048576', '-c', '--chunk', '4096'],
+            ['-x', '2097152', '-c', '--chunk', '4096'],
+            ['-x', '4194304', '-c', '--chunk', '4096'],
+            ['-x', '8388608', '-c', '--chunk', '4096'],
+        ]
+
+
+class EPBenchmark(Benchmark):
+    """EP benchmark"""
+
+    def __init__(self, options):
+        super(EPBenchmark, self).__init__(options)
+        self.benchmark_name = 'ep'
+        self.benchmark_platforms = ['hc', 'cuda', 'hip']
+        self.verify_run = []
+        self.benchmark_runs = [
+            ['-x', '1024', '-m', '20'],
+            ['-x', '2048', '-m', '20'],
+            ['-x', '4096', '-m', '20'],
+            ['-x', '8192', '-m', '20'],
+            ['-x', '16384', '-m', '20'],
+            ['-x', '32768', '-m', '20'],
+            ['-x', '1024', '-m', '20', '-c'],
+            ['-x', '2048', '-m', '20', '-c'],
+            ['-x', '4096', '-m', '20', '-c'],
+            ['-x', '8192', '-m', '20', '-c'],
+            ['-x', '16384', '-m', '20', '-c'],
+            ['-x', '32768', '-m', '20', '-c'],
         ]
