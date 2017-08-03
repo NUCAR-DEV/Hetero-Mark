@@ -126,3 +126,82 @@ class FirBenchmark(Benchmark):
             ['-y', '1024', '-x', '7168'],
             ['-y', '1024', '-x', '8192'],
         ]
+
+
+class AesBenchmark(Benchmark):
+    """AES benchmark"""
+
+    def __init__(self, options):
+        super(AesBenchmark, self).__init__(options)
+        self.benchmark_name = 'aes'
+        self.benchmark_platforms = ['cl12', 'cl20', 'hc', 'cuda', 'hip']
+        self.verify_run = [
+            '-i', os.getcwd() + '/data/aes/1KB.data',
+            '-k', os.getcwd() + '/data/aes/key.data'
+        ]
+        self.benchmark_runs = [
+            [
+                '-i', os.getcwd() + '/data/aes/1KB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/2KB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/4KB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/8KB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/16KB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/32KB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/64KB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/128KB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/256KB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/512KB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/1MB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/2MB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/4MB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/8MB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/16MB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+            [
+                '-i', os.getcwd() + '/data/aes/32MB.data',
+                '-k', os.getcwd() + '/data/aes/key.data'
+            ],
+        ]

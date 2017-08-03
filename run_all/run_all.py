@@ -9,60 +9,12 @@ import re
 import sys
 import subprocess
 import argparse
-from benchmark import FirBenchmark
 from bcolors import bcolors
+from benchmark import FirBenchmark
+from benchmark import AesBenchmark
 
 build_folder = os.getcwd() + '/build-auto-run/'
 # benchmarks = [
-#     ('aes', 'cl12', [
-#         '-i', os.getcwd() + '/data/aes/small.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'cl12', [
-#         '-i', os.getcwd() + '/data/aes/medium.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'cl12', [
-#         '-i', os.getcwd() + '/data/aes/large.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'cl20', [
-#         '-i', os.getcwd() + '/data/aes/small.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'cl20', [
-#         '-i', os.getcwd() + '/data/aes/medium.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'cl20', [
-#         '-i', os.getcwd() + '/data/aes/large.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'hc', [
-#         '-i', os.getcwd() + '/data/aes/small.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'hc', [
-#         '-i', os.getcwd() + '/data/aes/medium.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'hc', [
-#         '-i', os.getcwd() + '/data/aes/large.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'cuda', [
-#         '-i', os.getcwd() + '/data/aes/small.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'cuda', [
-#         '-i', os.getcwd() + '/data/aes/medium.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-#     ('aes', 'cuda', [
-#         '-i', os.getcwd() + '/data/aes/large.data',
-#         '-k', os.getcwd() + '/data/aes/key.data'
-#     ]),
-
 #     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4']),
 #     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
 #     ('be', 'hc', ['-i', os.getcwd() + '/data/be/1.mp4']),
@@ -122,33 +74,6 @@ build_folder = os.getcwd() + '/build-auto-run/'
 #     ('ep', 'cuda', ['-x', '32768', '-m', '20', '-c']),
 #     ('ep', 'cuda', ['-x', '65536', '-m', '20', '-c']),
 
-#     ('fir', 'cl12', []),
-#     ('fir', 'cl20', []),
-#     ('fir', 'hc', ['-y', '1024', '-x', '1024']),
-#     ('fir', 'hc', ['-y', '1024', '-x', '2048']),
-#     ('fir', 'hc', ['-y', '1024', '-x', '3072']),
-#     ('fir', 'hc', ['-y', '1024', '-x', '4096']),
-#     ('fir', 'hc', ['-y', '1024', '-x', '5120']),
-#     ('fir', 'hc', ['-y', '1024', '-x', '6144']),
-#     ('fir', 'hc', ['-y', '1024', '-x', '7168']),
-#     ('fir', 'hc', ['-y', '1024', '-x', '8192']),
-#     ('fir', 'cuda', ['-y', '1024', '-x', '1024']),
-#     ('fir', 'cuda', ['-y', '1024', '-x', '2048']),
-#     ('fir', 'cuda', ['-y', '1024', '-x', '3072']),
-#     ('fir', 'cuda', ['-y', '1024', '-x', '4096']),
-#     ('fir', 'cuda', ['-y', '1024', '-x', '5120']),
-#     ('fir', 'cuda', ['-y', '1024', '-x', '6144']),
-#     ('fir', 'cuda', ['-y', '1024', '-x', '7168']),
-#     ('fir', 'cuda', ['-y', '1024', '-x', '8192']),
-#     ('fir', 'hip', ['-y', '1024', '-x', '1024']),
-#     ('fir', 'hip', ['-y', '1024', '-x', '2048']),
-#     ('fir', 'hip', ['-y', '1024', '-x', '3072']),
-#     ('fir', 'hip', ['-y', '1024', '-x', '4096']),
-#     ('fir', 'hip', ['-y', '1024', '-x', '5120']),
-#     ('fir', 'hip', ['-y', '1024', '-x', '6144']),
-#     ('fir', 'hip', ['-y', '1024', '-x', '7168']),
-#     ('fir', 'hip', ['-y', '1024', '-x', '8192']),
-
 #     ('ga', 'hc', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
 #     ('ga', 'hc', ['-i', os.getcwd() +
 #                   '/data/gene_alignment/medium.data', '--collaborative']),
@@ -198,7 +123,7 @@ def main():
 
     benchmarks = []
     setup_benchmarks(benchmarks, args)
-    run(benchmarks)
+    run(benchmarks, args)
 
 
 def parse_args():
@@ -288,11 +213,16 @@ def compile(args):
 def setup_benchmarks(benchmarks, args):
     """List all the benchmarks"""
     benchmarks.append(FirBenchmark(args))
+    benchmarks.append(AesBenchmark(args))
 
 
-def run(benchmarks):
+def run(benchmarks, args):
     """ Run all benchmarks """
     for benchmark in benchmarks:
+
+        if args.benchmark != None and args.benchmark != benchmark.benchmark_name:
+            continue
+
         benchmark.run()
 
 
