@@ -352,3 +352,37 @@ class BEBenchmark(Benchmark):
             ['-i', os.getcwd() + '/data/be/1760x990.mp4', '-m', '100', '-c'],
             ['-i', os.getcwd() + '/data/be/1920x1080.mp4', '-m', '100', '-c'],
         ]
+
+
+class GABenchmark(Benchmark):
+    """GA benchmark"""
+
+    def __init__(self, options):
+        super(GABenchmark, self).__init__(options)
+        self.benchmark_name = 'be'
+        self.benchmark_platforms = ['hc', 'cuda', 'hip']
+        self.verify_run = ['-i', os.getcwd() + '/data/ga/1024_64.data']
+        self.benchmark_runs = [
+            ['-i', os.getcwd() + '/data/ga/1024_64.data'],
+            ['-i', os.getcwd() + '/data/ga/2048_128.data'],
+            ['-i', os.getcwd() + '/data/ga/4096_256.data'],
+            ['-i', os.getcwd() + '/data/ga/8192_512.data'],
+            ['-i', os.getcwd() + '/data/ga/16384_1024.data'],
+            ['-i', os.getcwd() + '/data/ga/32768_1024.data'],
+            ['-i', os.getcwd() + '/data/ga/65536_1024.data'],
+            ['-i', os.getcwd() + '/data/ga/131072_1024.data'],
+            ['-i', os.getcwd() + '/data/ga/262144_1024.data'],
+            ['-i', os.getcwd() + '/data/ga/524288_1024.data'],
+            ['-i', os.getcwd() + '/data/ga/1028576_1024.data'],
+            ['-i', os.getcwd() + '/data/ga/1024_64.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/2048_128.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/4096_256.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/8192_512.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/16384_1024.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/32768_1024.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/65536_1024.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/131072_1024.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/262144_1024.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/524288_1024.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/1028576_1024.data', '-c'],
+        ]

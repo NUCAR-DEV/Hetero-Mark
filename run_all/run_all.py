@@ -18,37 +18,9 @@ from benchmark import KMeansBenchmark
 from benchmark import BSBenchmark
 from benchmark import EPBenchmark
 from benchmark import BEBenchmark
+from benchmark import GABenchmark
 
 build_folder = os.getcwd() + '/build-auto-run/'
-# benchmarks = [
-#     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4']),
-#     ('be', 'hc', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
-#     ('be', 'hc', ['-i', os.getcwd() + '/data/be/1.mp4']),
-#     ('be', 'hc', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
-#     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/0.mp4']),
-#     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
-#     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/1.mp4']),
-#     ('be', 'cuda', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
-#     ('be', 'hip', ['-i', os.getcwd() + '/data/be/0.mp4']),
-#     ('be', 'hip', ['-i', os.getcwd() + '/data/be/0.mp4', '--collaborative']),
-#     ('be', 'hip', ['-i', os.getcwd() + '/data/be/1.mp4']),
-#     ('be', 'hip', ['-i', os.getcwd() + '/data/be/1.mp4', '--collaborative']),
-
-#     ('ga', 'hc', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
-#     ('ga', 'hc', ['-i', os.getcwd() +
-#                   '/data/gene_alignment/medium.data', '--collaborative']),
-#     ('ga', 'cuda', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
-#     ('ga', 'cuda', ['-i', os.getcwd() +
-#                     '/data/gene_alignment/medium.data', '--collaborative']),
-#     ('ga', 'hip', ['-i', os.getcwd() + '/data/gene_alignment/medium.data']),
-#     ('ga', 'hip', ['-i', os.getcwd() +
-#                    '/data/gene_alignment/medium.data', '--collaborative']),
-
-
-#     ('pr', 'cl12', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
-#     ('pr', 'cl20', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
-#     ('pr', 'hc', ['-i', os.getcwd() + '/data/page_rank/medium.data']),
-# ]
 
 def main():
     """main function"""
@@ -109,9 +81,10 @@ def parse_args():
                         help="""
             The number of times to run a benchmark. Default is 5 times.
             """)
-    args = parser.parse_args()
 
+    args = parser.parse_args()
     args.build_folder = build_folder
+
     return args
 
 
@@ -161,6 +134,7 @@ def setup_benchmarks(benchmarks, args):
     benchmarks.append(KMeansBenchmark(args))
     benchmarks.append(BSBenchmark(args))
     benchmarks.append(BEBenchmark(args))
+    benchmarks.append(GABenchmark(args))
     benchmarks.append(EPBenchmark(args))
 
 
