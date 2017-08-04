@@ -89,7 +89,7 @@ class Benchmark(object):
         print("Benchmarking", self.executable, *args, sep=' ', end=' ')
 
         runtime_regex = re.compile(
-            r'Run: ((0|[1-9]\d*)?(\.\d+)?(?<=\d)) second')
+            r'Run: (-?\ *[0-9]+\.?[0-9]*(?:[Ee]\ *-?\ *[0-9]+)?) second')
 
         perf = []
         for i in range(0, self.options.repeat_time):
