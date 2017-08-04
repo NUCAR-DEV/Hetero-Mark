@@ -55,6 +55,7 @@ class BeCommandLineOptions : public BenchmarkCommandLineOptions {
   bool collaborative_execution_;
   bool generate_output_;
   std::string input_file_;
+  uint32_t max_frame_;
 };
 
 #endif  // SRC_BE_BE_COMMAND_LINE_OPTIONS_H_

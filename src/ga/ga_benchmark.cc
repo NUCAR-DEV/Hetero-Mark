@@ -77,7 +77,7 @@ void GaBenchmark::Verify() {
     }
 
     int end = pos + query_sequence_.size();
-    if (end > target_sequence_.size()) {
+    if (end > static_cast<int>(target_sequence_.size())) {
       end = target_sequence_.size();
     }
 

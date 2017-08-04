@@ -54,6 +54,7 @@ class BeBenchmark : public Benchmark {
   uint32_t height_;
   uint32_t channel_;
   uint32_t num_frames_;
+  uint32_t max_frames_;
   bool collaborative_execution_;
   bool generate_output_;
   std::string input_file_;
@@ -83,6 +84,7 @@ class BeBenchmark : public Benchmark {
 
   // Setters
   void SetInputFile(const std::string &input_file) { input_file_ = input_file; }
+  void SetMaxFrame(const uint32_t max_frames) { max_frames_ = max_frames; }
   void SetCollaborativeExecution(bool collaborative_execution) {
     collaborative_execution_ = collaborative_execution;
   }

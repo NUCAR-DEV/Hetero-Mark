@@ -106,6 +106,10 @@ void BeHipBenchmark::CollaborativeRun() {
 
   int frame_count = 0;
   while (true) {
+    if (frame_count >= num_frames_) {
+      break;
+    }
+
     frame = nextFrame();
     if (!frame) {
       break;
@@ -184,7 +188,12 @@ void BeHipBenchmark::NormalRun() {
   uint8_t *d_frame;
   hipMalloc(&d_frame, num_pixels * channel_ * sizeof(uint8_t));
 
+  int frame_count = 0;
   while (true) {
+    if (frame_count >= num_frames_) {
+      break;
+    }
+
     frame = nextFrame();
     if (frame == NULL) {
       break;
@@ -208,6 +217,7 @@ void BeHipBenchmark::NormalRun() {
     }
 
     delete[] frame;
+    frame_count++;
   }
 
   hipFree(d_frame);

@@ -52,7 +52,10 @@ void BeCommandLineOptions::RegisterOptions() {
                                    "--input-video",
                                    "The video to be processed by the "
                                    "background extractor.");
-
+  command_line_option_.AddArgument("MaxFrames", "integer", "0", "-m", 
+                                   "--max-frames", 
+                                   "Max number of frames to process. 0 means "
+                                   "no limitation.");
   command_line_option_.AddArgument("Collaborative", "bool", "false", "-c",
                                    "--collaborative",
                                    "When enabled, the CPU will fetch and "
@@ -63,12 +66,14 @@ void BeCommandLineOptions::RegisterOptions() {
                                    "When enabled, the CPU execution result "
                                    "and the GPU result will be stored in "
                                    "output videos.");
+
 }
 
 void BeCommandLineOptions::Parse(int argc, const char *argv[]) {
   BenchmarkCommandLineOptions::Parse(argc, argv);
 
   input_file_ = command_line_option_.GetArgumentValue("InputFile")->AsString();
+  max_frame_ = command_line_option_.GetArgumentValue("MaxFrames")->AsUInt32();
   collaborative_execution_ =
       command_line_option_.GetArgumentValue("Collaborative")->AsBool();
   generate_output_ =
@@ -77,6 +82,7 @@ void BeCommandLineOptions::Parse(int argc, const char *argv[]) {
 
 void BeCommandLineOptions::ConfigureBenchmark(BeBenchmark *benchmark) {
   benchmark->SetInputFile(input_file_);
+  benchmark->SetMaxFrame(max_frame_);
   benchmark->SetCollaborativeExecution(collaborative_execution_);
   benchmark->SetGenerateOutput(generate_output_);
 }

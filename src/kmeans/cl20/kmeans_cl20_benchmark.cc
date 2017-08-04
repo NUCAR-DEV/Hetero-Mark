@@ -97,6 +97,7 @@ void KmeansCl20Benchmark::FreeTemporaryMemory() {
 }
 
 void KmeansCl20Benchmark::Clustering() {
+  membership_ = new int[num_points_];
   min_rmse_ = FLT_MAX;
 
   // Sweep k from min to max_clusters_ to find the best number of clusters
@@ -116,10 +117,12 @@ void KmeansCl20Benchmark::Clustering() {
     }
     FreeTemporaryMemory();
   }
+
+  delete[] membership_;
 }
 void KmeansCl20Benchmark::TransposeFeatures() {
   size_t bytes_features = num_points_ * num_features_ * sizeof(float);
-  memcpy(svm_features_, svm_features_, bytes_features);
+  memcpy(svm_features_, host_features_, bytes_features);
 
   clSetKernelArgSVMPointer(kmeans_kernel_swap_, 0, svm_features_);
   clSetKernelArgSVMPointer(kmeans_kernel_swap_, 1, svm_features_swap_);
@@ -160,6 +163,15 @@ void KmeansCl20Benchmark::KmeansClustering(unsigned num_clusters) {
     num_iteration++;
   } while ((delta_ > 0) && (num_iteration < 500));
 
+  for (uint32_t i = 0; i < num_points_; i++) {
+    membership_[i] = svm_membership_[i];
+  }
+
+  for (uint32_t i = 0; i < num_clusters * num_features_; i++) {
+    clusters_[i] = svm_clusters_[i];
+  }
+
+
   std::cout << "# of iterations: " << num_iteration << std::endl;
 }
 
@@ -169,11 +181,10 @@ void KmeansCl20Benchmark::InitializeClusters(unsigned num_clusters) {
       clSVMAlloc(context_, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
                  bytes_clusters, 0));
 
-  for (unsigned i = 1; i < num_clusters; i++)
-    svm_clusters_[i] = svm_clusters_[i - 1] + num_features_;
-
   for (unsigned i = 0; i < num_clusters * num_features_; i++)
     svm_clusters_[i] = svm_features_[i];
+
+  clusters_ = new float[bytes_clusters];
 }
 
 void KmeansCl20Benchmark::InitializeMembership() {

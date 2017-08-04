@@ -17,6 +17,7 @@ from benchmark import PRBenchmark
 from benchmark import KMeansBenchmark
 from benchmark import BSBenchmark
 from benchmark import EPBenchmark
+from benchmark import BEBenchmark
 
 build_folder = os.getcwd() + '/build-auto-run/'
 # benchmarks = [
@@ -159,6 +160,7 @@ def setup_benchmarks(benchmarks, args):
     benchmarks.append(PRBenchmark(args))
     benchmarks.append(KMeansBenchmark(args))
     benchmarks.append(BSBenchmark(args))
+    benchmarks.append(BEBenchmark(args))
     benchmarks.append(EPBenchmark(args))
 
 

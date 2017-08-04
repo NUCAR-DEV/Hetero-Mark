@@ -51,6 +51,9 @@ void BeBenchmark::Initialize() {
   height_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_HEIGHT));
   channel_ = 3;
   num_frames_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_COUNT));
+  if (max_frames_ != 0 && max_frames_ < num_frames_) {
+    num_frames_ = max_frames_;
+  }
 
   if (generate_output_) {
     int codec = CV_FOURCC('M', 'J', 'P', 'G');
@@ -98,6 +101,10 @@ void BeBenchmark::CpuRun() {
   // Run on CPU
   uint64_t frame_count = 0;
   while (true) {
+    if (frame_count >= num_frames_) {
+      break;
+    }
+
     if (!video_.read(image)) {
       break;
     }

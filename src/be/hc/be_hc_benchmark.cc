@@ -77,6 +77,10 @@ void BeHcBenchmark::CollaborativeRun() {
 
   int frame_count = 0;
   while (true) {
+    if (frame_count >= num_frames_) {
+      break;
+    }
+
     frame = nextFrame();
     if (!frame) {
       break;
@@ -174,7 +178,13 @@ void BeHcBenchmark::NormalRun() {
   hc::accelerator_view acc_view = hc::accelerator().get_default_view();
 
   uint32_t frame_count = 0;
+  printf("num_frame %d\n", num_frames_);
   while (true) {
+    if (frame_count >= num_frames_) {
+      break;
+    }
+    printf("Frame %d\n", frame_count);
+
     timer_->Start();
     delete[] frame;
     frame = nextFrame();

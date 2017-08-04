@@ -63,8 +63,9 @@ class Benchmark(object):
 
     def _verify(self, args):
         print("Verifying", self.executable, *args, sep=' ', end=' ')
-        proc = subprocess.Popen([self.executable_full_path, '-q', '-v'] + args,
-                                cwd=self.cwd,
+        command = " ".join([self.executable_full_path, '-q', '-v'] + args)
+        proc = subprocess.Popen(command,
+                                cwd=self.cwd, shell=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         proc.wait()
         if proc.returncode != 0:
@@ -92,8 +93,9 @@ class Benchmark(object):
 
         perf = []
         for i in range(0, self.options.repeat_time):
-            proc = subprocess.Popen([self.executable_full_path, '-q', '-t'] + args,
-                                    cwd=self.cwd,
+            command = " ".join([self.executable_full_path, '-q', '-t'] + args)
+            proc = subprocess.Popen(command,
+                                    cwd=self.cwd, shell=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             for line in proc.stderr:
                 res = runtime_regex.search(line)
@@ -264,7 +266,7 @@ class KMeansBenchmark(Benchmark):
             ['-i', os.getcwd() + '/data/kmeans/10000_34.txt'],
             ['-i', os.getcwd() + '/data/kmeans/100000_34.txt'],
             ['-i', os.getcwd() + '/data/kmeans/1000000_34.txt'],
-            ['-i', os.getcwd() + '/data/kmeans/10000000_34.txt'],
+            ['-i', os.getcwd() + '/data/kmeans/1000000_34.txt'],
         ]
 
 
@@ -315,4 +317,38 @@ class EPBenchmark(Benchmark):
             ['-x', '8192', '-m', '20', '-c'],
             ['-x', '16384', '-m', '20', '-c'],
             ['-x', '32768', '-m', '20', '-c'],
+        ]
+
+
+class BEBenchmark(Benchmark):
+    """BE benchmark"""
+
+    def __init__(self, options):
+        super(BEBenchmark, self).__init__(options)
+        self.benchmark_name = 'be'
+        self.benchmark_platforms = ['hc', 'cuda', 'hip']
+        self.verify_run = ['-i', os.getcwd() + '/data/be/320x180.mp4']
+        self.benchmark_runs = [
+            ['-i', os.getcwd() + '/data/be/320x180.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/480x270.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/640x360.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/800x450.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/960x540.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/1120x630.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/1280x720.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/1440x810.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/1600x900.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/1760x990.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/1920x1080.mp4', '-m', '100'],
+            ['-i', os.getcwd() + '/data/be/320x180.mp4', '-m', '100', '-c'],
+            ['-i', os.getcwd() + '/data/be/480x270.mp4', '-m', '100', '-c'],
+            ['-i', os.getcwd() + '/data/be/640x360.mp4', '-m', '100', '-c'],
+            ['-i', os.getcwd() + '/data/be/800x450.mp4', '-m', '100', '-c'],
+            ['-i', os.getcwd() + '/data/be/960x540.mp4', '-m', '100', '-c'],
+            ['-i', os.getcwd() + '/data/be/1120x630.mp4', '-m', '100', '-c'],
+            ['-i', os.getcwd() + '/data/be/1280x720.mp4', '-m', '100', '-c'],
+            ['-i', os.getcwd() + '/data/be/1440x810.mp4', '-m', '100', '-c'],
+            ['-i', os.getcwd() + '/data/be/1600x900.mp4', '-m', '100', '-c'],
+            ['-i', os.getcwd() + '/data/be/1760x990.mp4', '-m', '100', '-c'],
+            ['-i', os.getcwd() + '/data/be/1920x1080.mp4', '-m', '100', '-c'],
         ]
