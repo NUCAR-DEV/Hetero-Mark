@@ -359,7 +359,7 @@ class GABenchmark(Benchmark):
 
     def __init__(self, options):
         super(GABenchmark, self).__init__(options)
-        self.benchmark_name = 'be'
+        self.benchmark_name = 'ga'
         self.benchmark_platforms = ['hc', 'cuda', 'hip']
         self.verify_run = ['-i', os.getcwd() + '/data/ga/1024_64.data']
         self.benchmark_runs = [
@@ -373,7 +373,7 @@ class GABenchmark(Benchmark):
             ['-i', os.getcwd() + '/data/ga/131072_1024.data'],
             ['-i', os.getcwd() + '/data/ga/262144_1024.data'],
             ['-i', os.getcwd() + '/data/ga/524288_1024.data'],
-            ['-i', os.getcwd() + '/data/ga/1028576_1024.data'],
+            ['-i', os.getcwd() + '/data/ga/1048576_1024.data'],
             ['-i', os.getcwd() + '/data/ga/1024_64.data', '-c'],
             ['-i', os.getcwd() + '/data/ga/2048_128.data', '-c'],
             ['-i', os.getcwd() + '/data/ga/4096_256.data', '-c'],
@@ -384,5 +384,5 @@ class GABenchmark(Benchmark):
             ['-i', os.getcwd() + '/data/ga/131072_1024.data', '-c'],
             ['-i', os.getcwd() + '/data/ga/262144_1024.data', '-c'],
             ['-i', os.getcwd() + '/data/ga/524288_1024.data', '-c'],
-            ['-i', os.getcwd() + '/data/ga/1028576_1024.data', '-c'],
+            ['-i', os.getcwd() + '/data/ga/1048576_1024.data', '-c'],
         ]
