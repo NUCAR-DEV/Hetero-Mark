@@ -105,8 +105,9 @@ class Benchmark(object):
             sys.stdout.flush()
         print("")
 
-        self.avg_times.append(np.mean(perf))
-        self.std_devs.append(np.std(perf))
+        if self.options.repeat_time > 0:
+            self.avg_times.append(np.mean(perf))
+            self.std_devs.append(np.std(perf))
 
     def _report(self):
         print("Benchmark ", self.benchmark_name, "results:",)
@@ -265,7 +266,6 @@ class KMeansBenchmark(Benchmark):
             ['-i', os.getcwd() + '/data/kmeans/1000_34.txt'],
             ['-i', os.getcwd() + '/data/kmeans/10000_34.txt'],
             ['-i', os.getcwd() + '/data/kmeans/100000_34.txt'],
-            ['-i', os.getcwd() + '/data/kmeans/1000000_34.txt'],
             ['-i', os.getcwd() + '/data/kmeans/1000000_34.txt'],
         ]
 
