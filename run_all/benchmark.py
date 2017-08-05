@@ -63,18 +63,21 @@ class Benchmark(object):
 
     def _verify(self, args):
         print("Verifying", self.executable, *args, sep=' ', end=' ')
+        sys.stdout.flush()
         command = " ".join([self.executable_full_path, '-q', '-v'] + args)
         proc = subprocess.Popen(command,
                                 cwd=self.cwd, shell=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        proc.wait()
+        output = proc.communicate()
         if proc.returncode != 0:
             print(bcolors.FAIL, "error: ", self.executable, bcolors.ENDC,
                   sep='')
-            print(proc.communicate())
+            print(output)
+            sys.stdout.flush()
             return False
 
         print(bcolors.OKGREEN, "Passed", bcolors.ENDC, sep='')
+        sys.stdout.flush()
         return True
 
     def _benchmark(self):
@@ -87,6 +90,7 @@ class Benchmark(object):
             self._verify(args)
 
         print("Benchmarking", self.executable, *args, sep=' ', end=' ')
+        sys.stdout.flush()
 
         runtime_regex = re.compile(
             r'Run: (-?\ *[0-9]+\.?[0-9]*(?:[Ee]\ *-?\ *[0-9]+)?) second')
