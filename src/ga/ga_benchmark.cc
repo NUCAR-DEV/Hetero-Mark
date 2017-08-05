@@ -37,49 +37,64 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
-#include <cstdio>
-#include <iostream>
-#include <fstream>
-#include <string>
 #include "src/ga/ga_benchmark.h"
+
+#include <algorithm>
+#include <climits>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <string>
 
 void GaBenchmark::Initialize() {
   std::ifstream input(input_file_);
+  std::string line;
   if (input.is_open()) {
-    getline(input, query_sequence_);
-    getline(input, target_sequence_);
+    getline(input, line);
+    std::copy(line.begin(), line.end(), std::back_inserter(query_sequence_));
+    getline(input, line);
+    std::copy(line.begin(), line.end(), std::back_inserter(target_sequence_));
     input.close();
   } else {
     std::cerr << "Failed to open input file at " << input_file_ << "\n";
     exit(0);
   }
 
-  if (coarse_match_length_ > query_sequence_.length()) {
-    coarse_match_length_ = query_sequence_.length();
+  if (coarse_match_length_ > query_sequence_.size()) {
+    coarse_match_length_ = query_sequence_.size();
     coarse_match_threshold_ = 2;
   }
-
-  // printf("Coarse match length: %d\n", coarse_match_length_);
-  // printf("Coarse match threshold: %d\n", coarse_match_threshold_);
 }
 
 void GaBenchmark::Verify() {
   CoarseMatch();
 
-  for (int pos : coarse_match_position_) {
-    int start = pos - query_sequence_.length();
-    if (start < 0) start = 0;
+  for (uint32_t pos : coarse_match_position_) {
+    int start = pos - query_sequence_.size();
+    if (start < 0) {
+      start = 0;
+    }
 
-    int end = pos + query_sequence_.length();
-    if (end > target_sequence_.length()) end = target_sequence_.length();
+    int end = pos + query_sequence_.size();
+    if (end > static_cast<int>(target_sequence_.size())) {
+      end = target_sequence_.size();
+    }
 
-    FineMatch(start, end, cpu_matches_);
+    FineMatch(start, end, &cpu_matches_);
   }
+
+  if (matches_.size() != cpu_matches_.size()) {
+    fprintf(stderr, "Number of matches found by GPU %lu, by CPU %lu.\n",
+            matches_.size(), cpu_matches_.size());
+    exit(-1);
+  }
+  printf("Passed!\n");
 }
 
 void GaBenchmark::CoarseMatch() {
-  int max_searchable_length = target_sequence_.length() - coarse_match_length_;
+  uint32_t max_searchable_length =
+      target_sequence_.size() - coarse_match_length_;
   for (uint32_t i = 0; i < max_searchable_length; i++) {
     if (CoarseMatchAtTargetPosition(i)) {
       coarse_match_position_.push_back(i);
@@ -88,46 +103,30 @@ void GaBenchmark::CoarseMatch() {
 }
 
 bool GaBenchmark::CoarseMatchAtTargetPosition(int target_index) {
-  int max_searchable_length = query_sequence_.length() - coarse_match_length_;
+  uint32_t max_searchable_length =
+      query_sequence_.size() - coarse_match_length_;
   for (uint32_t i = 0; i <= max_searchable_length; i++) {
-    int distance =
-        HammingDistance(target_sequence_.c_str() + target_index,
-                        query_sequence_.c_str() + i, coarse_match_length_);
+    uint32_t distance =
+        HammingDistance(target_sequence_.data() + target_index,
+                        query_sequence_.data() + i, coarse_match_length_);
 
     if (distance < coarse_match_threshold_) return true;
   }
   return false;
 }
 
-int GaBenchmark::HammingDistance(const char *seq1, const char *seq2,
-                                 int length) {
-  int distance = 0;
+uint32_t GaBenchmark::HammingDistance(const char *seq1, const char *seq2,
+                                      int length) {
+  uint32_t distance = 0;
   for (int i = 0; i < length; i++) {
     if (seq1[i] != seq2[i]) distance++;
   }
-
-  /*
-  printf("seq1: ");
-  for (int i = 0; i < length; i++) {
-    printf("%c", seq1[i]);
-  }
-  printf("\n");
-
-  printf("seq2: ");
-  for (int i = 0; i < length; i++) {
-    printf("%c", seq2[i]);
-  }
-  printf("\n");
-
-  printf("Distance: %d\n", distance);
-  */
-
   return distance;
 }
 
-void GaBenchmark::FineMatch(int start, int end, std::list<Match *> &matches) {
+void GaBenchmark::FineMatch(int start, int end, std::list<Match *> *matches) {
   int target_length = end - start;
-  int query_length = query_sequence_.length();
+  int query_length = query_sequence_.size();
 
   Matrix score_matrix;
   Matrix action_matrix;
@@ -140,23 +139,10 @@ void GaBenchmark::FineMatch(int start, int end, std::list<Match *> &matches) {
     }
   }
 
-  /*
-  printf("   ");
-  for (int i = 0; i < query_length; i++) {
-    printf(" %c ", query_sequence_[i]);
-  }
-  printf("\n");
-  for (int i = 0; i < target_length; i++) {
-    printf(" %c ", target_sequence_[i + start]);
-    for (int j = 0; j < query_length; j++) {
-      printf("%3d", score_matrix[j][i]);
-    }
-    printf("\n");
-  }
-  */
-
   Match *match = GenerateMatch(score_matrix, action_matrix, start, end);
-  matches.push_back(match);
+  match_mutex_.lock();
+  matches->push_back(match);
+  match_mutex_.unlock();
 
   DestroyMatrix(&score_matrix, query_length, target_length);
   DestroyMatrix(&action_matrix, query_length, target_length);
@@ -220,7 +206,7 @@ GaBenchmark::Match *GaBenchmark::GenerateMatch(Matrix score_matrix,
                                                int target_start,
                                                int target_end) {
   int target_length = target_end - target_start;
-  int query_length = query_sequence_.length();
+  int query_length = query_sequence_.size();
 
   int exit_x = query_length - 1;
   int exit_y = 0;
@@ -231,8 +217,6 @@ GaBenchmark::Match *GaBenchmark::GenerateMatch(Matrix score_matrix,
       exit_y = i;
     }
   }
-
-  // std::cout << "Exit point: " << exit_x << ", " << exit_y << "\n";
 
   Match *match = new Match();
   int curr_x = exit_x;
@@ -252,29 +236,20 @@ GaBenchmark::Match *GaBenchmark::GenerateMatch(Matrix score_matrix,
 
   match->target_index = target_start + curr_y;
   match->similarity = highest_score;
-  /*
-  std::cout << "Start index: " << target_start << "\n";
-  std::cout << "Target index: " << match->target_index << "\n";
-  std::cout << "Actions: ";
-  for (int action : match->directions) {
-    std::cout << action;
-  }
-  std::cout << "\n";
-  */
 
   return match;
 }
 
 void GaBenchmark::Summarize() {
   std::cout << "Target Sequence:";
-  for (uint32_t i = 0; i < target_sequence_.length(); i++) {
+  for (uint32_t i = 0; i < target_sequence_.size(); i++) {
     if (i % 64 == 0) std::cout << "\n\t";
     std::cout << target_sequence_[i];
   }
   std::cout << "\n";
 
   std::cout << "Query Sequence:";
-  for (uint32_t i = 0; i < query_sequence_.length(); i++) {
+  for (uint32_t i = 0; i < query_sequence_.size(); i++) {
     if (i % 64 == 0) std::cout << "\n\t";
     std::cout << query_sequence_[i];
   }

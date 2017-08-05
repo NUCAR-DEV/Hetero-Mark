@@ -1,6 +1,8 @@
 set( FOLDER_NAME bs )
 set( SUBDIRECTORIES 
   hc
+  cuda
+  hip
 )
 set( SRC_FILES
   bs_benchmark.cc

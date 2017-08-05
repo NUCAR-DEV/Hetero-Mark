@@ -23,8 +23,8 @@ set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
 project( ${FOLDER_NAME} )
 
-include_directories( ${OPENCL_INCLUDE_DIRS} ${CLUTIL_INCLUDE_DIRS} )
 
 if(OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES)
+  include_directories( ${OPENCL_INCLUDE_DIRS} ${CLUTIL_INCLUDE_DIRS} )
   add_library(${FOLDER_NAME} ${HEADER_FILE} ${SRC_FILE})
 endif()

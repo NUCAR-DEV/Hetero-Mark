@@ -40,6 +40,9 @@
 
 #include "src/common/command_line_option/option_setting_impl.h"
 
+#include <memory>
+#include <utility>
+
 void OptionSettingImpl::AddArgument(std::unique_ptr<Argument> argument) {
   arguments_.emplace(argument->get_name(), std::move(argument));
 }
@@ -48,7 +51,7 @@ std::unique_ptr<OptionSetting::Iterator> OptionSettingImpl::GetIterator() {
   OptionSetting::Iterator *it =
       new Iterator(arguments_.begin(), arguments_.end());
   std::unique_ptr<OptionSetting::Iterator> iterator(it);
-  return std::move(iterator);
+  return iterator;
 }
 
 bool OptionSettingImpl::Iterator::HasNext() { return iterator_ != end_; }

@@ -53,7 +53,7 @@ class HistBenchmark : public Benchmark {
 
  public:
   void Initialize() override;
-  void Run() override = 0;
+  void Run() override {}
   void Verify() override;
   void Summarize() override;
   void Cleanup() override;

@@ -1,30 +1,27 @@
-set( FOLDER_NAME aes )
-set( SUBDIRECTORIES 
+set(FOLDER_NAME aes)
+set(SUBDIRECTORIES 
   cl12
   cl20
-  hsa
+  hc
+  cuda
+  hip
 )
-set( SRC_FILES
+set(SRC_FILES
   aes_benchmark.cc
   aes_command_line_options.cc
 )
-set( HEADER_FILES
+set(HEADER_FILES
   aes_benchmark.h
   aes_command_line_options.h
 )
 
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
-project( ${FOLDER_NAME} )
+add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES})
+if (COMPILE_HCC)
+  set_target_properties(${FOLDER_NAME} PROPERTIES
+      COMPILE_FLAGS ${COMPILER_FLAGS}
+      LINK_FLAGS ${LINKER_FLAGS})
+endif (COMPILE_HCC)
 
-###############################################################
-
-# Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-
-add_library( aes ${SRC_FILES} ${HEADER_FILES} )
-
-foreach( subdir ${SUBDIRECTORIES} )
-    add_subdirectory( ${subdir} )
-endforeach( subdir )
+foreach(subdir ${SUBDIRECTORIES})
+    add_subdirectory(${subdir})
+endforeach(subdir)

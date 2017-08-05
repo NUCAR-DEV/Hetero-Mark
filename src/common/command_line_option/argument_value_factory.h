@@ -42,13 +42,14 @@
 #define SRC_COMMON_COMMAND_LINE_OPTION_ARGUMENT_VALUE_FACTORY_H_
 
 #include <memory>
+#include "src/common/command_line_option/argument_value.h"
 
 class ArgumentValueFactory {
  public:
   std::unique_ptr<ArgumentValue> ProduceArgumentValue(const char *value) {
     auto argument_value = std::unique_ptr<ArgumentValue>(new ArgumentValue());
     argument_value->set_value(value);
-    return std::move(argument_value);
+    return argument_value;
   }
 };
 

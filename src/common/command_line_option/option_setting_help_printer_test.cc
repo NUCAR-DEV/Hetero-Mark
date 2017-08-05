@@ -38,10 +38,14 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/common/command_line_option/option_setting_help_printer.h"
+
+#include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
+
 #include "gtest/gtest.h"
-#include "src/common/command_line_option/option_setting_help_printer.h"
 #include "src/common/command_line_option/option_setting.h"
 
 TEST(OptionSettingHelpPrinter, print) {

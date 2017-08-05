@@ -44,17 +44,23 @@
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
+#define NUM_VARIABLES 500
+
+class Creature {
+ public:
+  double fitness;
+  double parameters[NUM_VARIABLES];
+
+  void Dump();
+};
+
 class EpBenchmark : public Benchmark {
  protected:
-  static const uint32_t kNumVariables = 1500;
+  static const uint32_t kNumVariables = NUM_VARIABLES;
   static const uint32_t kNumEliminate = 0;
-  static const unsigned int kSeed = 1;
+  static const int kSeedInitValue = 1;
 
-  class Creature {
-   public:
-    double fitness;
-    double parameters[kNumVariables];
-  };
+  unsigned int seed_ = 1;
 
   uint32_t max_generation_;
   uint32_t population_;
@@ -69,19 +75,19 @@ class EpBenchmark : public Benchmark {
   double cpu_result_island_2_;
 
   void Reproduce();
-  void ReproduceInIsland(std::vector<Creature> &island);
+  void ReproduceInIsland(std::vector<Creature> *island);
   Creature CreateRandomCreature();
   void Evaluate();
-  void ApplyFitnessFunction(Creature &creature);
+  void ApplyFitnessFunction(Creature *creature);
   void Select();
-  void SelectInIsland(std::vector<Creature> &island);
+  void SelectInIsland(std::vector<Creature> *island);
   void Crossover();
-  void CrossoverInIsland(std::vector<Creature> &island);
+  void CrossoverInIsland(std::vector<Creature> *island);
   void Mutate();
 
  public:
   void Initialize() override;
-  void Run() override = 0;
+  void Run() override{};
   void Verify() override;
   void Summarize() override;
   void Cleanup() override;

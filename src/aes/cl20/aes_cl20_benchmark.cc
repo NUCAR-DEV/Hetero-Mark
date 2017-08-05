@@ -33,8 +33,8 @@
 
 #include "src/aes/cl20/aes_cl20_benchmark.h"
 #include <cstring>
-#include <string>
 #include <memory>
+#include <string>
 
 void AesCl20Benchmark::InitializeKernel() {
   cl_int err;

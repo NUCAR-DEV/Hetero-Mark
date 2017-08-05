@@ -48,31 +48,41 @@ void BeCommandLineOptions::RegisterOptions() {
       "Extraction Algorithm. It learns the background of the video, and "
       "substract the background from each frame");
 
-  command_line_option_.AddArgument("NumPixels", "integer", "1024", "-x",
-                                   "--num-pixels",
-                                   "Number of pixels in each frame");
-
-  command_line_option_.AddArgument("NumFrames", "integer", "1024", "-y",
-                                   "--num-frames",
-                                   "Number of frame of the video");
-  command_line_option_.AddArgument("Collaborative", "bool", "false",
-                                   "", "--collaborative", 
+  command_line_option_.AddArgument("InputFile", "string", "", "-i",
+                                   "--input-video",
+                                   "The video to be processed by the "
+                                   "background extractor.");
+  command_line_option_.AddArgument("MaxFrames", "integer", "0", "-m", 
+                                   "--max-frames", 
+                                   "Max number of frames to process. 0 means "
+                                   "no limitation.");
+  command_line_option_.AddArgument("Collaborative", "bool", "false", "-c",
+                                   "--collaborative",
                                    "When enabled, the CPU will fetch and "
                                    "decode while GPU is doing back ground "
                                    "extraction.");
+  command_line_option_.AddArgument("GenerateOutput", "bool", "false", "-g",
+                                   "--generate-output",
+                                   "When enabled, the CPU execution result "
+                                   "and the GPU result will be stored in "
+                                   "output videos.");
+
 }
 
 void BeCommandLineOptions::Parse(int argc, const char *argv[]) {
   BenchmarkCommandLineOptions::Parse(argc, argv);
 
-  num_pixels_ = command_line_option_.GetArgumentValue("NumPixels")->AsUInt32();
-  num_frames_ = command_line_option_.GetArgumentValue("NumFrames")->AsUInt32();
+  input_file_ = command_line_option_.GetArgumentValue("InputFile")->AsString();
+  max_frame_ = command_line_option_.GetArgumentValue("MaxFrames")->AsUInt32();
   collaborative_execution_ =
       command_line_option_.GetArgumentValue("Collaborative")->AsBool();
+  generate_output_ =
+      command_line_option_.GetArgumentValue("GenerateOutput")->AsBool();
 }
 
 void BeCommandLineOptions::ConfigureBenchmark(BeBenchmark *benchmark) {
-  benchmark->SetNumPixels(num_pixels_);
-  benchmark->SetNumFrames(num_frames_);
+  benchmark->SetInputFile(input_file_);
+  benchmark->SetMaxFrame(max_frame_);
   benchmark->SetCollaborativeExecution(collaborative_execution_);
+  benchmark->SetGenerateOutput(generate_output_);
 }

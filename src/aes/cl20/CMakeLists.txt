@@ -5,10 +5,6 @@ set( EXTRA_FILES kernels.cl )
 
 ############################################################################
 
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
-project( ${BENCHMARK_NAME} )
-
 if( OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
   add_executable( ${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES})
 

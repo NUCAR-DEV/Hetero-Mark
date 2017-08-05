@@ -56,8 +56,6 @@ class KmeansCommandLineOptions : public BenchmarkCommandLineOptions {
   uint32_t max_num_clusters_;
   uint32_t min_num_clusters_;
   uint32_t num_loops_;
-  bool is_rmse_;
-  bool is_output_;
 };
 
 #endif  // SRC_KMEANS_KMEANS_COMMAND_LINE_OPTIONS_H_

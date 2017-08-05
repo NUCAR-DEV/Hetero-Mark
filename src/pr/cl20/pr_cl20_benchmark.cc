@@ -29,10 +29,10 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
-#include <cstdlib>
 #include "src/pr/cl20/pr_cl20_benchmark.h"
+#include <stdio.h>
+#include <string.h>
+#include <cstdlib>
 
 void PrCl20Benchmark::Initialize() {
   PrBenchmark::Initialize();

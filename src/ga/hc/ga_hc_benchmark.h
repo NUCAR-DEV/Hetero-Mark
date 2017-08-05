@@ -40,15 +40,15 @@
 #ifndef SRC_GA_HC_GA_HC_BENCHMARK_H_
 #define SRC_GA_HC_GA_HC_BENCHMARK_H_
 
-#include "src/ga/ga_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/ga/ga_benchmark.h"
 
 class GaHcBenchmark : public GaBenchmark {
  private:
   char *coarse_match_result_;
   static const uint32_t kBatchSize = 1024;
 
-  void NormalRun();
+  void NonCollaborativeRun();
   void CollaborativeRun();
 
  public:

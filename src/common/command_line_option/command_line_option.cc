@@ -38,14 +38,16 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
+#include "src/common/command_line_option/argument.h"
 #include "src/common/command_line_option/command_line_option.h"
-#include "src/common/command_line_option/option_setting_impl.h"
 #include "src/common/command_line_option/option_parser_impl.h"
 #include "src/common/command_line_option/option_setting_help_printer.h"
-#include "src/common/command_line_option/argument.h"
+#include "src/common/command_line_option/option_setting_impl.h"
 
 CommandLineOption::CommandLineOption() {
   option_setting_.reset(new OptionSettingImpl());

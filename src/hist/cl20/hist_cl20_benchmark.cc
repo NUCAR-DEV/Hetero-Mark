@@ -29,10 +29,10 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
-#include <cstdlib>
 #include "src/hist/cl20/hist_cl20_benchmark.h"
+#include <stdio.h>
+#include <string.h>
+#include <cstdlib>
 
 void HistCl20Benchmark::Initialize() {
   HistBenchmark::Initialize();

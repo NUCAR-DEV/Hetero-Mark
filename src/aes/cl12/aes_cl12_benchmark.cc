@@ -32,8 +32,8 @@
  */
 
 #include "src/aes/cl12/aes_cl12_benchmark.h"
-#include <string>
 #include <memory>
+#include <string>
 
 void AesCl12Benchmark::InitializeKernel() {
   cl_int err;

@@ -31,10 +31,10 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/aes/aes_benchmark.h"
 #include <inttypes.h>
 #include <cstdio>
 #include <cstring>
-#include "src/aes/aes_benchmark.h"
 
 void AesBenchmark::Initialize() {
   LoadPlaintext();
@@ -151,6 +151,7 @@ void AesBenchmark::Verify() {
       passed = false;
       printf("Position: %" PRIu64 ", expected to be 0x%02x, but get 0x%02x\n",
              i, ciphertext_cpu[i], ciphertext_[i]);
+      return;
     }
   }
 

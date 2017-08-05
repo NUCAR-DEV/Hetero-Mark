@@ -37,12 +37,12 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
+#include "src/pr/pr_benchmark.h"
+#include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
-#include <cmath>
-#include "src/pr/pr_benchmark.h"
 
 void PrBenchmark::Initialize() {
   LoadInputFile();
@@ -108,7 +108,7 @@ void PrBenchmark::Verify() {
   // Compare with GPU result
   bool has_error = false;
   for (i = 0; i < num_nodes_; i++) {
-    if (isnan(page_rank_[i]) ||
+    if (std::isnan(page_rank_[i]) ||
         fabs(page_rank_[i] - cpu_page_rank[i]) > cpu_page_rank[i] / 1000) {
       printf("Error with node %i, expected to be %e, but was %e\n", i,
              cpu_page_rank[i], page_rank_[i]);
@@ -120,8 +120,8 @@ void PrBenchmark::Verify() {
   }
 
   // Cleanup
-  delete cpu_page_rank;
-  delete cpu_page_rank_old;
+  delete[] cpu_page_rank;
+  delete[] cpu_page_rank_old;
 }
 
 void PrBenchmark::CpuPageRankUpdate(float *input, float *output) {

@@ -37,11 +37,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/bs/bs_command_line_options.h"
+#include "src/bs/hc/bs_hc_benchmark.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
-#include "src/bs/bs_command_line_options.h"
-#include "src/bs/hc/bs_hc_benchmark.h"
 
 int main(int argc, const char **argv) {
   std::unique_ptr<BsHcBenchmark> benchmark(new BsHcBenchmark());

@@ -2,7 +2,9 @@ set( FOLDER_NAME hist )
 set( SUBDIRECTORIES 
   cl12
   cl20
-  hsa
+  hc
+  cuda
+  hip
 )
 set( SRC_FILES
   hist_benchmark.cc

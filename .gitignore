@@ -33,10 +33,12 @@ CMakeFiles
 cmake_install.cmake
 Makefile
 build
+build-*
+cmake-*
 bin
 Testing
 
-#ctags
+# ctags
 .tags*
 
 # vim tmp files
@@ -65,6 +67,20 @@ gtest
 # Gedit files
 *~
 
+# IDE file
+.idea
+.vscode
+
 # Data file
 data 
+data/
 data.tar.gz
+
+# Auto benchmarking
+compile_log.txt
+
+# HIP
+*.prehip
+
+# Temp python files
+*.pyc

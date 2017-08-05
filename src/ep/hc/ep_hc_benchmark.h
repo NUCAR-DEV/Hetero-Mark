@@ -40,17 +40,20 @@
 #ifndef SRC_EP_HC_EP_HC_BENCHMARK_H_
 #define SRC_EP_HC_EP_HC_BENCHMARK_H_
 
-#include "src/ep/ep_benchmark.h"
 #include <hcc/hc.hpp>
 #include <hcc/hc_math.hpp>
+
+#include <vector>
+
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/ep/ep_benchmark.h"
 
 class EpHcBenchmark : public EpBenchmark {
  private:
   void PipelinedRun();
   void NormalRun();
-  void EvaluateGpu(std::vector<Creature> &island);
-  void MutateGpu(std::vector<Creature> &island);
+  void EvaluateGpu(std::vector<Creature> *island);
+  void MutateGpu(std::vector<Creature> *island);
 
  public:
   void Initialize() override;

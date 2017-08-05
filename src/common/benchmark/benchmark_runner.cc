@@ -46,7 +46,9 @@ void BenchmarkRunner::Run() {
   time_measurement_->End({"Initialize"});
 
   time_measurement_->Start();
-  benchmark_->Run();
+  for (uint32_t i = 0; i < repeat_time_; i++) {
+    benchmark_->Run();
+  }
   time_measurement_->End({"Run"});
 
   if (verification_mode_) {

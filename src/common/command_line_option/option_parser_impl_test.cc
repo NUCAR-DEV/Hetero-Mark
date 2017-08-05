@@ -38,12 +38,15 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/common/command_line_option/option_parser.h"
+
 #include <memory>
+#include <utility>
+
 #include "gtest/gtest.h"
+#include "src/common/command_line_option/option_parser_impl.h"
 #include "src/common/command_line_option/option_setting.h"
 #include "src/common/command_line_option/option_setting_impl.h"
-#include "src/common/command_line_option/option_parser.h"
-#include "src/common/command_line_option/option_parser_impl.h"
 
 TEST(OptionParserImpl, parse) {
   // Setup environment

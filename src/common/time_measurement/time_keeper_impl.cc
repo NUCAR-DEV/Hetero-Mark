@@ -38,9 +38,9 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <stdexcept>
-#include <memory>
 #include "src/common/time_measurement/time_keeper_impl.h"
+#include <memory>
+#include <stdexcept>
 
 TimeKeeperImpl::Iterator::Iterator(
     std::map<std::string, double>::iterator begin,
@@ -92,7 +92,7 @@ void TimeKeeperImpl::End(std::initializer_list<const char *> catagory_names) {
 std::unique_ptr<TimeKeeper::Iterator> TimeKeeperImpl::GetCatagoryIterator() {
   Iterator *it = new Iterator(time_catagories_.begin(), time_catagories_.end());
   std::unique_ptr<TimeKeeper::Iterator> it_unique(it);
-  return std::move(it_unique);
+  return it_unique;
 }
 
 double TimeKeeperImpl::GetTime(const char *catagory_name) {

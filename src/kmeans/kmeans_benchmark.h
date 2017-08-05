@@ -40,23 +40,21 @@
 #ifndef SRC_KMEANS_KMEANS_BENCHMARK_H_
 #define SRC_KMEANS_KMEANS_BENCHMARK_H_
 
-#include <string>
 #include <cfloat>
 #include <cmath>
+#include <string>
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
 class KmeansBenchmark : public Benchmark {
  protected:
-  const unsigned kBlockSize = 64;
+  const unsigned kBlockSize = 256;
 
   std::string filename_ = "";
   double threshold_ = 0.001;
   unsigned max_num_clusters_ = 5;
   unsigned min_num_clusters_ = 5;
   unsigned num_loops_ = 1;
-  bool is_rmse_ = false;
-  bool is_output_ = false;
 
   unsigned num_points_ = 0;
   unsigned num_features_ = 0;
@@ -79,14 +77,14 @@ class KmeansBenchmark : public Benchmark {
   float CalculateRMSE();
   void TransposeFeaturesCpu();
   void KmeansClusteringCpu(unsigned num_clusters);
-  void InitializeClusters(unsigned num_clusters);
-  void InitializeMembership();
+  virtual void InitializeClusters(unsigned num_clusters);
+  virtual void InitializeMembership();
   void UpdateMembershipCpu(unsigned num_clusters);
   void UpdateClusterCentroids(unsigned num_clusters);
 
  public:
   void Initialize() override;
-  void Run() override = 0;
+  void Run() override {}
   void Verify() override;
   void Summarize() override;
   void Cleanup() override;
@@ -100,8 +98,6 @@ class KmeansBenchmark : public Benchmark {
   void setMinNumClusters(unsigned min_num_clusters) {
     min_num_clusters_ = min_num_clusters;
   }
-  void setIsRMSE(bool is_rmse) { is_rmse_ = is_rmse; }
-  void setIsOutput(bool is_output) { is_output_ = is_output; }
   void setNumLoops(unsigned num_loops) { num_loops_ = num_loops; }
 };
 

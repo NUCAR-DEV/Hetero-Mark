@@ -40,33 +40,56 @@
 #ifndef SRC_BE_BE_BENCHMARK_H_
 #define SRC_BE_BE_BENCHMARK_H_
 
+#include <opencv2/opencv.hpp>
+
+#include <string>
+#include <vector>
+
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
 class BeBenchmark : public Benchmark {
  protected:
+  uint32_t width_;
+  uint32_t height_;
+  uint32_t channel_;
   uint32_t num_frames_;
-  uint32_t num_pixels_;
+  uint32_t max_frames_;
   bool collaborative_execution_;
+  bool generate_output_;
+  std::string input_file_;
+  uint8_t threshold_ = 10;
 
-  uint8_t *data_;
-  uint8_t *foreground_;
-  float *background_;
+  cv::VideoCapture video_;
+  cv::VideoWriter video_writer_;
+  cv::VideoWriter cpu_video_writer_;
+
+  std::vector<float> background_;
+  std::vector<uint8_t> foreground_;
+  std::vector<uint8_t> cpu_foreground_;
 
   float alpha_ = 0.03;
 
+  uint8_t *nextFrame();
+
+  void CpuRun();
+  void Match();
+
  public:
   void Initialize() override;
-  void Run() override = 0;
+  void Run() override{};
   void Verify() override;
   void Summarize() override;
   void Cleanup() override;
 
   // Setters
-  void SetNumFrames(uint32_t num_frames) { num_frames_ = num_frames; }
-  void SetNumPixels(uint32_t num_pixels) { num_pixels_ = num_pixels; }
+  void SetInputFile(const std::string &input_file) { input_file_ = input_file; }
+  void SetMaxFrame(const uint32_t max_frames) { max_frames_ = max_frames; }
   void SetCollaborativeExecution(bool collaborative_execution) {
     collaborative_execution_ = collaborative_execution;
+  }
+  void SetGenerateOutput(bool generate_output) {
+    generate_output_ = generate_output;
   }
 };
 

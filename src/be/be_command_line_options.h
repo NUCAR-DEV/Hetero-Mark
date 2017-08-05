@@ -40,8 +40,10 @@
 #ifndef SRC_BE_BE_COMMAND_LINE_OPTIONS_H_
 #define SRC_BE_BE_COMMAND_LINE_OPTIONS_H_
 
-#include "src/common/command_line_option/benchmark_command_line_options.h"
+#include <string>
+
 #include "src/be/be_benchmark.h"
+#include "src/common/command_line_option/benchmark_command_line_options.h"
 
 class BeCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
@@ -50,9 +52,10 @@ class BeCommandLineOptions : public BenchmarkCommandLineOptions {
   void ConfigureBenchmark(BeBenchmark *benchmark);
 
  private:
-  uint32_t num_pixels_;
-  uint32_t num_frames_;
   bool collaborative_execution_;
+  bool generate_output_;
+  std::string input_file_;
+  uint32_t max_frame_;
 };
 
 #endif  // SRC_BE_BE_COMMAND_LINE_OPTIONS_H_

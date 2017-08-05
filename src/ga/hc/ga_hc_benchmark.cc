@@ -9,8 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
+ * * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal with the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -38,32 +37,35 @@
  */
 
 #include "src/ga/hc/ga_hc_benchmark.h"
-#include <cstdlib>
-#include <cstdio>
+
 #include <hcc/hc.hpp>
+
+#include <cstdio>
+#include <cstdlib>
+#include <vector>
 
 void GaHcBenchmark::Initialize() {
   GaBenchmark::Initialize();
-  coarse_match_result_ = new char[target_sequence_.length()]();
+  coarse_match_result_ = new char[target_sequence_.size()]();
 }
 
 void GaHcBenchmark::Run() {
-  if(collaborative_) {
+  if (collaborative_) {
     CollaborativeRun();
   } else {
-    NormalRun();
+    NonCollaborativeRun();
   }
 }
 
 void GaHcBenchmark::CollaborativeRun() {
-  int max_searchable_length = target_sequence_.length() - coarse_match_length_;
-
-  hc::array_view<char, 1> av_target(target_sequence_.length(),
-                                    (char *)target_sequence_.c_str());
-  hc::array_view<char, 1> av_query(query_sequence_.length(),
-                                   (char *)query_sequence_.c_str());
-
+  printf("Collaborative\n");
   std::vector<std::thread> threads;
+  int max_searchable_length = target_sequence_.size() - coarse_match_length_;
+
+  hc::array_view<char, 1> av_target(target_sequence_.size(),
+                                    target_sequence_.data());
+  hc::array_view<char, 1> av_query(query_sequence_.size(),
+                                   query_sequence_.data());
 
   int current_position = 0;
   while (current_position < max_searchable_length) {
@@ -75,21 +77,23 @@ void GaHcBenchmark::CollaborativeRun() {
       end_position = max_searchable_length;
     }
     int length = end_position - current_position;
+    int coarse_match_length = coarse_match_length_;
+    int coarse_match_threshold = coarse_match_threshold_;
+    int query_sequence_length = query_sequence_.size();
 
-    hc::parallel_for_each(hc::extent<1>(kBatchSize),
-                          [=](hc::index<1> index)[[hc]] {
-
+    // av_batch_result.discard_data();
+    hc::parallel_for_each(hc::extent<1>(length), [=](hc::index<1> index)[[hc]] {
       bool match = false;
-      int max_length = query_sequence_.length() - coarse_match_length_;
+      int max_length = query_sequence_length - coarse_match_length;
       for (uint32_t i = 0; i <= max_length; i++) {
         int distance = 0;
-        for (int j = 0; j < coarse_match_length_; j++) {
+        for (int j = 0; j < coarse_match_length; j++) {
           if (av_target[current_position + index + j] != av_query[i + j]) {
             distance++;
           }
         }
 
-        if (distance < coarse_match_threshold_) {
+        if (distance < coarse_match_threshold) {
           match = true;
           break;
         }
@@ -100,14 +104,18 @@ void GaHcBenchmark::CollaborativeRun() {
       }
     });
 
-    av_batch_result.synchronize();
+    // av_batch_result.synchronize();
+    // memcpy(coarse_match_result_ + current_position, batch_result, length);
+
     for (int i = 0; i < length; i++) {
-      if (batch_result[i] != 0) {
-        int end = i + current_position + query_sequence_.length();
-        if (end > target_sequence_.length()) end = target_sequence_.length();
-        threads.push_back(std::thread(&GaHcBenchmark::FineMatch, this,
-                                      i + current_position, end,
-                                      std::ref(matches_)));
+      if (av_batch_result[i] == 1) {
+        int start = i + current_position;
+        int end = start + query_sequence_.size();
+        if (end > target_sequence_.size()) {
+          end = target_sequence_.size();
+        }
+        threads.push_back(std::thread(&GaHcBenchmark::FineMatch, this, start,
+                                      end, &matches_));
       }
     }
 
@@ -119,13 +127,13 @@ void GaHcBenchmark::CollaborativeRun() {
   }
 }
 
-void GaHcBenchmark::NormalRun() {
-  int max_searchable_length = target_sequence_.length() - coarse_match_length_;
+void GaHcBenchmark::NonCollaborativeRun() {
+  int max_searchable_length = target_sequence_.size() - coarse_match_length_;
 
-  hc::array_view<char, 1> av_target(target_sequence_.length(),
-                                    (char *)target_sequence_.c_str());
-  hc::array_view<char, 1> av_query(query_sequence_.length(),
-                                   (char *)query_sequence_.c_str());
+  hc::array_view<char, 1> av_target(target_sequence_.size(),
+                                    target_sequence_.data());
+  hc::array_view<char, 1> av_query(query_sequence_.size(),
+                                   query_sequence_.data());
 
   int current_position = 0;
   while (current_position < max_searchable_length) {
@@ -137,21 +145,22 @@ void GaHcBenchmark::NormalRun() {
       end_position = max_searchable_length;
     }
     int length = end_position - current_position;
+    int coarse_match_length = coarse_match_length_;
+    int coarse_match_threshold = coarse_match_threshold_;
+    int query_sequence_length = query_sequence_.size();
 
-    hc::parallel_for_each(hc::extent<1>(kBatchSize),
-                          [=](hc::index<1> index)[[hc]] {
-
+    hc::parallel_for_each(hc::extent<1>(length), [=](hc::index<1> index)[[hc]] {
       bool match = false;
-      int max_length = query_sequence_.length() - coarse_match_length_;
+      int max_length = query_sequence_length - coarse_match_length;
       for (uint32_t i = 0; i <= max_length; i++) {
         int distance = 0;
-        for (int j = 0; j < coarse_match_length_; j++) {
+        for (int j = 0; j < coarse_match_length; j++) {
           if (av_target[current_position + index + j] != av_query[i + j]) {
             distance++;
           }
         }
 
-        if (distance < coarse_match_threshold_) {
+        if (distance < coarse_match_threshold) {
           match = true;
           break;
         }
@@ -169,12 +178,12 @@ void GaHcBenchmark::NormalRun() {
   }
 
   std::vector<std::thread> threads;
-  for (int i = 0; i < target_sequence_.length(); i++) {
+  for (int i = 0; i < target_sequence_.size(); i++) {
     if (coarse_match_result_[i] == 1) {
-      int end = i + query_sequence_.length();
-      if (end > target_sequence_.length()) end = target_sequence_.length();
-      threads.push_back(std::thread(&GaHcBenchmark::FineMatch, this, i, end,
-                                    std::ref(matches_)));
+      int end = i + query_sequence_.size();
+      if (end > target_sequence_.size()) end = target_sequence_.size();
+      threads.push_back(
+          std::thread(&GaHcBenchmark::FineMatch, this, i, end, &matches_));
     }
   }
 
@@ -183,4 +192,7 @@ void GaHcBenchmark::NormalRun() {
   }
 }
 
-void GaHcBenchmark::Cleanup() { GaBenchmark::Cleanup(); }
+void GaHcBenchmark::Cleanup() {
+  free(coarse_match_result_);
+  GaBenchmark::Cleanup();
+}

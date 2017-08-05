@@ -45,9 +45,7 @@ void KmeansCommandLineOptions::RegisterOptions() {
   command_line_option_.SetBenchmarkName("KMEANS Benchmark");
   command_line_option_.SetDescription(
       "This benchmarks runs the KMeans Algorithm.");
-  command_line_option_.AddArgument("Help", "bool", "false", "-h", "--help",
-                                   "Dump help information");
-  command_line_option_.AddArgument("FileName", "string", "", "-i", "--input",
+  command_line_option_.AddArgument("InputFile", "string", "", "-i", "--input",
                                    "File containing data to be clustered");
   command_line_option_.AddArgument("MaxNumClusters", "int", "5", "-m", "--max",
                                    "Maximum number of clusters allowed");
@@ -57,25 +55,18 @@ void KmeansCommandLineOptions::RegisterOptions() {
                                    "--threshold", "Threshold value");
   command_line_option_.AddArgument("NumLoops", "int", "1", "-l", "--loops",
                                    "Iteration for each number of clusters");
-  command_line_option_.AddArgument("RMSE", "bool", "false", "-r", "--rmse",
-                                   "Calculate RMSE");
-  command_line_option_.AddArgument("Output", "bool", "false", "-o",
-                                   "--outputcluster",
-                                   "Output cluster center coordinates");
 }
 
 void KmeansCommandLineOptions::Parse(int argc, const char *argv[]) {
   BenchmarkCommandLineOptions::Parse(argc, argv);
 
-  filename_ = command_line_option_.GetArgumentValue("FileName")->AsString();
+  filename_ = command_line_option_.GetArgumentValue("InputFile")->AsString();
   threshold_ = command_line_option_.GetArgumentValue("Threshold")->AsDouble();
   max_num_clusters_ =
       command_line_option_.GetArgumentValue("MaxNumClusters")->AsInt32();
   min_num_clusters_ =
       command_line_option_.GetArgumentValue("MinNumClusters")->AsInt32();
   num_loops_ = command_line_option_.GetArgumentValue("NumLoops")->AsInt32();
-  is_rmse_ = command_line_option_.GetArgumentValue("RMSE")->AsBool();
-  is_output_ = command_line_option_.GetArgumentValue("Output")->AsBool();
 }
 
 void KmeansCommandLineOptions::ConfigureBenchmark(KmeansBenchmark *benchmark) {
@@ -84,6 +75,4 @@ void KmeansCommandLineOptions::ConfigureBenchmark(KmeansBenchmark *benchmark) {
   benchmark->setMaxNumClusters(max_num_clusters_);
   benchmark->setMinNumClusters(min_num_clusters_);
   benchmark->setNumLoops(num_loops_);
-  benchmark->setIsRMSE(is_rmse_);
-  benchmark->setIsOutput(is_output_);
 }

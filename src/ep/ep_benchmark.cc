@@ -37,23 +37,35 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
 #include "src/ep/ep_benchmark.h"
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+
+void Creature::Dump() {
+  printf("creature: ");
+  for (uint32_t i = 0; i < NUM_VARIABLES; i++) {
+    if (i > 8) {
+      printf("...");
+      break;
+    }
+    printf("%0.2f ", this->parameters[i]);
+  }
+  printf(", fitness %0.3f\n", this->fitness);
+}
 
 void EpBenchmark::Initialize() {
-  srand(kSeed);
-  for (int i = 0; i < kNumVariables; i++) {
-    fitness_function_[i] = 1.0 * rand() / RAND_MAX;
+  for (uint32_t i = 0; i < kNumVariables; i++) {
+    fitness_function_[i] = 1.0 * rand_r(&seed_) / RAND_MAX;
   }
 }
 
 void EpBenchmark::Verify() {
-  srand(kSeed);
+  seed_ = kSeedInitValue;
   islands_1_.clear();
   islands_2_.clear();
-  for (int i = 0; i < max_generation_; i++) {
+  for (uint32_t i = 0; i < max_generation_; i++) {
     Reproduce();
     Evaluate();
     Select();
@@ -85,70 +97,74 @@ void EpBenchmark::Verify() {
 }
 
 void EpBenchmark::Reproduce() {
-  ReproduceInIsland(islands_1_);
-  ReproduceInIsland(islands_2_);
+  ReproduceInIsland(&islands_1_);
+  ReproduceInIsland(&islands_2_);
 }
 
-void EpBenchmark::ReproduceInIsland(std::vector<Creature> &island) {
-  while (island.size() < population_ / 2) {
+void EpBenchmark::ReproduceInIsland(std::vector<Creature> *island) {
+  while (island->size() < population_ / 2) {
     Creature creature = CreateRandomCreature();
-    island.push_back(creature);
+    island->push_back(creature);
   }
 }
 
-EpBenchmark::Creature EpBenchmark::CreateRandomCreature() {
+Creature EpBenchmark::CreateRandomCreature() {
   Creature creature;
-  for (int i = 0; i < kNumVariables; i++) {
-    creature.parameters[i] = 1.0 * rand() / RAND_MAX;
+  for (uint32_t i = 0; i < kNumVariables; i++) {
+    // creature.parameters[i] = 1.0 * rand() / RAND_MAX;
+
+    // For deterministic benchmarking result
+    creature.parameters[i] = 0.5;
   }
   return creature;
 }
 
 void EpBenchmark::Evaluate() {
   for (auto &creature : islands_1_) {
-    ApplyFitnessFunction(creature);
+    ApplyFitnessFunction(&creature);
   }
 
   for (auto &creature : islands_2_) {
-    ApplyFitnessFunction(creature);
+    ApplyFitnessFunction(&creature);
   }
 }
 
-void EpBenchmark::ApplyFitnessFunction(Creature &creature) {
+void EpBenchmark::ApplyFitnessFunction(Creature *creature) {
   double fitness = 0;
-  for (int i = 0; i < kNumVariables; i++) {
-    fitness += pow(creature.parameters[i], i + 1) * fitness_function_[i];
+  for (uint32_t i = 0; i < kNumVariables; i++) {
+    fitness += pow(creature->parameters[i], i + 1) * fitness_function_[i];
   }
-  creature.fitness = fitness;
+  creature->fitness = fitness;
 }
 
 void EpBenchmark::Select() {
-  SelectInIsland(islands_1_);
-  SelectInIsland(islands_2_);
+  SelectInIsland(&islands_1_);
+  SelectInIsland(&islands_2_);
 }
 
-void EpBenchmark::SelectInIsland(std::vector<Creature> &island) {
-  auto comparator =
-      [](Creature &a, Creature &b) { return b.fitness < a.fitness; };
+void EpBenchmark::SelectInIsland(std::vector<Creature> *island) {
+  auto comparator = [](const Creature &a, const Creature &b) {
+    return b.fitness < a.fitness;
+  };
 
-  std::sort(island.begin(), island.end(), comparator);
+  std::sort(island->begin(), island->end(), comparator);
   for (int i = 0; i < kNumEliminate / 2; i++) {
-    island.pop_back();
+    island->pop_back();
   }
 }
 
 void EpBenchmark::Crossover() {
-  CrossoverInIsland(islands_1_);
-  CrossoverInIsland(islands_2_);
+  CrossoverInIsland(&islands_1_);
+  CrossoverInIsland(&islands_2_);
 }
 
-void EpBenchmark::CrossoverInIsland(std::vector<Creature> &island) {
+void EpBenchmark::CrossoverInIsland(std::vector<Creature> *island) {
   std::vector<Creature> new_creatures;
-  for (auto &creature : island) {
-    Creature best_creature = island[rand() % 10];
+  for (auto &creature : *island) {
+    Creature best_creature = (*island)[rand_r(&seed_) % 10];
     Creature offspring;
-    for (int i = 0; i < kNumVariables; i++) {
-      if (rand() % 2 == 0) {
+    for (uint32_t i = 0; i < kNumVariables; i++) {
+      if (rand_r(&seed_) % 2 == 0) {
         offspring.parameters[i] = best_creature.parameters[i];
       } else {
         offspring.parameters[i] = creature.parameters[i];
@@ -156,16 +172,16 @@ void EpBenchmark::CrossoverInIsland(std::vector<Creature> &island) {
     }
     new_creatures.push_back(offspring);
   }
-  island = new_creatures;
+  *island = new_creatures;
 }
 
 void EpBenchmark::Mutate() {
-  for (int i = 0; i < islands_1_.size(); i++) {
+  for (uint32_t i = 0; i < islands_1_.size(); i++) {
     if (i % 7 != 0) continue;
     islands_1_[i].parameters[i % kNumVariables] *= 0.5;
   }
 
-  for (int i = 0; i < islands_2_.size(); i++) {
+  for (uint32_t i = 0; i < islands_2_.size(); i++) {
     if (i % 7 != 0) continue;
     islands_2_[i].parameters[i % kNumVariables] *= 0.5;
   }

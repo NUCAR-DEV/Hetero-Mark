@@ -59,6 +59,7 @@ class BenchmarkCommandLineOptions {
   bool quiet_mode_;
   bool verification_;
   bool timing_;
+  uint32_t repeat_times_;
 
  private:
   void DumpHelpOnRequest();

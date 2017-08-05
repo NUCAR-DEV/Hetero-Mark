@@ -29,10 +29,10 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
-#include <cstdlib>
 #include "src/fir/cl12/fir_cl12_benchmark.h"
+#include <stdio.h>
+#include <string.h>
+#include <cstdlib>
 
 void FirCl12Benchmark::Initialize() {
   FirBenchmark::Initialize();

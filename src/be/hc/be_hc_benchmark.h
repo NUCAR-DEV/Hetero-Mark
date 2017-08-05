@@ -40,6 +40,9 @@
 #ifndef SRC_BE_HC_BE_HC_BENCHMARK_H_
 #define SRC_BE_HC_BE_HC_BENCHMARK_H_
 
+#include <condition_variable>
+#include <mutex>
+#include <queue>
 #include "src/be/be_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
@@ -48,9 +51,19 @@ class BeHcBenchmark : public BeBenchmark {
   void NormalRun();
   void CollaborativeRun();
 
+  TimeMeasurement *timer_;
+
+  std::mutex queue_mutex_;
+  std::condition_variable queue_condition_variable_;
+  std::queue<uint8_t *> frame_queue_;
+  bool finished_;
+  void GPUThread();
+  void ExtractAndEncode(uint8_t *frame);
+
  public:
   void Initialize() override;
   void Run() override;
+  void Summarize() override;
   void Cleanup() override;
 };
 

@@ -1,6 +1,6 @@
-set( FOLDER_NAME time_measurement )
-set( SUBDIRECTORIES )
-set( SRC_FILES
+set(FOLDER_NAME time_measurement)
+set(SUBDIRECTORIES)
+set(SRC_FILES
   time_keeper_impl.cc
   time_keeper_summary_printer.cc
   time_measurement_impl.cc
@@ -24,14 +24,9 @@ if (enable-test)
   add_test(${FOLDER_NAME} ${FOLDER_NAME}_test)
 endif (enable-test)
 
-###############################################################
-
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
-project( ${FOLDER_NAME} )
-
-# Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-
 add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES})
+if (COMPILE_HCC)
+  set_target_properties(${FOLDER_NAME} PROPERTIES
+      COMPILE_FLAGS ${COMPILER_FLAGS}
+      LINK_FLAGS ${LINKER_FLAGS})
+endif (COMPILE_HCC)

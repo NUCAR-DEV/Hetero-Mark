@@ -38,10 +38,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include "src/common/command_line_option/option_parser_impl.h"
+
 #include <iostream>
 #include <stdexcept>
-
-#include "src/common/command_line_option/option_parser_impl.h"
+#include <utility>
 
 void OptionParserImpl::Parse(int argc, const char **argv) {
   // First of all, set all argument with default values
@@ -61,7 +62,9 @@ void OptionParserImpl::Parse(int argc, const char **argv) {
     // Each iteration must start with a prompt, either long or short.
     // Therefore, the length must greater than 2
     if (arg.length() == 0) {
-      throw std::runtime_error(std::string("Argument size is 0"));
+      // throw std::runtime_error(std::string("Argument size is 0"));
+      // Empty args, skip
+      continue;
     } else if (arg.length() == 1) {
       throw std::invalid_argument((std::string("Invalid argument ") + arg));
     }

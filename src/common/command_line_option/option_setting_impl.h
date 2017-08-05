@@ -42,6 +42,7 @@
 #define SRC_COMMON_COMMAND_LINE_OPTION_OPTION_SETTING_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "src/common/command_line_option/option_setting.h"

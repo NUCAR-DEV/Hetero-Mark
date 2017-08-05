@@ -57,14 +57,13 @@ void BsCommandLineOptions::RegisterOptions() {
                                    "Number of samples to be calculated");
 
   // Registering the option to turn of the CPU
-  command_line_option_.AddArgument("Collaborative", "bool", "false", 
-                                   "", "--collaborative",
-                                   "Involving CPU in the computation. This "
-                                   "option only works for HSA implementation");
+  command_line_option_.AddArgument("Collaborative", "bool", "false", "-c",
+                                   "--collaborative",
+                                   "Involving CPU in the computation.");
 
   // Registering the Chunk of tiles that run on GPU separately
   command_line_option_.AddArgument(
-      "GpuChunk", "integer", "0", "-c", "--chunk",
+      "GpuChunk", "integer", "0", "", "--chunk",
       "The chunk of 64 thread tiles that are lunched "
       "on the GPU on every parralel/kernel launch");
 }
@@ -77,7 +76,8 @@ void BsCommandLineOptions::Parse(int argc, const char *argv[]) {
   num_elements_ =
       command_line_option_.GetArgumentValue("NumElements")->AsUInt32();
 
-  active_cpu_ = command_line_option_.GetArgumentValue("Collaborative")->AsBool();
+  active_cpu_ =
+      command_line_option_.GetArgumentValue("Collaborative")->AsBool();
 
   gpu_chunk_ = command_line_option_.GetArgumentValue("GpuChunk")->AsUInt32();
 }

@@ -43,8 +43,8 @@
 
 #include "src/common/cl_util/cl_error.h"
 #include "src/common/cl_util/cl_file.h"
-#include "src/common/cl_util/cl_runtime.h"
 #include "src/common/cl_util/cl_profiler.h"
+#include "src/common/cl_util/cl_runtime.h"
 
 #ifndef clSVMFreeSafe
 #define clSVMFreeSafe(ctx, ptr) \

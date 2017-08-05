@@ -79,12 +79,20 @@ class BenchmarkRunner {
    */
   virtual void SetTimingMode(bool timing_mode) { timing_mode_ = timing_mode; }
 
+  /**
+   * Set the number of times that the benchmark runs
+   */
+  virtual void SetRepeatTime(uint32_t repeat_time) {
+    repeat_time_ = repeat_time;
+  }
+
  protected:
   Benchmark *benchmark_;
 
   bool verification_mode_ = false;
   bool quiet_mode_ = false;
   bool timing_mode_ = false;
+  uint32_t repeat_time_ = 1;
 
   TimeMeasurement *time_measurement_;
 };

@@ -38,10 +38,10 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
 #include "src/fir/fir_benchmark.h"
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 void FirBenchmark::Initialize() {
   num_total_data_ = num_data_per_block_ * num_block_;
@@ -54,12 +54,14 @@ void FirBenchmark::Initialize() {
 
   // Initialize input data
   for (unsigned int i = 0; i < num_total_data_; i++) {
+    // input_[i] = 1;
     input_[i] =
         static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
 
   // Initialize coefficient
   for (unsigned int i = 0; i < num_tap_; i++) {
+    // coeff_[i] = 1;
     coeff_[i] =
         static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
   }
@@ -86,7 +88,7 @@ void FirBenchmark::Verify() {
     printf("Passed! %d data points filtered\n", num_total_data_);
   }
 
-  delete cpu_output;
+  delete[] cpu_output;
 }
 
 void FirBenchmark::Summarize() {

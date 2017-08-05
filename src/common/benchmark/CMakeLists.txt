@@ -1,12 +1,12 @@
-set( FOLDER_NAME benchmark )
-set( SUBDIRECTORIES )
-set( SRC_FILES 
+set(FOLDER_NAME benchmark)
+set(SUBDIRECTORIES)
+set(SRC_FILES 
   benchmark_runner.cc)
-set( HEADER_FILES 
+set(HEADER_FILES 
   benchmark.h
   benchmark_runner.h)
-set( TEST_FILES
-    benchmark_runner_test.cc)
+set(TEST_FILES
+  benchmark_runner_test.cc)
 
 # Unit test
 if (enable-test)
@@ -16,13 +16,11 @@ if (enable-test)
   add_test(${FOLDER_NAME}_test ${FOLDER_NAME}_test)
 endif (enable-test)
 
-###############################################################
-
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
-
-# Group samples by folder
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set( FOLDER_GROUP ${FOLDER_GROUP}/${FOLDER_NAME} )
-
 add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES})
+if (COMPILE_HCC)
+  set_target_properties(${FOLDER_NAME} PROPERTIES
+      COMPILE_FLAGS ${COMPILER_FLAGS}
+      LINK_FLAGS ${LINKER_FLAGS})
+endif (COMPILE_HCC)
+
+

@@ -38,8 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <cstdlib>
 #include "src/common/command_line_option/benchmark_command_line_options.h"
+#include <cstdlib>
 
 void BenchmarkCommandLineOptions::RegisterOptions() {
   command_line_option_.AddArgument("Help", "bool", "false", "-h", "--help",
@@ -53,6 +53,9 @@ void BenchmarkCommandLineOptions::RegisterOptions() {
 
   command_line_option_.AddArgument("Timing", "bool", "false", "-t", "--timing",
                                    "Show timing information");
+
+  command_line_option_.AddArgument("Repeat", "integer", "1", "-r", "--repeat",
+                                   "Repeat the benchmark execution.");
 }
 
 void BenchmarkCommandLineOptions::Parse(int argc, const char *argv[]) {
@@ -63,6 +66,7 @@ void BenchmarkCommandLineOptions::Parse(int argc, const char *argv[]) {
   quiet_mode_ = command_line_option_.GetArgumentValue("Quiet")->AsBool();
   verification_ = command_line_option_.GetArgumentValue("Verify")->AsBool();
   timing_ = command_line_option_.GetArgumentValue("Timing")->AsBool();
+  repeat_times_ = command_line_option_.GetArgumentValue("Repeat")->AsUInt32();
 }
 
 void BenchmarkCommandLineOptions::DumpHelpOnRequest() {
@@ -77,4 +81,5 @@ void BenchmarkCommandLineOptions::ConfigureBenchmarkRunner(
   benchmark_runner->SetVerificationMode(verification_);
   benchmark_runner->SetQuietMode(quiet_mode_);
   benchmark_runner->SetTimingMode(timing_);
+  benchmark_runner->SetRepeatTime(repeat_times_);
 }
