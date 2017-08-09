@@ -41,16 +41,10 @@
 
 void AesHipBenchmark::Initialize() {
   AesBenchmark::Initialize();
-  ExpandKey();
 
   hipMalloc(&d_ciphertext_, text_length_ * sizeof(uint8_t));
   hipMalloc(&d_key_, kExpandedKeyLengthInBytes);
   hipMalloc(&d_s_, 256 * sizeof(uint8_t));
-
-  hipMemcpy(d_ciphertext_, ciphertext_, text_length_, hipMemcpyHostToDevice);
-  hipMemcpy(d_key_, expanded_key_, kExpandedKeyLengthInBytes,
-            hipMemcpyHostToDevice);
-  hipMemcpy(d_s_, s, 256 * sizeof(uint8_t), hipMemcpyHostToDevice);
 }
 
 __device__ void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset) {
@@ -166,6 +160,13 @@ __global__ void aes_hip(hipLaunchParm lp, uint8_t *input,
 }
 
 void AesHipBenchmark::Run() {
+  ExpandKey();
+
+  hipMemcpy(d_ciphertext_, ciphertext_, text_length_, hipMemcpyHostToDevice);
+  hipMemcpy(d_key_, expanded_key_, kExpandedKeyLengthInBytes,
+            hipMemcpyHostToDevice);
+  hipMemcpy(d_s_, s, 256 * sizeof(uint8_t), hipMemcpyHostToDevice);
+
   int num_blocks = text_length_ / 16;
 
   dim3 grid_size(static_cast<size_t>(num_blocks / 64.00));

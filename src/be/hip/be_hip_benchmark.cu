@@ -104,7 +104,7 @@ void BeHipBenchmark::CollaborativeRun() {
             hipMemcpyHostToDevice);
   free(temp_bg);
 
-  int frame_count = 0;
+  uint32_t frame_count = 0;
   while (true) {
     if (frame_count >= num_frames_) {
       break;
@@ -188,7 +188,7 @@ void BeHipBenchmark::NormalRun() {
   uint8_t *d_frame;
   hipMalloc(&d_frame, num_pixels * channel_ * sizeof(uint8_t));
 
-  int frame_count = 0;
+  uint32_t frame_count = 0;
   while (true) {
     if (frame_count >= num_frames_) {
       break;
