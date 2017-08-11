@@ -48,6 +48,8 @@
 void HistHcBenchmark::Initialize() { HistBenchmark::Initialize(); }
 
 void HistHcBenchmark::Run() {
+  memset(histogram_, 0, num_color_ * sizeof(uint32_t));
+
   hc::array_view<uint32_t, 1> av_pixels(num_pixel_, pixels_);
   hc::array_view<uint32_t, 1> av_hist(num_color_, histogram_);
   int num_pixel = num_pixel_;

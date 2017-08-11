@@ -85,6 +85,7 @@ void HistCl20Benchmark::Run() {
   cl_int err;
 
   memcpy(dev_pixels_, pixels_, num_pixel_ * sizeof(uint32_t));
+  memset(dev_histogram_, 0, num_color_ * sizeof(uint32_t));
 
   err = clSetKernelArgSVMPointer(hist_kernel_, 0, dev_pixels_);
   checkOpenCLErrors(err, "Failed to set argument 0");
