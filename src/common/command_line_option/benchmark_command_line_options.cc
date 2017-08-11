@@ -56,6 +56,10 @@ void BenchmarkCommandLineOptions::RegisterOptions() {
 
   command_line_option_.AddArgument("Repeat", "integer", "1", "-r", "--repeat",
                                    "Repeat the benchmark execution.");
+
+  command_line_option_.AddArgument(
+      "WarmUp", "integer", "1", "-w", "--warm-up",
+      "Run the benchmarks for a certain times before measuring time.");
 }
 
 void BenchmarkCommandLineOptions::Parse(int argc, const char *argv[]) {
@@ -67,6 +71,7 @@ void BenchmarkCommandLineOptions::Parse(int argc, const char *argv[]) {
   verification_ = command_line_option_.GetArgumentValue("Verify")->AsBool();
   timing_ = command_line_option_.GetArgumentValue("Timing")->AsBool();
   repeat_times_ = command_line_option_.GetArgumentValue("Repeat")->AsUInt32();
+  warm_up_times_ = command_line_option_.GetArgumentValue("WarmUp")->AsUInt32();
 }
 
 void BenchmarkCommandLineOptions::DumpHelpOnRequest() {
@@ -82,4 +87,5 @@ void BenchmarkCommandLineOptions::ConfigureBenchmarkRunner(
   benchmark_runner->SetQuietMode(quiet_mode_);
   benchmark_runner->SetTimingMode(timing_);
   benchmark_runner->SetRepeatTime(repeat_times_);
+  benchmark_runner->SetWarmUpTime(warm_up_times_);
 }

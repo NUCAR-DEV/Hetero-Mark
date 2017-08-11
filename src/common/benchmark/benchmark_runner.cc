@@ -46,6 +46,12 @@ void BenchmarkRunner::Run() {
   time_measurement_->End({"Initialize"});
 
   time_measurement_->Start();
+  for (uint32_t i = 0; i < warm_up_time_; i++) {
+    benchmark_->Run();
+  }
+  time_measurement_->End({"WarmUp"});
+
+  time_measurement_->Start();
   for (uint32_t i = 0; i < repeat_time_; i++) {
     benchmark_->Run();
   }

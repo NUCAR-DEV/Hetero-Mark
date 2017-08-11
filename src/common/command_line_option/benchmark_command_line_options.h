@@ -60,6 +60,7 @@ class BenchmarkCommandLineOptions {
   bool verification_;
   bool timing_;
   uint32_t repeat_times_;
+  uint32_t warm_up_times_;
 
  private:
   void DumpHelpOnRequest();
