@@ -59,6 +59,7 @@ void GaHcBenchmark::Run() {
 
 void GaHcBenchmark::CollaborativeRun() {
   printf("Collaborative\n");
+  matches_.clear();
   std::vector<std::thread> threads;
   int max_searchable_length = target_sequence_.size() - coarse_match_length_;
 
@@ -128,6 +129,7 @@ void GaHcBenchmark::CollaborativeRun() {
 }
 
 void GaHcBenchmark::NonCollaborativeRun() {
+  matches_.clear();
   int max_searchable_length = target_sequence_.size() - coarse_match_length_;
 
   hc::array_view<char, 1> av_target(target_sequence_.size(),

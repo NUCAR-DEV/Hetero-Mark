@@ -73,6 +73,7 @@ __global__ void ga_cuda(char *device_target, char *device_query,
 }
 
 void GaCudaBenchmark::Initialize() {
+  matches_.clear();
   GaBenchmark::Initialize();
   coarse_match_result_ = new char[target_sequence_.size()]();
 
@@ -95,6 +96,7 @@ void GaCudaBenchmark::Run() {
 }
 
 void GaCudaBenchmark::CollaborativeRun() {
+  matches_.clear();
   uint32_t max_searchable_length =
       target_sequence_.size() - coarse_match_length_;
   std::vector<std::thread> threads;

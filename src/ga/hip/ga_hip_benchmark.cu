@@ -98,6 +98,7 @@ void GaHipBenchmark::Run() {
 }
 
 void GaHipBenchmark::CollaborativeRun() {
+  matches_.clear();
   uint32_t max_searchable_length =
       target_sequence_.size() - coarse_match_length_;
   std::vector<std::thread> threads;
@@ -140,6 +141,7 @@ void GaHipBenchmark::CollaborativeRun() {
 }
 
 void GaHipBenchmark::NonCollaborativeRun() {
+  matches_.clear();
   uint32_t max_searchable_length =
       target_sequence_.size() - coarse_match_length_;
   std::vector<std::thread> threads;
