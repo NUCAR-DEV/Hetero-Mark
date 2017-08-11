@@ -85,11 +85,13 @@ void EpBenchmark::Verify() {
     has_error = true;
     printf("In island 1, expected to get %f, but get %f\n",
            cpu_result_island_1_, result_island_1_);
+    exit(-1);
   }
   if (fabs(cpu_result_island_2_ - result_island_2_) >= 0.001) {
     has_error = true;
     printf("In island 2, expected to get %f, but get %f\n",
            cpu_result_island_2_, result_island_2_);
+    exit(-1);
   }
   if (!has_error) {
     printf("Passed!\n");

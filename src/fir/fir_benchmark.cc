@@ -81,6 +81,7 @@ void FirBenchmark::Verify() {
       has_error = true;
       printf("At position %d, expected %f, but was %f.\n", i, cpu_output[i],
              output_[i]);
+      exit(-1);
     }
   }
 
