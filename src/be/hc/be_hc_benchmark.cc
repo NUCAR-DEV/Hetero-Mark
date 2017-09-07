@@ -87,7 +87,6 @@ void BeHcBenchmark::CollaborativeRun() {
     }
     frame_count++;
 
-    printf("Frame started %d\n", frame_count);
     std::lock_guard<std::mutex> lk(queue_mutex_);
     frame_queue_.push(frame);
     queue_condition_variable_.notify_all();
@@ -95,7 +94,6 @@ void BeHcBenchmark::CollaborativeRun() {
 
   {
     std::lock_guard<std::mutex> lk(queue_mutex_);
-    printf("Finished.\n");
     finished_ = true;
   }
   queue_condition_variable_.notify_all();
@@ -117,7 +115,6 @@ void BeHcBenchmark::GPUThread() {
 }
 
 void BeHcBenchmark::ExtractAndEncode(uint8_t *frame) {
-  printf("Extracting frame\n");
   uint32_t num_pixels = width_ * height_ * channel_;
 
   float alpha = alpha_;
@@ -163,6 +160,7 @@ void BeHcBenchmark::NormalRun() {
   std::vector<uint8_t *> frames;
 
   // Initialize background
+  video_.open(input_file_);
   timer_->Start();
   uint8_t *frame = nextFrame();
   timer_->End({"Decoding"});
@@ -178,12 +176,10 @@ void BeHcBenchmark::NormalRun() {
   hc::accelerator_view acc_view = hc::accelerator().get_default_view();
 
   uint32_t frame_count = 0;
-  printf("num_frame %d\n", num_frames_);
   while (true) {
     if (frame_count >= num_frames_) {
       break;
     }
-    printf("Frame %d\n", frame_count);
 
     timer_->Start();
     delete[] frame;

@@ -68,9 +68,22 @@ __device__ void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset) {
 }
 
 __device__ void SubBytesGpu(uint8_t *state, uint8_t *s) {
-  for (int i = 0; i < 16; i++) {
-    state[i] = s[state[i]];
-  }
+  state[0] = s[state[0]];
+  state[1] = s[state[1]];
+  state[2] = s[state[2]];
+  state[3] = s[state[3]];
+  state[4] = s[state[4]];
+  state[5] = s[state[5]];
+  state[6] = s[state[6]];
+  state[7] = s[state[7]];
+  state[8] = s[state[8]];
+  state[9] = s[state[9]];
+  state[10] = s[state[10]];
+  state[11] = s[state[11]];
+  state[12] = s[state[12]];
+  state[13] = s[state[13]];
+  state[14] = s[state[14]];
+  state[15] = s[state[15]];
 }
 
 __device__ void ShiftRowsGpu(uint8_t *state) {
@@ -162,7 +175,7 @@ __global__ void aes_hip(hipLaunchParm lp, uint8_t *input,
 void AesHipBenchmark::Run() {
   ExpandKey();
 
-  hipMemcpy(d_ciphertext_, ciphertext_, text_length_, hipMemcpyHostToDevice);
+  hipMemcpy(d_ciphertext_, plaintext_, text_length_, hipMemcpyHostToDevice);
   hipMemcpy(d_key_, expanded_key_, kExpandedKeyLengthInBytes,
             hipMemcpyHostToDevice);
   hipMemcpy(d_s_, s, 256 * sizeof(uint8_t), hipMemcpyHostToDevice);

@@ -365,7 +365,7 @@ class GABenchmark(Benchmark):
         super(GABenchmark, self).__init__(options)
         self.benchmark_name = 'ga'
         self.benchmark_platforms = ['hc', 'cuda', 'hip']
-        self.verify_run = ['-i', os.getcwd() + '/data/ga/1024_64.data']
+        self.verify_run = ['-i', os.getcwd() + '/data/ga/65536_64.data']
         self.benchmark_runs = [
             ['-i', os.getcwd() + '/data/ga/1024_64.data'],
             ['-i', os.getcwd() + '/data/ga/2048_128.data'],

@@ -63,6 +63,7 @@ void HistBenchmark::Verify() {
       printf("At color %d, expected to be %d, but was %d\n", i,
              cpu_histogram[i], histogram_[i]);
       has_error = true;
+      exit(-1);
     }
   }
 

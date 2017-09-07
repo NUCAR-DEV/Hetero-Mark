@@ -56,6 +56,10 @@ void FirHcBenchmark::Initialize() {
 }
 
 void FirHcBenchmark::Run() {
+  for (unsigned int i = 0; i < num_tap_; i++) {
+    history_[i] = 0.0;
+  }
+
   // hc::array_view<float, 1> av_input(num_total_data_, input_);
   hc::array_view<float, 1> av_coeff(num_tap_, coeff_);
   // hc::array_view<float, 1> av_output(num_total_data_, output_);
@@ -69,7 +73,6 @@ void FirHcBenchmark::Run() {
     hc::array_view<float, 1> av_output_sec(num_data_per_block_,
                                            output_ + i * num_data_per_block_);
     av_output_sec.discard_data();
-
     hc::extent<1> ex(num_data_per_block_);
     hc::parallel_for_each(ex, [=](hc::index<1> j)[[hc]] {
       float sum = 0;

@@ -116,7 +116,6 @@ void BeHipBenchmark::CollaborativeRun() {
     }
     frame_count++;
 
-    printf("Frame started %d\n", frame_count);
     std::lock_guard<std::mutex> lk(queue_mutex_);
     frame_queue_.push(frame);
     queue_condition_variable_.notify_all();
@@ -124,7 +123,6 @@ void BeHipBenchmark::CollaborativeRun() {
 
   {
     std::lock_guard<std::mutex> lk(queue_mutex_);
-    printf("Finished.\n");
     finished_ = true;
   }
   queue_condition_variable_.notify_all();
