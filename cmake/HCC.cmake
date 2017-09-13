@@ -5,6 +5,7 @@ other benchmarks \
 ")
 
 	set(COMPILE_HCC On)
+  add_definitions(-DCOMPILE_HCC=1)
 
 	include_directories("/opt/rocm/include/hcc")
 	include_directories("/opt/rocm/include/")
