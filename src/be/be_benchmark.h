@@ -60,6 +60,10 @@ class BeBenchmark : public Benchmark {
   std::string input_file_;
   uint8_t threshold_ = 10;
 
+  uint32_t num_data_per_block_ = 0;
+  uint32_t num_block_ = 0;
+  uint32_t num_total_data_ = 0;
+  
   cv::VideoCapture video_;
   cv::VideoWriter video_writer_;
   cv::VideoWriter cpu_video_writer_;
@@ -88,6 +92,12 @@ class BeBenchmark : public Benchmark {
   void SetCollaborativeExecution(bool collaborative_execution) {
     collaborative_execution_ = collaborative_execution;
   }
+
+  void SetNumBlock(uint32_t num_block) { num_block_ = num_block; }
+  void SetNumDataPerBlock(uint32_t num_data_per_block) {
+    num_data_per_block_ = num_data_per_block;
+  }
+  
   void SetGenerateOutput(bool generate_output) {
     generate_output_ = generate_output;
   }
