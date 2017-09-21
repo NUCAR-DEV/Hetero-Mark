@@ -47,7 +47,7 @@ class HistCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
   void RegisterOptions() override;
   void Parse(int argc, const char *argv[]) override;
-  void ConfigureBenchmark(HistBenchmark *benchmark);
+  void ConfigureHistBenchmark(HistBenchmark *benchmark);
 
  private:
   uint32_t num_color_;

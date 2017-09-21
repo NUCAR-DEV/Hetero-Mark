@@ -48,7 +48,7 @@ class PrCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
   void RegisterOptions() override;
   void Parse(int argc, const char *argv[]) override;
-  void ConfigureBenchmark(PrBenchmark *benchmark);
+  void ConfigurePrBenchmark(PrBenchmark *benchmark);
 
  private:
   uint32_t max_iteration_;

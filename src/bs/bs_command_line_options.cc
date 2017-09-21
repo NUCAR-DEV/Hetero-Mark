@@ -82,8 +82,10 @@ void BsCommandLineOptions::Parse(int argc, const char *argv[]) {
   gpu_chunk_ = command_line_option_.GetArgumentValue("GpuChunk")->AsUInt32();
 }
 
-void BsCommandLineOptions::ConfigureBenchmark(BsBenchmark *benchmark) {
-  // Call the setter to Set the number of elements
+void BsCommandLineOptions::ConfigureBsBenchmark(BsBenchmark *benchmark) {
+  BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
+
+  // Call the setter to set the number of elements
   benchmark->SetNumElements(num_elements_);
   benchmark->SetActiveCPU(active_cpu_);
   benchmark->SetGpuChunk(gpu_chunk_);

@@ -61,7 +61,8 @@ void HistCommandLineOptions::Parse(int argc, const char *argv[]) {
   num_pixel_ = command_line_option_.GetArgumentValue("NumPixels")->AsUInt32();
 }
 
-void HistCommandLineOptions::ConfigureBenchmark(HistBenchmark *benchmark) {
+void HistCommandLineOptions::ConfigureHistBenchmark(HistBenchmark *benchmark) {
+  BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
   benchmark->SetNumColor(num_color_);
   benchmark->SetNumPixel(num_pixel_);
 }

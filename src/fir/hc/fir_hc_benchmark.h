@@ -42,13 +42,13 @@
 #define SRC_FIR_HC_FIR_HC_BENCHMARK_H_
 
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/common/memory/array_memory_manager.h"
+#include "src/common/memory/memory_manager.h"
 #include "src/fir/fir_benchmark.h"
 
 class FirHcBenchmark : public FirBenchmark {
  private:
   float *history_ = nullptr;
-  ArrayMemoryManager *mem_manager;
+  MemoryManager *mem_manager;
 
  public:
   void Initialize() override;

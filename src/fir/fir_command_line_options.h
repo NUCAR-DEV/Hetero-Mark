@@ -48,7 +48,7 @@ class FirCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
   void RegisterOptions() override;
   void Parse(int argc, const char *argv[]) override;
-  void ConfigureBenchmark(FirBenchmark *benchmark);
+  void ConfigureFirBenchmark(FirBenchmark *benchmark);
 
  private:
   uint32_t num_data_per_block_;

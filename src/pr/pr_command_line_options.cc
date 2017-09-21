@@ -64,7 +64,8 @@ void PrCommandLineOptions::Parse(int argc, const char *argv[]) {
       command_line_option_.GetArgumentValue("InputFile")->AsString();
 }
 
-void PrCommandLineOptions::ConfigureBenchmark(PrBenchmark *benchmark) {
+void PrCommandLineOptions::ConfigurePrBenchmark(PrBenchmark *benchmark) {
+  BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
   benchmark->SetMaxIteration(max_iteration_);
   benchmark->SetInputFileName(input_file_name_.c_str());
 }

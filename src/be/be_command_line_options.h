@@ -49,7 +49,7 @@ class BeCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
   void RegisterOptions() override;
   void Parse(int argc, const char *argv[]) override;
-  void ConfigureBenchmark(BeBenchmark *benchmark);
+  void ConfigureBeBenchmark(BeBenchmark *benchmark);
 
  private:
   bool collaborative_execution_;

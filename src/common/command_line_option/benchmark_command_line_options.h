@@ -53,6 +53,7 @@ class BenchmarkCommandLineOptions {
   virtual void RegisterOptions();
   virtual void Parse(int argc, const char *argv[]);
   virtual void ConfigureBenchmarkRunner(BenchmarkRunner *benchmark_runner);
+  virtual void ConfigureBenchmark(Benchmark *benchmark);
 
  protected:
   CommandLineOption command_line_option_;
@@ -61,6 +62,8 @@ class BenchmarkCommandLineOptions {
   bool timing_;
   uint32_t repeat_times_;
   uint32_t warm_up_times_;
+  std::string mem_type_;
+
 
  private:
   void DumpHelpOnRequest();

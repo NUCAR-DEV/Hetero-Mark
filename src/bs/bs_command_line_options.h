@@ -47,7 +47,7 @@ class BsCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
   void RegisterOptions() override;
   void Parse(int argc, const char *argv[]) override;
-  void ConfigureBenchmark(BsBenchmark *benchmark);
+  void ConfigureBsBenchmark(BsBenchmark *benchmark);
 
  private:
   uint32_t num_elements_;

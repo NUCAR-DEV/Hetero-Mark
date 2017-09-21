@@ -1,3 +1,6 @@
+#ifndef SRC_COMMON_MEMORY_MANAGER_
+#define SRC_COMMON_MEMORY_MANAGER_
+
 class Memory {
  protected:
   void *h_buf_;
@@ -48,3 +51,5 @@ class MemoryManager {
    */
   virtual Memory *Shadow(void *buf, size_t byte_size) = 0;
 };
+
+#endif  // SRC_COMMON_MEMORY_MANAGER_

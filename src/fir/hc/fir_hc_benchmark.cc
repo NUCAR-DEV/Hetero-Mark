@@ -45,10 +45,13 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "src/common/memory/array_view_memory_manager.h"
+#include "src/common/memory/array_memory_manager.h"
+
 void FirHcBenchmark::Initialize() {
   FirBenchmark::Initialize();
 
-  mem_manager = new ArrayMemoryManager();
+  mem_manager = new ArrayViewMemoryManager();
 
   // History saves data that carries to next kernel launch
   history_ = new float[num_tap_];
@@ -62,15 +65,12 @@ void FirHcBenchmark::Run() {
     history_[i] = 0.0;
   }
 
-  for (unsigned int i = 0; i < num_total_data_; i++) {
-    output_[i] = 0.0;
-  }
-
   auto dmem_coeff = mem_manager->Shadow(coeff_, num_tap_ * sizeof(float));
   auto dmem_history = mem_manager->Shadow(history_, num_tap_ * sizeof(float));
 
   float *d_coeff = static_cast<float *>(dmem_coeff->GetDevicePtr());
   float *d_history = static_cast<float *>(dmem_history->GetDevicePtr());
+  dmem_coeff->HostToDevice();
 
   uint32_t num_tap = num_tap_;
 
@@ -82,12 +82,13 @@ void FirHcBenchmark::Run() {
         mem_manager->Shadow(h_input, num_data_per_block_ * sizeof(float));
     auto dmem_output =
         mem_manager->Shadow(h_output, num_data_per_block_ * sizeof(float));
+
     dmem_input->HostToDevice();
+    dmem_history->HostToDevice();
     float *d_input = static_cast<float *>(dmem_input->GetDevicePtr());
     float *d_output = static_cast<float *>(dmem_output->GetDevicePtr());
 
-    printf("Here %d, %d\n", i, num_block_);
-    // printf("%p, %p\n", dmem_input->GetDevicePtr(), dmem_input->GetHostPtr());
+    printf("device %p, host %p\n", d_input, dmem_input->GetHostPtr());
 
     hc::extent<1> ex(num_data_per_block_);
     auto future = hc::parallel_for_each(ex, [=](hc::index<1> j)[[hc]] {
@@ -109,9 +110,6 @@ void FirHcBenchmark::Run() {
     for (uint32_t j = 0; j < num_tap_; j++) {
       history_[j] = h_input[num_data_per_block_ - num_tap_ + j];
     }
-    dmem_history->HostToDevice();
-
-    printf("Here %d, %d\n", i, num_block_);
   }
 }
 

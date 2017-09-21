@@ -1,3 +1,6 @@
+#ifndef SRC_COMMON_MEMORY_ARRAY_MEMORY_MANAGER_
+#define SRC_COMMON_MEMORY_ARRAY_MEMORY_MANAGER_
+
 #include <hcc/hc.hpp>
 
 #include "src/common/memory/memory_manager.h"
@@ -14,10 +17,6 @@ class ArrayMemory : public Memory {
   };
 
   void *GetDevicePtr() override {
-    return static_cast<void *>(d_array_.accelerator_pointer());
-  }
-
-  void *GetDevicePtrOnDevice() [[hc]] {
     return static_cast<void *>(d_array_.accelerator_pointer());
   }
 
@@ -41,4 +40,6 @@ class ArrayMemoryManager : public MemoryManager {
   }
 };
 
-#endif
+#endif  // COMPILE_HCC
+
+#endif  // SRC_COMMON_MEMORY_ARRAY_MEMORY_MANAGER_
