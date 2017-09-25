@@ -7,36 +7,40 @@
 
 #if COMPILE_HCC
 
-class ArrayMemory : public Memory {
+template <typename T, int N>
+class ArrayMemory : public Memory<T> {
  protected:
-  hc::array<uint8_t, 1> d_array_;
+  hc::array<T, N> d_array_;
 
  public:
-  ArrayMemory(void *h_buf, size_t byte_size)
-      : Memory(h_buf, byte_size), d_array_(byte_size) {
+  ArrayMemory(T *h_buf, size_t count)
+      : Memory<T>(h_buf, count), d_array_(count) {
   };
 
-  void *GetDevicePtr() override {
-    return static_cast<void *>(d_array_.accelerator_pointer());
+  T *GetDevicePtr() override {
+    return d_array_.accelerator_pointer();
   }
 
+  hc::array<T, N> GetNative() { return d_array_; };
+
   void HostToDevice() override { 
-    hc::copy((uint8_t *)h_buf_, (uint8_t *)h_buf_ + byte_size_, d_array_);
+    hc::copy(this->h_buf_, this->h_buf_ + this->count_, d_array_);
   }
 
   void DeviceToHost() override { 
-    hc::copy(d_array_, (uint8_t *)h_buf_);
+    hc::copy(d_array_, this->h_buf_);
   }
 
   void Free() override {
-    // The GPU memory will be freed when the array_view is destructed.
+    // The GPU memory will be freed when the array is destructed.
   }
 };
 
-class ArrayMemoryManager : public MemoryManager {
+class ArrayMemoryManager{
  public:
-  ArrayMemory *Shadow(void *buf, size_t byte_size) {
-    return new ArrayMemory(buf, byte_size);
+  template <typename T, int N>
+  ArrayMemory<T, N> *Shadow(T *buf, size_t count) {
+    return new ArrayMemory<T, N>(buf, count);
   }
 };
 

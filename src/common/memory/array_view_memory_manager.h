@@ -7,25 +7,26 @@
 
 #if COMPILE_HCC
 
-class ArrayViewMemory : public Memory {
- protected:
-  hc::array_view<uint8_t, 1> d_buf_;
-
+template <typename T, int N>
+class ArrayViewMemory : public Memory<T> {
  public:
-  ArrayViewMemory(void *h_buf, size_t byte_size)
-      : Memory(h_buf, byte_size), d_buf_(byte_size, (uint8_t *)h_buf) {
+  hc::array_view<T, N> d_buf_;
+
+  ArrayViewMemory(T *h_buf, size_t count)
+      : Memory<T>(h_buf, count), d_buf_(count, h_buf) {
     d_buf_.synchronize_to(hc::accelerator().get_default_view());
   };
 
-  void *GetDevicePtr() override {
-    return static_cast<void *>(d_buf_.accelerator_pointer());
+  T *GetDevicePtr() override {
+    return d_buf_.accelerator_pointer();
   }
+
+  hc::array_view<T, N> GetNative() { return d_buf_; };
 
   void HostToDevice() override { d_buf_.refresh(); }
 
   void DeviceToHost() override {
-    d_buf_.synchronize_to(
-        hc::accelerator(L"cpu").get_default_view());
+    d_buf_.synchronize_to(hc::accelerator(L"cpu").get_default_view());
     d_buf_.synchronize();
   }
 
@@ -34,10 +35,11 @@ class ArrayViewMemory : public Memory {
   }
 };
 
-class ArrayViewMemoryManager : public MemoryManager {
+class ArrayViewMemoryManager {
  public:
-  ArrayViewMemory *Shadow(void *buf, size_t byte_size) {
-    return new ArrayViewMemory(buf, byte_size);
+  template <typename T, int N>
+  ArrayViewMemory<T, N> *Shadow(T *buf, size_t count) {
+    return new ArrayViewMemory<T, N>(buf, count);
   }
 };
 

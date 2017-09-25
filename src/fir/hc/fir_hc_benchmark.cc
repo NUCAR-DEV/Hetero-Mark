@@ -45,13 +45,11 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "src/common/memory/array_view_memory_manager.h"
 #include "src/common/memory/array_memory_manager.h"
+#include "src/common/memory/array_view_memory_manager.h"
 
 void FirHcBenchmark::Initialize() {
   FirBenchmark::Initialize();
-
-  mem_manager = new ArrayViewMemoryManager();
 
   // History saves data that carries to next kernel launch
   history_ = new float[num_tap_];
@@ -61,54 +59,87 @@ void FirHcBenchmark::Initialize() {
 }
 
 void FirHcBenchmark::Run() {
-  for (unsigned int i = 0; i < num_tap_; i++) {
-    history_[i] = 0.0;
+  if (mem_type_ == "array_view") {
+    FirArrayView();
+  } else if (mem_type_ == "array") {
+    FirArray();
+  } else {
+    std::cerr << "Memory type " << mem_type_ << " is not supported by FIR HC\n";
+    exit(-1);
+  }
+}
+
+void FirHcBenchmark::FirArrayView() {
+  uint32_t num_tap = num_tap_;
+  hc::array_view<float, 1> av_coeff(num_tap_, coeff_);
+  hc::array_view<float, 1> av_history(num_tap_, history_);
+
+  for (uint32_t i = 0; i < num_tap_; i++) {
+    av_history[i] = 0;
   }
 
-  auto dmem_coeff = mem_manager->Shadow(coeff_, num_tap_ * sizeof(float));
-  auto dmem_history = mem_manager->Shadow(history_, num_tap_ * sizeof(float));
-
-  float *d_coeff = static_cast<float *>(dmem_coeff->GetDevicePtr());
-  float *d_history = static_cast<float *>(dmem_history->GetDevicePtr());
-  dmem_coeff->HostToDevice();
-
-  uint32_t num_tap = num_tap_;
-
   for (unsigned int i = 0; i < num_block_; i++) {
-    float *h_input = input_ + i * num_data_per_block_;
-    float *h_output = output_ + i * num_data_per_block_;
-
-    auto dmem_input =
-        mem_manager->Shadow(h_input, num_data_per_block_ * sizeof(float));
-    auto dmem_output =
-        mem_manager->Shadow(h_output, num_data_per_block_ * sizeof(float));
-
-    dmem_input->HostToDevice();
-    dmem_history->HostToDevice();
-    float *d_input = static_cast<float *>(dmem_input->GetDevicePtr());
-    float *d_output = static_cast<float *>(dmem_output->GetDevicePtr());
-
-    printf("device %p, host %p\n", d_input, dmem_input->GetHostPtr());
-
+    hc::array_view<float, 1> av_input_sec(num_data_per_block_,
+                                          input_ + i * num_data_per_block_);
+    hc::array_view<float, 1> av_output_sec(num_data_per_block_,
+                                           output_ + i * num_data_per_block_);
+    av_output_sec.discard_data();
     hc::extent<1> ex(num_data_per_block_);
-    auto future = hc::parallel_for_each(ex, [=](hc::index<1> j)[[hc]] {
+    hc::parallel_for_each(ex, [=](hc::index<1> j)[[hc]] {
       float sum = 0;
-
       for (uint32_t k = 0; k < num_tap; k++) {
         if (j[0] >= k) {
-          sum = sum + d_coeff[k] * d_input[j[0] - k];
+          sum = sum + av_coeff[k] * av_input_sec[j[0] - k];
         } else {
-          sum = sum + d_coeff[k] * d_history[num_tap - (k - j[0])];
+          sum = sum + av_coeff[k] * av_history[num_tap - (k - j[0])];
         }
       }
-      d_output[j[0]] = sum;
+      av_output_sec[j[0]] = sum;
+    });
+    av_output_sec.synchronize();
+
+    for (uint32_t i = 0; i < num_tap_; i++) {
+      av_history[i] = av_input_sec[num_data_per_block_ - num_tap_ + i];
+    }
+  }
+}
+
+void FirHcBenchmark::FirArray() {
+  uint32_t num_tap = num_tap_;
+  hc::array<float, 1> array_coeff(num_tap_);
+  hc::array<float, 1> array_history(num_tap_);
+
+  hc::copy(coeff_, array_coeff);
+
+  for (uint32_t i = 0; i < num_tap_; i++) {
+    history_[i] = 0;
+  }
+
+  for (unsigned int i = 0; i < num_block_; i++) {
+    hc::copy(history_, array_history);
+
+    hc::array<float, 1> array_input(num_data_per_block_);
+    hc::array<float, 1> array_output(num_data_per_block_);
+
+    hc::copy(input_ + i * num_data_per_block_, array_input);
+
+    hc::extent<1> ex(num_data_per_block_);
+    auto future = hc::parallel_for_each(ex, [&, num_tap](hc::index<1> j)[[hc]] {
+      float sum = 0;
+      for (uint32_t k = 0; k < num_tap; k++) {
+        if (j[0] >= k) {
+          sum = sum + array_coeff[k] * array_input[j[0] - k];
+        } else {
+          sum = sum + array_coeff[k] * array_history[num_tap - (k - j[0])];
+        }
+      }
+      array_output[j[0]] = sum;
     });
     future.wait();
-
-    dmem_output->DeviceToHost();
+    hc::copy(array_output, output_ + i * num_data_per_block_);
 
     for (uint32_t j = 0; j < num_tap_; j++) {
-      history_[j] = h_input[num_data_per_block_ - num_tap_ + j];
+      history_[j] = input_[(i + 1) * num_data_per_block_ - num_tap_ + j];
     }
   }
 }
