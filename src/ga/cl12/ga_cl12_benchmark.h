@@ -37,70 +37,34 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_GA_GA_BENCHMARK_H_
-#define SRC_GA_GA_BENCHMARK_H_
+#ifndef SRC_GA_CL12_GA_CL12_BENCHMARK_H_
+#define SRC_GA_CL12_GA_CL12_BENCHMARK_H_
 
-#include <list>
-#include <mutex>
-#include <string>
-#include <vector>
-#include "src/common/benchmark/benchmark.h"
+#include "src/common/cl_util/cl_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/ga/ga_benchmark.h"
 
-class GaBenchmark : public Benchmark {
- protected:
-  uint32_t num_data_per_block_ = 0;
-  uint32_t num_block_ = 0;
-  class Match {
-   public:
-    int similarity;
-    int target_index;
-    std::list<int> directions;
-  };
-
-  std::string input_file_;
-  bool collaborative_;
-
-  std::vector<char> target_sequence_;
-  std::vector<char> query_sequence_;
-
-  uint32_t coarse_match_length_ = 11;
-  uint32_t coarse_match_threshold_ = 1;
-
-  int mismatch_penalty = 1;
-  int gap_penalty = 2;
-  int match_reward = 4;
-
-  std::vector<int> coarse_match_position_;
-  std::mutex match_mutex_;
-  std::list<Match *> matches_;
-  std::list<Match *> cpu_matches_;
-
-  void CoarseMatch();
-  bool CoarseMatchAtTargetPosition(int target_index);
-  uint32_t HammingDistance(const char *seq1, const char *seq2, int length);
-
-  typedef int **Matrix;
-  void FineMatch(int start, int end, std::list<Match *> *matches);
-  void FillCell(Matrix score_matrix, Matrix action_matrix, int i, int j,
-                int target_offset);
-  Match *GenerateMatch(Matrix score_matrix, Matrix action_matrix,
-                       int target_start, int target_end);
-  void CreateMatrix(Matrix *matrix, int x, int y);
-  void DestroyMatrix(Matrix *matrix, int x, int y);
+class GaCl12Benchmark : public GaBenchmark, public ClBenchmark {
+ private:
+  char *coarse_match_result_;
+  static const uint32_t kBatchSize = 1024;
+  cl_mem d_target_ = nullptr;
+  cl_mem d_query_ = nullptr;
+  cl_mem d_batch_result_ = nullptr;
+  cl_kernel ga_kernel_;
+  
+  void InitializeKernels();
+  void InitializeBuffers();
+  void CollaborativeRun();
+  void NonCollaborativeRun();
 
  public:
-  void Initialize() override;
-  void Run() override{};
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
+  GaCl12Benchmark() {}
+  ~GaCl12Benchmark() {}
 
-  // Setters
-  void SetInputFile(const std::string &input_file) { input_file_ = input_file; }
-  void SetCollaborativeExecution(bool collaborative) {
-    collaborative_ = collaborative;
-  }
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
 };
 
-#endif  // SRC_GA_GA_BENCHMARK_H_
+#endif  // SRC_GA_CL12_GA_CL12_BENCHMARK_H_
