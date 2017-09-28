@@ -157,14 +157,14 @@ void BsBenchmark::Verify() {
                 << ": Expected to be " << std::fixed << std::setprecision(4)
                 << verify_call_price_[y] << "but it is" << std::fixed
                 << std::setprecision(4) << call_price_[y] << std::endl;
-      return;
+      exit(-1);
     }
     if (fabs(verify_put_price_[y] - put_price_[y]) > 1e-4f) {
       std::cerr << "Verification failed. Put Price Position " << y
                 << ": Expected to be " << std::fixed << std::setprecision(4)
                 << verify_put_price_[y] << "but it is" << std::fixed
                 << std::setprecision(4) << put_price_[y] << std::endl;
-      return;
+      exit(-1);
     }
   }
   std::cout << "Passed." << std::endl;

@@ -92,6 +92,12 @@ void FirHipBenchmark::InitializeData() {
 void FirHipBenchmark::Run() {
   unsigned int count = 0;
 
+  for (unsigned i = 0; i < num_tap_; i++) {
+    history_[i] = 0.0;
+  }
+  hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
+            hipMemcpyHostToDevice);
+
   dim3 grid_size(num_data_per_block_ / 64);
   dim3 block_size(64);
 

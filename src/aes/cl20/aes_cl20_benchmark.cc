@@ -117,7 +117,7 @@ void AesCl20Benchmark::CopyDataToDevice() {
   checkOpenCLErrors(ret, "Failed to map svm buffer");
   clFinish(cmd_queue_);
 
-  memcpy(dev_ciphertext_, ciphertext_, text_length_);
+  memcpy(dev_ciphertext_, plaintext_, text_length_);
 
   ret = clEnqueueSVMUnmap(cmd_queue_, dev_ciphertext_, 0, NULL, NULL);
   checkOpenCLErrors(ret, "Failed to unmap svm buffer");

@@ -48,7 +48,7 @@ class GaCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
   void RegisterOptions() override;
   void Parse(int argc, const char *argv[]) override;
-  void ConfigureBenchmark(GaBenchmark *benchmark);
+  void ConfigureGaBenchmark(GaBenchmark *benchmark);
 
  private:
   std::string input_file_;

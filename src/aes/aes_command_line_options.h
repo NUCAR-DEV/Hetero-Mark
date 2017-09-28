@@ -49,7 +49,7 @@ class AesCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
   void RegisterOptions() override;
   void Parse(int argc, const char *argv[]) override;
-  void ConfigureBenchmark(AesBenchmark *benchmark);
+  void ConfigureAesBenchmark(AesBenchmark *benchmark);
 
  private:
   std::string input_file_;

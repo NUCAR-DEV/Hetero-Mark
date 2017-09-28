@@ -107,7 +107,7 @@ void AesCl12Benchmark::Run() {
 void AesCl12Benchmark::CopyDataToDevice() {
   cl_int ret;
   ret = clEnqueueWriteBuffer(cmd_queue_, dev_ciphertext_, CL_TRUE, 0,
-                             text_length_, ciphertext_, 0, NULL, NULL);
+                             text_length_, plaintext_, 0, NULL, NULL);
   checkOpenCLErrors(ret, "Failed to copy cipher text to device");
 
   ret = clEnqueueWriteBuffer(cmd_queue_, dev_key_, CL_TRUE, 0,

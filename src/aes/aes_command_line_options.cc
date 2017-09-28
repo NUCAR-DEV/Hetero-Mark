@@ -65,7 +65,9 @@ void AesCommandLineOptions::Parse(int argc, const char *argv[]) {
   key_file_ = command_line_option_.GetArgumentValue("KeyFile")->AsString();
 }
 
-void AesCommandLineOptions::ConfigureBenchmark(AesBenchmark *benchmark) {
+void AesCommandLineOptions::ConfigureAesBenchmark(AesBenchmark *benchmark) {
+  BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
+
   benchmark->SetInputFileName(input_file_);
   benchmark->SetKeyFileName(key_file_);
 }

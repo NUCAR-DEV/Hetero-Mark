@@ -53,7 +53,7 @@ int main(int argc, const char **argv) {
   EpCommandLineOptions options;
   options.RegisterOptions();
   options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureEpBenchmark(benchmark.get());
   options.ConfigureBenchmarkRunner(&runner);
 
   runner.Run();

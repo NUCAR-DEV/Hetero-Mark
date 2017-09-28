@@ -104,7 +104,7 @@ void BeHipBenchmark::CollaborativeRun() {
             hipMemcpyHostToDevice);
   free(temp_bg);
 
-  int frame_count = 0;
+  uint32_t frame_count = 0;
   while (true) {
     if (frame_count >= num_frames_) {
       break;
@@ -116,7 +116,6 @@ void BeHipBenchmark::CollaborativeRun() {
     }
     frame_count++;
 
-    printf("Frame started %d\n", frame_count);
     std::lock_guard<std::mutex> lk(queue_mutex_);
     frame_queue_.push(frame);
     queue_condition_variable_.notify_all();
@@ -124,7 +123,6 @@ void BeHipBenchmark::CollaborativeRun() {
 
   {
     std::lock_guard<std::mutex> lk(queue_mutex_);
-    printf("Finished.\n");
     finished_ = true;
   }
   queue_condition_variable_.notify_all();
@@ -188,7 +186,7 @@ void BeHipBenchmark::NormalRun() {
   uint8_t *d_frame;
   hipMalloc(&d_frame, num_pixels * channel_ * sizeof(uint8_t));
 
-  int frame_count = 0;
+  uint32_t frame_count = 0;
   while (true) {
     if (frame_count >= num_frames_) {
       break;

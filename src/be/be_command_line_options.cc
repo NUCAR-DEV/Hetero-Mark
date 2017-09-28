@@ -80,7 +80,9 @@ void BeCommandLineOptions::Parse(int argc, const char *argv[]) {
       command_line_option_.GetArgumentValue("GenerateOutput")->AsBool();
 }
 
-void BeCommandLineOptions::ConfigureBenchmark(BeBenchmark *benchmark) {
+void BeCommandLineOptions::ConfigureBeBenchmark(BeBenchmark *benchmark) {
+  BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
+
   benchmark->SetInputFile(input_file_);
   benchmark->SetMaxFrame(max_frame_);
   benchmark->SetCollaborativeExecution(collaborative_execution_);

@@ -58,6 +58,9 @@ class Benchmark {
   // Number of compute units
   uint32_t num_compute_units_ = 8;
 
+  // The memory type to use
+  std::string mem_type_;
+
  public:
   /**
    * Initialize environment, parameter, buffers
@@ -93,6 +96,11 @@ class Benchmark {
    * Set quiet mode
    */
   virtual void SetQuietMode(bool quiet_mode) { quiet_mode_ = quiet_mode; }
+
+  /**
+   * Set the memory manager type
+   */
+  virtual void SetMemType(const std::string &mem_type) { mem_type_ = mem_type; }
 
   /**
    * Getter for the Work Group Size

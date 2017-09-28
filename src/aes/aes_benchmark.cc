@@ -121,6 +121,7 @@ void AesBenchmark::DumpExpandedKey() {
 void AesBenchmark::Verify() {
   uint8_t *ciphertext_cpu = nullptr;
   InitiateCiphertext(&ciphertext_cpu);
+  // memcpy(ciphertext_cpu, plaintext_, text_length_);
 
   ExpandKey();
 
@@ -151,6 +152,7 @@ void AesBenchmark::Verify() {
       passed = false;
       printf("Position: %" PRIu64 ", expected to be 0x%02x, but get 0x%02x\n",
              i, ciphertext_cpu[i], ciphertext_[i]);
+      exit(-1);
       return;
     }
   }

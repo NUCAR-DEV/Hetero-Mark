@@ -111,7 +111,6 @@ void BeBenchmark::CpuRun() {
     frame = image.ptr();
     frame_count++;
 
-    printf("Frame %lu\n", frame_count);
     for (int i = 0; i < num_pixels; i++) {
       uint8_t diff = 0;
       if (frame[i] > background_[i]) {

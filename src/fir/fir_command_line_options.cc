@@ -72,7 +72,8 @@ void FirCommandLineOptions::Parse(int argc, const char *argv[]) {
   num_block_ = command_line_option_.GetArgumentValue("NumBlock")->AsUInt32();
 }
 
-void FirCommandLineOptions::ConfigureBenchmark(FirBenchmark *benchmark) {
+void FirCommandLineOptions::ConfigureFirBenchmark(FirBenchmark *benchmark) {
+  BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
   benchmark->SetNumDataPerBlock(num_data_per_block_);
   benchmark->SetNumBlock(num_block_);
 }
