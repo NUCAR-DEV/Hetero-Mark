@@ -23,14 +23,23 @@ def parse_args():
 def generate_graph(n, e):
     random.seed(0)
 
-    f_node = open(str(n) + 'x' + str(e) + '_node.data', 'w')
-    for i in range(0, n):
-        f_node.write(str(random.random()) + ',' + str(random.random()) + '\n')
+    #  f_node = open(str(n) + 'x' + str(e) + '_node.data', 'w')
+    #  for i in range(0, n):
+    #      f_node.write(str(random.random()) + ',' + str(random.random()) + '\n')
 
-    f_edges = open(str(n) + 'x' + str(e) + '_edge.data', 'w')
+    nodes = []
+    for i in range(0, n):
+        nodes.append((random.random() * 1000, random.random() * 1000));
+
+    f_edges = open(str(n) + 'x' + str(e) + '.csv', 'w')
     for i in range(0, e):
-        f_edges.write(str(random.randint(0, n - 1)) + ',' +
-                      str(random.randint(0, n - 1)) + '\n')
+        src = random.randint(0, n - 1)
+        dst = random.randint(0, n - 1)
+        f_edges.write(str(nodes[src][0]) + ',' +
+                      str(nodes[src][1]) + ', ' + 
+                      str(nodes[dst][0]) + ', ' + 
+                      str(nodes[dst][1]) + ', ' + 
+                      '\n')
 
 
 if __name__ == '__main__':

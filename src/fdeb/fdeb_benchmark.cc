@@ -38,55 +38,42 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#include <cmath>
 #include <string>
 #include <fstream>
 
 #include "src/fdeb/fdeb_benchmark.h"
 
 void FdebBenchmark::Initialize() {
-  LoadNodeData(data_name_ + "_node.data");
-  LoadEdgeData(data_name_ + "_edge.data");
-}
-
-void FdebBenchmark::LoadNodeData(const std::string &file_name) {
   std::string value_str;
   float value;
-  std::ifstream file(file_name);
+  std::ifstream file(input_file_);
 
   while(file.good()) {
     getline(file, value_str, ',');
     if (value_str == "") break;
     std::cout << value_str << ",";
     value = std::stof(value_str); 
-    node_x_.push_back(value);
+    edge_src_x_.push_back(value);
 
-    getline(file, value_str);
-    if (value_str == "") break;
-    std::cout << value_str << "\n";
-    value = std::stof(value_str); 
-    node_y_.push_back(value);
-
-    node_count_++;
-  }
-}
-
-void FdebBenchmark::LoadEdgeData(const std::string &file_name) {
-  std::string value_str;
-  int value;
-  std::ifstream file(file_name);
-
-  while(file.good()) {
     getline(file, value_str, ',');
     if (value_str == "") break;
     std::cout << value_str << ",";
-    value = std::stoi(value_str); 
-    edge_src_.push_back(value);
+    value = std::stof(value_str); 
+    edge_src_y_.push_back(value);
+
+    getline(file, value_str, ',');
+    if (value_str == "") break;
+    std::cout << value_str << ",";
+    value = std::stof(value_str); 
+    edge_dst_x_.push_back(value);
+
 
     getline(file, value_str);
     if (value_str == "") break;
     std::cout << value_str << "\n";
     value = std::stof(value_str); 
-    edge_dst_.push_back(value);
+    edge_dst_y_.push_back(value);
 
     edge_count_++;
   }
@@ -94,20 +81,12 @@ void FdebBenchmark::LoadEdgeData(const std::string &file_name) {
   PrintEdges();
 }
 
-void FdebBenchmark::PrintNodes() {
-  for (int i = 0; i < node_count_; i++) {
-    printf("[%d] (%f, %f)\n", i, node_x_[i], node_y_[i]);
-  }
-}
-
 void FdebBenchmark::PrintEdges() {
   for (int i = 0; i < edge_count_; i++) {
-    int src = edge_src_[i];
-    int dst = edge_dst_[i];
-    printf("[%d] %d(%f, %f) -> %d(%f, %f)\n", 
+    printf("[%d] (%f, %f) -> (%f, %f)\n", 
         i, 
-        src, node_x_[src], node_y_[src],
-        dst, node_x_[dst], node_y_[dst]);
+        edge_src_x_[i], edge_src_y_[i],
+        edge_dst_x_[i], edge_dst_y_[i]);
   }
 }
 
@@ -124,20 +103,21 @@ void FdebBenchmark::Verify() {
 void FdebBenchmark::FdebCpu() {
   CalculateCompatibility(); 
   BundlingCpu();
+  SaveSubdevisedEdges("out.data");
 }
 
 void FdebBenchmark::CalculateCompatibility() {
-  compatibility_.resize(edge_count_ * edge_count_);
+  compatibility_.resize(edge_count_);
   for (int i = 0; i < edge_count_; i++) {
+    compatibility_[i].resize(edge_count_);
     for (int j = 0; j < edge_count_; j++) {
-      int index = i * edge_count_ + j;
       if (i == j) {
-        compatibility_[index] = 1;
+        compatibility_[i][j] = 1;
         continue;
       }
 
       // Fill in the real algorithm here.
-      compatibility_[index] = 1;
+      compatibility_[i][j] = 1;
     }
   }
 }
@@ -149,9 +129,13 @@ void FdebBenchmark::BundlingCpu() {
   
   InitSubdivisionPoint();
   for (int i = 0; i < num_cycles_; i++) {
+    printf("Cycle %d\n", i);
     num_point = GenerateSubdivisionPoint(num_point);
+    InitForce(num_point);
 
     for (int j = 0; j < iter; j++) {
+      printf("\tIter %d\n", j);
+      BundlingIterCpu(num_point, step);
     }
 
     step = step/2.0;
@@ -163,13 +147,10 @@ void FdebBenchmark::InitSubdivisionPoint() {
   point_x_.resize(edge_count_);
   point_y_.resize(edge_count_);
   for (int i = 0; i < edge_count_; i++) {
-    int src = edge_src_[i];
-    int dst = edge_dst_[i];
-
-    point_x_[i].push_back(node_x_[src]);
-    point_y_[i].push_back(node_y_[src]);
-    point_x_[i].push_back(node_x_[dst]);
-    point_y_[i].push_back(node_y_[dst]);
+    point_x_[i].push_back(edge_src_x_[i]);
+    point_y_[i].push_back(edge_src_y_[i]);
+    point_x_[i].push_back(edge_dst_x_[i]);
+    point_y_[i].push_back(edge_dst_y_[i]);
   }
 }
 
@@ -193,6 +174,51 @@ int FdebBenchmark::GenerateSubdivisionPoint(int num_point) {
   return num_point + num_point + 1;
 }
 
+void FdebBenchmark::InitForce(int num_point) {
+  force_x_.resize(edge_count_);
+  force_y_.resize(edge_count_);
+
+  for (int i = 0; i < edge_count_; i++) {
+    force_x_[i].resize(num_point + 2);
+    force_y_[i].resize(num_point + 2);
+  }
+}
+
+void FdebBenchmark::BundlingIterCpu(int num_point, float step) {
+  UpdateForceCpu(num_point);
+  MovePointsCpu(num_point, step);
+}
+
+void FdebBenchmark::UpdateForceCpu(int num_point) {
+  for (int i = 0; i < edge_count_; i++) {
+    for (int j = 0; j < edge_count_; j++) {
+      if (j == i) continue;
+      for (int k = 1; k <= num_point; k++) {
+        float x1 = point_x_[i][k];
+        float y1 = point_y_[i][k];
+        float x2 = point_x_[j][k];
+        float y2 = point_y_[j][k];
+        float compatibility = compatibility_[i][j];
+        float dist = sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+
+        if (dist > 0) {
+          force_x_[i][k] += (x2-x1) / dist * compatibility;
+          force_y_[i][k] += (y2-y1) / dist * compatibility;
+        }
+      }
+    }
+  }
+}
+
+void FdebBenchmark::MovePointsCpu(int num_point, float step) {
+  for (int i = 0; i < edge_count_; i++) {
+    for (int j = 1; j <= num_point; j++) {
+      point_x_[i][j] += step * force_x_[i][j];
+      point_y_[i][j] += step * force_y_[i][j];
+    }
+  }
+}
+
 void FdebBenchmark::PrintSubdevisedEdges() {
   for (int i = 0; i < edge_count_; i++) {
     printf("[%d] ", i);
@@ -201,6 +227,18 @@ void FdebBenchmark::PrintSubdevisedEdges() {
     } 
     printf("\n");
   }
+}
+
+void FdebBenchmark::SaveSubdevisedEdges(const std::string &filename) {
+  std::ofstream output;
+  output.open(filename);
+  for (int i = 0; i < edge_count_; i++) {
+    for (int j = 0; j < point_x_[i].size(); j++) {
+      output << point_x_[i][j] << "," << point_y_[i][j] << ",";
+    }
+    output << "\n";
+  }
+  output.close();
 }
 
 void FdebBenchmark::Summarize() {

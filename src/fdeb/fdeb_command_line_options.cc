@@ -48,10 +48,8 @@ void FdebCommandLineOptions::RegisterOptions() {
       "This benchmark implements a Force Directed Edge Bundling algorithm.");
 
   command_line_option_.AddArgument(
-      "DataName", "string", "1000x2000", "-i", "--data_name",
-      "The data file to load from. Please use the format like "
-      "/home/user/Hetero-Mark/data/fdeb/1000x2000. Then the program will "
-      "automatially load both the node file and the edge file.");
+      "Input", "string", "1000x2000", "-i", "--input-file",
+      "The data file to load from.");
 }
 
 void FdebCommandLineOptions::Parse(int argc, const char *argv[]) {
@@ -62,10 +60,10 @@ void FdebCommandLineOptions::Parse(int argc, const char *argv[]) {
     exit(-1);
   }
 
-  data_name_ = command_line_option_.GetArgumentValue("DataName")->AsString();
+  input_file_ = command_line_option_.GetArgumentValue("Input")->AsString();
 }
 
 void FdebCommandLineOptions::ConfigureFdebBenchmark(FdebBenchmark *benchmark) {
   BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
-  benchmark->SetDataName(data_name_);
+  benchmark->SetInputFile(input_file_);
 }

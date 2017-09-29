@@ -49,18 +49,20 @@
 
 class FdebBenchmark : public Benchmark {
  protected:
-  std::string data_name_;
+  std::string input_file_;
  
-  int node_count_;
   int edge_count_;
-  std::vector<float> node_x_;
-  std::vector<float> node_y_;
-  std::vector<int> edge_src_;
-  std::vector<int> edge_dst_;
 
-  std::vector<float> compatibility_;
+  std::vector<float> edge_src_x_;
+  std::vector<float> edge_src_y_;
+  std::vector<float> edge_dst_x_;
+  std::vector<float> edge_dst_y_;
+
+  std::vector<std::vector<float>> compatibility_;
   std::vector<std::vector<float>> point_x_;
   std::vector<std::vector<float>> point_y_;
+  std::vector<std::vector<float>> force_x_;
+  std::vector<std::vector<float>> force_y_;
 
   int num_cycles_ = 6;
   int init_iter_count_ = 50;
@@ -68,16 +70,19 @@ class FdebBenchmark : public Benchmark {
 
   void LoadNodeData(const std::string &file_name);
   void LoadEdgeData(const std::string &file_name);
-  void PrintNodes();
   void PrintEdges();
   void PrintSubdevisedEdges();
+  void SaveSubdevisedEdges(const std::string &filename);
 
   void FdebCpu();
   void CalculateCompatibility();
   void BundlingCpu();
-  void BundlingIterCpu(float step);
   void InitSubdivisionPoint();
+  void InitForce(int num_point_);
   int GenerateSubdivisionPoint(int num_point);
+  void BundlingIterCpu(int num_point, float step);
+  void UpdateForceCpu(int num_point);
+  void MovePointsCpu(int num_point, float step);
 
  public:
   void Initialize() override;
@@ -86,8 +91,8 @@ class FdebBenchmark : public Benchmark {
   void Summarize() override;
   void Cleanup() override;
 
-  void SetDataName(std::string data_name) {
-    data_name_ = data_name;
+  void SetInputFile(const std::string &input_file) {
+    input_file_ = input_file;
   }
 };
 

@@ -51,7 +51,7 @@ class FdebCommandLineOptions : public BenchmarkCommandLineOptions {
   void ConfigureFdebBenchmark(FdebBenchmark *benchmark);
 
  private:
-  std::string data_name_;
+  std::string input_file_;
 };
 
 #endif  // SRC_FDEB_FDEB_COMMAND_LINE_OPTIONS_H_
