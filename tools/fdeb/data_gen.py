@@ -26,19 +26,20 @@ def generate_graph(n, e):
     #  f_node = open(str(n) + 'x' + str(e) + '_node.data', 'w')
     #  for i in range(0, n):
     #      f_node.write(str(random.random()) + ',' + str(random.random()) + '\n')
-
+    
+    scale = 10
     nodes = []
     for i in range(0, n):
-        nodes.append((random.random() * 1000, random.random() * 1000));
+        nodes.append((random.random() * scale, random.random() * scale));
 
     f_edges = open(str(n) + 'x' + str(e) + '.csv', 'w')
     for i in range(0, e):
         src = random.randint(0, n - 1)
         dst = random.randint(0, n - 1)
         f_edges.write(str(nodes[src][0]) + ',' +
-                      str(nodes[src][1]) + ', ' + 
-                      str(nodes[dst][0]) + ', ' + 
-                      str(nodes[dst][1]) + ', ' + 
+                      str(nodes[src][1]) + ',' + 
+                      str(nodes[dst][0]) + ',' + 
+                      str(nodes[dst][1]) + ',' + 
                       '\n')
 
 

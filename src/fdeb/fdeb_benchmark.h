@@ -66,7 +66,8 @@ class FdebBenchmark : public Benchmark {
 
   int num_cycles_ = 6;
   int init_iter_count_ = 50;
-  float init_step_size_ = 0.04;
+  float init_step_size_ = 0.01;
+  float kp_ = 2;
 
   void LoadNodeData(const std::string &file_name);
   void LoadEdgeData(const std::string &file_name);
@@ -76,6 +77,10 @@ class FdebBenchmark : public Benchmark {
 
   void FdebCpu();
   void CalculateCompatibility();
+  float AngleCompatibility(int i, int j);
+  float ScaleCompatibility(int i, int j);
+  float PositionCompatibility(int i, int j);
+  float VisibilityCompatibility(int i, int j);
   void BundlingCpu();
   void InitSubdivisionPoint();
   void InitForce(int num_point_);
