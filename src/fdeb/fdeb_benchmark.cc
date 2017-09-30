@@ -107,7 +107,6 @@ void FdebBenchmark::CalculateCompatibility() {
       compatibility_[i][j] =
           1.0 * AngleCompatibility(i, j) * ScaleCompatibility(i, j) *
           PositionCompatibility(i, j) * VisibilityCompatibility(i, j);
-      printf("compatibility [%d, %d] %f\n", i, j, compatibility_[i][j]);
     }
   }
 }
@@ -136,8 +135,7 @@ float FdebBenchmark::AngleCompatibility(int i, int j) {
   return std::abs(inner / length_product);
 }
 
-
-float FdebBenchmark::ScaleCompatibility(int i, int j) { 
+float FdebBenchmark::ScaleCompatibility(int i, int j) {
   float e1x1 = edge_src_x_[i];
   float e1y1 = edge_src_y_[i];
   float e1x2 = edge_dst_x_[i];
@@ -154,10 +152,10 @@ float FdebBenchmark::ScaleCompatibility(int i, int j) {
   float l2 = sqrt(e2x * e2x + e2y * e2y);
   float l_avg = (l1 + l2) / 2;
 
-  return 2 / (l_avg*fmin(l1, l2) + fmax(l1, l2)/l_avg);
+  return 2 / (l_avg * fmin(l1, l2) + fmax(l1, l2) / l_avg);
 }
 
-float FdebBenchmark::PositionCompatibility(int i, int j) { 
+float FdebBenchmark::PositionCompatibility(int i, int j) {
   float e1x1 = edge_src_x_[i];
   float e1y1 = edge_src_y_[i];
   float e1x2 = edge_dst_x_[i];
@@ -178,14 +176,12 @@ float FdebBenchmark::PositionCompatibility(int i, int j) {
   float m1y = (e1y1 + e1y2) / 2;
   float m2x = (e2x1 + e2x2) / 2;
   float m2y = (e2y1 + e2y2) / 2;
-  float m_dist = sqrt((m2x - m1x)*(m2x - m1x) + (m2y - m1y)*(m2y - m1y));
+  float m_dist = sqrt((m2x - m1x) * (m2x - m1x) + (m2y - m1y) * (m2y - m1y));
 
   return l_avg / (l_avg + m_dist);
 }
 
-float FdebBenchmark::VisibilityCompatibility(int i, int j) { 
-  return 1; 
-}
+float FdebBenchmark::VisibilityCompatibility(int i, int j) { return 1; }
 
 void FdebBenchmark::BundlingCpu() {
   int num_point = 0;
@@ -257,7 +253,6 @@ void FdebBenchmark::BundlingIterCpu(int num_point, float step) {
 void FdebBenchmark::UpdateForceCpu(int num_point) {
   for (int i = 0; i < edge_count_; i++) {
     for (int k = 1; k <= num_point; k++) {
-
       for (int j = 0; j < edge_count_; j++) {
         if (j == i) continue;
         float x1 = point_x_[i][k];
@@ -265,7 +260,7 @@ void FdebBenchmark::UpdateForceCpu(int num_point) {
         float x2 = point_x_[j][k];
         float y2 = point_y_[j][k];
         float compatibility = compatibility_[i][j];
-        float dist = sqrt( (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        float dist = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 
         if (dist > 0) {
           float x = x2 - x1;
@@ -281,10 +276,10 @@ void FdebBenchmark::UpdateForceCpu(int num_point) {
       // Self force
       float x = point_x_[i][k];
       float y = point_y_[i][k];
-      float x_p = point_x_[i][k-1];
-      float y_p = point_y_[i][k-1];
-      float x_n = point_x_[i][k+1];
-      float y_n = point_y_[i][k+1];
+      float x_p = point_x_[i][k - 1];
+      float y_p = point_y_[i][k - 1];
+      float x_n = point_x_[i][k + 1];
+      float y_n = point_y_[i][k + 1];
 
       force_x_[i][k] += kp_ * (x_p - x);
       force_y_[i][k] += kp_ * (y_p - y);
@@ -292,7 +287,7 @@ void FdebBenchmark::UpdateForceCpu(int num_point) {
       force_y_[i][k] += kp_ * (y_n - y);
 
       // Normalize
-      float mag = sqrt(force_x_[i][k] * force_x_[i][k] + 
+      float mag = sqrt(force_x_[i][k] * force_x_[i][k] +
                        force_y_[i][k] * force_y_[i][k]);
       force_x_[i][k] /= mag;
       force_y_[i][k] /= mag;

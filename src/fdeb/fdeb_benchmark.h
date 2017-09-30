@@ -49,7 +49,13 @@
 
 class FdebBenchmark : public Benchmark {
  protected:
+  bool collaborative_;
   std::string input_file_;
+
+  int num_cycles_;
+  int init_iter_count_;
+  float init_step_size_;
+  float kp_;
  
   int edge_count_;
 
@@ -63,11 +69,6 @@ class FdebBenchmark : public Benchmark {
   std::vector<std::vector<float>> point_y_;
   std::vector<std::vector<float>> force_x_;
   std::vector<std::vector<float>> force_y_;
-
-  int num_cycles_ = 6;
-  int init_iter_count_ = 50;
-  float init_step_size_ = 0.01;
-  float kp_ = 2;
 
   void LoadNodeData(const std::string &file_name);
   void LoadEdgeData(const std::string &file_name);
@@ -98,6 +99,26 @@ class FdebBenchmark : public Benchmark {
 
   void SetInputFile(const std::string &input_file) {
     input_file_ = input_file;
+  }
+
+  void SetNumCycle(int cycle) {
+    num_cycles_ = cycle  ;
+  }
+
+  void SetInitStepSize(float step_size) {
+    init_step_size_ = step_size;
+  }
+
+  void SetKp(float kp) {
+    kp_ = kp;
+  }
+
+  void SetInitIter(float init_iter) {
+    init_iter_count_ = init_iter; 
+  }
+
+  void SetCollaborative(bool collaborative) {
+    collaborative_ = collaborative;
   }
 };
 

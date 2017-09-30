@@ -47,9 +47,27 @@ void FdebCommandLineOptions::RegisterOptions() {
   command_line_option_.SetDescription(
       "This benchmark implements a Force Directed Edge Bundling algorithm.");
 
+  command_line_option_.AddArgument("Input", "string", "1000x2000.csv", "-i",
+                                   "--input-file",
+                                   "The data file to load from.");
   command_line_option_.AddArgument(
-      "Input", "string", "1000x2000", "-i", "--input-file",
-      "The data file to load from.");
+      "Collaborative", "bool", "false", "-c", "--collaborative",
+      "When enabled, CPU and GPU execution will overlap.");
+
+  command_line_option_.AddArgument("Cycle", "integer", "6", "", "--cycle",
+                                   "Number of cycles to run.");
+  command_line_option_.AddArgument(
+      "InitIter", "integer", "50", "", "--init-iter",
+      "Number of iterations to run in the first cycle. The number of "
+      "iterations is reduce by 2/3 for each cycle");
+  command_line_option_.AddArgument("KP", "float", "0.2", "", "--kp",
+                                   "Kp is a argument that how likely that a "
+                                   "subdivision point will be staying on the "
+                                   "straight line of the original edge.");
+  command_line_option_.AddArgument(
+      "InitStepSize", "float", "0.04", "-s", "--step-size",
+      "The distance to move for each point. The step size will be reduced "
+      "after completing each cycle.");
 }
 
 void FdebCommandLineOptions::Parse(int argc, const char *argv[]) {
@@ -61,9 +79,23 @@ void FdebCommandLineOptions::Parse(int argc, const char *argv[]) {
   }
 
   input_file_ = command_line_option_.GetArgumentValue("Input")->AsString();
+  cycle_ = command_line_option_.GetArgumentValue("Cycle")->AsInt32();
+  init_iter_ = command_line_option_.GetArgumentValue("InitIter")->AsInt32();
+  kp_ = command_line_option_.GetArgumentValue("KP")->AsDouble();
+  init_step_size_ =
+      command_line_option_.GetArgumentValue("InitStepSize")->AsDouble();
+  collaborative_ =
+      command_line_option_.GetArgumentValue("Collaborative")->AsBool();
 }
 
 void FdebCommandLineOptions::ConfigureFdebBenchmark(FdebBenchmark *benchmark) {
   BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
+
   benchmark->SetInputFile(input_file_);
+  benchmark->SetCollaborative(collaborative_);
+
+  benchmark->SetNumCycle(cycle_);
+  benchmark->SetInitStepSize(init_step_size_);
+  benchmark->SetKp(kp_);
+  benchmark->SetInitIter(init_iter_);
 }

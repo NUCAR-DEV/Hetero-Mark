@@ -52,6 +52,11 @@ class FdebCommandLineOptions : public BenchmarkCommandLineOptions {
 
  private:
   std::string input_file_;
+  bool collaborative_;
+  int cycle_;
+  int init_iter_;
+  float kp_;
+  float init_step_size_;
 };
 
 #endif  // SRC_FDEB_FDEB_COMMAND_LINE_OPTIONS_H_
