@@ -47,7 +47,12 @@
 
 class FdebHcBenchmark : public FdebBenchmark {
  private:
+  void NormalRun(); 
+  void CollaborativeRun();
   
+  void BundlingIterGpu();
+  void UpdateForceGpu();
+
  public:
   void Initialize() override;
   void Run() override;

@@ -49,6 +49,7 @@
 
 class FdebBenchmark : public Benchmark {
  protected:
+
   bool collaborative_;
   std::string input_file_;
 
@@ -58,17 +59,20 @@ class FdebBenchmark : public Benchmark {
   float kp_;
  
   int edge_count_;
+  int num_subpoint_;
+  int col_;            // Number of all points on an edge.
+  float step_size_;
 
   std::vector<float> edge_src_x_;
   std::vector<float> edge_src_y_;
   std::vector<float> edge_dst_x_;
   std::vector<float> edge_dst_y_;
 
-  std::vector<std::vector<float>> compatibility_;
-  std::vector<std::vector<float>> point_x_;
-  std::vector<std::vector<float>> point_y_;
-  std::vector<std::vector<float>> force_x_;
-  std::vector<std::vector<float>> force_y_;
+  std::vector<float> compatibility_;
+  std::vector<float> point_x_;
+  std::vector<float> point_y_;
+  std::vector<float> force_x_;
+  std::vector<float> force_y_;
 
   void LoadNodeData(const std::string &file_name);
   void LoadEdgeData(const std::string &file_name);
@@ -84,11 +88,12 @@ class FdebBenchmark : public Benchmark {
   float VisibilityCompatibility(int i, int j);
   void BundlingCpu();
   void InitSubdivisionPoint();
-  void InitForce(int num_point_);
-  int GenerateSubdivisionPoint(int num_point);
-  void BundlingIterCpu(int num_point, float step);
-  void UpdateForceCpu(int num_point);
-  void MovePointsCpu(int num_point, float step);
+  void InitForce();
+
+  void GenerateSubdivisionPoint();
+  void BundlingIterCpu();
+  void UpdateForceCpu();
+  void MovePointsCpu();
 
  public:
   void Initialize() override;
