@@ -64,6 +64,19 @@ void EpCl12Benchmark::InitializeKernels() {
 
   err = clBuildProgram(program_, 0, NULL, NULL, NULL, NULL);
 
+  if(err!=CL_SUCCESS){
+    size_t len;
+    char *msg;
+    // get the details on the error, and store it in buffer
+    clGetProgramBuildInfo(program_, device_, CL_PROGRAM_BUILD_LOG,0,NULL,&len);
+    msg=new char[len];
+    clGetProgramBuildInfo(program_, device_, CL_PROGRAM_BUILD_LOG,len,msg,NULL);
+    printf("Kernel build error:\n%s\n", msg);
+    delete msg;
+  }
+
+  
+  
   checkOpenCLErrors(err, "Failed to create program...\n");
 
   Evaluate_Kernel_ = clCreateKernel(program_, "Evaluate_Kernel", &err);
@@ -198,9 +211,9 @@ void EpCl12Benchmark::EvaluateGpu(std::vector<Creature> *island) {
   clFinish(cmd_queue_);
 
   // Get data back
-  ret = clEnqueueReadBuffer(cmd_queue_, island->data(), CL_TRUE, 0,
+  ret = clEnqueueReadBuffer(cmd_queue_, d_island_, CL_TRUE, 0,
 			    population_ / 2 * sizeof(Creature),
-			    d_island_, 0, NULL,
+			    island->data(), 0, NULL,
 			    NULL);
   checkOpenCLErrors(ret, "Copy data back\n");
   clFinish(cmd_queue_);
@@ -238,9 +251,9 @@ void EpCl12Benchmark::MutateGpu(std::vector<Creature> *island) {
   clFinish(cmd_queue_);
 
   // Get data back
-  ret = clEnqueueReadBuffer(cmd_queue_, island->data(), CL_TRUE, 0,
+  ret = clEnqueueReadBuffer(cmd_queue_, d_island_, CL_TRUE, 0,
 			    population_ / 2 * sizeof(cl_mem),
-			    d_island_, 0, NULL,
+			    island->data(), 0, NULL,
 			    NULL);
   checkOpenCLErrors(ret, "Copy data back\n");
   clFinish(cmd_queue_);

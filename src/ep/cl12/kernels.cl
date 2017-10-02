@@ -37,8 +37,17 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-__kernel void Evaluate_Kernel(Creature *creatures, double *fitness_function,
-		      uint count, uint num_vars) {
+#define NUM_VARIABLES 500
+
+
+typedef struct Creature {
+  double fitness;
+  double parameters[NUM_VARIABLES];
+} Creature;
+
+
+__kernel void Evaluate_Kernel(__global Creature *creatures, __global double *fitness_function,
+			      uint count, uint num_vars) {
   uint i = get_global_id(0);
   if (i >= count) return;
 
@@ -54,7 +63,7 @@ __kernel void Evaluate_Kernel(Creature *creatures, double *fitness_function,
   creature.fitness = fitness;
 }
 
-__kernel void Mutate_Kernel(Creature *creatures, uint count,
+__kernel void Mutate_Kernel(__global Creature *creatures, uint count,
 			    uint num_vars) {
   uint i = get_global_id(0);
 

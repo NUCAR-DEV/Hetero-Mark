@@ -9,7 +9,7 @@ if (OpenCV_FOUND)
     add_executable(${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES})
 
     target_link_libraries(${BENCHMARK_NAME}
-      be cl_util time_measurement command_line_option benchmark
+      ep cl_util time_measurement command_line_option benchmark
       ${OPENCL_LIBRARIES}
       ${OpenCV_LIBS})
     
