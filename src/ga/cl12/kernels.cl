@@ -56,5 +56,5 @@ __kernel void ga_cl12(__global char *device_target, __global char *device_query,
   }
   if (match) {
     device_batch_result[tid] = 1;
-    }
+  }
 }

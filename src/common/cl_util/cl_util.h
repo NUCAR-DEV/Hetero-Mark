@@ -51,7 +51,7 @@
   if (ptr) clSVMFree(ctx, ptr)
 #endif
 
-#define ENABLE_PROFILE 1
+#define ENABLE_PROFILE 0
 
 #if ENABLE_PROFILE
 #define clEnqueueNDRangeKernel clHelper::clProfileNDRangeKernel
