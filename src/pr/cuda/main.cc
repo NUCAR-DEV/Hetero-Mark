@@ -51,7 +51,7 @@ int main(int argc, const char **argv) {
   PrCommandLineOptions options;
   options.RegisterOptions();
   options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigurePrBenchmark(benchmark.get());
   options.ConfigureBenchmarkRunner(&runner);
 
   runner.Run();

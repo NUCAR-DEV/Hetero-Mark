@@ -51,7 +51,7 @@ int main(int argc, const char **argv) {
   KmeansCommandLineOptions options;
   options.RegisterOptions();
   options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureKmeansBenchmark(benchmark.get());
   options.ConfigureBenchmarkRunner(&runner);
 
   runner.Run();

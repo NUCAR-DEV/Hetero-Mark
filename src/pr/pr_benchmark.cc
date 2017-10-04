@@ -113,6 +113,7 @@ void PrBenchmark::Verify() {
       printf("Error with node %i, expected to be %e, but was %e\n", i,
              cpu_page_rank[i], page_rank_[i]);
       has_error = true;
+      exit(-1);
     }
   }
   if (!has_error) {

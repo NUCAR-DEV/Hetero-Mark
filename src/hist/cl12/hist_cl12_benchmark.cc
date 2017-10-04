@@ -85,6 +85,11 @@ void HistCl12Benchmark::InitializeBuffers() {
 void HistCl12Benchmark::Run() {
   cl_int err;
 
+  uint32_t pattern[] = {0};
+  err = clEnqueueFillBuffer(cmd_queue_, dev_histogram_, pattern, 1, 0,
+                            num_color_ * sizeof(uint32_t), 0, NULL, NULL);
+  checkOpenCLErrors(err, "Failed to initialize histogram buffer");
+
   err = clEnqueueWriteBuffer(cmd_queue_, dev_pixels_, CL_TRUE, 0,
                              num_pixel_ * sizeof(uint32_t), pixels_, 0, NULL,
                              NULL);

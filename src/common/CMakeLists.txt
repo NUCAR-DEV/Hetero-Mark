@@ -4,6 +4,7 @@ set(SUBDIRECTORIES
   command_line_option
   time_measurement
   cl_util
+  memory
 )
 
 foreach(subdir ${SUBDIRECTORIES})

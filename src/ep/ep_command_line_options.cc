@@ -69,7 +69,8 @@ void EpCommandLineOptions::Parse(int argc, const char *argv[]) {
   pipelined_ = command_line_option_.GetArgumentValue("Collaborative")->AsBool();
 }
 
-void EpCommandLineOptions::ConfigureBenchmark(EpBenchmark *benchmark) {
+void EpCommandLineOptions::ConfigureEpBenchmark(EpBenchmark *benchmark) {
+  BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
   benchmark->SetMaxGeneration(max_generation_);
   benchmark->SetPopulation(population_);
   benchmark->SetPipelined(pipelined_);

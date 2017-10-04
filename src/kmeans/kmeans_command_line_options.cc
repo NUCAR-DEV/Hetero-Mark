@@ -69,7 +69,9 @@ void KmeansCommandLineOptions::Parse(int argc, const char *argv[]) {
   num_loops_ = command_line_option_.GetArgumentValue("NumLoops")->AsInt32();
 }
 
-void KmeansCommandLineOptions::ConfigureBenchmark(KmeansBenchmark *benchmark) {
+void KmeansCommandLineOptions::ConfigureKmeansBenchmark(
+    KmeansBenchmark *benchmark) {
+  BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
   benchmark->setFilename(filename_);
   benchmark->setThreshold(threshold_);
   benchmark->setMaxNumClusters(max_num_clusters_);

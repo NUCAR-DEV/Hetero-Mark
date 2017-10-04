@@ -47,7 +47,7 @@ class EpCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
   void RegisterOptions() override;
   void Parse(int argc, const char *argv[]) override;
-  void ConfigureBenchmark(EpBenchmark *benchmark);
+  void ConfigureEpBenchmark(EpBenchmark *benchmark);
 
  private:
   uint32_t max_generation_;

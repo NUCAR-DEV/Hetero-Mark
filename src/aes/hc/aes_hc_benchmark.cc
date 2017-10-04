@@ -41,7 +41,7 @@
 void AesHcBenchmark::Initialize() { AesBenchmark::Initialize(); }
 
 void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset)[[hc]] {
-  uint8_t *key_bytes = reinterpret_cast<uint8_t *>((exp_key) + 16 * offset);
+  uint8_t *key_bytes = reinterpret_cast<uint8_t *>(exp_key) + 16 * offset;
   state[0] ^= key_bytes[3];
   state[1] ^= key_bytes[2];
   state[2] ^= key_bytes[1];
@@ -61,9 +61,22 @@ void AddRoundKeyGpu(uint8_t *state, uint32_t *exp_key, int offset)[[hc]] {
 }
 
 void SubBytesGpu(uint8_t *state, uint8_t *s)[[hc]] {
-  for (int i = 0; i < 16; i++) {
-    state[i] = s[state[i]];
-  }
+  state[0] = s[state[0]];
+  state[1] = s[state[1]];
+  state[2] = s[state[2]];
+  state[3] = s[state[3]];
+  state[4] = s[state[4]];
+  state[5] = s[state[5]];
+  state[6] = s[state[6]];
+  state[7] = s[state[7]];
+  state[8] = s[state[8]];
+  state[9] = s[state[9]];
+  state[10] = s[state[10]];
+  state[11] = s[state[11]];
+  state[12] = s[state[12]];
+  state[13] = s[state[13]];
+  state[14] = s[state[14]];
+  state[15] = s[state[15]];
 }
 
 void ShiftRowsGpu(uint8_t *state)[[hc]] {
@@ -126,16 +139,68 @@ void MixColumnsGpu(uint8_t *state)[[hc]] {
 
 void AesHcBenchmark::Run() {
   ExpandKey();
+  memcpy(ciphertext_, plaintext_, text_length_);
+
+  if (mem_type_ == "array_view") {
+    AesArrayView();
+  } else if (mem_type_ == "array") {
+    AesArray();
+  } else {
+    std::cerr << "Memory type " << mem_type_ << " is not supported by AES HC\n";
+    exit(-1);
+  }
+}
+
+void AesHcBenchmark::AesArray() {
+  hc::array<uint8_t, 1> array_cipher(text_length_);
+  hc::array<uint32_t, 1> array_exp_key(kExpandedKeyLengthInWords);
+  hc::array<uint8_t, 1> array_s(256);
+
+  hc::copy(ciphertext_, array_cipher);
+  hc::copy(expanded_key_, array_exp_key);
+  hc::copy(s, array_s);
 
   int num_blocks = text_length_ / 16;
+  hc::extent<1> ex(num_blocks);
+  hc::tiled_extent<1> tiled_ex = ex.tile(64);
+  parallel_for_each(tiled_ex, [&](hc::index<1> index)[[hc]] {
+    uint8_t state[16];
+
+    for (int i = 0; i < 16; i++) {
+      state[i] = array_cipher[index[0] * 16 + i];
+    }
+
+    AddRoundKeyGpu(state, array_exp_key.data(), 0);
+
+    for (int i = 1; i < 14; i++) {
+      SubBytesGpu(state, array_s.data());
+      ShiftRowsGpu(state);
+      MixColumnsGpu(state);
+      AddRoundKeyGpu(state, array_exp_key.data(), i);
+    }
+
+    SubBytesGpu(state, array_s.data());
+    ShiftRowsGpu(state);
+    AddRoundKeyGpu(state, array_exp_key.data(), 14);
+
+    for (int i = 0; i < 16; i++) {
+      array_cipher[index[0] * 16 + i] = state[i];
+    }
+  });
+
+  hc::copy(array_cipher, ciphertext_);
+
+}
+
+void AesHcBenchmark::AesArrayView() {
   hc::array_view<uint8_t, 1> av_cipher(text_length_, ciphertext_);
   hc::array_view<uint32_t, 1> av_exp_key(kExpandedKeyLengthInWords,
                                          expanded_key_);
   hc::array_view<uint8_t, 1> av_s(256, s);
 
+  int num_blocks = text_length_ / 16;
   hc::extent<1> ex(num_blocks);
   hc::tiled_extent<1> tiled_ex = ex.tile(64);
-
   parallel_for_each(tiled_ex, [=](hc::index<1> index)[[hc]] {
     uint8_t state[16];
 
@@ -160,4 +225,6 @@ void AesHcBenchmark::Run() {
       av_cipher[index[0] * 16 + i] = state[i];
     }
   });
+
+  av_cipher.synchronize();
 }

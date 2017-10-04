@@ -80,6 +80,13 @@ class BenchmarkRunner {
   virtual void SetTimingMode(bool timing_mode) { timing_mode_ = timing_mode; }
 
   /**
+   * Set the number of times that the warmup run will be performed
+   */
+  virtual void SetWarmUpTime(uint32_t warm_up_time) {
+    warm_up_time_ = warm_up_time;
+  }
+
+  /**
    * Set the number of times that the benchmark runs
    */
   virtual void SetRepeatTime(uint32_t repeat_time) {
@@ -92,6 +99,7 @@ class BenchmarkRunner {
   bool verification_mode_ = false;
   bool quiet_mode_ = false;
   bool timing_mode_ = false;
+  uint32_t warm_up_time_ = 1;
   uint32_t repeat_time_ = 1;
 
   TimeMeasurement *time_measurement_;

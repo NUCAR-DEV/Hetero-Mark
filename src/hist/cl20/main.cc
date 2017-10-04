@@ -51,7 +51,7 @@ int main(int argc, const char **argv) {
   HistCommandLineOptions options;
   options.RegisterOptions();
   options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureHistBenchmark(benchmark.get());
   options.ConfigureBenchmarkRunner(&runner);
   runner.Summarize();
 

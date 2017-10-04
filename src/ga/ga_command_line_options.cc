@@ -60,7 +60,8 @@ void GaCommandLineOptions::Parse(int argc, const char *argv[]) {
       command_line_option_.GetArgumentValue("Collaborative")->AsBool();
 }
 
-void GaCommandLineOptions::ConfigureBenchmark(GaBenchmark *benchmark) {
+void GaCommandLineOptions::ConfigureGaBenchmark(GaBenchmark *benchmark) {
+  BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
   benchmark->SetInputFile(input_file_);
   benchmark->SetCollaborativeExecution(collaborative_);
 }

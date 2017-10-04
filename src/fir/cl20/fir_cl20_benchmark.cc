@@ -152,6 +152,12 @@ void FirCl20Benchmark::Run() {
   size_t localThreads[1] = {64};
 
   MapSvmBuffers();
+  for (unsigned i = 0; i < num_tap_; i++) {
+    history_[i] = 0.0;
+  }
+  UnmapSvmBuffers();
+
+  MapSvmBuffers();
   while (count < num_block_) {
     memcpy(input_svm_, input_ + num_data_per_block_ * count,
            num_data_per_block_ * sizeof(float));

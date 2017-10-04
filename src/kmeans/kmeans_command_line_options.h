@@ -48,7 +48,7 @@ class KmeansCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
   void RegisterOptions() override;
   void Parse(int argc, const char *argv[]) override;
-  void ConfigureBenchmark(KmeansBenchmark *benchmark);
+  void ConfigureKmeansBenchmark(KmeansBenchmark *benchmark);
 
  private:
   std::string filename_;
