@@ -40,7 +40,7 @@
 #define NUM_VARIABLES 500
 
 
-typedef struct Creature {
+typedef struct {
   double fitness;
   double parameters[NUM_VARIABLES];
 } Creature;
@@ -52,15 +52,14 @@ __kernel void Evaluate_Kernel(__global Creature *creatures, __global double *fit
   if (i >= count) return;
 
   double fitness = 0;
-  Creature &creature = creatures[i];
   for (int j = 0; j < num_vars; j++) {
     double pow = 1;
     for (int k = 0; k < j + 1; k++) {
-      pow *= creature.parameters[j];
+      pow *= creatures[i].parameters[j];
     }
     fitness += pow * fitness_function[j];
   }
-  creature.fitness = fitness;
+  creatures[i].fitness = fitness;
 }
 
 __kernel void Mutate_Kernel(__global Creature *creatures, uint count,

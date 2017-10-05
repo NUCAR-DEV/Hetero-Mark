@@ -46,12 +46,14 @@
 int main(int argc, const char **argv) {
   std::unique_ptr<EpCl12Benchmark> benchmark(new EpCl12Benchmark());
   std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  std::unique_ptr<TimeMeasurement> timer2(new TimeMeasurementImpl());
+  benchmark->SetTimer(timer2.get());
   BenchmarkRunner runner(benchmark.get(), timer.get());
 
   EpCommandLineOptions options;
   options.RegisterOptions();
   options.Parse(argc, argv);
-  options.ConfigureBenchmark(benchmark.get());
+  options.ConfigureEpBenchmark(benchmark.get());
   options.ConfigureBenchmarkRunner(&runner);
 
   runner.Run();
