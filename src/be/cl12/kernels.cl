@@ -30,8 +30,8 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-__kernel void be_cl12(__global uint *frame, __global float *bg,
-				   __global uint *fg, uint width,
+__kernel void be_cl12(__global uchar *frame, __global float *bg,
+				   __global uchar *fg, uint width,
 				   uint height, uint channel,
 				   uint threshold, float alpha) {
   uint tid = get_global_id(0);

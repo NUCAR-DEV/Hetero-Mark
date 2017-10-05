@@ -97,12 +97,11 @@ void EpCl12Benchmark::InitializeBuffers() {
   checkOpenCLErrors(err, "Failed to allocate island buffer");
   
   d_fitness_func_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
-				   kNumVariables * sizeof(cl_mem), NULL, &err);
+				   kNumVariables * sizeof(double), NULL, &err);
   checkOpenCLErrors(err, "Failed to allocate fitness function buffer");
 
   err = clEnqueueWriteBuffer(cmd_queue_, d_fitness_func_, CL_TRUE, 0,
-			     kNumVariables * sizeof(cl_mem), fitness_function_, 0, NULL, NULL);
-
+			     kNumVariables * sizeof(double), fitness_function_, 0, NULL, NULL);
   checkOpenCLErrors(err, "Copy fitness function\n");
 }
 
@@ -182,10 +181,10 @@ void EpCl12Benchmark::EvaluateGpu(std::vector<Creature> *island) {
   checkOpenCLErrors(ret, "Copy island data\n");
 
   size_t localThreads[1] = {64};
-  size_t globalThreads[1] = {(population_ / 2 * + localThreads[1] - 1) / localThreads[1]};
+  size_t globalThreads[1] = {population_ / 2};
 
   // Set kernel arguments
-  ret = clSetKernelArg(Evaluate_Kernel_, 0, sizeof(Creature),
+  ret = clSetKernelArg(Evaluate_Kernel_, 0, sizeof(cl_mem),
 		       reinterpret_cast<void *>(&d_island_));
   checkOpenCLErrors(ret, "Set kernel argument 0\n");
 
@@ -199,7 +198,6 @@ void EpCl12Benchmark::EvaluateGpu(std::vector<Creature> *island) {
 		       reinterpret_cast<void *>(&half_population_));
   checkOpenCLErrors(ret, "Set kernel argument 2\n");
 
-  
   ret = clSetKernelArg(Evaluate_Kernel_, 3, sizeof(cl_uint),
 		       const_cast<void*>(reinterpret_cast<const void *>(&kNumVariables)));
   checkOpenCLErrors(ret, "Set kernel argument 3\n");
@@ -227,7 +225,7 @@ void EpCl12Benchmark::MutateGpu(std::vector<Creature> *island) {
   checkOpenCLErrors(ret, "Copy island data\n");
 
   size_t localThreads[1] = {64};
-  size_t globalThreads[1] = {(population_ / 2 * + localThreads[1] - 1) / localThreads[1]};
+  size_t globalThreads[1] = {population_ / 2};
 
 // Set kernel arguments
   ret = clSetKernelArg(Mutate_Kernel_, 0, sizeof(cl_mem),
