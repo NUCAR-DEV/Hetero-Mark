@@ -12,6 +12,7 @@ set(SUBDIRECTORIES
   hist
   kmeans
   pr
+  knn
 )
 
 foreach(subdir ${SUBDIRECTORIES})
