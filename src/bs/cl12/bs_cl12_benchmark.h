@@ -52,6 +52,7 @@ class BsCl12Benchmark : public BsBenchmark, public ClBenchmark {
   cl_mem d_call_price_ = nullptr;
   cl_mem d_put_price_ = nullptr;
 
+  cl_event event_;  
   bool IsGpuCompleted();
 
   cl_kernel bs_kernel_;

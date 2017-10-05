@@ -171,10 +171,10 @@ void BsCl12Benchmark::Run() {
       err = clSetKernelArg(bs_kernel_, 2, sizeof(cl_mem),
 			   reinterpret_cast<void *>(&d_put_price_ + offset));
       checkOpenCLErrors(err, "Set kernel argument 2\n");
-
+      
       // Execute the OpenCL kernel on the list
       err = clEnqueueNDRangeKernel(cmd_queue_, bs_kernel_, CL_TRUE, NULL,
-				   globalThreads, localThreads, 0, NULL, NULL);
+				   globalThreads, localThreads, 0, NULL, &event_);
       checkOpenCLErrors(err, "Enqueue ND Range.\n");
       clFinish(cmd_queue_);
 
@@ -204,10 +204,13 @@ void BsCl12Benchmark::Run() {
 }
 
 bool BsCl12Benchmark::IsGpuCompleted() {
+  cl_int err;
+  int isReady;
   
+  err = clGetEventInfo(event_, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &isReady, NULL);
+  checkOpenCLErrors(err, "Event info\n");
   
-  // cudaError_t ret = cudaStreamQuery(stream_);
-  // if (ret == cudaSuccess) return true;
+  if (isReady == CL_COMPLETE) return true;
   return false;
 }
 
