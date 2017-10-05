@@ -205,12 +205,12 @@ void BsCl12Benchmark::Run() {
 
 bool BsCl12Benchmark::IsGpuCompleted() {
   cl_int err;
-  int isReady;
-  
-  err = clGetEventInfo(event_, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &isReady, NULL);
+  cl_int info;
+
+  err = clGetEventInfo(event_, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), (void*)&info, NULL);
   checkOpenCLErrors(err, "Event info\n");
   
-  if (isReady == CL_COMPLETE) return true;
+  if (info == CL_COMPLETE) return true;
   return false;
 }
 
