@@ -54,7 +54,7 @@ __global__ void knn_cuda(LatLong *latLong,float *d_distances,int num_records,flo
 void KnnCudaBenchmark::Initialize() {
  KnnBenchmark::Initialize();
  printf("Block size is %d \n", num_records_);
- output_distances_ = new float[num_records_];
+ h_distances_ = new float[num_records_];
  cudaMalloc((void **)&d_distances_,sizeof(float) * num_records_);
  cudaMalloc((void **)&d_locations_,sizeof(LatLong) * num_records_);
  cudaMemcpy(d_locations_,&locations_[0],sizeof(LatLong)*num_records_,cudaMemcpyHostToDevice);
@@ -67,13 +67,13 @@ void KnnCudaBenchmark::Run() {
  knn_cuda<<<grid_size, block_size>>>(d_locations_,d_distances_,num_records_,latitude_,longitude_);
  cudaDeviceSynchronize();
  
- cudaMemcpy(output_distances_, d_distances_, sizeof(float) * num_records_, cudaMemcpyDeviceToHost);
+ cudaMemcpy(h_distances_, d_distances_, sizeof(float) * num_records_, cudaMemcpyDeviceToHost);
 
  for(int i = 0; i < 10; i++)
-        printf("Distances are %f \n", output_distances_[i]);
+        printf("Distances are %f \n", h_distances_[i]);
   
  // find the resultsCount least distances
- findLowest(records_,output_distances_,num_records_,k_value_);
+ findLowest(records_,h_distances_,num_records_,k_value_);
 
  for(int i = 0;i < k_value_;i++) {
       printf("%s --> Distance=%f\n",records_[i].recString,records_[i].distance);

@@ -52,8 +52,11 @@ __global__ void knn_cuda(LatLong *latLong,float *d_distances,int num_records,flo
 
   for(int tid = gpu_initialize(&p); gpu_more(&p); tid = gpu_increment(&p))
   {
+  
   d_distances[tid] = (float)sqrt((lat - latLong[tid].lat)*(lat-latLong[tid].lat)+(lng-latLong[tid].lng)*(lng-latLong[tid].lng)); 
-   }
+   
+   
+  }
 }
 
 
@@ -75,7 +78,7 @@ void KnnCudaBenchmark::Run() {
  dim3 block_size(256);
  dim3 grid_size(16);
  
- knn_cuda<<<grid_size, block_size>>>(h_locations_,h_distances_,num_records_,latitude_,longitude_, (int*)worklist_);
+knn_cuda<<<grid_size, block_size>>>(h_locations_,h_distances_,num_records_,latitude_,longitude_, (int*)worklist_);
  KnnCPU(h_locations_, h_distances_,num_records_,latitude_,longitude_,worklist_);
   cudaDeviceSynchronize();
  

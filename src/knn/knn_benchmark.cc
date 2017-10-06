@@ -38,6 +38,7 @@
  */
 
 #include "src/knn/knn_benchmark.h"
+#include "src/knn/cuda_ws/knn_cpu_partitioner.h"
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -137,8 +138,14 @@ void KnnBenchmark::Initialize() {
    }
  }
 
-void KnnBenchmark::KnnCPU(LatLong *d_locations, float *d_distances, int num_records, float lat, float lng ) {
+void KnnBenchmark::KnnCPU(LatLong *latLong, float *d_distances, int num_records, float lat, float lng, std::atomic_int *worklist) {
+   CpuPartitioner p = cpu_partitioner_create(num_records,worklist); 
   
+   for(int tid = cpu_initializer(&p); cpu_more(&p); tid = cpu_increment(&p))
+   {
+    d_distances[tid] = (float)sqrt((lat - latLong[tid].lat)*(lat-latLong[tid].lat)+(lng-latLong[tid].lng)*(lng-latLong[tid].lng));
+   }
+   
 }
 
 void KnnBenchmark::Verify() {
@@ -151,7 +158,8 @@ void KnnBenchmark::Verify() {
     if(std::abs(cpu_output[i] - h_distances_[i]) > 1e-2) {
        has_error = true;
        printf("At position %d , expected %f but is %f \n", i, cpu_output[i], h_distances_[i]);
-   }
+      exit(1);   
+}
 
    }
 

@@ -2,6 +2,7 @@ set( FOLDER_NAME knn )
 set( SUBDIRECTORIES 
   cuda
   cuda_ws
+  cuda_ws_v2
   )
 set( SRC_FILES
   knn_benchmark.cc

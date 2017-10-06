@@ -4,7 +4,6 @@ set(FOLDER_NAME src)
 set(SUBDIRECTORIES
   common
   aes
-  be
   bs
   ep
   fir
