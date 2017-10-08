@@ -157,14 +157,12 @@ void BeHcBenchmark::ExtractAndEncode(uint8_t *frame) {
 void BeHcBenchmark::NormalRun() {
   printf("Normal run\n");
   uint32_t num_pixels = width_ * height_ * channel_;
-  std::vector<uint8_t *> frames;
 
   // Initialize background
   video_.open(input_file_);
   timer_->Start();
   uint8_t *frame = nextFrame();
   timer_->End({"Decoding"});
-  frames.push_back(frame);
   for (int i = 0; i < num_pixels; i++) {
     background_[i] = static_cast<float>(frame[i]);
   }

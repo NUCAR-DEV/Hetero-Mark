@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 
 set(FOLDER_NAME be)
 set(SUBDIRECTORIES 
+  cl12
   hc
   cuda
   hip

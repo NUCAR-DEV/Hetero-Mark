@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Xiang Gong (xgong@ece.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,23 +37,38 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_CL_UTIL_CL_UTIL_H_
-#define SRC_COMMON_CL_UTIL_CL_UTIL_H_
+#ifndef SRC_EP_CL12_EP_CL12_BENCHMARK_H_
+#define SRC_EP_CL12_EP_CL12_BENCHMARK_H_
 
-#include "src/common/cl_util/cl_error.h"
-#include "src/common/cl_util/cl_file.h"
-#include "src/common/cl_util/cl_profiler.h"
-#include "src/common/cl_util/cl_runtime.h"
+#include <vector>
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/cl_util/cl_benchmark.h"
+#include "src/ep/ep_benchmark.h"
 
-#ifndef clSVMFreeSafe
-#define clSVMFreeSafe(ctx, ptr) \
-  if (ptr) clSVMFree(ctx, ptr)
-#endif
+class EpCl12Benchmark : public EpBenchmark, public ClBenchmark {
+ private:
+  cl_kernel Evaluate_Kernel_;
+  cl_kernel Mutate_Kernel_;
 
-#define ENABLE_PROFILE 0
+  void PipelinedRun();
+  void NormalRun();
+  void EvaluateGpu(std::vector<Creature> *island);
+  void MutateGpu(std::vector<Creature> *island);
 
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clHelper::clProfileNDRangeKernel
-#endif
+  void InitializeKernels();
+  void InitializeBuffers();
+  
+  cl_mem d_island_;
+  cl_mem d_fitness_func_;
 
-#endif  // SRC_COMMON_CL_UTIL_CL_UTIL_H_
+ public:
+  EpCl12Benchmark() {}
+  ~EpCl12Benchmark() {}
+  
+ public:
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+};
+
+#endif  // SRC_EP_CL12_EP_CL12_BENCHMARK_H_

@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Xiang Gong (xgong@ece.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,23 +37,22 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_CL_UTIL_CL_UTIL_H_
-#define SRC_COMMON_CL_UTIL_CL_UTIL_H_
+#include "src/be/be_command_line_options.h"
+#include "src/be/cl12/be_cl12_benchmark.h"
+#include "src/common/benchmark/benchmark_runner.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
 
-#include "src/common/cl_util/cl_error.h"
-#include "src/common/cl_util/cl_file.h"
-#include "src/common/cl_util/cl_profiler.h"
-#include "src/common/cl_util/cl_runtime.h"
+int main(int argc, const char **argv) {
+  std::unique_ptr<BeCl12Benchmark> benchmark(new BeCl12Benchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
 
-#ifndef clSVMFreeSafe
-#define clSVMFreeSafe(ctx, ptr) \
-  if (ptr) clSVMFree(ctx, ptr)
-#endif
+  BeCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureBeBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
 
-#define ENABLE_PROFILE 0
-
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clHelper::clProfileNDRangeKernel
-#endif
-
-#endif  // SRC_COMMON_CL_UTIL_CL_UTIL_H_
+  runner.Run();
+}

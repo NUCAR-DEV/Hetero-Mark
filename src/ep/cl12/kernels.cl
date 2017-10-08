@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Xiang Gong (xgong@ece.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,23 +37,37 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_CL_UTIL_CL_UTIL_H_
-#define SRC_COMMON_CL_UTIL_CL_UTIL_H_
+#define NUM_VARIABLES 500
 
-#include "src/common/cl_util/cl_error.h"
-#include "src/common/cl_util/cl_file.h"
-#include "src/common/cl_util/cl_profiler.h"
-#include "src/common/cl_util/cl_runtime.h"
 
-#ifndef clSVMFreeSafe
-#define clSVMFreeSafe(ctx, ptr) \
-  if (ptr) clSVMFree(ctx, ptr)
-#endif
+typedef struct {
+  double fitness;
+  double parameters[NUM_VARIABLES];
+} Creature;
 
-#define ENABLE_PROFILE 0
 
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clHelper::clProfileNDRangeKernel
-#endif
+__kernel void Evaluate_Kernel(__global Creature *creatures, __global double *fitness_function,
+			      uint count, uint num_vars) {
+  uint i = get_global_id(0);
+  if (i >= count) return;
 
-#endif  // SRC_COMMON_CL_UTIL_CL_UTIL_H_
+  double fitness = 0;
+  for (int j = 0; j < num_vars; j++) {
+    double pow = 1;
+    for (int k = 0; k < j + 1; k++) {
+      pow *= creatures[i].parameters[j];
+    }
+    fitness += pow * fitness_function[j];
+  }
+  creatures[i].fitness = fitness;
+}
+
+__kernel void Mutate_Kernel(__global Creature *creatures, uint count,
+			    uint num_vars) {
+  uint i = get_global_id(0);
+
+  if (i >= count) return;
+
+  if (i % 7 != 0) return;
+  creatures[i].parameters[i % num_vars] *= 0.5;
+}

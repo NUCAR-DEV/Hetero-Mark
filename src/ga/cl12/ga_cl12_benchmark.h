@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Xiang Gong (xgong@ece.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,23 +37,34 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_CL_UTIL_CL_UTIL_H_
-#define SRC_COMMON_CL_UTIL_CL_UTIL_H_
+#ifndef SRC_GA_CL12_GA_CL12_BENCHMARK_H_
+#define SRC_GA_CL12_GA_CL12_BENCHMARK_H_
 
-#include "src/common/cl_util/cl_error.h"
-#include "src/common/cl_util/cl_file.h"
-#include "src/common/cl_util/cl_profiler.h"
-#include "src/common/cl_util/cl_runtime.h"
+#include "src/common/cl_util/cl_benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/ga/ga_benchmark.h"
 
-#ifndef clSVMFreeSafe
-#define clSVMFreeSafe(ctx, ptr) \
-  if (ptr) clSVMFree(ctx, ptr)
-#endif
+class GaCl12Benchmark : public GaBenchmark, public ClBenchmark {
+ private:
+  char *coarse_match_result_;
+  static const uint32_t kBatchSize = 1024;
+  cl_mem d_target_ = nullptr;
+  cl_mem d_query_ = nullptr;
+  cl_mem d_batch_result_ = nullptr;
+  cl_kernel ga_kernel_;
+  
+  void InitializeKernels();
+  void InitializeBuffers();
+  void CollaborativeRun();
+  void NonCollaborativeRun();
 
-#define ENABLE_PROFILE 0
+ public:
+  GaCl12Benchmark() {}
+  ~GaCl12Benchmark() {}
 
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clHelper::clProfileNDRangeKernel
-#endif
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+};
 
-#endif  // SRC_COMMON_CL_UTIL_CL_UTIL_H_
+#endif  // SRC_GA_CL12_GA_CL12_BENCHMARK_H_
