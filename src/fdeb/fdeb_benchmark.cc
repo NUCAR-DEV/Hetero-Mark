@@ -255,11 +255,8 @@ void FdebBenchmark::GenerateSubdivisionPoint() {
 }
 
 void FdebBenchmark::InitForce() {
-  // std::cout << "edge_count_ " << edge_count_ <<  ", col_ " << col_ << "\n";
   force_x_.resize(edge_count_ * col_);
   force_y_.resize(edge_count_ * col_);
-  // force_x_.clear();
-  // force_y_.clear();
 }
 
 void FdebBenchmark::BundlingIterCpu() {

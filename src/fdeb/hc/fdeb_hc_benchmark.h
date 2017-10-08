@@ -51,6 +51,7 @@ class FdebHcBenchmark : public FdebBenchmark {
   void CollaborativeRun();
   
   void BundlingIterGpu();
+  void BundlingIterGpuCollaborative();
   void UpdateForceGpu();
 
  public:

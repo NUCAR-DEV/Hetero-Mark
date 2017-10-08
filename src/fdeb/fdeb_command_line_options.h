@@ -57,6 +57,8 @@ class FdebCommandLineOptions : public BenchmarkCommandLineOptions {
   int init_iter_;
   float kp_;
   float init_step_size_;
+  int gpu_batch_;
+  bool use_atomic_;
 };
 
 #endif  // SRC_FDEB_FDEB_COMMAND_LINE_OPTIONS_H_

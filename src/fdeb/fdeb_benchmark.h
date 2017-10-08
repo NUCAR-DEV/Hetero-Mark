@@ -51,6 +51,10 @@ class FdebBenchmark : public Benchmark {
  protected:
 
   bool collaborative_;
+  int gpu_batch_;      // If collaborative mode, the number of points that the
+                       // GPU process in one kernel
+  bool use_atomic_;    // If set, the GPU implement will use atomic operations.
+
   std::string input_file_;
 
   int num_cycles_;
@@ -125,6 +129,10 @@ class FdebBenchmark : public Benchmark {
   void SetCollaborative(bool collaborative) {
     collaborative_ = collaborative;
   }
+
+  void SetGpuBatch(int gpu_batch) { gpu_batch_ = gpu_batch; }
+
+  void SetUseAtomic(bool atomic) { use_atomic_ = atomic; }
 };
 
 #endif  // SRC_FDEB_FDEB_BENCHMARK_H_

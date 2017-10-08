@@ -53,6 +53,15 @@ void FdebCommandLineOptions::RegisterOptions() {
   command_line_option_.AddArgument(
       "Collaborative", "bool", "false", "-c", "--collaborative",
       "When enabled, CPU and GPU execution will overlap.");
+  command_line_option_.AddArgument(
+      "GPUBatchSize", "int", "4096", "-y", "--batch",
+      "The number of points that the GPU processes in one kernel. This "
+      "argument is only useful in collaborative mode and atomic is not used.");
+  command_line_option_.AddArgument(
+      "UseAtomic", "bool", "false", "", "--atomic",
+      "If atomic is used, the CPU and GPU will use system level "
+      "atomic to communicate. This only works in collaborative "
+      "mode.");
 
   command_line_option_.AddArgument("Cycle", "integer", "6", "", "--cycle",
                                    "Number of cycles to run.");
@@ -86,6 +95,8 @@ void FdebCommandLineOptions::Parse(int argc, const char *argv[]) {
       command_line_option_.GetArgumentValue("InitStepSize")->AsDouble();
   collaborative_ =
       command_line_option_.GetArgumentValue("Collaborative")->AsBool();
+  gpu_batch_ = command_line_option_.GetArgumentValue("GpuBatch")->AsInt32();
+  use_atomic_ = command_line_option_.GetArgumentValue("UseAtomic")->AsBool();
 }
 
 void FdebCommandLineOptions::ConfigureFdebBenchmark(FdebBenchmark *benchmark) {
@@ -98,4 +109,6 @@ void FdebCommandLineOptions::ConfigureFdebBenchmark(FdebBenchmark *benchmark) {
   benchmark->SetInitStepSize(init_step_size_);
   benchmark->SetKp(kp_);
   benchmark->SetInitIter(init_iter_);
+  benchmark->SetGpuBatch(gpu_batch_);
+  benchmark->SetUseAtomic(use_atomic_);
 }

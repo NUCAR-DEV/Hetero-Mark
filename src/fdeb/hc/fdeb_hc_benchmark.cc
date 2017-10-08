@@ -59,6 +59,30 @@ void FdebHcBenchmark::Run() {
 }
 
 void FdebHcBenchmark::CollaborativeRun() {
+  CalculateCompatibility();
+
+  num_subpoint_ = 0;
+  int iter = init_iter_count_;
+  step_size_ = init_step_size_;
+
+  InitSubdivisionPoint();
+  for (int i = 0; i < num_cycles_; i++) {
+    printf("GPU Cycle %d\n", i);
+
+    GenerateSubdivisionPoint();
+    InitForce();
+
+    for (int j = 0; j < iter; j++) {
+      printf("\tGpu Iter %d\n", j);
+      BundlingIterGpuCollaborative();
+    }
+
+    step_size_ = step_size_ / 2.0;
+    iter = iter * 2 / 3;
+  }
+
+  SaveSubdevisedEdges("out_gpu.data");
+
 }
 
 void FdebHcBenchmark::NormalRun() {
@@ -90,6 +114,71 @@ void FdebHcBenchmark::NormalRun() {
 void FdebHcBenchmark::BundlingIterGpu() {
   UpdateForceGpu();
   MovePointsCpu();
+}
+
+void FdebHcBenchmark::BundlingIterGpuCollaborative() {
+  int offset = 0;
+  int col = col_;
+  int edge_count_ = edge_count;
+  hc::extent<1> ext(gpu_batch); // Extra wi for end point
+
+  hc::array<float, 1> d_comp(hc::extent<1>(edge_count * edge_count));
+  hc::array<float, 1> d_point_x(ext);
+  hc::array<float, 1> d_point_y(ext);
+  hc::array<float, 1> d_force_x(ext);
+  hc::array<float, 1> d_force_y(ext);
+
+  for (offset = 0; offset < edge_count * col_; offset += gpu_batch) {
+    hc::parallel_for_each(ext, [=](hc::index<1> idx) [[hc]] {
+      int point_id = offset + idx[0];
+      int i = point_id / col;
+      int k = point_id % col;
+
+      if (point_id >= edge_count * col) return;
+      if (k == 0 || k == col - 1) return;
+
+      for (int j = 0; j < edge_count; j++) {
+        if (j == i) continue;
+        float x1 = av_point_x[i * col + k];
+        float y1 = av_point_y[i * col + k];
+        float x2 = av_point_x[j * col + k];
+        float y2 = av_point_y[j * col + k];
+        float compatibility = av_comp[i * edge_count + j];
+        float dist = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+
+        if (dist > 0) {
+          float x = x2 - x1;
+          float y = y2 - y1;
+
+          force_x += x / dist * compatibility;
+          force_y += y / dist * compatibility;
+        }
+      }
+
+      // Self force
+      float x = av_point_x[i * col + k];
+      float y = av_point_y[i * col + k];
+      float x_p = av_point_x[i * col + k - 1];
+      float y_p = av_point_y[i * col + k - 1];
+      float x_n = av_point_x[i * col + k + 1];
+      float y_n = av_point_y[i * col + k + 1];
+
+      force_x += kp * (x_p - x);
+      force_y += kp * (y_p - y);
+      force_x += kp * (x_n - x);
+      force_y += kp * (y_n - y);
+
+      // Normalize
+      float mag = sqrt(force_x * force_x + force_y * force_y);
+      force_x /= mag;
+      force_y /= mag;
+
+      av_force_x[i * col + k] = force_x;
+      av_force_y[i * col + k] = force_y;
+
+    });
+  }
+
 }
 
 void FdebHcBenchmark::UpdateForceGpu() {
