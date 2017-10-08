@@ -125,6 +125,13 @@ void BsCl12Benchmark::InitializeBuffers() {
   
   free(temp_call_price);
   free(temp_put_price);
+
+  event_ = clCreateUserEvent(context_, &err);
+  checkOpenCLErrors(err, "Create event\n");
+
+  // Set to completed to allow first GPU kernel to launch
+  err = clSetUserEventStatus(event_, CL_COMPLETE);
+  checkOpenCLErrors(err, "Set event status\n");
 }
 
 void BsCl12Benchmark::Run() {
@@ -161,22 +168,26 @@ void BsCl12Benchmark::Run() {
 
       // Set the arguments of the kernel
       err = clSetKernelArg(bs_kernel_, 0, sizeof(cl_mem),
-			   reinterpret_cast<void *>(&d_rand_array_ + offset));
+			   reinterpret_cast<void *>(&d_rand_array_));
       checkOpenCLErrors(err, "Set kernel argument 0\n");
 
       err = clSetKernelArg(bs_kernel_, 1, sizeof(cl_mem),
-			   reinterpret_cast<void *>(&d_call_price_ + offset));
+			   reinterpret_cast<void *>(&d_call_price_));
       checkOpenCLErrors(err, "Set kernel argument 1\n");
 
       err = clSetKernelArg(bs_kernel_, 2, sizeof(cl_mem),
-			   reinterpret_cast<void *>(&d_put_price_ + offset));
+			   reinterpret_cast<void *>(&d_put_price_));
       checkOpenCLErrors(err, "Set kernel argument 2\n");
+
+      err = clSetKernelArg(bs_kernel_, 3, sizeof(cl_int), 
+          static_cast<void *>(&offset));
+      checkOpenCLErrors(err, "Set kernel argument 3\n");
       
       // Execute the OpenCL kernel on the list
       err = clEnqueueNDRangeKernel(cmd_queue_, bs_kernel_, CL_TRUE, NULL,
 				   globalThreads, localThreads, 0, NULL, &event_);
       checkOpenCLErrors(err, "Enqueue ND Range.\n");
-      clFinish(cmd_queue_);
+      // clFinish(cmd_queue_);
 
     } else {
       if (active_cpu_) {
@@ -190,17 +201,18 @@ void BsCl12Benchmark::Run() {
 
 
   err = clEnqueueReadBuffer(cmd_queue_, d_call_price_, CL_TRUE, 0,
-			    done_tiles_ * tile_size_ * sizeof(cl_mem),
+			    done_tiles_ * tile_size_ * sizeof(float),
 			    call_price_, 0, NULL,
 			    NULL);
   checkOpenCLErrors(err, "Copy data back\n");
 
   err = clEnqueueReadBuffer(cmd_queue_, d_put_price_, CL_TRUE, 0,
-			    done_tiles_ * tile_size_ * sizeof(cl_mem),
+			    done_tiles_ * tile_size_ * sizeof(float),
 			    put_price_, 0, NULL,
 			    NULL);
   checkOpenCLErrors(err, "Copy data back\n");
 
+  clFinish(cmd_queue_);
 }
 
 bool BsCl12Benchmark::IsGpuCompleted() {

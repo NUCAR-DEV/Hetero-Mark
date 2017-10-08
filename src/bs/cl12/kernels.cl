@@ -52,18 +52,20 @@ float Phi(float X) {
   absX = fabs(X);
   t = 1.0f / (1.0f + 0.2316419f * absX);
 
-    y = 1.0f -
+  y = 1.0f -
       oneBySqrt2pi * exp(-X * X / 2.0f) * t *
-      (c1 + t * (c2 + t * (c3 + t * (c4 + t * c5))));
+          (c1 + t * (c2 + t * (c3 + t * (c4 + t * c5))));
 
-    return (X < 0) ? (1.0f - y) : y;
+  return (X < 0) ? (1.0f - y) : y;
 }
 
 __kernel void bs_cl12(__global float *rand_array, __global float *d_call_price_,
-                        __global float *d_put_price_) {
-
+                      __global float *d_put_price_, int offset) {
+  rand_array = rand_array + offset;
+  d_call_price_ = d_call_price_ + offset;
+  d_put_price_ = d_put_price_ + offset;
   uint tid = get_global_id(0);
-  
+
   // the variable representing the value in the array[i]
   float i_rand = rand_array[tid];
 
