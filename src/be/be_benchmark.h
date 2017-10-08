@@ -60,10 +60,6 @@ class BeBenchmark : public Benchmark {
   std::string input_file_;
   uint8_t threshold_ = 10;
 
-  uint32_t num_data_per_block_ = 0;
-  uint32_t num_block_ = 0;
-  uint32_t num_total_data_ = 0;
-  
   cv::VideoCapture video_;
   cv::VideoWriter video_writer_;
   cv::VideoWriter cpu_video_writer_;
