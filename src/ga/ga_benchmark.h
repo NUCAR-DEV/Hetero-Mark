@@ -49,8 +49,6 @@
 
 class GaBenchmark : public Benchmark {
  protected:
-  uint32_t num_data_per_block_ = 0;
-  uint32_t num_block_ = 0;
   class Match {
    public:
     int similarity;
