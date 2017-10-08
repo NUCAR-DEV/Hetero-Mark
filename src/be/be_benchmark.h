@@ -92,12 +92,6 @@ class BeBenchmark : public Benchmark {
   void SetCollaborativeExecution(bool collaborative_execution) {
     collaborative_execution_ = collaborative_execution;
   }
-
-  void SetNumBlock(uint32_t num_block) { num_block_ = num_block; }
-  void SetNumDataPerBlock(uint32_t num_data_per_block) {
-    num_data_per_block_ = num_data_per_block;
-  }
-  
   void SetGenerateOutput(bool generate_output) {
     generate_output_ = generate_output;
   }
