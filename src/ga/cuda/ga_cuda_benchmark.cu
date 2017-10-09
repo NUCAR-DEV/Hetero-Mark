@@ -93,6 +93,7 @@ void GaCudaBenchmark::Run() {
   } else {
     NonCollaborativeRun();
   }
+  cpu_gpu_logger_->Summarize();
 }
 
 void GaCudaBenchmark::CollaborativeRun() {
@@ -115,10 +116,13 @@ void GaCudaBenchmark::CollaborativeRun() {
     dim3 block_size(64);
     dim3 grid_size((length + block_size.x - 1) / block_size.x);
 
+    cpu_gpu_logger_->GPUOn();
     ga_cuda<<<grid_size, block_size>>>(
         d_target_, d_query_, d_batch_result_, length, query_sequence_.size(),
         coarse_match_length_, coarse_match_threshold_, current_position);
     cudaDeviceSynchronize();
+    cpu_gpu_logger_->GPUOff();
+
     cudaMemcpy(batch_result, d_batch_result_, kBatchSize * sizeof(char),
                cudaMemcpyDeviceToHost);
 
@@ -155,10 +159,13 @@ void GaCudaBenchmark::NonCollaborativeRun() {
 
     cudaMemset(d_batch_result_, 0, kBatchSize);
 
+    cpu_gpu_logger_->GPUOn();
     ga_cuda<<<grid_size, block_size>>>(
         d_target_, d_query_, d_batch_result_, length, query_sequence_.size(),
         coarse_match_length_, coarse_match_threshold_, current_position);
     cudaDeviceSynchronize();
+    cpu_gpu_logger_->GPUOff();
+
     cudaMemcpy(coarse_match_result_ + current_position, d_batch_result_,
                kBatchSize * sizeof(char), cudaMemcpyDeviceToHost);
     current_position = end_position;

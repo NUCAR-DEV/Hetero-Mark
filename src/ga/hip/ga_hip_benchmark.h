@@ -55,6 +55,7 @@ class GaHipBenchmark : public GaBenchmark {
   void NonCollaborativeRun();
 
  public:
+  GaHipBenchmark() : GaBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
