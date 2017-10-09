@@ -67,6 +67,7 @@ void PrHcBenchmark::Run() {
     av_mtx_1[i] = 1.0 / num_nodes_;
   }
 
+  cpu_gpu_logger_->GPUOn();
   for (i = 0; i < max_iteration_; i++) {
     if (i % 2 == 0) {
       parallel_for_each(hc::extent<1>(num_nodes_), [=](hc::index<1> i)[[hc]] {
@@ -89,11 +90,14 @@ void PrHcBenchmark::Run() {
 
   if (i % 2 != 0) {
     av_mtx_1.synchronize();
+    cpu_gpu_logger_->GPUOff();
     memcpy(page_rank_, page_rank_mtx_1_, num_nodes_ * sizeof(float));
   } else {
     av_mtx_2.synchronize();
+    cpu_gpu_logger_->GPUOff();
     memcpy(page_rank_, page_rank_mtx_2_, num_nodes_ * sizeof(float));
   }
+  cpu_gpu_logger_->Summarize();
 }
 
 void PrHcBenchmark::Cleanup() {

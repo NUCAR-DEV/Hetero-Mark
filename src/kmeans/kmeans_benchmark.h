@@ -83,7 +83,7 @@ class KmeansBenchmark : public Benchmark {
   void UpdateClusterCentroids(unsigned num_clusters);
 
  public:
-  KMeansBenchmark() : Benchmark() {}
+  KmeansBenchmark() : Benchmark() {}
   void Initialize() override;
   void Run() override {}
   void Verify() override;

@@ -55,6 +55,7 @@ class PrHipBenchmark : public PrBenchmark {
   float *device_mtx_2;
 
  public:
+  PrHipBenchmark() : PrBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
