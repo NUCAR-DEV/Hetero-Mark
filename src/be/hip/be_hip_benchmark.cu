@@ -53,6 +53,7 @@ void BeHipBenchmark::Initialize() {
 
   hipMalloc(&d_bg_, width_ * height_ * channel_ * sizeof(float));
   hipMalloc(&d_fg_, width_ * height_ * channel_ * sizeof(uint8_t));
+  hipMalloc(&d_frame_, width_ * height_ * channel_ * sizeof(uint8_t));
 }
 
 void BeHipBenchmark::Run() {
@@ -145,11 +146,9 @@ void BeHipBenchmark::GPUThread() {
 }
 
 void BeHipBenchmark::ExtractAndEncode(uint8_t *frame) {
-  uint8_t *d_frame;
   uint32_t num_pixels = width_ * height_;
-  hipMalloc(&d_frame, num_pixels * channel_ * sizeof(uint8_t));
 
-  hipMemcpy(d_frame, frame, num_pixels * channel_ * sizeof(uint8_t),
+  hipMemcpy(d_frame_, frame, num_pixels * channel_ * sizeof(uint8_t),
             hipMemcpyHostToDevice);
 
   dim3 block_size(64);
@@ -157,7 +156,7 @@ void BeHipBenchmark::ExtractAndEncode(uint8_t *frame) {
 
   cpu_gpu_logger_->GPUOn();
   hipLaunchKernel(HIP_KERNEL_NAME(BackgroundExtraction), dim3(grid_size),
-                  dim3(block_size), 0, 0, d_frame, d_bg_, d_fg_, width_,
+                  dim3(block_size), 0, 0, d_frame_, d_bg_, d_fg_, width_,
                   height_, channel_, threshold_, alpha_);
   cpu_gpu_logger_->GPUOff();
 
@@ -240,5 +239,6 @@ void BeHipBenchmark::Cleanup() {
   delete timer_;
   hipFree(d_bg_);
   hipFree(d_fg_);
+  hipFree(d_frame_);
   BeBenchmark::Cleanup();
 }

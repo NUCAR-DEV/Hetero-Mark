@@ -191,6 +191,7 @@ void AesHipBenchmark::Run() {
   cpu_gpu_logger_->GPUOff();
 
   hipMemcpy(ciphertext_, d_ciphertext_, text_length_, hipMemcpyDeviceToHost);
+  cpu_gpu_logger_->Summarize();
 }
 
 void AesHipBenchmark::Cleanup() {

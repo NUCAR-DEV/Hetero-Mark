@@ -103,17 +103,17 @@ void EpBenchmark::Verify() {
 }
 
 void EpBenchmark::Reproduce() {
-  cpu_gpu_logger_->CPUOn();
   ReproduceInIsland(&islands_1_);
   ReproduceInIsland(&islands_2_);
-  cpu_gpu_logger_->CPUOff();
 }
 
 void EpBenchmark::ReproduceInIsland(std::vector<Creature> *island) {
+  cpu_gpu_logger_->CPUOn();
   while (island->size() < population_ / 2) {
     Creature creature = CreateRandomCreature();
     island->push_back(creature);
   }
+  cpu_gpu_logger_->CPUOff();
 }
 
 Creature EpBenchmark::CreateRandomCreature() {
@@ -148,13 +148,12 @@ void EpBenchmark::ApplyFitnessFunction(Creature *creature) {
 }
 
 void EpBenchmark::Select() {
-  cpu_gpu_logger_->CPUOn();
   SelectInIsland(&islands_1_);
   SelectInIsland(&islands_2_);
-  cpu_gpu_logger_->CPUOff();
 }
 
 void EpBenchmark::SelectInIsland(std::vector<Creature> *island) {
+  cpu_gpu_logger_->CPUOn();
   auto comparator = [](const Creature &a, const Creature &b) {
     return b.fitness < a.fitness;
   };
@@ -163,16 +162,16 @@ void EpBenchmark::SelectInIsland(std::vector<Creature> *island) {
   for (int i = 0; i < kNumEliminate / 2; i++) {
     island->pop_back();
   }
-}
-
-void EpBenchmark::Crossover() {
-  cpu_gpu_logger_->CPUOn();
-  CrossoverInIsland(&islands_1_);
-  CrossoverInIsland(&islands_2_);
   cpu_gpu_logger_->CPUOff();
 }
 
+void EpBenchmark::Crossover() {
+  CrossoverInIsland(&islands_1_);
+  CrossoverInIsland(&islands_2_);
+}
+
 void EpBenchmark::CrossoverInIsland(std::vector<Creature> *island) {
+  cpu_gpu_logger_->CPUOn();
   std::vector<Creature> new_creatures;
   for (auto &creature : *island) {
     Creature best_creature = (*island)[rand_r(&seed_) % 10];
@@ -187,6 +186,7 @@ void EpBenchmark::CrossoverInIsland(std::vector<Creature> *island) {
     new_creatures.push_back(offspring);
   }
   *island = new_creatures;
+  cpu_gpu_logger_->CPUOff();
 }
 
 void EpBenchmark::Mutate() {
