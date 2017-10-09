@@ -51,7 +51,7 @@ class FirCl12Benchmark : public FirBenchmark, public ClBenchmark {
   void InitializeBuffers();
 
  public:
-  FirCl12Benchmark() {}
+  FirCl12Benchmark() : FirBenchmark() {}
   ~FirCl12Benchmark() {}
 
   void Initialize() override;
