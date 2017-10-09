@@ -264,8 +264,7 @@ void BeCl12Benchmark::ExtractAndEncode(uint8_t *frame) {
   checkOpenCLErrors(ret, "Copy frame\n");
 
   size_t localThreads[1] = {64};
-  size_t globalThreads[1] = {(num_pixels * channel_ + localThreads[1] - 1) /
-                             localThreads[1]};
+  size_t globalThreads[1] = {num_pixels * channel_};
 
   ret = clEnqueueNDRangeKernel(cmd_queue_, be_kernel_, CL_TRUE, NULL,
                                globalThreads, localThreads, 0, NULL, NULL);

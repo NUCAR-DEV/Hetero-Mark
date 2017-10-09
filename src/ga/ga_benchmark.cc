@@ -125,6 +125,7 @@ uint32_t GaBenchmark::HammingDistance(const char *seq1, const char *seq2,
 }
 
 void GaBenchmark::FineMatch(int start, int end, std::list<Match *> *matches) {
+  cpu_gpu_logger_->CPUOn();
   int target_length = end - start;
   int query_length = query_sequence_.size();
 
@@ -146,6 +147,7 @@ void GaBenchmark::FineMatch(int start, int end, std::list<Match *> *matches) {
 
   DestroyMatrix(&score_matrix, query_length, target_length);
   DestroyMatrix(&action_matrix, query_length, target_length);
+  cpu_gpu_logger_->CPUOff();
 }
 
 void GaBenchmark::CreateMatrix(Matrix *matrix, int x, int y) {

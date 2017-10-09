@@ -59,7 +59,7 @@ class GaCl12Benchmark : public GaBenchmark, public ClBenchmark {
   void NonCollaborativeRun();
 
  public:
-  GaCl12Benchmark() {}
+  GaCl12Benchmark() : GaBenchmark() {}
   ~GaCl12Benchmark() {}
 
   void Initialize() override;

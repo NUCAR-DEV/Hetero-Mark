@@ -192,10 +192,12 @@ void GaCl12Benchmark::CollaborativeRun() {
     checkOpenCLErrors(err, "Set kernel argument 7\n");
 
     // Execute the OpenCL kernel on the list
+    cpu_gpu_logger_->GPUOn();
     err = clEnqueueNDRangeKernel(cmd_queue_, ga_kernel_, CL_TRUE, NULL,
                                  globalThreads, localThreads, 0, NULL, NULL);
     checkOpenCLErrors(err, "Enqueue ND Range.\n");
     clFinish(cmd_queue_);
+    cpu_gpu_logger_->GPUOff();
 
     err = clEnqueueReadBuffer(cmd_queue_, d_batch_result_, CL_TRUE, 0,
                               kBatchSize * sizeof(char), batch_result, 0,
@@ -215,6 +217,7 @@ void GaCl12Benchmark::CollaborativeRun() {
   for (auto &thread : threads) {
     thread.join();
   }
+  cpu_gpu_logger_->Summarize();
 }
 
 void GaCl12Benchmark::NonCollaborativeRun() {
@@ -278,19 +281,20 @@ void GaCl12Benchmark::NonCollaborativeRun() {
 
     // std::cout << "localThreads: " << localThreads[1] << std::endl;
     // std::cout << "globalThreads: " << globalThreads[1] << std::endl;
-
+    
+    cpu_gpu_logger_->GPUOn();
     // Execute the OpenCL kernel on the list
     err = clEnqueueNDRangeKernel(cmd_queue_, ga_kernel_, CL_TRUE, NULL,
                                  globalThreads, localThreads, 0, NULL, NULL);
     checkOpenCLErrors(err, "Enqueue ND Range.\n");
-
+    clFlush(cmd_queue_);
     clFinish(cmd_queue_);
+    cpu_gpu_logger_->GPUOff();
 
     err = clEnqueueReadBuffer(
         cmd_queue_, d_batch_result_, CL_TRUE, 0, kBatchSize * sizeof(char),
         coarse_match_result_ + current_position, 0, NULL, NULL);
     checkOpenCLErrors(err, "Copy data back\n");
-
 
     current_position = end_position;
   }
@@ -306,6 +310,8 @@ void GaCl12Benchmark::NonCollaborativeRun() {
   for (auto &thread : threads) {
     thread.join();
   }
+
+  cpu_gpu_logger_->Summarize();
 }
 
 void GaCl12Benchmark::Cleanup() {

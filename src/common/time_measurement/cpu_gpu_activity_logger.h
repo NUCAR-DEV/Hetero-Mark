@@ -9,6 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,69 +38,87 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_GA_GA_BENCHMARK_H_
-#define SRC_GA_GA_BENCHMARK_H_
+#ifndef SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_
+#define SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_
 
-#include <list>
-#include <mutex>
-#include <string>
-#include <vector>
-#include "src/common/benchmark/benchmark.h"
-#include "src/common/time_measurement/time_measurement.h"
+#include <memory>
+#include <iostream>
 
-class GaBenchmark : public Benchmark {
- protected:
-  class Match {
-   public:
-    int similarity;
-    int target_index;
-    std::list<int> directions;
-  };
+#include "timer.h"
+#include "timer_impl.h"
 
-  std::string input_file_;
-  bool collaborative_;
+class CPUGPUActivityLogger {
+  std::unique_ptr<Timer> timer_;
+  double prev_time_;
+  bool first_run_ = true;
 
-  std::vector<char> target_sequence_;
-  std::vector<char> query_sequence_;
+  double cpu_ = 0.0;
+  double gpu_ = 0.0;
+  double both_ = 0.0;
 
-  uint32_t coarse_match_length_ = 11;
-  uint32_t coarse_match_threshold_ = 1;
+  int cpu_instance_ = 0;
+  int gpu_instance_ = 0;
 
-  int mismatch_penalty = 1;
-  int gap_penalty = 2;
-  int match_reward = 4;
+  void AddTime() {
+    double now = timer_->GetTimeInSec();
+    if (first_run_) {
+      first_run_ = false;
+      prev_time_ = now;
+      return;
+    }
 
-  std::vector<int> coarse_match_position_;
-  std::mutex match_mutex_;
-  std::list<Match *> matches_;
-  std::list<Match *> cpu_matches_;
-
-  void CoarseMatch();
-  bool CoarseMatchAtTargetPosition(int target_index);
-  uint32_t HammingDistance(const char *seq1, const char *seq2, int length);
-
-  typedef int **Matrix;
-  void FineMatch(int start, int end, std::list<Match *> *matches);
-  void FillCell(Matrix score_matrix, Matrix action_matrix, int i, int j,
-                int target_offset);
-  Match *GenerateMatch(Matrix score_matrix, Matrix action_matrix,
-                       int target_start, int target_end);
-  void CreateMatrix(Matrix *matrix, int x, int y);
-  void DestroyMatrix(Matrix *matrix, int x, int y);
+    double duration = now - prev_time_;
+    prev_time_ = now;
+    if (cpu_instance_ > 0 && gpu_instance_ > 0) {
+      both_ += duration;
+    } else if (cpu_instance_ > 0) {
+      cpu_ += duration;
+    } else if (gpu_instance_ > 0) {
+      gpu_ += duration;
+    }
+  }
 
  public:
-  GaBenchmark() : Benchmark() {}
-  void Initialize() override;
-  void Run() override{};
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
+  CPUGPUActivityLogger() {
+    timer_.reset(new TimerImpl());
+  }
 
-  // Setters
-  void SetInputFile(const std::string &input_file) { input_file_ = input_file; }
-  void SetCollaborativeExecution(bool collaborative) {
-    collaborative_ = collaborative;
+  ~CPUGPUActivityLogger() {
+    if (cpu_instance_ > 0) {
+      std::cerr << "Warning: CPU activity not properly closed.";
+    }
+    if (gpu_instance_ > 0) {
+      std::cerr << "Warning: GPU activity not properly closed.";
+    }
+  }
+
+  void CPUOn() {
+    AddTime();
+    cpu_instance_++;
+  }
+
+  void CPUOff() {
+    AddTime();
+    cpu_instance_--;
+  }
+  
+  void GPUOn() {
+    AddTime();
+    gpu_instance_++;
+  }
+
+  void GPUOff() {
+    AddTime();
+    gpu_instance_--;
+  }
+
+  void Summarize() {
+    std::cerr << "CPU: " << cpu_ 
+              << ", GPU: " << gpu_ 
+              << ", both:" << both_
+              << "\n";
   }
 };
 
-#endif  // SRC_GA_GA_BENCHMARK_H_
+#endif  // SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_
+
