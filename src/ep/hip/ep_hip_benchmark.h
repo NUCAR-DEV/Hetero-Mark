@@ -55,6 +55,7 @@ class EpHipBenchmark : public EpBenchmark {
   double *d_fitness_func_;
 
  public:
+  EpHipBenchmark() : EpBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

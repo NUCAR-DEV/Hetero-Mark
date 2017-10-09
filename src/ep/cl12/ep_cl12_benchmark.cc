@@ -112,20 +112,18 @@ void EpCl12Benchmark::Run() {
   } else {
     NormalRun();
   }
+  cpu_gpu_logger_->Summarize();
 }
 
 void EpCl12Benchmark::PipelinedRun() {
   seed_ = kSeedInitValue;
   ReproduceInIsland(&islands_1_);
   for (uint32_t i = 0; i < max_generation_; i++) {
-    timer_->Start();
     std::thread t1(&EpCl12Benchmark::ReproduceInIsland, this, &islands_2_);
     std::thread t2(&EpCl12Benchmark::EvaluateGpu, this, &islands_1_);
     t1.join();
     t2.join();
-    timer_->End({"Stage 1"});
 
-    timer_->Start();
     std::thread t3(&EpCl12Benchmark::EvaluateGpu, this, &islands_2_);
     std::thread t4(&EpCl12Benchmark::SelectInIsland, this, &islands_1_);
     t4.join();
@@ -133,9 +131,7 @@ void EpCl12Benchmark::PipelinedRun() {
     std::thread t5(&EpCl12Benchmark::CrossoverInIsland, this, &islands_1_);
     t5.join();
     t3.join();
-    timer_->End({"Stage 2"});
 
-    timer_->Start();
     std::thread t6(&EpCl12Benchmark::SelectInIsland, this, &islands_2_);
     std::thread t7(&EpCl12Benchmark::MutateGpu, this, &islands_1_);
     t6.join();
@@ -143,16 +139,11 @@ void EpCl12Benchmark::PipelinedRun() {
     std::thread t8(&EpCl12Benchmark::CrossoverInIsland, this, &islands_2_);
     t7.join();
     t8.join();
-    timer_->End({"Stage 3"});
 
-    timer_->Start();
     std::thread t9(&EpCl12Benchmark::MutateGpu, this, &islands_2_);
     std::thread t10(&EpCl12Benchmark::ReproduceInIsland, this, &islands_1_);
     t9.join();
     t10.join();
-    timer_->End({"Stage 4"});
-
-    timer_->Summarize();
   }
 }
 
@@ -203,10 +194,12 @@ void EpCl12Benchmark::EvaluateGpu(std::vector<Creature> *island) {
   checkOpenCLErrors(ret, "Set kernel argument 3\n");
 
   // Launch kernel
+  cpu_gpu_logger_->GPUOn();
   ret = clEnqueueNDRangeKernel(cmd_queue_, Evaluate_Kernel_, CL_TRUE, NULL,
 			       globalThreads, localThreads, 0, NULL, NULL);
   checkOpenCLErrors(ret, "Enqueue ND Range.\n");
   clFinish(cmd_queue_);
+  cpu_gpu_logger_->GPUOff();
 
   // Get data back
   ret = clEnqueueReadBuffer(cmd_queue_, d_island_, CL_TRUE, 0,
@@ -243,10 +236,12 @@ void EpCl12Benchmark::MutateGpu(std::vector<Creature> *island) {
   checkOpenCLErrors(ret, "Set kernel argument 2\n");
   
   // Launch kernel
+  cpu_gpu_logger_->GPUOn();
   ret = clEnqueueNDRangeKernel(cmd_queue_, Mutate_Kernel_, CL_TRUE, NULL,
 			       globalThreads, localThreads, 0, NULL, NULL);
   checkOpenCLErrors(ret, "Enqueue ND Range.\n");
   clFinish(cmd_queue_);
+  cpu_gpu_logger_->GPUOff();
 
   // Get data back
   ret = clEnqueueReadBuffer(cmd_queue_, d_island_, CL_TRUE, 0,
