@@ -137,6 +137,7 @@ void PrCl12Benchmark::Run() {
   err = clSetKernelArg(pr_kernel_, 4, sizeof(float) * 64, NULL);
   checkOpenCLErrors(err, "Failed to set kernel argument 4");
 
+  cpu_gpu_logger_->GPUOn();
   uint32_t i;
   for (i = 0; i < max_iteration_; i++) {
     if (i % 2 == 0) {
@@ -162,12 +163,14 @@ void PrCl12Benchmark::Run() {
   }
 
   clFinish(cmd_queue_);
+  cpu_gpu_logger_->GPUOff();
 
   if (!i % 2 == 0) {
     CopyDataBackFromDevice(&dev_page_rank_);
   } else {
     CopyDataBackFromDevice(&dev_page_rank_temp_);
   }
+  cpu_gpu_logger_->Summarize();
 }
 
 void PrCl12Benchmark::Cleanup() {
