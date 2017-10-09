@@ -56,6 +56,7 @@ class FirHipBenchmark : public FirBenchmark {
   void InitializeBuffers();
 
  public:
+  FirHipBenchmark() : FirBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

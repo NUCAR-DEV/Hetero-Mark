@@ -106,9 +106,11 @@ void FirHipBenchmark::Run() {
               (num_data_per_block_) * sizeof(float), hipMemcpyHostToDevice);
     hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
               hipMemcpyHostToDevice);
+    cpu_gpu_logger_->GPUOn();
     hipLaunchKernel(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
                     0, 0, input_buffer_, output_buffer_, coeff_buffer_,
                     history_buffer_, num_tap_, num_data_per_block_);
+    cpu_gpu_logger_->GPUOff();
     hipMemcpy(output_ + count * num_data_per_block_, output_buffer_,
               num_data_per_block_ * sizeof(float), hipMemcpyDeviceToHost);
 
@@ -119,6 +121,7 @@ void FirHipBenchmark::Run() {
 
     count++;
   }
+  cpu_gpu_logger_->Summarize();
 }
 
 void FirHipBenchmark::Cleanup() {

@@ -104,9 +104,11 @@ void FirCudaBenchmark::Run() {
                (num_data_per_block_) * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
                cudaMemcpyHostToDevice);
+    cpu_gpu_logger_->GPUOn();
     fir_cuda<<<grid_size, block_size>>>(input_buffer_, output_buffer_,
                                         coeff_buffer_, history_buffer_,
                                         num_tap_, num_data_per_block_);
+    cpu_gpu_logger_->GPUOff();
     cudaMemcpy(output_ + count * num_data_per_block_, output_buffer_,
                num_data_per_block_ * sizeof(float), cudaMemcpyDeviceToHost);
 
@@ -117,6 +119,8 @@ void FirCudaBenchmark::Run() {
 
     count++;
   }
+  
+  cpu_gpu_logger_->Summarize();
 }
 
 void FirCudaBenchmark::Cleanup() {

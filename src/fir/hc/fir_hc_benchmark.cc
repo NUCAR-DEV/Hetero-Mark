@@ -67,6 +67,7 @@ void FirHcBenchmark::Run() {
     std::cerr << "Memory type " << mem_type_ << " is not supported by FIR HC\n";
     exit(-1);
   }
+  cpu_gpu_logger_->Summarize();
 }
 
 void FirHcBenchmark::FirArrayView() {
@@ -85,6 +86,7 @@ void FirHcBenchmark::FirArrayView() {
                                            output_ + i * num_data_per_block_);
     av_output_sec.discard_data();
     hc::extent<1> ex(num_data_per_block_);
+    cpu_gpu_logger_->GPUOn();
     hc::parallel_for_each(ex, [=](hc::index<1> j)[[hc]] {
       float sum = 0;
       for (uint32_t k = 0; k < num_tap; k++) {
@@ -97,6 +99,7 @@ void FirHcBenchmark::FirArrayView() {
       av_output_sec[j[0]] = sum;
     });
     av_output_sec.synchronize();
+    cpu_gpu_logger_->GPUOff();
 
     for (uint32_t i = 0; i < num_tap_; i++) {
       av_history[i] = av_input_sec[num_data_per_block_ - num_tap_ + i];
@@ -124,6 +127,7 @@ void FirHcBenchmark::FirArray() {
     hc::copy(input_ + i * num_data_per_block_, array_input);
 
     hc::extent<1> ex(num_data_per_block_);
+    cpu_gpu_logger_->GPUOn();
     auto future = hc::parallel_for_each(ex, [&, num_tap](hc::index<1> j)[[hc]] {
       float sum = 0;
       for (uint32_t k = 0; k < num_tap; k++) {
@@ -136,6 +140,7 @@ void FirHcBenchmark::FirArray() {
       array_output[j[0]] = sum;
     });
     future.wait();
+    cpu_gpu_logger_->GPUOff();
     hc::copy(array_output, output_ + i * num_data_per_block_);
 
     for (uint32_t j = 0; j < num_tap_; j++) {

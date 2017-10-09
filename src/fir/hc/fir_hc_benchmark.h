@@ -53,6 +53,7 @@ class FirHcBenchmark : public FirBenchmark {
   void FirArray();
 
  public:
+  FirHcBenchmark() : FirBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
