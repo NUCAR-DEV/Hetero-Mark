@@ -176,6 +176,7 @@ void BsHipBenchmark::Run() {
             done_tiles_ * tile_size_ * sizeof(float), hipMemcpyDeviceToHost);
   hipMemcpy(put_price_, d_put_price_, done_tiles_ * tile_size_ * sizeof(float),
             hipMemcpyDeviceToHost);
+  cpu_gpu_logger_->GPUSummarize();
 }
 
 bool BsHipBenchmark::IsGpuCompleted() {
