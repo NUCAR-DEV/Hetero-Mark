@@ -150,9 +150,12 @@ void KmeansCl12Benchmark::TransposeFeatures() {
     global_work_size =
         (global_work_size / local_work_size + 1) * local_work_size;
 
+  cpu_gpu_logger_->GPUOn();
   err = clEnqueueNDRangeKernel(cmd_queue_, kmeans_kernel_swap_, 1, NULL,
                                &global_work_size, &local_work_size, 0, 0, 0);
   checkOpenCLErrors(err, "ERROR: clEnqueueNDRangeKernel()");
+  clFinish(cmd_queue_);
+  cpu_gpu_logger_->GPUOff();
 
   // std::unique_ptr<float[]> trans_result(
   //     new float[num_points_ * num_features_]());
@@ -222,18 +225,21 @@ void KmeansCl12Benchmark::UpdateMembership(unsigned num_clusters) {
   clSetKernelArg(kmeans_kernel_compute_, 7, sizeof(cl_int),
                  reinterpret_cast<void *>(&size));
 
+  cpu_gpu_logger_->GPUOn();
   err = clEnqueueNDRangeKernel(cmd_queue_, kmeans_kernel_compute_, 1, NULL,
                                &global_work_size, &local_work_size, 0, 0, 0);
   checkOpenCLErrors(err,
                     "ERROR: clEnqueueNDRangeKernel kmeans_kernel_compute_");
+  clFinish(cmd_queue_);
+  cpu_gpu_logger_->GPUOff();
 
   err = clEnqueueReadBuffer(cmd_queue_, device_membership_, 1, 0,
                             num_points_ * sizeof(int), new_membership.get(), 0,
                             0, 0);
   checkOpenCLErrors(err, "ERROR: Memcopy Out");
-
   clFinish(cmd_queue_);
 
+  cpu_gpu_logger_->CPUOn();
   delta_ = 0.0f;
   for (unsigned i = 0; i < num_points_; i++) {
     if (new_membership[i] != membership_[i]) {
@@ -241,11 +247,15 @@ void KmeansCl12Benchmark::UpdateMembership(unsigned num_clusters) {
       membership_[i] = new_membership[i];
     }
   }
+  cpu_gpu_logger_->CPUOff();
 }
 
 void KmeansCl12Benchmark::InitializeData() {}
 
-void KmeansCl12Benchmark::Run() { Clustering(); }
+void KmeansCl12Benchmark::Run() { 
+  Clustering(); 
+  cpu_gpu_logger_->Summarize();
+}
 
 void KmeansCl12Benchmark::Cleanup() {
   KmeansBenchmark::Cleanup();

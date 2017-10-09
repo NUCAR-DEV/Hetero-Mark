@@ -61,6 +61,7 @@ void KmeansHcBenchmark::UpdateMembership(unsigned num_clusters) {
 
   hc::extent<1> ex(num_points_);
 
+  cpu_gpu_logger_->GPUOn();
   parallel_for_each(ex, [=](hc::index<1> i)[[hc]] {
     float min_dist = FLT_MAX;
     int index = 0;
@@ -80,7 +81,9 @@ void KmeansHcBenchmark::UpdateMembership(unsigned num_clusters) {
     av_membership[i] = index;
   });
   av_membership.synchronize();
+  cpu_gpu_logger_->GPUOff();
 
+  cpu_gpu_logger_->CPUOn();
   delta_ = 0;
   for (uint32_t i = 0; i < num_points_; i++) {
     if (new_membership[i] != membership_[i]) {
@@ -88,6 +91,7 @@ void KmeansHcBenchmark::UpdateMembership(unsigned num_clusters) {
       membership_[i] = new_membership[i];
     }
   }
+  cpu_gpu_logger_->CPUOff();
 
   delete[] new_membership;
 }
@@ -140,6 +144,9 @@ void KmeansHcBenchmark::Clustering() {
   delete[] membership_;
 }
 
-void KmeansHcBenchmark::Run() { Clustering(); }
+void KmeansHcBenchmark::Run() { 
+  Clustering(); 
+  cpu_gpu_logger_->Summarize();
+}
 
 void KmeansHcBenchmark::Cleanup() { KmeansBenchmark::Cleanup(); }

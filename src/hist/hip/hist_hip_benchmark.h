@@ -49,6 +49,7 @@ class HistHipBenchmark : public HistBenchmark {
   uint32_t *d_histogram_;
 
  public:
+  HistHipBenchmark() : HistBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

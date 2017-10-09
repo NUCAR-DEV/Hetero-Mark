@@ -53,6 +53,7 @@ class KmeansCudaBenchmark : public KmeansBenchmark {
   void UpdateMembership(unsigned num_clusters);
 
  public:
+  KmeansCudaBenchmark() : KMeansBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

@@ -184,6 +184,7 @@ void KmeansBenchmark::UpdateMembershipCpu(unsigned num_clusters) {
 }
 
 void KmeansBenchmark::UpdateClusterCentroids(unsigned num_clusters) {
+  cpu_gpu_logger_->CPUOn();
   // Allocate space for and initialize new_centers_len and new_centers
   int *member_count = new int[num_clusters]();
 
@@ -210,6 +211,7 @@ void KmeansBenchmark::UpdateClusterCentroids(unsigned num_clusters) {
   }
 
   delete[] member_count;
+  cpu_gpu_logger_->CPUOff();
 }
 
 void KmeansBenchmark::InitializeClusters(unsigned num_clusters) {
@@ -226,6 +228,8 @@ void KmeansBenchmark::InitializeMembership() {
 }
 
 float KmeansBenchmark::CalculateRMSE() {
+
+  cpu_gpu_logger_->CPUOn();
   float mean_square_error = 0;
   for (unsigned i = 0; i < num_points_; i++) {
     float distance_square = 0;
@@ -238,7 +242,9 @@ float KmeansBenchmark::CalculateRMSE() {
     mean_square_error += distance_square;
   }
   mean_square_error /= num_points_;
-  return sqrt(mean_square_error);
+  mean_square_error = sqrt(mean_square_error);
+  cpu_gpu_logger_->CPUOff();
+  return mean_square_error;
 }
 
 void KmeansBenchmark::Summarize() {}

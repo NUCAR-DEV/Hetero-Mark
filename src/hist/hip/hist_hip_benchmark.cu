@@ -89,10 +89,15 @@ void HistHipBenchmark::Run() {
   hipMemcpy(d_pixels_, pixels_, num_pixel_ * sizeof(uint32_t),
             hipMemcpyHostToDevice);
   hipMemset(d_histogram_, 0, num_color_ * sizeof(uint32_t));
+
+  cpu_gpu_logger_->GPUOn();
   hipLaunchKernel(HIP_KERNEL_NAME(Histogram), dim3(8192 / 64), dim3(64), 0, 0,
                   d_pixels_, d_histogram_, num_color_, num_pixel_);
+  cpu_gpu_logger_->GPUOff();
+
   hipMemcpy(histogram_, d_histogram_, num_color_ * sizeof(uint32_t),
             hipMemcpyDeviceToHost);
+  cpu_gpu_logger_->Summarize();
 }
 
 void HistHipBenchmark::Cleanup() {

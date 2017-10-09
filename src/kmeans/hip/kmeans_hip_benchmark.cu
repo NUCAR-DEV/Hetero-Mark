@@ -135,9 +135,11 @@ void KmeansHipBenchmark::TransposeFeatures() {
   dim3 block_size(64);
   dim3 grid_size((num_points_ + block_size.x - 1) / block_size.x);
 
+  cpu_gpu_logger_->GPUOff();
   hipLaunchKernel(HIP_KERNEL_NAME(kmeans_swap_hip), dim3(grid_size),
                   dim3(block_size), 0, 0, device_features_,
                   device_features_swap_, num_points_, num_features_);
+  cpu_gpu_logger_->GPUOff();
 }
 
 void KmeansHipBenchmark::KmeansClustering(unsigned num_clusters) {
@@ -175,14 +177,17 @@ void KmeansHipBenchmark::UpdateMembership(unsigned num_clusters) {
   int size = 0;
   int offset = 0;
 
+  cpu_gpu_logger_->GPUOn();
   hipLaunchKernel(HIP_KERNEL_NAME(kmeans_compute_hip), dim3(grid_size),
                   dim3(block_size), 0, 0, device_features_swap_,
                   device_clusters_, device_membership_, num_points_,
                   num_clusters_, num_features_, offset, size);
+  cpu_gpu_logger_->GPUOn();
 
   hipMemcpy(new_membership, device_membership_, num_points_ * sizeof(int),
             hipMemcpyDeviceToHost);
 
+  cpu_gpu_logger_->CPUOn();
   delta_ = 0.0f;
   for (unsigned int i = 0; i < num_points_; i++) {
     /* printf("number %d, merbership %d\n", i, new_membership[i]); */
@@ -191,9 +196,13 @@ void KmeansHipBenchmark::UpdateMembership(unsigned num_clusters) {
       membership_[i] = new_membership[i];
     }
   }
+  cpu_gpu_logger_->CPUOff();
 }
 
-void KmeansHipBenchmark::Run() { Clustering(); }
+void KmeansHipBenchmark::Run() { 
+  Clustering(); 
+  cpu_gpu_logger_->CPUOff();
+}
 
 void KmeansHipBenchmark::Cleanup() {
   hipFree(device_features_);
