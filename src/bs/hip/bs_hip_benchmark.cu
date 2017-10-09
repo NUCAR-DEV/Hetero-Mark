@@ -182,7 +182,7 @@ bool BsHipBenchmark::IsGpuCompleted() {
   hipError_t ret = hipStreamQuery(stream_);
   if (ret == hipSuccess) {
     cpu_gpu_logger_->GPUOff();
-    return true
+    return true;
   };
   return false;
 }

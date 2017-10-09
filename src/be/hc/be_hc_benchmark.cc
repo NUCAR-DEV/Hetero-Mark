@@ -70,9 +70,7 @@ void BeHcBenchmark::CollaborativeRun() {
   std::thread gpuThread(&BeHcBenchmark::GPUThread, this);
 
   // Initialize background
-  timer_->Start();
   frame = nextFrame();
-  timer_->End({"Decoding"});
   for (int i = 0; i < num_pixels; i++) {
     background_[i] = static_cast<float>(frame[i]);
   }
@@ -184,7 +182,6 @@ void BeHcBenchmark::NormalRun() {
     }
 
     delete[] frame;
-    timer_->End({"Decoding"});
     if (!frame) {
       break;
     }
