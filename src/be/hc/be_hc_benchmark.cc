@@ -182,6 +182,7 @@ void BeHcBenchmark::NormalRun() {
     }
 
     delete[] frame;
+    frame = nextFrame();
     if (!frame) {
       break;
     }

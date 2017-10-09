@@ -201,7 +201,7 @@ void KmeansHipBenchmark::UpdateMembership(unsigned num_clusters) {
 
 void KmeansHipBenchmark::Run() { 
   Clustering(); 
-  cpu_gpu_logger_->CPUOff();
+  cpu_gpu_logger_->Summarize();
 }
 
 void KmeansHipBenchmark::Cleanup() {
