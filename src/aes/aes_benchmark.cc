@@ -222,6 +222,8 @@ void AesBenchmark::MixColumnsOneWord(uint8_t *word) {
 }
 
 void AesBenchmark::ExpandKey() {
+  cpu_gpu_logger_->CPUOn();
+
   for (int i = 0; i < kKeyLengthInWords; i++) {
     expanded_key_[i] = BytesToWord(key_ + 4 * i);
   }
@@ -240,6 +242,8 @@ void AesBenchmark::ExpandKey() {
     }
     expanded_key_[i] = expanded_key_[i - kKeyLengthInWords] ^ temp;
   }
+  
+  cpu_gpu_logger_->CPUOff();
 }
 
 void AesBenchmark::WordToBytes(uint32_t word, uint8_t *bytes) {

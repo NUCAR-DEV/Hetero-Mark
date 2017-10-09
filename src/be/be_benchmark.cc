@@ -69,13 +69,16 @@ void BeBenchmark::Initialize() {
 
 uint8_t *BeBenchmark::nextFrame() {
   cv::Mat image;
+  cpu_gpu_logger_->CPUOn();
   if (video_.read(image)) {
     // printf("Image type %d, dims %d, rows %d, cols %d\n",
     //     image.type(), image.dims, image.rows, image.cols);
     uint8_t *buffer = new uint8_t[width_ * height_ * channel_];
     memcpy(buffer, image.data, width_ * height_ * channel_);
+    cpu_gpu_logger_->CPUOff();
     return buffer;
   } else {
+    cpu_gpu_logger_->CPUOff();
     return NULL;
   }
 }

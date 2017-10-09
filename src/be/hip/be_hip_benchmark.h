@@ -65,6 +65,7 @@ class BeHipBenchmark : public BeBenchmark {
   void ExtractAndEncode(uint8_t *frame);
 
  public:
+  BeHipBenchmark() : BeBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Summarize() override;

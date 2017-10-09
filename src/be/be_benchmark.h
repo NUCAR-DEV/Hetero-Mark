@@ -76,6 +76,7 @@ class BeBenchmark : public Benchmark {
   void Match();
 
  public:
+  BeBenchmark() : Benchmark() {}
   void Initialize() override;
   void Run() override{};
   void Verify() override;

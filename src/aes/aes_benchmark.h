@@ -137,7 +137,7 @@ class AesBenchmark : public Benchmark {
       0x74, 0xe8, 0xcb, 0x8d};
 
  public:
-  AesBenchmark() {}
+  AesBenchmark() : Benchmark() {}
   virtual ~AesBenchmark() {}
 
   void Initialize() override;

@@ -43,6 +43,7 @@
 
 #include <memory>
 #include <iostream>
+#include <mutex>
 
 #include "timer.h"
 #include "timer_impl.h"
@@ -51,6 +52,8 @@ class CPUGPUActivityLogger {
   std::unique_ptr<Timer> timer_;
   double prev_time_;
   bool first_run_ = true;
+
+  std::mutex mutex;
 
   double cpu_ = 0.0;
   double gpu_ = 0.0;
@@ -93,29 +96,36 @@ class CPUGPUActivityLogger {
   }
 
   void CPUOn() {
+    std::lock_guard<std::mutex> lock(mutex);
     AddTime();
     cpu_instance_++;
   }
 
   void CPUOff() {
+    std::lock_guard<std::mutex> lock(mutex);
     AddTime();
-    cpu_instance_--;
+    if (cpu_instance_ > 0)
+      cpu_instance_--;
   }
   
   void GPUOn() {
+    std::lock_guard<std::mutex> lock(mutex);
     AddTime();
     gpu_instance_++;
   }
 
   void GPUOff() {
+    std::lock_guard<std::mutex> lock(mutex);
     AddTime();
-    gpu_instance_--;
+    if (gpu_instance_ > 0)
+      gpu_instance_--;
   }
 
   void Summarize() {
+    std::lock_guard<std::mutex> lock(mutex);
     std::cerr << "CPU: " << cpu_ 
               << ", GPU: " << gpu_ 
-              << ", both:" << both_
+              << ", both: " << both_
               << "\n";
   }
 };

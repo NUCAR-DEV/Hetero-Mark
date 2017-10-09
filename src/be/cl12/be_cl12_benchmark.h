@@ -71,7 +71,7 @@ class BeCl12Benchmark : public BeBenchmark, public ClBenchmark {
   void ExtractAndEncode(uint8_t *frame);
 
  public:
-  BeCl12Benchmark() {}
+  BeCl12Benchmark() : BeBenchmark() {}
   ~BeCl12Benchmark() {}
 
   void Initialize() override;

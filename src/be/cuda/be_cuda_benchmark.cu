@@ -60,6 +60,7 @@ void BeCudaBenchmark::Run() {
   } else {
     NormalRun();
   }
+  cpu_gpu_logger_->Summarize();
 }
 
 __global__ void BackgroundExtraction(uint8_t *frame, float *bg, uint8_t *fg,
@@ -153,8 +154,10 @@ void BeCudaBenchmark::ExtractAndEncode(uint8_t *frame) {
   dim3 block_size(64);
   dim3 grid_size((num_pixels * channel_ + block_size.x - 1) / block_size.x);
 
+  cpu_gpu_logger_->GPUOn();
   BackgroundExtraction<<<grid_size, block_size, 0, stream_>>>(
       d_frame_, d_bg_, d_fg_, width_, height_, channel_, threshold_, alpha_);
+  cpu_gpu_logger_->GPUOff();
 
   cudaMemcpyAsync(foreground_.data(), d_fg_,
                   num_pixels * channel_ * sizeof(uint8_t),
@@ -162,9 +165,11 @@ void BeCudaBenchmark::ExtractAndEncode(uint8_t *frame) {
   cudaStreamSynchronize(stream_);
   delete[] frame;
   if (generate_output_) {
+    cpu_gpu_logger_->CPUOn();
     cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground_.data(),
                          cv::Mat::AUTO_STEP);
     video_writer_ << output_frame;
+    cpu_gpu_logger_->CPUOff();
   }
 }
 
@@ -203,15 +208,20 @@ void BeCudaBenchmark::NormalRun() {
 
     cudaMemcpy(d_frame, frame, num_pixels * channel_ * sizeof(uint8_t),
                cudaMemcpyHostToDevice);
+
+    cpu_gpu_logger_->GPUOn();
     BackgroundExtraction<<<grid_size, block_size>>>(
         d_frame, d_bg_, d_fg_, width_, height_, channel_, threshold_, alpha_);
+    cpu_gpu_logger_->GPUOff();
 
     cudaMemcpy(foreground_.data(), d_fg_,
                num_pixels * channel_ * sizeof(uint8_t), cudaMemcpyDeviceToHost);
     if (generate_output_) {
+      cpu_gpu_logger_->CPUOn();
       cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3,
                            foreground_.data(), cv::Mat::AUTO_STEP);
       video_writer_ << output_frame;
+      cpu_gpu_logger_->CPUOff();
     }
 
     delete[] frame;

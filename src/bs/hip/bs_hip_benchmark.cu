@@ -155,6 +155,7 @@ void BsHipBenchmark::Run() {
       dim3 block_size(64);
       dim3 grid_size((section_tiles * tile_size_) / 64.00);
 
+      cpu_gpu_logger_->GPUOn();
       hipLaunchKernel(HIP_KERNEL_NAME(bs_hip), dim3(grid_size),
                       dim3(block_size), 0, stream_, d_rand_array_ + offset,
                       d_call_price_ + offset, d_put_price_ + offset);
@@ -169,6 +170,7 @@ void BsHipBenchmark::Run() {
   }
 
   hipDeviceSynchronize();
+  cpu_gpu_logger_->GPUOff();
 
   hipMemcpy(call_price_, d_call_price_,
             done_tiles_ * tile_size_ * sizeof(float), hipMemcpyDeviceToHost);
@@ -178,7 +180,10 @@ void BsHipBenchmark::Run() {
 
 bool BsHipBenchmark::IsGpuCompleted() {
   hipError_t ret = hipStreamQuery(stream_);
-  if (ret == hipSuccess) return true;
+  if (ret == hipSuccess) {
+    cpu_gpu_logger_->GPUOff();
+    return true
+  };
   return false;
 }
 

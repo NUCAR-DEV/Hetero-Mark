@@ -149,6 +149,8 @@ void AesHcBenchmark::Run() {
     std::cerr << "Memory type " << mem_type_ << " is not supported by AES HC\n";
     exit(-1);
   }
+
+  cpu_gpu_logger_->Summarize();
 }
 
 void AesHcBenchmark::AesArray() {
@@ -163,6 +165,7 @@ void AesHcBenchmark::AesArray() {
   int num_blocks = text_length_ / 16;
   hc::extent<1> ex(num_blocks);
   hc::tiled_extent<1> tiled_ex = ex.tile(64);
+  cpu_gpu_logger_->GPUOn();
   parallel_for_each(tiled_ex, [&](hc::index<1> index)[[hc]] {
     uint8_t state[16];
 
@@ -187,9 +190,9 @@ void AesHcBenchmark::AesArray() {
       array_cipher[index[0] * 16 + i] = state[i];
     }
   });
+  cpu_gpu_logger_->GPUOff();
 
   hc::copy(array_cipher, ciphertext_);
-
 }
 
 void AesHcBenchmark::AesArrayView() {
@@ -201,6 +204,7 @@ void AesHcBenchmark::AesArrayView() {
   int num_blocks = text_length_ / 16;
   hc::extent<1> ex(num_blocks);
   hc::tiled_extent<1> tiled_ex = ex.tile(64);
+  cpu_gpu_logger_->GPUOn();
   parallel_for_each(tiled_ex, [=](hc::index<1> index)[[hc]] {
     uint8_t state[16];
 
@@ -227,4 +231,5 @@ void AesHcBenchmark::AesArrayView() {
   });
 
   av_cipher.synchronize();
+  cpu_gpu_logger_->GPUOff();
 }

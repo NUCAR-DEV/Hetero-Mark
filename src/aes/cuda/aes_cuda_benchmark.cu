@@ -182,9 +182,12 @@ void AesCudaBenchmark::Run() {
   dim3 grid_size(static_cast<size_t>(num_blocks / 64.00));
   dim3 block_size(64);
 
+  cpu_gpu_logger_->GPUOn();
   aes_cuda<<<grid_size, block_size>>>(d_ciphertext_, d_key_, d_s_);
+  cpu_gpu_logger_->GPUOff();
 
   cudaMemcpy(ciphertext_, d_ciphertext_, text_length_, cudaMemcpyDeviceToHost);
+  cpu_gpu_logger_->Summarize();
 }
 
 void AesCudaBenchmark::Cleanup() {

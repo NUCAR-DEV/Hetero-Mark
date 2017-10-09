@@ -102,6 +102,7 @@ void AesCl12Benchmark::Run() {
   CopyDataToDevice();
   RunKernel();
   CopyDataBackFromDevice();
+  cpu_gpu_logger_->Summarize();
 }
 
 void AesCl12Benchmark::CopyDataToDevice() {
@@ -129,11 +130,13 @@ void AesCl12Benchmark::RunKernel() {
   ret = clSetKernelArg(kernel_, 1, sizeof(cl_mem), &dev_key_);
   checkOpenCLErrors(ret, "Set key as kernel argument");
 
+  cpu_gpu_logger_->GPUOn();
   ret = clEnqueueNDRangeKernel(cmd_queue_, kernel_, 1, NULL, global_dimensions,
                                local_dimensions, 0, NULL, NULL);
   checkOpenCLErrors(ret, "Launch kernel");
 
   clFinish(cmd_queue_);
+  cpu_gpu_logger_->GPUOff();
 }
 
 void AesCl12Benchmark::CopyDataBackFromDevice() {

@@ -68,6 +68,7 @@ class BeCudaBenchmark : public BeBenchmark {
   cudaStream_t stream_;
 
  public:
+  BeCudaBenchmark() : BeBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Summarize() override;

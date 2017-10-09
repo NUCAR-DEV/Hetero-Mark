@@ -184,6 +184,7 @@ void BsCl12Benchmark::Run() {
       checkOpenCLErrors(err, "Set kernel argument 3\n");
       
       // Execute the OpenCL kernel on the list
+      cpu_gpu_logger_->GPUOn();
       err = clEnqueueNDRangeKernel(cmd_queue_, bs_kernel_, CL_TRUE, NULL,
 				   globalThreads, localThreads, 0, NULL, &event_);
       checkOpenCLErrors(err, "Enqueue ND Range.\n");
@@ -199,6 +200,8 @@ void BsCl12Benchmark::Run() {
     }
   }
 
+  clFinish(cmd_queue_);
+  cpu_gpu_logger_->GPUOff();
 
   err = clEnqueueReadBuffer(cmd_queue_, d_call_price_, CL_TRUE, 0,
 			    done_tiles_ * tile_size_ * sizeof(float),
@@ -213,6 +216,8 @@ void BsCl12Benchmark::Run() {
   checkOpenCLErrors(err, "Copy data back\n");
 
   clFinish(cmd_queue_);
+
+  cpu_gpu_logger_->Summarize();
 }
 
 bool BsCl12Benchmark::IsGpuCompleted() {
@@ -222,7 +227,10 @@ bool BsCl12Benchmark::IsGpuCompleted() {
   err = clGetEventInfo(event_, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), (void*)&info, NULL);
   checkOpenCLErrors(err, "Event info\n");
   
-  if (info == CL_COMPLETE) return true;
+  if (info == CL_COMPLETE) {
+    cpu_gpu_logger_->GPUOff();
+    return true;
+  };
   return false;
 }
 
