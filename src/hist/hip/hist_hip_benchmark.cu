@@ -93,6 +93,7 @@ void HistHipBenchmark::Run() {
   cpu_gpu_logger_->GPUOn();
   hipLaunchKernel(HIP_KERNEL_NAME(Histogram), dim3(8192 / 64), dim3(64), 0, 0,
                   d_pixels_, d_histogram_, num_color_, num_pixel_);
+  hipDeviceSynchronize();
   cpu_gpu_logger_->GPUOff();
 
   hipMemcpy(histogram_, d_histogram_, num_color_ * sizeof(uint32_t),
