@@ -136,9 +136,6 @@ void FirHipBenchmark::RunMemManager() {
     hipLaunchKernel(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
                     0, 0, input_buffer_, output_buffer_, coeff_buffer_,
                     history_buffer_, num_tap_, num_data_per_block_);
-    hipDeviceSynchronize();
-    cpu_gpu_logger_->GPUOff();
-
     dmem_output->DeviceToHost();
 
     for (uint32_t i = 0; i < num_tap_; i++) {
@@ -151,6 +148,8 @@ void FirHipBenchmark::RunMemManager() {
     dmem_input->Free();
     dmem_output->Free();
   }
+  hipDeviceSynchronize();
+  cpu_gpu_logger_->GPUOff();
   cpu_gpu_logger_->Summarize();
 }
 
