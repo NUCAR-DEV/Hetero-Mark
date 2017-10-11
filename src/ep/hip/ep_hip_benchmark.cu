@@ -139,6 +139,7 @@ void EpHipBenchmark::EvaluateGpu(std::vector<Creature> *island) {
   hipLaunchKernel(HIP_KERNEL_NAME(Evaluate_Kernel), dim3(grid_size),
                   dim3(block_size), 0, 0, d_island_, d_fitness_func_,
                   population_ / 2, kNumVariables);
+  hipDeviceSynchronize();
   cpu_gpu_logger_->GPUOff();
   hipMemcpy(island->data(), d_island_, population_ / 2 * sizeof(Creature),
             hipMemcpyDeviceToHost);
@@ -162,6 +163,7 @@ void EpHipBenchmark::MutateGpu(std::vector<Creature> *island) {
   hipLaunchKernel(HIP_KERNEL_NAME(Mutate_Kernel), dim3(grid_size),
                   dim3(block_size), 0, 0, d_island_, population_ / 2,
                   kNumVariables);
+  hipDeviceSynchronize();
   cpu_gpu_logger_->GPUOff();
   hipMemcpy(island->data(), d_island_, population_ / 2 * sizeof(Creature),
             hipMemcpyDeviceToHost);

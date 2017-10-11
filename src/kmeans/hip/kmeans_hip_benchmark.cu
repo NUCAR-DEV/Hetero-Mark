@@ -139,6 +139,7 @@ void KmeansHipBenchmark::TransposeFeatures() {
   hipLaunchKernel(HIP_KERNEL_NAME(kmeans_swap_hip), dim3(grid_size),
                   dim3(block_size), 0, 0, device_features_,
                   device_features_swap_, num_points_, num_features_);
+  hipDeviceSynchronize();
   cpu_gpu_logger_->GPUOff();
 }
 
@@ -182,6 +183,7 @@ void KmeansHipBenchmark::UpdateMembership(unsigned num_clusters) {
                   dim3(block_size), 0, 0, device_features_swap_,
                   device_clusters_, device_membership_, num_points_,
                   num_clusters_, num_features_, offset, size);
+  hipDeviceSynchronize();
   cpu_gpu_logger_->GPUOff();
 
   hipMemcpy(new_membership, device_membership_, num_points_ * sizeof(int),

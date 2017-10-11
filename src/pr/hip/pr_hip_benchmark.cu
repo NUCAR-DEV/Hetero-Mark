@@ -104,6 +104,7 @@ void PrHipBenchmark::Run() {
                       device_mtx_1);
     }
   }
+  hipDeviceSynchronize();
   cpu_gpu_logger_->GPUOff();
 
   if (i % 2 != 0) {
