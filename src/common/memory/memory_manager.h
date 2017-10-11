@@ -1,32 +1,31 @@
 #ifndef SRC_COMMON_MEMORY_MANAGER_
 #define SRC_COMMON_MEMORY_MANAGER_
 
-template<typename T>
 class Memory {
  protected:
-  T *h_buf_;
-  size_t count_;
+  void *h_buf_;
+  size_t byte_size_;
 
  public:
-  Memory(T *h_buf, size_t count)
-      : h_buf_(h_buf), count_(count){};
+  Memory(void *h_buf, size_t byte_size)
+      : h_buf_(h_buf), byte_size_(byte_size){};
 
   virtual ~Memory() {};
 
   /**
-   * GetCount returns the number of elemnets in the 
+   * GetByteSize returns the number of bytes occupied by the memory
    */
-  virtual size_t GetCount() { return count_; };
+  virtual size_t GetByteSize() { return byte_size_; };
 
   /**
    * GetHostPtr returns the pointer to the host memory
    */
-  virtual T *GetHostPtr() { return h_buf_; };
+  virtual void *GetHostPtr() { return h_buf_; };
 
   /**
    * GetDevicePtr returns the native reprentation of a device memory
    */
-  virtual T *GetDevicePtr() = 0;
+  virtual void *GetDevicePtr() = 0;
 
   /**
    * HostToDevice copies data from the host to the device
@@ -43,5 +42,11 @@ class Memory {
    */
   virtual void Free() = 0;
 };
+
+class MemoryManager{
+ public:
+   virtual std::unique_ptr<Memory> Shadow(void *buf, size_t byte_size) = 0;
+};
+
 
 #endif  // SRC_COMMON_MEMORY_MANAGER_

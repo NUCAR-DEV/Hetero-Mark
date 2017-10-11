@@ -1,11 +1,11 @@
 #ifndef SRC_COMMON_MEMORY_ARRAY_MEMORY_MANAGER_
 #define SRC_COMMON_MEMORY_ARRAY_MEMORY_MANAGER_
 
+#if COMPILE_HCC
+
 #include <hcc/hc.hpp>
 
 #include "src/common/memory/memory_manager.h"
-
-#if COMPILE_HCC
 
 template <typename T, int N>
 class ArrayMemory : public Memory<T> {
@@ -20,8 +20,6 @@ class ArrayMemory : public Memory<T> {
   T *GetDevicePtr() override {
     return d_array_.accelerator_pointer();
   }
-
-  hc::array<T, N> GetNative() { return d_array_; };
 
   void HostToDevice() override { 
     hc::copy(this->h_buf_, this->h_buf_ + this->count_, d_array_);

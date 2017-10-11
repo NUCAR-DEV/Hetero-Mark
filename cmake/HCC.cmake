@@ -10,6 +10,12 @@ other benchmarks \
 	include_directories("/opt/rocm/include/hcc")
 	include_directories("/opt/rocm/include/")
 
+  find_library (HSA_LIBRARY 
+    NAMES hsa-runtime64
+    HINTS /opt/rocm/lib/
+  )
+  message(${HSA_LIBRARY})
+
 	# Thank for HCC-Example-Application for the following solution
 	execute_process(COMMAND hcc-config  --cxxflags
 		OUTPUT_VARIABLE KALMAR_COMPILE_FLAGS)

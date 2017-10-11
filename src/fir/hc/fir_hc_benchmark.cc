@@ -45,8 +45,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "src/common/memory/array_memory_manager.h"
-#include "src/common/memory/array_view_memory_manager.h"
+#include "src/common/memory/hsa_svm_memory_manager.h"
 
 void FirHcBenchmark::Initialize() {
   FirBenchmark::Initialize();
@@ -56,6 +55,15 @@ void FirHcBenchmark::Initialize() {
   for (unsigned int i = 0; i < num_tap_; i++) {
     history_[i] = 0.0;
   }
+
+  if (mem_type_ == "hsa") {
+    mem_manager_.reset(new HsaMemoryManager());
+  } else if (mem_type_ == "array") {
+  } else if (mem_type_ == "array_view") {
+  }else {
+    std::cerr << "Memory type " << mem_type_ << " is not supported.\n";
+    exit(-1);
+  }
 }
 
 void FirHcBenchmark::Run() {
@@ -64,10 +72,61 @@ void FirHcBenchmark::Run() {
   } else if (mem_type_ == "array") {
     FirArray();
   } else {
-    std::cerr << "Memory type " << mem_type_ << " is not supported by FIR HC\n";
-    exit(-1);
+    FirMemoryManager();
   }
   cpu_gpu_logger_->Summarize();
+}
+
+void FirHcBenchmark::FirMemoryManager() {
+  uint32_t num_tap = num_tap_;
+  auto dmem_history = mem_manager_->Shadow(history_, num_tap_);
+  auto dmem_coeff = mem_manager_->Shadow(coeff_, num_tap_);
+  
+  float *dptr_history = static_cast<float *>(dmem_history->GetDevicePtr());
+  float *dptr_coeff = static_cast<float *>(dmem_coeff->GetDevicePtr());
+
+  for (uint32_t i = 0; i < num_tap_; i++) {
+    history_[i] = 0;
+  }
+
+  for (unsigned int i = 0; i < num_block_; i++) {
+    auto dmem_input = mem_manager_->Shadow(
+        input_ + i * num_data_per_block_, num_data_per_block_);
+    auto dmem_output = mem_manager_->Shadow(
+        output_ + i * num_data_per_block_, num_data_per_block_);
+
+    float *dptr_input= static_cast<float *>(dmem_input->GetDevicePtr());
+    float *dptr_output = static_cast<float *>(dmem_output->GetDevicePtr());
+
+    dmem_input->HostToDevice();
+    dmem_history->HostToDevice();
+
+    hc::extent<1> ex(num_data_per_block_);
+    cpu_gpu_logger_->GPUOn();
+    auto fut = hc::parallel_for_each(ex, [=](hc::index<1> j)[[hc]] {
+      float sum = 0;
+      for (uint32_t k = 0; k < num_tap; k++) {
+        if (j[0] >= k) {
+          sum = sum + dptr_coeff[k] * dptr_input[j[0] - k];
+        } else {
+          sum = sum + dptr_coeff[k] * dptr_history[num_tap - (k - j[0])];
+        }
+      }
+      dptr_output[j[0]] = sum;
+    });
+    fut.wait();
+    cpu_gpu_logger_->GPUOff();
+
+    dmem_output->DeviceToHost();
+
+    for (uint32_t j = 0; j < num_tap_; j++) {
+      history_[j] = input_[(i + 1) * num_data_per_block_ - num_tap_ + j];
+    }
+
+
+    dmem_input->Free();
+    dmem_output->Free();
+  }
 }
 
 void FirHcBenchmark::FirArrayView() {

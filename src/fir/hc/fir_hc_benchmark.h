@@ -47,10 +47,13 @@
 
 class FirHcBenchmark : public FirBenchmark {
  private:
+
+  std::unique_ptr<MemoryManager> mem_manager_;
   float *history_ = nullptr;
   
   void FirArrayView();
   void FirArray();
+  void FirMemoryManager();
 
  public:
   FirHcBenchmark() : FirBenchmark() {}
