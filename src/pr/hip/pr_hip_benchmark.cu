@@ -104,8 +104,6 @@ void PrHipBenchmark::Run() {
                       device_mtx_1);
     }
   }
-  hipDeviceSynchronize();
-  cpu_gpu_logger_->GPUOff();
 
   if (i % 2 != 0) {
     hipMemcpy(page_rank_, device_mtx_1, num_nodes_ * sizeof(float),
@@ -114,6 +112,7 @@ void PrHipBenchmark::Run() {
     hipMemcpy(page_rank_, device_mtx_2, num_nodes_ * sizeof(float),
               hipMemcpyDeviceToHost);
   }
+  cpu_gpu_logger_->GPUOff();
   cpu_gpu_logger_->Summarize();
 }
 

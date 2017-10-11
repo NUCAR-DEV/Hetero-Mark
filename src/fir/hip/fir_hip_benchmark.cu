@@ -110,10 +110,9 @@ void FirHipBenchmark::Run() {
     hipLaunchKernel(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
                     0, 0, input_buffer_, output_buffer_, coeff_buffer_,
                     history_buffer_, num_tap_, num_data_per_block_);
-    hipDeviceSynchronize();
-    cpu_gpu_logger_->GPUOff();
     hipMemcpy(output_ + count * num_data_per_block_, output_buffer_,
               num_data_per_block_ * sizeof(float), hipMemcpyDeviceToHost);
+    cpu_gpu_logger_->GPUOff();
 
     for (uint32_t i = 0; i < num_tap_; i++) {
       history_[i] = input_[count * num_data_per_block_ + num_data_per_block_ -

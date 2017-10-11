@@ -158,11 +158,10 @@ void BeHipBenchmark::ExtractAndEncode(uint8_t *frame) {
   hipLaunchKernel(HIP_KERNEL_NAME(BackgroundExtraction), dim3(grid_size),
                   dim3(block_size), 0, 0, d_frame_, d_bg_, d_fg_, width_,
                   height_, channel_, threshold_, alpha_);
-  hipDeviceSynchronize();
-  cpu_gpu_logger_->GPUOff();
 
   hipMemcpy(foreground_.data(), d_fg_, num_pixels * channel_ * sizeof(uint8_t),
             hipMemcpyDeviceToHost);
+  cpu_gpu_logger_->GPUOff();
   if (generate_output_) {
     cpu_gpu_logger_->CPUOn();
     cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground_.data(),
@@ -212,11 +211,10 @@ void BeHipBenchmark::NormalRun() {
     hipLaunchKernel(HIP_KERNEL_NAME(BackgroundExtraction), dim3(grid_size),
                     dim3(block_size), 0, 0, d_frame, d_bg_, d_fg_, width_,
                     height_, channel_, threshold_, alpha_);
-    hipDeviceSynchronize();
-    cpu_gpu_logger_->GPUOff();
 
     hipMemcpy(foreground_.data(), d_fg_,
               num_pixels * channel_ * sizeof(uint8_t), hipMemcpyDeviceToHost);
+    cpu_gpu_logger_->GPUOff();
     if (generate_output_) {
       cpu_gpu_logger_->CPUOn();
       cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3,

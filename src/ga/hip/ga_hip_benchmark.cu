@@ -123,11 +123,10 @@ void GaHipBenchmark::CollaborativeRun() {
                     0, 0, d_target_, d_query_, d_batch_result_, length,
                     query_sequence_.size(), coarse_match_length_,
                     coarse_match_threshold_, current_position);
-    hipDeviceSynchronize();
-    cpu_gpu_logger_->GPUOff();
 
     hipMemcpy(batch_result, d_batch_result_, kBatchSize * sizeof(char),
               hipMemcpyDeviceToHost);
+    cpu_gpu_logger_->GPUOff();
 
     for (uint32_t i = 0; i < length; i++) {
       if (batch_result[i] != 0) {
@@ -168,11 +167,10 @@ void GaHipBenchmark::NonCollaborativeRun() {
                     0, 0, d_target_, d_query_, d_batch_result_, length,
                     query_sequence_.size(), coarse_match_length_,
                     coarse_match_threshold_, current_position);
-    hipDeviceSynchronize();
-    cpu_gpu_logger_->GPUOff();
 
     hipMemcpy(coarse_match_result_ + current_position, d_batch_result_,
               kBatchSize * sizeof(char), hipMemcpyDeviceToHost);
+    cpu_gpu_logger_->GPUOff();
     current_position = end_position;
   }
 

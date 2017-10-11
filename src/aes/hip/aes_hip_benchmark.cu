@@ -188,10 +188,9 @@ void AesHipBenchmark::Run() {
   cpu_gpu_logger_->GPUOn();
   hipLaunchKernel(HIP_KERNEL_NAME(aes_hip), dim3(grid_size), dim3(block_size),
                   0, 0, d_ciphertext_, d_key_, d_s_);
-  hipDeviceSynchronize();
-  cpu_gpu_logger_->GPUOff();
-
   hipMemcpy(ciphertext_, d_ciphertext_, text_length_, hipMemcpyDeviceToHost);
+
+  cpu_gpu_logger_->GPUOff();
   cpu_gpu_logger_->Summarize();
 }
 
