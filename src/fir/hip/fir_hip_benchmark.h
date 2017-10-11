@@ -42,6 +42,7 @@
 #define SRC_FIR_HIP_FIR_HIP_BENCHMARK_H_
 
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/common/memory/memory_manager.h"
 #include "src/fir/fir_benchmark.h"
 
 class FirHipBenchmark : public FirBenchmark {
@@ -54,6 +55,11 @@ class FirHipBenchmark : public FirBenchmark {
 
   void InitializeData();
   void InitializeBuffers();
+
+  std::unique_ptr<MemoryManager> mem_manager_;
+
+  void HipRun();
+  void RunMemManager();
 
  public:
   FirHipBenchmark() : FirBenchmark() {}

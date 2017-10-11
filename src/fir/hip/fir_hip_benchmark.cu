@@ -46,6 +46,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "src/common/memory/hsa_svm_memory_manager.h"
+
 __global__ void fir_hip(hipLaunchParm lp, float *input, float *output,
                         float *coeff, float *history, uint32_t num_tap,
                         uint32_t num_data) {
@@ -68,35 +70,97 @@ void FirHipBenchmark::Initialize() {
   FirBenchmark::Initialize();
   InitializeBuffers();
   InitializeData();
+  mem_manager_.reset(new HsaMemoryManager());
 }
 
 void FirHipBenchmark::InitializeBuffers() {
   history_ = reinterpret_cast<float *>(malloc(num_tap_ * sizeof(float)));
-  hipMalloc(&input_buffer_, sizeof(float) * num_data_per_block_);
-  hipMalloc(&output_buffer_, sizeof(float) * num_data_per_block_);
-  hipMalloc(&coeff_buffer_, sizeof(float) * num_tap_);
-  hipMalloc(&history_buffer_, sizeof(float) * num_tap_);
+
+  if (mem_type_ != "hsa") {
+    hipMalloc(&input_buffer_, sizeof(float) * num_data_per_block_);
+    hipMalloc(&output_buffer_, sizeof(float) * num_data_per_block_);
+    hipMalloc(&coeff_buffer_, sizeof(float) * num_tap_);
+    hipMalloc(&history_buffer_, sizeof(float) * num_tap_);
+  } 
 }
 
 void FirHipBenchmark::InitializeData() {
-  hipMemcpy(coeff_buffer_, coeff_, num_tap_ * sizeof(float),
+  if (mem_type_ != "hsa") {
+    hipMemcpy(coeff_buffer_, coeff_, num_tap_ * sizeof(float),
             hipMemcpyHostToDevice);
 
-  for (unsigned i = 0; i < num_tap_; i++) {
-    history_[i] = 0.0;
-  }
-  hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
+    hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
             hipMemcpyHostToDevice);
+  }
 }
 
 void FirHipBenchmark::Run() {
+  if (mem_type_ == "hsa") {
+    RunMemManager();
+  } else {
+    HipRun();
+  }
+}
+
+void FirHipBenchmark::RunMemManager() {
   unsigned int count = 0;
 
   for (unsigned i = 0; i < num_tap_; i++) {
     history_[i] = 0.0;
   }
-  hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
-            hipMemcpyHostToDevice);
+
+  auto dmem_coeff = mem_manager_->Shadow(coeff_, num_tap_ * sizeof(float));
+  auto dmem_history = mem_manager_->Shadow(history_, num_tap_ * sizeof(float));
+
+  history_buffer_ = static_cast<float *>(dmem_history->GetDevicePtr());
+  coeff_buffer_ = static_cast<float *>(dmem_history->GetDevicePtr());
+
+  dim3 grid_size(num_data_per_block_ / 64);
+  dim3 block_size(64);
+
+  while (count < num_block_) {
+    auto dmem_input = mem_manager_->Shadow(
+        input_ + count * num_data_per_block_, 
+        num_data_per_block_ * sizeof(float));
+    auto dmem_output = mem_manager_->Shadow(
+        output_ + count * num_data_per_block_,
+        num_data_per_block_ * sizeof(float));
+
+    input_buffer_ = static_cast<float *>(dmem_input->GetDevicePtr());
+    output_buffer_ = static_cast<float *>(dmem_input->GetDevicePtr());
+
+    dmem_input->HostToDevice();
+    dmem_history->HostToDevice();
+
+    cpu_gpu_logger_->GPUOn();
+    hipLaunchKernel(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
+                    0, 0, input_buffer_, output_buffer_, coeff_buffer_,
+                    history_buffer_, num_tap_, num_data_per_block_);
+    hipDeviceSynchronize();
+    cpu_gpu_logger_->GPUOff();
+
+    dmem_output->DeviceToHost();
+
+    for (uint32_t i = 0; i < num_tap_; i++) {
+      history_[i] = input_[count * num_data_per_block_ + num_data_per_block_ -
+                           num_tap_ + i];
+    }
+
+    count++;
+
+    dmem_input->Free();
+    dmem_output->Free();
+  }
+  cpu_gpu_logger_->Summarize();
+}
+
+void FirHipBenchmark::HipRun() {
+  unsigned int count = 0;
+
+  for (unsigned i = 0; i < num_tap_; i++) {
+    history_[i] = 0.0;
+  }
+
 
   dim3 grid_size(num_data_per_block_ / 64);
   dim3 block_size(64);
@@ -122,6 +186,7 @@ void FirHipBenchmark::Run() {
     count++;
   }
   cpu_gpu_logger_->Summarize();
+
 }
 
 void FirHipBenchmark::Cleanup() {
