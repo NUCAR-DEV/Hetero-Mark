@@ -7,6 +7,7 @@ set(SUBDIRECTORIES
   be
   bs
   ep
+  fdeb
   fir
   ga
   hist
