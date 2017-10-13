@@ -138,14 +138,22 @@ void KnnBenchmark::Initialize() {
    }
  }
 
-void KnnBenchmark::KnnCPU(LatLong *latLong, float *d_distances, int num_records, float lat, float lng, std::atomic_int *worklist) {
-   CpuPartitioner p = cpu_partitioner_create(num_records,worklist); 
+void KnnBenchmark::KnnCPU(LatLong *latLong, float *d_distances, int num_records,int num_gpu_records, float lat, float lng, std::atomic_int *cpu_worklist, std::atomic_int *gpu_worklist) {
+   CpuPartitioner p = cpu_partitioner_create(num_records,cpu_worklist); 
   
    for(int tid = cpu_initializer(&p); cpu_more(&p); tid = cpu_increment(&p))
    {
     d_distances[tid] = (float)sqrt((lat - latLong[tid].lat)*(lat-latLong[tid].lat)+(lng-latLong[tid].lng)*(lng-latLong[tid].lng));
    }
    
+   CpuPartitioner thieves  = cpu_partitioner_create(num_gpu_records, gpu_worklist);
+
+    for(int tid = cpu_initializer(&thieves); cpu_more(&thieves); tid = cpu_increment(&thieves))
+   {
+    d_distances[tid] = (float)sqrt((lat - latLong[tid].lat)*(lat-latLong[tid].lat)+(lng-latLong[tid].lng)*(lng-latLong[tid].lng));
+   }
+
+ 
 }
 
 void KnnBenchmark::Verify() {
