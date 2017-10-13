@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Xiang Gong (xgong@ece.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,23 +37,36 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_CL_UTIL_CL_UTIL_H_
-#define SRC_COMMON_CL_UTIL_CL_UTIL_H_
+#ifndef SRC_BS_CL12_BS_CL12_BENCHMARK_H_
+#define SRC_BS_CL12_BS_CL12_BENCHMARK_H_
 
-#include "src/common/cl_util/cl_error.h"
-#include "src/common/cl_util/cl_file.h"
-#include "src/common/cl_util/cl_profiler.h"
-#include "src/common/cl_util/cl_runtime.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/cl_util/cl_benchmark.h"
+#include "src/bs/bs_benchmark.h"
 
-#ifndef clSVMFreeSafe
-#define clSVMFreeSafe(ctx, ptr) \
-  if (ptr) clSVMFree(ctx, ptr)
-#endif
 
-#define ENABLE_PROFILE 0
+class BsCl12Benchmark : public BsBenchmark, public ClBenchmark {
+ private:
+  float Phi(float x);
+  cl_mem d_rand_array_ = nullptr;
+  cl_mem d_call_price_ = nullptr;
+  cl_mem d_put_price_ = nullptr;
 
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clHelper::clProfileNDRangeKernel
-#endif
+  cl_event event_;  
+  bool IsGpuCompleted();
 
-#endif  // SRC_COMMON_CL_UTIL_CL_UTIL_H_
+  cl_kernel bs_kernel_;
+
+  void InitializeKernels();
+  void InitializeBuffers();
+  
+ public:
+
+  BsCl12Benchmark() {}
+  ~BsCl12Benchmark() {}
+  
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+};
+#endif  // SRC_BS_CL12_BS_CL12_BENCHMARK_H_

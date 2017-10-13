@@ -9,7 +9,6 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Xiang Gong (xgong@ece.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,23 +37,52 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_CL_UTIL_CL_UTIL_H_
-#define SRC_COMMON_CL_UTIL_CL_UTIL_H_
+#ifndef SRC_BE_CL12_BE_CL12_BENCHMARK_H_
+#define SRC_BE_CL12_BE_CL12_BENCHMARK_H_
 
-#include "src/common/cl_util/cl_error.h"
-#include "src/common/cl_util/cl_file.h"
-#include "src/common/cl_util/cl_profiler.h"
-#include "src/common/cl_util/cl_runtime.h"
+#include <condition_variable>
+#include <mutex>
+#include <queue>
+#include <thread>
+#include "src/common/cl_util/cl_benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
+#include "src/be/be_benchmark.h"
 
-#ifndef clSVMFreeSafe
-#define clSVMFreeSafe(ctx, ptr) \
-  if (ptr) clSVMFree(ctx, ptr)
-#endif
+  
+class BeCl12Benchmark : public BeBenchmark, public ClBenchmark {
+ private:
+  void NormalRun();
+  void CollaborativeRun();
 
-#define ENABLE_PROFILE 0
+  TimeMeasurement *timer_;
 
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clHelper::clProfileNDRangeKernel
-#endif
+  cl_kernel be_kernel_;
+  
+  cl_mem d_bg_;
+  cl_mem d_fg_;
+  cl_mem d_frame_;
 
-#endif  // SRC_COMMON_CL_UTIL_CL_UTIL_H_
+
+  
+  void InitializeKernels();
+  void InitializeBuffers();
+  
+  std::mutex queue_mutex_;
+  std::condition_variable queue_condition_variable_;
+  std::queue<uint8_t *> frame_queue_;
+  bool finished_;
+  void GPUThread();
+  void ExtractAndEncode(uint8_t *frame);
+  //cudaStream_t stream_; 
+ public:
+  BeCl12Benchmark() {}
+  ~BeCl12Benchmark() {}
+
+  void Initialize() override;
+  void Run() override;
+  void Cleanup() override;
+  void Summarize() override;
+  
+};
+
+#endif  // SRC_BE_CL12_BE_CL12_BENCHMARK_H_

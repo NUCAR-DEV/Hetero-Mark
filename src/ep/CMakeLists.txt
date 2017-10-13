@@ -1,5 +1,6 @@
 set( FOLDER_NAME ep )
 set( SUBDIRECTORIES 
+  cl12
   hc
   cuda
   hip
@@ -15,15 +16,22 @@ set( HEADER_FILES
 
 cmake_minimum_required( VERSION 2.6.0 )
 project( ${FOLDER_NAME} )
+find_package(OpenCV)
 
-add_library( ep ${SRC_FILES} ${HEADER_FILES} )
-if (COMPILE_HCC)
-  set_target_properties(${FOLDER_NAME} PROPERTIES
-      COMPILE_FLAGS ${COMPILER_FLAGS}
-      LINK_FLAGS ${LINKER_FLAGS})
-endif (COMPILE_HCC)
+if (OpenCV_FOUND)
 
+    include_directories("/usr/include/x86_64-linux-gnu")
+    add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES})
+    if (COMPILE_HCC)
+      set_target_properties(${FOLDER_NAME} PROPERTIES
+	COMPILE_FLAGS ${COMPILER_FLAGS}
+	LINK_FLAGS ${LINKER_FLAGS})
+    endif (COMPILE_HCC)
 
-foreach( subdir ${SUBDIRECTORIES} )
-    add_subdirectory( ${subdir} )
-endforeach( subdir )
+    foreach(subdir ${SUBDIRECTORIES})
+      add_subdirectory(${subdir})
+    endforeach(subdir)
+
+else (OpenCV_FOUND)
+  message("OpenCV is not found, skipping the EP benchmark")
+endif(OpenCV_FOUND)
