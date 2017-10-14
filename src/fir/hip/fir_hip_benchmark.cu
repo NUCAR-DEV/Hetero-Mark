@@ -70,7 +70,7 @@ void FirHipBenchmark::Initialize() {
   FirBenchmark::Initialize();
   InitializeBuffers();
   InitializeData();
-  mem_manager_.reset(new HsaMemoryManager());
+  // mem_manager_.reset(new HsaMemoryManager());
 }
 
 void FirHipBenchmark::InitializeBuffers() {

@@ -135,9 +135,9 @@ void EpCudaBenchmark::EvaluateGpu(std::vector<Creature> *island) {
   cpu_gpu_logger_->GPUOn();
   Evaluate_Kernel<<<grid_size, block_size>>>(d_island_, d_fitness_func_,
                                              population_ / 2, kNumVariables);
-  cpu_gpu_logger_->GPUOff();
   cudaMemcpy(island->data(), d_island_, population_ / 2 * sizeof(Creature),
              cudaMemcpyDeviceToHost);
+  cpu_gpu_logger_->GPUOff();
 }
 
 __global__ void Mutate_Kernel(Creature *creatures, uint32_t count,
@@ -157,9 +157,9 @@ void EpCudaBenchmark::MutateGpu(std::vector<Creature> *island) {
   cpu_gpu_logger_->GPUOn();
   Mutate_Kernel<<<grid_size, block_size>>>(d_island_, population_ / 2,
                                            kNumVariables);
-  cpu_gpu_logger_->GPUOff();
   cudaMemcpy(island->data(), d_island_, population_ / 2 * sizeof(Creature),
              cudaMemcpyDeviceToHost);
+  cpu_gpu_logger_->GPUOff();
 }
 
 void EpCudaBenchmark::Cleanup() {

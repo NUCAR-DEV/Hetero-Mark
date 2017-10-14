@@ -174,6 +174,7 @@ void BsCudaBenchmark::Run() {
              done_tiles_ * tile_size_ * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(put_price_, d_put_price_, done_tiles_ * tile_size_ * sizeof(float),
              cudaMemcpyDeviceToHost);
+  cpu_gpu_logger_->Summarize();
 }
 
 bool BsCudaBenchmark::IsGpuCompleted() {

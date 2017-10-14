@@ -1,7 +1,7 @@
 #ifndef SRC_COMMON_MEMORY_ARRAY_MEMORY_MANAGER_
 #define SRC_COMMON_MEMORY_ARRAY_MEMORY_MANAGER_
 
-// #if COMPILE_HSA
+#if COMPILE_HSA
 
 #include <hsa/hsa.h>
 
@@ -51,6 +51,6 @@ class HsaMemoryManager : public MemoryManager {
   }
 };
 
-// #endif  // COMPILE_HSA
+#endif  // COMPILE_HSA
 
 #endif  // SRC_COMMON_MEMORY_ARRAY_MEMORY_MANAGER_

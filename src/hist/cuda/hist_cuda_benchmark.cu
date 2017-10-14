@@ -87,9 +87,9 @@ void HistCudaBenchmark::Run() {
   cudaMemset(d_histogram_, 0, num_color_ * sizeof(uint32_t));
   cpu_gpu_logger_->GPUOn();
   Histogram<<<8192 / 64, 64>>>(d_pixels_, d_histogram_, num_color_, num_pixel_);
-  cpu_gpu_logger_->GPUOff();
   cudaMemcpy(histogram_, d_histogram_, num_color_ * sizeof(uint32_t),
              cudaMemcpyDeviceToHost);
+  cpu_gpu_logger_->GPUOff();
   cpu_gpu_logger_->Summarize();
 }
 

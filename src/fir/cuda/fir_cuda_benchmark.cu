@@ -108,9 +108,9 @@ void FirCudaBenchmark::Run() {
     fir_cuda<<<grid_size, block_size>>>(input_buffer_, output_buffer_,
                                         coeff_buffer_, history_buffer_,
                                         num_tap_, num_data_per_block_);
-    cpu_gpu_logger_->GPUOff();
     cudaMemcpy(output_ + count * num_data_per_block_, output_buffer_,
                num_data_per_block_ * sizeof(float), cudaMemcpyDeviceToHost);
+    cpu_gpu_logger_->GPUOff();
 
     for (uint32_t i = 0; i < num_tap_; i++) {
       history_[i] = input_[count * num_data_per_block_ + num_data_per_block_ -

@@ -136,6 +136,7 @@ void KmeansCudaBenchmark::TransposeFeatures() {
   cpu_gpu_logger_->GPUOn();
   kmeans_swap_cuda<<<grid_size, block_size>>>(
       device_features_, device_features_swap_, num_points_, num_features_);
+  cudaDeviceSynchronize();
   cpu_gpu_logger_->GPUOff();
 }
 
@@ -178,10 +179,10 @@ void KmeansCudaBenchmark::UpdateMembership(unsigned num_clusters) {
   kmeans_compute_cuda<<<grid_size, block_size>>>(
       device_features_swap_, device_clusters_, device_membership_, num_points_,
       num_clusters_, num_features_, offset, size);
-  cpu_gpu_logger_->GPUOff();
 
   cudaMemcpy(new_membership, device_membership_, num_points_ * sizeof(int),
              cudaMemcpyDeviceToHost);
+  cpu_gpu_logger_->GPUOff();
 
   cpu_gpu_logger_->CPUOn();
   delta_ = 0.0f;
