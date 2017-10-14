@@ -7,12 +7,14 @@ set(SUBDIRECTORIES
   be
   bs
   ep
+  fdeb
   fir
   ga
   hist
   kmeans
   pr
   knn
+  bst
 )
 
 foreach(subdir ${SUBDIRECTORIES})
