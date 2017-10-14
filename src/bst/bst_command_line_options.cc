@@ -9,6 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,62 +38,48 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_KNN_KNN_BENCHMARK_H_
-#define SRC_KNN_KNN_BENCHMARK_H_
+#include "src/bst/bst_command_line_options.h"
 
-#include <vector>
-#include <atomic>
-#include "src/common/benchmark/benchmark.h"
-#include "src/common/time_measurement/time_measurement.h"
+void BstCommandLineOptions::RegisterOptions() {
+  BenchmarkCommandLineOptions::RegisterOptions();
 
+  command_line_option_.SetBenchmarkName("BST Benchmark");
+  command_line_option_.SetDescription(
+      "This benchmark runs the Binary Insertion Tree Algorithm.");
 
+  command_line_option_.AddArgument("NumNodes", "integer", "200", "-n",
+                                   "--num-nodes",
+                                   "Number of nodes to be inserted");
 
-class LatLong{
-public:
-  float lat;
-  float lng;
-};
+  command_line_option_.AddArgument("InitialPosition", "integer", "10", "-i",
+                                   "--init-num-nodes",
+                                   "Number of initial nodes");
 
-class Record{
-public:
- char recString[53];
- float distance;
-};
+ 
+  command_line_option_.AddArgument("HostPercentage", "integer", "30", "-p",
+ 				   "--host-percentage",
+				   "Percentage of nodes to be processed by the host");
+}
 
-class KnnBenchmark : public Benchmark {
- protected:
-  /**
-   * The CPU code for running KNN
-   */
-  std::vector <Record> records_;
-  std::vector <LatLong> locations_;
-  std::atomic_int *worklist_;
-  std::atomic_int *gpu_worklist_;
-  std::atomic_int *cpu_worklist_;
-  LatLong *h_locations_ = nullptr;
-  float *h_distances_ = nullptr;
-  std::string filename_ = "";
-  double latitude_  = 0.0;
-  double longitude_ = 0.0;
-  int    num_records_ = 0;
-  int    k_value_ =   10;
-  double   partitioning_ = 0.95;
-  void KnnCPU(LatLong *h_locations, float *h_distances, int num_records,int num_gpu_records,float lat, float lng, std::atomic_int *cpu_worklist, std::atomic_int *gpu_worklist);
-  int loadData(std::string filename,std::vector<Record> &records,std::vector<LatLong> &locations);
-  void findLowest(std::vector<Record> &records,float *distances,int numRecords,int topN);
-  float *output_distances_ = nullptr; 
- public:
-  void Initialize() override;
-  void Run() override = 0;
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
+void BstCommandLineOptions::Parse(int argc, const char *argv[]) {
+  try {
+    BenchmarkCommandLineOptions::Parse(argc, argv);
+  } catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
+    exit(-1);
+  }
 
-  // Setters
-  void setFilename(std::string filename) {filename_ = filename;}
-  void setLatitude(double latitude) {latitude_    = latitude;}
-  void setLongitude(double longitude) {longitude_ = longitude;}
-  void setKValue(int k_value) { k_value_ = k_value;}
-};
+  num_insert_ =
+      command_line_option_.GetArgumentValue("NumNodes")->AsUInt32();
 
-#endif  // SRC_KNN_KNN_BENCHMARK_H_
+  init_tree_insert_ = command_line_option_.GetArgumentValue("InitialPosition")->AsUInt32();
+
+  host_percentage_ = command_line_option_.GetArgumentValue("HostPercentage")->AsUInt32();
+}
+
+void BstCommandLineOptions::ConfigureBstBenchmark(BstBenchmark *benchmark) {
+  BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
+  benchmark->SetNumNodes(num_insert_);
+  benchmark->SetInitPosition(init_tree_insert_);
+  benchmark->SetHostPercentage(host_percentage_);
+}

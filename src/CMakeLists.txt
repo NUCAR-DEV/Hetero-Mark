@@ -14,6 +14,7 @@ set(SUBDIRECTORIES
   kmeans
   pr
   knn
+  bst
 )
 
 foreach(subdir ${SUBDIRECTORIES})

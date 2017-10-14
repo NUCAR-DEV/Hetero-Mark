@@ -2,15 +2,13 @@ typedef struct GpuPartitioner {
  int n_data;
  int current;
  int *worklist;
- int *position;
 }GpuPartitioner;
 
-__device__ inline GpuPartitioner gpu_partitioner_create(int n_data, int *worklist, int *position)
+__device__ inline GpuPartitioner gpu_partitioner_create(int n_data, int *worklist)
 {
  GpuPartitioner p;
  p.n_data = n_data;
  p.worklist = worklist;
- p.position = position; 
  return p;
 }
 

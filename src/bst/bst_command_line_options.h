@@ -9,6 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Yifan Sun (yifansun@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,62 +38,22 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_KNN_KNN_BENCHMARK_H_
-#define SRC_KNN_KNN_BENCHMARK_H_
+#ifndef SRC_BST_BST_COMMAND_LINE_OPTIONS_H_
+#define SRC_BST_BST_COMMAND_LINE_OPTIONS_H_
 
-#include <vector>
-#include <atomic>
-#include "src/common/benchmark/benchmark.h"
-#include "src/common/time_measurement/time_measurement.h"
+#include "src/common/command_line_option/benchmark_command_line_options.h"
+#include "src/bst/bst_benchmark.h"
 
-
-
-class LatLong{
-public:
-  float lat;
-  float lng;
-};
-
-class Record{
-public:
- char recString[53];
- float distance;
-};
-
-class KnnBenchmark : public Benchmark {
- protected:
-  /**
-   * The CPU code for running KNN
-   */
-  std::vector <Record> records_;
-  std::vector <LatLong> locations_;
-  std::atomic_int *worklist_;
-  std::atomic_int *gpu_worklist_;
-  std::atomic_int *cpu_worklist_;
-  LatLong *h_locations_ = nullptr;
-  float *h_distances_ = nullptr;
-  std::string filename_ = "";
-  double latitude_  = 0.0;
-  double longitude_ = 0.0;
-  int    num_records_ = 0;
-  int    k_value_ =   10;
-  double   partitioning_ = 0.95;
-  void KnnCPU(LatLong *h_locations, float *h_distances, int num_records,int num_gpu_records,float lat, float lng, std::atomic_int *cpu_worklist, std::atomic_int *gpu_worklist);
-  int loadData(std::string filename,std::vector<Record> &records,std::vector<LatLong> &locations);
-  void findLowest(std::vector<Record> &records,float *distances,int numRecords,int topN);
-  float *output_distances_ = nullptr; 
+class BstCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
-  void Initialize() override;
-  void Run() override = 0;
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
+  void RegisterOptions() override;
+  void Parse(int argc, const char *argv[]) override;
+  void ConfigureBstBenchmark(BstBenchmark *benchmark);
 
-  // Setters
-  void setFilename(std::string filename) {filename_ = filename;}
-  void setLatitude(double latitude) {latitude_    = latitude;}
-  void setLongitude(double longitude) {longitude_ = longitude;}
-  void setKValue(int k_value) { k_value_ = k_value;}
+ private:
+  uint32_t num_insert_;
+  uint32_t init_tree_insert_;
+  uint32_t host_percentage_;
 };
 
-#endif  // SRC_KNN_KNN_BENCHMARK_H_
+#endif  // SRC_BST_BST_COMMAND_LINE_OPTIONS_H_
