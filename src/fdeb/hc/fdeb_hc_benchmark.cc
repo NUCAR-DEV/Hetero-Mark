@@ -41,6 +41,7 @@
 
 #include <hc.hpp>
 #include <hc_math.hpp>
+#include <hsa/hsa.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -117,67 +118,149 @@ void FdebHcBenchmark::BundlingIterGpu() {
 }
 
 void FdebHcBenchmark::BundlingIterGpuCollaborative() {
-  int offset = 0;
   int col = col_;
-  int edge_count_ = edge_count;
-  hc::extent<1> ext(gpu_batch); // Extra wi for end point
+  int edge_count = edge_count_;
+  float kp = kp_;
+  // int group_size = 64;
+  hc::extent<1> ext(edge_count_ * col_);
 
-  hc::array<float, 1> d_comp(hc::extent<1>(edge_count * edge_count));
+  int *signals = new int[edge_count * col];
+  for (int i = 0; i < edge_count; i++) {
+    for (int j = 0; j < col; j++) {
+      if (j == 0 || j == col - 1) {
+        signals[i * col + j] = 2;
+      } else {
+        signals[i * col + j] = 0;
+      }
+    }
+  }
+
+  hc::array_view<const float, 1> d_comp(
+      hc::extent<1>(edge_count * edge_count),
+      compatibility_);
+
   hc::array<float, 1> d_point_x(ext);
   hc::array<float, 1> d_point_y(ext);
-  hc::array<float, 1> d_force_x(ext);
-  hc::array<float, 1> d_force_y(ext);
+  hc::copy(point_x_.data(), d_point_x);
+  hc::copy(point_y_.data(), d_point_y);
 
-  for (offset = 0; offset < edge_count * col_; offset += gpu_batch) {
-    hc::parallel_for_each(ext, [=](hc::index<1> idx) [[hc]] {
-      int point_id = offset + idx[0];
-      int i = point_id / col;
-      int k = point_id % col;
+  hsa_status_t err;
+  err = hsa_memory_register(force_x_.data(), edge_count * col * sizeof(float));
+  if (err != HSA_STATUS_SUCCESS) {
+    fprintf(stderr, "Failed to map memory\n");
+    exit(-1);
+  }
 
-      if (point_id >= edge_count * col) return;
-      if (k == 0 || k == col - 1) return;
+  err = hsa_memory_register(force_y_.data(), edge_count * col * sizeof(float));
+  if (err != HSA_STATUS_SUCCESS) {
+    fprintf(stderr, "Failed to map memory\n");
+    exit(-1);
+  }
 
-      for (int j = 0; j < edge_count; j++) {
-        if (j == i) continue;
-        float x1 = av_point_x[i * col + k];
-        float y1 = av_point_y[i * col + k];
-        float x2 = av_point_x[j * col + k];
-        float y2 = av_point_y[j * col + k];
-        float compatibility = av_comp[i * edge_count + j];
-        float dist = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+  float *a_force_x = force_x_.data();
+  float *a_force_y = force_y_.data();
+  // float *d_point_x = point_x_.data();
+  // float *d_point_y = point_y_.data();
 
-        if (dist > 0) {
-          float x = x2 - x1;
-          float y = y2 - y1;
-
-          force_x += x / dist * compatibility;
-          force_y += y / dist * compatibility;
+  std::thread cpu_thread([&] {
+    while (true) {
+      bool finished = true;
+      // printf("edge_count %d, col %d\n", edge_count, col);
+      for (int i = 0; i < edge_count * col; i++) {
+        // printf("signals[%d] = %d.\n", i, signals[i].load(std::memory_order_relaxed));
+        if (signals[i] == 1) {
+          // float force_x = a_force_x[i].load(std::memory_order_seq_cst);
+          // float force_y = a_force_y[i].load(std::memory_order_seq_cst);
+          float force_x = force_x_[i];
+          float force_y = force_y_[i];
+          point_x_[i] += step_size_ * force_x;
+          point_y_[i] += step_size_ * force_y;
+          signals[i] = 2;
+          // printf("Moving point %d %f, %f, %f, %f\n", i,
+          //     force_x, force_y, point_x_[i], point_y_[i]);
+        } else if (signals[i] == 0) {
+          finished = false;
         }
+
+      }
+      if (finished) {
+          return;
       }
 
-      // Self force
-      float x = av_point_x[i * col + k];
-      float y = av_point_y[i * col + k];
-      float x_p = av_point_x[i * col + k - 1];
-      float y_p = av_point_y[i * col + k - 1];
-      float x_n = av_point_x[i * col + k + 1];
-      float y_n = av_point_y[i * col + k + 1];
+      // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+  });
 
-      force_x += kp * (x_p - x);
-      force_y += kp * (y_p - y);
-      force_x += kp * (x_n - x);
-      force_y += kp * (y_n - y);
+  auto fut = hc::parallel_for_each(ext, [&](hc::index<1> idx) [[hc]] {
+    int point_id = idx[0];
+    int i = point_id / col;
+    int k = point_id % col;
 
-      // Normalize
-      float mag = sqrt(force_x * force_x + force_y * force_y);
+    if (point_id >= edge_count * col) return;
+    if (k == 0 || k == col - 1) return;
+
+    float force_x = 0;
+    float force_y = 0;
+
+    for (int j = 0; j < edge_count; j++) {
+      if (j == i) continue;
+      float x1 = d_point_x[i * col + k];
+      float y1 = d_point_y[i * col + k];
+      float x2 = d_point_x[j * col + k];
+      float y2 = d_point_y[j * col + k];
+      float compatibility = d_comp[i * edge_count + j];
+      float dist = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+
+      if (dist > 0) {
+        float x = x2 - x1;
+        float y = y2 - y1;
+
+        force_x += x / dist * compatibility;
+        force_y += y / dist * compatibility;
+      }
+    }
+
+    // Self force
+    float x = d_point_x[i * col + k];
+    float y = d_point_y[i * col + k];
+    float x_p = d_point_x[i * col + k - 1];
+    float y_p = d_point_y[i * col + k - 1];
+    float x_n = d_point_x[i * col + k + 1];
+    float y_n = d_point_y[i * col + k + 1];
+
+    force_x += kp * (x_p - x);
+    force_y += kp * (y_p - y);
+    force_x += kp * (x_n - x);
+    force_y += kp * (y_n - y);
+
+    // Normalize
+    float mag = sqrt(force_x * force_x + force_y * force_y);
+    if (mag > 0) {
       force_x /= mag;
       force_y /= mag;
+    }
 
-      av_force_x[i * col + k] = force_x;
-      av_force_y[i * col + k] = force_y;
+    // a_force_x[i * col + k].store(force_x, std::memory_order_relaxed);
+    // a_force_y[i * col + k].store(force_y, std::memory_order_relaxed);
+    a_force_x[i * col + k] = force_x;
+    a_force_y[i * col + k] = force_y;
 
-    });
-  }
+    // Signal
+    hc::atomic_fetch_add(&signals[i*col + k], 1);
+  });
+
+  
+
+  fut.wait();
+
+  
+  cpu_thread.join();
+  
+  // MovePointsCpu();
+
+  delete[] signals;
+  // delete[] a_force_x;
+  // delete[] a_force_y;
 
 }
 

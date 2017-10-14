@@ -95,7 +95,7 @@ void FdebCommandLineOptions::Parse(int argc, const char *argv[]) {
       command_line_option_.GetArgumentValue("InitStepSize")->AsDouble();
   collaborative_ =
       command_line_option_.GetArgumentValue("Collaborative")->AsBool();
-  gpu_batch_ = command_line_option_.GetArgumentValue("GpuBatch")->AsInt32();
+  gpu_batch_ = command_line_option_.GetArgumentValue("GPUBatchSize")->AsInt32();
   use_atomic_ = command_line_option_.GetArgumentValue("UseAtomic")->AsBool();
 }
 

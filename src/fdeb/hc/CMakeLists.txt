@@ -23,7 +23,7 @@ if (${COMPILE_HCC})
 
   add_executable(${FOLDER_NAME} ${SRC_FILES})
   target_link_libraries(${FOLDER_NAME} 
-    fdeb time_measurement command_line_option benchmark)
+    fdeb time_measurement command_line_option benchmark ${HSA_LIBRARY})
   set_target_properties(${FOLDER_NAME} PROPERTIES
     COMPILE_FLAGS ${COMPILER_FLAGS}
     LINK_FLAGS ${LINKER_FLAGS})
