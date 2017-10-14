@@ -37,23 +37,22 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_KNN_CUDA_KNN_CUDA_BENCHMARK_H_
-#define SRC_KNN_CUDA_KNN_CUDA_BENCHMARK_H_
-
-#include "src/knn/knn_benchmark.h"
-
-#include <cuda_runtime.h>
-
+#include "src/knn/knn_command_line_options.h"
+#include "src/knn/hc/knn_hc_benchmark.h"
+#include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/common/time_measurement/time_measurement_impl.h"
 
-class KnnCudaBenchmark : public KnnBenchmark {
- private:
-  float   *d_distances_;
-  LatLong *d_locations_;
- public:
-  KnnCudaBenchmark() : KnnBenchmark() {}
-  void Initialize() override;
-  void Run() override;
-  void Cleanup() override;
-};
-#endif  // SRC_KNN_CUDA_KNN_CUDA_BENCHMARK_H_
+int main(int argc, const char **argv) {
+  std::unique_ptr<KnnHcBenchmark> benchmark(new KnnHcBenchmark());
+  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
+  BenchmarkRunner runner(benchmark.get(), timer.get());
+
+  KnnCommandLineOptions options;
+  options.RegisterOptions();
+  options.Parse(argc, argv);
+  options.ConfigureKnnBenchmark(benchmark.get());
+  options.ConfigureBenchmarkRunner(&runner);
+
+  runner.Run();
+}

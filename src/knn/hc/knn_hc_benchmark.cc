@@ -9,7 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
- * Author: Yifan Sun (yifansun@coe.neu.edu)
+ * Author: Shi Dong (shidong@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,74 +37,89 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS WITH THE SOFTWARE.
  */
+
+#include "src/knn/hc/knn_hc_benchmark.h"
+
+#include <hc.hpp>
+#include <hc_math.hpp>
+
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
-#include "src/knn/cuda_ws_v2/knn_cpu_partitioner.h"
-#include "src/knn/cuda_ws_v2/knn_cuda_benchmark.h"
-#include "src/knn/cuda_ws_v2/knn_gpu_partitioner.h"
 
-__global__ void knn_cuda(LatLong *latLong, float *d_distances,
-                         int num_gpu_records, int num_records, float lat,
-                         float lng, int *gpu_worklist, int *cpu_worklist) {
-  GpuPartitioner p = gpu_partitioner_create(num_gpu_records, gpu_worklist);
-
-  for (int tid = gpu_initialize(&p); gpu_more(&p); tid = gpu_increment(&p)) {
-    d_distances[tid] =
-        (float)sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
-                    (lng - latLong[tid].lng) * (lng - latLong[tid].lng));
-  }
-
-  GpuPartitioner thieves = gpu_partitioner_create(num_records, cpu_worklist);
-
-  for (int tid = gpu_initialize(&thieves); gpu_more(&thieves);
-       tid = gpu_increment(&thieves)) {
-    d_distances[tid] =
-        (float)sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
-                    (lng - latLong[tid].lng) * (lng - latLong[tid].lng));
-  }
-}
-
-void KnnCudaBenchmark::Initialize() {
+void KnnHcBenchmark::Initialize() {
   KnnBenchmark::Initialize();
-  cudaMallocManaged(&h_locations_, sizeof(LatLong) * num_records_);
-  cudaMallocManaged(&h_distances_, sizeof(float) * num_records_);
-  cudaMallocManaged(&cpu_worklist_, sizeof(std::atomic_uint));
-  cudaMallocManaged(&gpu_worklist_, sizeof(std::atomic_uint));
+
+  h_locations_ = new LatLong[num_records_];
+  h_distances_ = new float[num_records_];
   for (int i = 0; i < num_records_; i++) {
     h_locations_[i].lat = locations_.at(i).lat;
     h_locations_[i].lng = locations_.at(i).lng;
   }
 
-  gpu_worklist_[0].store(0);
-  cpu_worklist_[0].store(partitioning_ * num_records_);
 }
 
-void KnnCudaBenchmark::Run() {
-  dim3 block_size(256);
-  dim3 grid_size(1);
+void KnnHcBenchmark::Run() {
   int num_gpu_records = partitioning_ * num_records_;
   int num_cpu_records = (1 - partitioning_) * num_records_;
   printf("Num gpu records is %d \n", num_gpu_records);
   printf("Num cpu records is %d \n", num_cpu_records);
 
-  knn_cuda<<<grid_size, block_size>>>(
-      h_locations_, h_distances_, num_gpu_records, num_records_, latitude_,
-      longitude_, (int *)gpu_worklist_, (int *)cpu_worklist_);
+  std::atomic_int cpu_worklist;
+  std::atomic_int gpu_worklist;
+  gpu_worklist.store(0);
+  cpu_worklist.store(partitioning_ * num_records_);
+
+  // float *d_distances = new float[num_records_];
+  hc::array<float, 1> av_distance(num_records_);
+  hc::array<LatLong, 1> av_loc(num_records_);
+  hc::copy(h_locations_, av_loc);
+  // LatLong *latLong = h_locations_;
+  float lat = latitude_;
+  float lng = longitude_;
+
+  hc::extent<1> kernel_ext(256); 
+  auto fut = parallel_for_each(kernel_ext, [&](hc::index<1> i) [[hc]] {
+    int tid;
+    tid = gpu_worklist.fetch_add(1, std::memory_order_seq_cst);
+    while(true) {
+      if (tid >= num_gpu_records) {
+        break;
+      }
+      av_distance[tid] = 
+        (float)sqrt((lat - av_loc[tid].lat) * (lat - av_loc[tid].lat) +
+                    (lng - av_loc[tid].lng) * (lng - av_loc[tid].lng));
+
+      tid = gpu_worklist.fetch_add(1, std::memory_order_seq_cst);
+    }
+
+    tid = cpu_worklist.fetch_add(1, std::memory_order_seq_cst);
+    while(true) {
+      if (tid >= num_gpu_records) {
+        break;
+      }
+      av_distance[tid] = 
+        (float)sqrt((lat - av_loc[tid].lat) * (lat - av_loc[tid].lat) +
+                    (lng - av_loc[tid].lng) * (lng - av_loc[tid].lng));
+
+      tid = cpu_worklist.fetch_add(1, std::memory_order_seq_cst);
+    }
+
+  });
   KnnCPU(h_locations_, h_distances_, num_records_, num_gpu_records, latitude_,
-         longitude_, cpu_worklist_, gpu_worklist_);
-  cudaDeviceSynchronize();
+         longitude_, &cpu_worklist, &gpu_worklist);
+  fut.wait();
+  // av_distance.synchronize();
+  printf("%d\n", gpu_worklist.load(std::memory_order_seq_cst));
 
-  for (int i = 0; i < 10; i++) {
-    printf("Distances are %f \n", h_distances_[i]);
-  }
-
-  // find the resultsCount least distances
+  // find the results Count least distances
   findLowest(records_, h_distances_, num_records_, k_value_);
 
   for (int i = 0; i < k_value_; i++) {
     printf("%s --> Distance=%f\n", records_[i].recString, records_[i].distance);
   }
+
 }
 
-void KnnCudaBenchmark::Cleanup() { KnnBenchmark::Cleanup(); }
+void KnnHcBenchmark::Cleanup() {
+  KnnBenchmark::Cleanup();
+}

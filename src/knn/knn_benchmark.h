@@ -40,23 +40,21 @@
 #ifndef SRC_KNN_KNN_BENCHMARK_H_
 #define SRC_KNN_KNN_BENCHMARK_H_
 
-#include <vector>
 #include <atomic>
+#include <vector>
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
-
-
-class LatLong{
-public:
+class LatLong {
+ public:
   float lat;
   float lng;
 };
 
-class Record{
-public:
- char recString[53];
- float distance;
+class Record {
+ public:
+  char recString[53];
+  float distance;
 };
 
 class KnnBenchmark : public Benchmark {
@@ -64,24 +62,30 @@ class KnnBenchmark : public Benchmark {
   /**
    * The CPU code for running KNN
    */
-  std::vector <Record> records_;
-  std::vector <LatLong> locations_;
+  std::vector<Record> records_;
+  std::vector<LatLong> locations_;
   std::atomic_int *worklist_;
   std::atomic_int *gpu_worklist_;
   std::atomic_int *cpu_worklist_;
   LatLong *h_locations_ = nullptr;
   float *h_distances_ = nullptr;
   std::string filename_ = "";
-  double latitude_  = 0.0;
+  double latitude_ = 0.0;
   double longitude_ = 0.0;
-  int    num_records_ = 0;
-  int    k_value_ =   10;
-  double   partitioning_ = 0.95;
-  void KnnCPU(LatLong *h_locations, float *h_distances, int num_records,int num_gpu_records,float lat, float lng, std::atomic_int *cpu_worklist, std::atomic_int *gpu_worklist);
-  int loadData(std::string filename,std::vector<Record> &records,std::vector<LatLong> &locations);
-  void findLowest(std::vector<Record> &records,float *distances,int numRecords,int topN);
-  float *output_distances_ = nullptr; 
+  int num_records_ = 0;
+  int k_value_ = 10;
+  double partitioning_ = 0.95;
+  void KnnCPU(LatLong *h_locations, float *h_distances, int num_records,
+              int num_gpu_records, float lat, float lng,
+              std::atomic_int *cpu_worklist, std::atomic_int *gpu_worklist);
+  int loadData(std::string filename, std::vector<Record> &records,
+               std::vector<LatLong> &locations);
+  void findLowest(std::vector<Record> &records, float *distances,
+                  int numRecords, int topN);
+  float *output_distances_ = nullptr;
+
  public:
+  KnnBenchmark() : Benchmark() {}
   void Initialize() override;
   void Run() override = 0;
   void Verify() override;
@@ -89,10 +93,10 @@ class KnnBenchmark : public Benchmark {
   void Cleanup() override;
 
   // Setters
-  void setFilename(std::string filename) {filename_ = filename;}
-  void setLatitude(double latitude) {latitude_    = latitude;}
-  void setLongitude(double longitude) {longitude_ = longitude;}
-  void setKValue(int k_value) { k_value_ = k_value;}
+  void setFilename(std::string filename) { filename_ = filename; }
+  void setLatitude(double latitude) { latitude_ = latitude; }
+  void setLongitude(double longitude) { longitude_ = longitude; }
+  void setKValue(int k_value) { k_value_ = k_value; }
 };
 
 #endif  // SRC_KNN_KNN_BENCHMARK_H_

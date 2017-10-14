@@ -9,6 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Shi Dong (shidong@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,23 +38,22 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_KNN_CUDA_KNN_CUDA_BENCHMARK_H_
-#define SRC_KNN_CUDA_KNN_CUDA_BENCHMARK_H_
-
-#include "src/knn/knn_benchmark.h"
-
-#include <cuda_runtime.h>
+#ifndef SRC_KNN_HC_KNN_HC_BENCHMARK_H_
+#define SRC_KNN_HC_KNN_HC_BENCHMARK_H_
 
 #include "src/common/time_measurement/time_measurement.h"
+#include "src/knn/knn_benchmark.h"
+#include "src/common/memory/memory_manager.h"
 
-class KnnCudaBenchmark : public KnnBenchmark {
+class KnnHcBenchmark : public KnnBenchmark {
  private:
-  float   *d_distances_;
-  LatLong *d_locations_;
+  // float   *d_distances_;
+  // LatLong *d_locations_;
  public:
-  KnnCudaBenchmark() : KnnBenchmark() {}
+  KnnHcBenchmark() : KnnBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
 };
-#endif  // SRC_KNN_CUDA_KNN_CUDA_BENCHMARK_H_
+
+#endif  // SRC_KNN_HC_KNN_HC_BENCHMARK_H_
