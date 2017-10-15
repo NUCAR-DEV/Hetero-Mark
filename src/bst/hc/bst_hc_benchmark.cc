@@ -9,6 +9,7 @@
  *   Northeastern University
  *   http://www.ece.neu.edu/groups/nucar/
  *
+ * Author: Shi Dong (shidong@coe.neu.edu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,66 +38,34 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_KNN_KNN_BENCHMARK_H_
-#define SRC_KNN_KNN_BENCHMARK_H_
+#include "src/bst/hc/bst_hc_benchmark.h"
 
-#include <atomic>
-#include <vector>
-#include "src/common/benchmark/benchmark.h"
-#include "src/common/time_measurement/time_measurement.h"
+#include <hc.hpp>
 
-class LatLong {
- public:
-  float lat;
-  float lng;
-};
+#include <cstdio>
+#include <cstdlib>
 
-class Record {
- public:
-  char recString[53];
-  float distance;
-};
+void BstHcBenchmark::Initialize() {
 
-class KnnBenchmark : public Benchmark {
- protected:
-  /**
-   * The CPU code for running KNN
-   */
-  std::vector<Record> records_;
-  std::vector<LatLong> locations_;
-  std::atomic_int *worklist_;
-  std::atomic_int *gpu_worklist_;
-  std::atomic_int *cpu_worklist_;
-  LatLong *h_locations_ = nullptr;
-  float *h_distances_ = nullptr;
-  std::string filename_ = "";
-  double latitude_ = 0.0;
-  double longitude_ = 0.0;
-  int num_records_ = 0;
-  int k_value_ = 10;
-  double partitioning_ = 0.6;
-  void KnnCPU(LatLong *h_locations, float *h_distances, int num_records,
-              int num_gpu_records, float lat, float lng,
-              std::atomic_int *cpu_worklist, std::atomic_int *gpu_worklist);
-  int loadData(std::string filename, std::vector<Record> &records,
-               std::vector<LatLong> &locations);
-  void findLowest(std::vector<Record> &records, float *distances,
-                  int numRecords, int topN);
-  float *output_distances_ = nullptr;
+}
 
- public:
-  KnnBenchmark() : Benchmark() {}
-  void Initialize() override;
-  void Run() override = 0;
-  void Verify() override;
-  void Summarize() override;
-  void Cleanup() override;
+void BstHcBenchmark::Run() {
+  hc::extent<1> kernel_ext(device_nodes_);
 
-  // Setters
-  void setFilename(std::string filename) { filename_ = filename; }
-  void setLatitude(double latitude) { latitude_ = latitude; }
-  void setLongitude(double longitude) { longitude_ = longitude; }
-  void setKValue(int k_value) { k_value_ = k_value; }
-};
+  uint32_t device_start_node = init_tree_insert_ + host_nodes_;
+  printf("Device start node is %d \n", device_start_node);
 
-#endif  // SRC_KNN_KNN_BENCHMARK_H_
+  for (long k = 0; k < host_nodes_; k++) {
+    InsertNode(&(tree_buffer_[init_tree_insert_ + offset + k]), root_);
+  }
+
+  uint32_t actual_nodes = CountNodes(tree_buffer_);
+
+  printf("Number of actual nodes are %d \n", actual_nodes);
+  printf("Number of total nodes are %d \n", total_nodes_);
+
+}
+
+void BstHcBenchmark::Cleanup() {
+  BstBenchmark::Cleanup();
+}

@@ -124,7 +124,7 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
   // int group_size = 64;
   hc::extent<1> ext(edge_count_ * col_);
 
-  int *signals = new int[edge_count * col];
+  std::atomic_int *signals = new std::atomic_int[edge_count * col];
   for (int i = 0; i < edge_count; i++) {
     for (int j = 0; j < col; j++) {
       if (j == 0 || j == col - 1) {
@@ -135,12 +135,11 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
     }
   }
 
-  hc::array_view<const float, 1> d_comp(
-      hc::extent<1>(edge_count * edge_count),
-      compatibility_);
-
+  hc::array<float, 1> d_comp(edge_count * edge_count);
   hc::array<float, 1> d_point_x(ext);
   hc::array<float, 1> d_point_y(ext);
+
+  hc::copy(compatibility_.data(), d_comp);
   hc::copy(point_x_.data(), d_point_x);
   hc::copy(point_y_.data(), d_point_y);
 
@@ -161,6 +160,8 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
   float *a_force_y = force_y_.data();
   // float *d_point_x = point_x_.data();
   // float *d_point_y = point_y_.data();
+  // hc::array_view<float, 1> a_force_x(edge_count * col);
+  // hc::array_view<float, 1> a_force_y(edge_count * col);
 
   std::thread cpu_thread([&] {
     while (true) {
@@ -175,7 +176,8 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
           float force_y = force_y_[i];
           point_x_[i] += step_size_ * force_x;
           point_y_[i] += step_size_ * force_y;
-          signals[i] = 2;
+          // signals[i] = 2;
+          signals[i].fetch_add(1, std::memory_order_seq_cst);
           // printf("Moving point %d %f, %f, %f, %f\n", i,
           //     force_x, force_y, point_x_[i], point_y_[i]);
         } else if (signals[i] == 0) {
@@ -211,7 +213,7 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
       float compatibility = d_comp[i * edge_count + j];
       float dist = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
 
-      if (dist > 0) {
+      if (dist > 0 && compatibility > 0) {
         float x = x2 - x1;
         float y = y2 - y1;
 
@@ -242,11 +244,13 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
 
     // a_force_x[i * col + k].store(force_x, std::memory_order_relaxed);
     // a_force_y[i * col + k].store(force_y, std::memory_order_relaxed);
-    a_force_x[i * col + k] = force_x;
-    a_force_y[i * col + k] = force_y;
+    // a_force_x[point_id] = force_x;
+    // a_force_y[point_id] = force_y;
+    a_force_x[point_id] = force_x;
+    a_force_y[point_id] = force_y;
 
     // Signal
-    hc::atomic_fetch_add(&signals[i*col + k], 1);
+    signals[i*col + k].fetch_add(1, std::memory_order_seq_cst);
   });
 
   

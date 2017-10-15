@@ -44,164 +44,139 @@
 #include <cstdlib>
 
 void BstBenchmark::UmMutexInit(um_mutex *lock, int value) {
-    atomic_store_explicit(&lock->count, value, std::memory_order_release);
+  atomic_store_explicit(&lock->count, value, std::memory_order_release);
 }
 
 void BstBenchmark::UmMutexLock(um_mutex *lock) {
   int expected = UM_MUTEX_UNLOCK;
-  while(!atomic_compare_exchange_strong_explicit(&lock->count, &expected, UM_MUTEX_LOCK
-                                              ,   std::memory_order_seq_cst,std::memory_order_seq_cst)) {
+  while (!atomic_compare_exchange_strong_explicit(
+      &lock->count, &expected, UM_MUTEX_LOCK, std::memory_order_seq_cst,
+      std::memory_order_seq_cst)) {
     expected = UM_MUTEX_UNLOCK;
   }
-
 }
-
 
 void BstBenchmark::UmMutexUnlock(um_mutex *lock) {
- atomic_store_explicit(&lock->count, UM_MUTEX_UNLOCK, std::memory_order_release);
+  atomic_store_explicit(&lock->count, UM_MUTEX_UNLOCK,
+                        std::memory_order_release);
 }
 
+void BstBenchmark::InsertNode(Node *tmpData, Node *root) {
+  Node *nextNode = root;
+  Node *tmp_parent = NULL;
+  Node *nextData;
 
+  nextData = tmpData;
+  long key = nextData->value;
+  long flag = 0;
+  int done = 0;
 
-void BstBenchmark::InsertNode(Node *tmpData, Node *root)
-{
-        Node* nextNode     = root;
-        Node* tmp_parent   = NULL;
-        Node* nextData;
+  while (nextNode) {
+    tmp_parent = nextNode;
+    flag = (key - (nextNode->value));
+    nextNode = (flag < 0) ? nextNode->left : nextNode->right;
+  }
 
-        nextData = tmpData;
-        long key = nextData->value;
-        long flag = 0;
-        int done = 0;
+  Node *child = nextNode;
 
+  do {
+    um_mutex *parent_mutex = &tmp_parent->mutex_node;
+    UmMutexLock(parent_mutex);
 
-        while (nextNode)
-        {
-                tmp_parent = nextNode;
-                flag = (key - (nextNode->value));
-                nextNode = (flag < 0) ? nextNode->left : nextNode->right;
-        }
+    child = (flag < 0) ? tmp_parent->left : tmp_parent->right;
 
-        Node *child = nextNode;
+    if (child) {
+      // Parent node has been updated since last check. Get the new parent and
+      // iterate again
+      tmp_parent = child;
+    } else {
+      // Insert the node
+      tmp_parent->left = (flag < 0) ? nextData : tmp_parent->left;
 
-        do
-        {
-                um_mutex *parent_mutex = &tmp_parent->mutex_node;
-                UmMutexLock(parent_mutex);
+      tmp_parent->right = (flag >= 0) ? nextData : tmp_parent->right;
 
-                child = (flag < 0) ? tmp_parent->left : tmp_parent->right;
+      // Whether host only insert (childDevType=100) or both host and device
+      // (childDevType=300)
+      if (tmp_parent->childDevType == -1 || tmp_parent->childDevType == 100)
+        tmp_parent->childDevType = 100;
+      else
+        tmp_parent->childDevType = 300;
 
-                if(child)
-                {
-                 //Parent node has been updated since last check. Get the new parent and iterate again
-                tmp_parent = child;
-                }
-                else
-                {
-                 //Insert the node
-                tmp_parent->left = (flag < 0) ? nextData : tmp_parent->left ;
-                                
-                tmp_parent->right = (flag >= 0) ? nextData : tmp_parent->right ;
+      nextData->parent = tmp_parent;
+      nextData->visited = 1;
+      done = 1;
+    }
+    UmMutexUnlock(parent_mutex);
 
-               //Whether host only insert (childDevType=100) or both host and device  (childDevType=300)
-                if (tmp_parent->childDevType == -1 || tmp_parent->childDevType == 100)
-                           tmp_parent->childDevType = 100;
-                else
-                           tmp_parent->childDevType = 300;
-
-                nextData->parent = tmp_parent;
-                nextData->visited = 1;
-                done = 1;
-                }
-            UmMutexUnlock(parent_mutex);
-
-     }while (!done);
-
+  } while (!done);
 }
 
-void BstBenchmark::InitializeNodes(Node *data, uint32_t num_nodes, int seed)
-{
+void BstBenchmark::InitializeNodes(Node *data, uint32_t num_nodes, int seed) {
   Node *tmp_node;
   long val;
 
   srand(seed);
-  for (size_t i = 0; i < num_nodes; i++)
-   {
+  for (size_t i = 0; i < num_nodes; i++) {
     tmp_node = &(data[i]);
 
-    val = (((rand() & 255)<<8 | (rand() & 255))<<8 | (rand() & 255))<<7 | (rand() & 127);
+    val = (((rand() & 255) << 8 | (rand() & 255)) << 8 | (rand() & 255)) << 7 |
+          (rand() & 127);
 
-     tmp_node->value = val;
-     tmp_node->left = NULL;
-     tmp_node->right = NULL;
-     tmp_node->parent = NULL;
-     tmp_node->visited = 0; 
-     tmp_node->childDevType = -1;
+    tmp_node->value = val;
+    tmp_node->left = NULL;
+    tmp_node->right = NULL;
+    tmp_node->parent = NULL;
+    tmp_node->visited = 0;
+    tmp_node->childDevType = -1;
 
-     UmMutexInit(&tmp_node->mutex_node, UM_MUTEX_UNLOCK);
-   }
- 
-
+    UmMutexInit(&tmp_node->mutex_node, UM_MUTEX_UNLOCK);
+  }
 }
 
-Node* BstBenchmark::MakeBinaryTree(uint32_t num_nodes, Node *inroot)
-{
-  Node* root = NULL;
-  Node* data;
-  Node* nextData;
+Node *BstBenchmark::MakeBinaryTree(uint32_t num_nodes, Node *inroot) {
+  Node *root = NULL;
+  Node *data;
+  Node *nextData;
 
-  if (NULL != inroot)
-  {   
-      /* allocate first node to root */
-      data     = (Node *)inroot;
-      nextData = data;
-      root     = nextData;
+  if (NULL != inroot) {
+    /* allocate first node to root */
+    data = (Node *)inroot;
+    nextData = data;
+    root = nextData;
 
-      /* iterative tree insert */
-      for (size_t i = 1; i < num_nodes; ++i)
-      {   
-          nextData = nextData + 1;
+    /* iterative tree insert */
+    for (size_t i = 1; i < num_nodes; ++i) {
+      nextData = nextData + 1;
 
-          InsertNode(nextData, root);
-      }
+      InsertNode(nextData, root);
+    }
   }
 
   return root;
-
-
 }
 
-uint32_t BstBenchmark::CountNodes(Node *root)
-{
-uint32_t count = 0;
-if(root)
-   count = 1;
+uint32_t BstBenchmark::CountNodes(Node *root) {
+  uint32_t count = 0;
+  if (root) count = 1;
 
-if(root->left)
-   count += CountNodes(root->left);
+  if (root->left) count += CountNodes(root->left);
 
-if(root->right)
-   count += CountNodes(root->right);
+  if (root->right) count += CountNodes(root->right);
 
-return count;
-
+  return count;
 }
+
 void BstBenchmark::Initialize() {
-   host_nodes_   = (uint32_t)((double)num_insert_ * ((float)host_percentage_ / 100));
-   device_nodes_ = num_insert_ - host_nodes_;
-   total_nodes_  = num_insert_ + init_tree_insert_;   
-   printf("Host nodes are %d \n", host_nodes_);
-   printf("Device nodes are %d \n", device_nodes_);
+  host_nodes_ =
+      (uint32_t)((double)num_insert_ * ((float)host_percentage_ / 100));
+  device_nodes_ = num_insert_ - host_nodes_;
+  total_nodes_ = num_insert_ + init_tree_insert_;
+  printf("Host nodes are %d \n", host_nodes_);
+  printf("Device nodes are %d \n", device_nodes_);
 }
 
-void BstBenchmark::Verify() {
-  
-}
+void BstBenchmark::Verify() {}
 
-void BstBenchmark::Summarize() {
-  
-}
+void BstBenchmark::Summarize() {}
 
-void BstBenchmark::Cleanup() {
- 
-}
+void BstBenchmark::Cleanup() {}

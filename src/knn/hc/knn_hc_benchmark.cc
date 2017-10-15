@@ -108,7 +108,6 @@ void KnnHcBenchmark::Run() {
   KnnCPU(h_locations_, h_distances_, num_records_, num_gpu_records, latitude_,
          longitude_, &cpu_worklist, &gpu_worklist);
   fut.wait();
-  // av_distance.synchronize();
   printf("%d\n", gpu_worklist.load(std::memory_order_seq_cst));
 
   // find the results Count least distances
