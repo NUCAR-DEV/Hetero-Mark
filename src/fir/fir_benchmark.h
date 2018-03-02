@@ -56,6 +56,7 @@ class FirBenchmark : public Benchmark {
   float *coeff_ = nullptr;
 
  public:
+  FirBenchmark() : Benchmark() {}
   void Initialize() override;
   void Run() override{};
   void Verify() override;

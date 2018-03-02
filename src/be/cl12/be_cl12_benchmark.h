@@ -54,15 +54,11 @@ class BeCl12Benchmark : public BeBenchmark, public ClBenchmark {
   void NormalRun();
   void CollaborativeRun();
 
-  TimeMeasurement *timer_;
-
   cl_kernel be_kernel_;
   
   cl_mem d_bg_;
   cl_mem d_fg_;
   cl_mem d_frame_;
-
-
   
   void InitializeKernels();
   void InitializeBuffers();
@@ -73,16 +69,15 @@ class BeCl12Benchmark : public BeBenchmark, public ClBenchmark {
   bool finished_;
   void GPUThread();
   void ExtractAndEncode(uint8_t *frame);
-  //cudaStream_t stream_; 
+
  public:
-  BeCl12Benchmark() {}
+  BeCl12Benchmark() : BeBenchmark() {}
   ~BeCl12Benchmark() {}
 
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
   void Summarize() override;
-  
 };
 
 #endif  // SRC_BE_CL12_BE_CL12_BENCHMARK_H_

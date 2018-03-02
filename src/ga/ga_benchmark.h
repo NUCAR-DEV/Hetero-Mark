@@ -88,6 +88,7 @@ class GaBenchmark : public Benchmark {
   void DestroyMatrix(Matrix *matrix, int x, int y);
 
  public:
+  GaBenchmark() : Benchmark() {}
   void Initialize() override;
   void Run() override{};
   void Verify() override;

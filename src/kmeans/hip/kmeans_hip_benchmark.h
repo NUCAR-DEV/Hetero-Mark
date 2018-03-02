@@ -53,6 +53,7 @@ class KmeansHipBenchmark : public KmeansBenchmark {
   void UpdateMembership(unsigned num_clusters);
 
  public:
+  KmeansHipBenchmark() : KmeansBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

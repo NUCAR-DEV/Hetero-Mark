@@ -55,6 +55,7 @@ class PrCudaBenchmark : public PrBenchmark {
   float *device_mtx_2;
 
  public:
+  PrCudaBenchmark() : PrBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

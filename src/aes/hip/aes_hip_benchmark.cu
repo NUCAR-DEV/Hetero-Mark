@@ -185,10 +185,13 @@ void AesHipBenchmark::Run() {
   dim3 grid_size(static_cast<size_t>(num_blocks / 64.00));
   dim3 block_size(64);
 
+  cpu_gpu_logger_->GPUOn();
   hipLaunchKernel(HIP_KERNEL_NAME(aes_hip), dim3(grid_size), dim3(block_size),
                   0, 0, d_ciphertext_, d_key_, d_s_);
-
   hipMemcpy(ciphertext_, d_ciphertext_, text_length_, hipMemcpyDeviceToHost);
+
+  cpu_gpu_logger_->GPUOff();
+  cpu_gpu_logger_->Summarize();
 }
 
 void AesHipBenchmark::Cleanup() {

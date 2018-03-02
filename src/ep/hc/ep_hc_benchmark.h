@@ -56,6 +56,7 @@ class EpHcBenchmark : public EpBenchmark {
   void MutateGpu(std::vector<Creature> *island);
 
  public:
+  EpHcBenchmark() : EpBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

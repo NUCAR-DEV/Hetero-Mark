@@ -49,6 +49,7 @@ class PrHcBenchmark : public PrBenchmark {
   float *page_rank_mtx_2_;
 
  public:
+  PrHcBenchmark() : PrBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

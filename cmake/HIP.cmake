@@ -1,6 +1,7 @@
 if (COMPILE_HIP)
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /opt/rocm/hip/cmake)
 	include(FindHIP)
+  add_definitions(-DCOMPILE_HIP=1 -DCOMPILE_HSA=1)
 
 	if (HIP_FOUND)
 		message("-- hipcc found, will compile hip benchmarks.")

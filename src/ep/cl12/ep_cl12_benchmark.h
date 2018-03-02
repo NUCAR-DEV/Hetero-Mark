@@ -62,7 +62,7 @@ class EpCl12Benchmark : public EpBenchmark, public ClBenchmark {
   cl_mem d_fitness_func_;
 
  public:
-  EpCl12Benchmark() {}
+  EpCl12Benchmark() :EpBenchmark() {}
   ~EpCl12Benchmark() {}
   
  public:

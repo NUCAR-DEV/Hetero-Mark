@@ -59,7 +59,7 @@ class KmeansCl12Benchmark : public KmeansBenchmark, public ClBenchmark {
   void UpdateMembership(unsigned num_clusters);
 
  public:
-  KmeansCl12Benchmark() {}
+  KmeansCl12Benchmark() : KmeansBenchmark() {}
   ~KmeansCl12Benchmark() {}
 
   void Initialize() override;

@@ -58,6 +58,8 @@ void BeHcBenchmark::Run() {
   } else {
     NormalRun();
   }
+
+  cpu_gpu_logger_->Summarize();
 }
 
 void BeHcBenchmark::CollaborativeRun() {
@@ -68,9 +70,7 @@ void BeHcBenchmark::CollaborativeRun() {
   std::thread gpuThread(&BeHcBenchmark::GPUThread, this);
 
   // Initialize background
-  timer_->Start();
   frame = nextFrame();
-  timer_->End({"Decoding"});
   for (int i = 0; i < num_pixels; i++) {
     background_[i] = static_cast<float>(frame[i]);
   }
@@ -126,6 +126,7 @@ void BeHcBenchmark::ExtractAndEncode(uint8_t *frame) {
   hc::accelerator_view acc_view = hc::accelerator().get_default_view();
 
   av_foreground.discard_data();
+  cpu_gpu_logger_->GPUOn();
   hc::parallel_for_each(
       acc_view, hc::extent<1>(num_pixels), [=](hc::index<1> j)[[hc]] {
         uint8_t diff = 0;
@@ -144,11 +145,14 @@ void BeHcBenchmark::ExtractAndEncode(uint8_t *frame) {
       });
   av_foreground.synchronize();
   av_frame.discard_data();
+  cpu_gpu_logger_->GPUOff();
 
   if (generate_output_) {
+    cpu_gpu_logger_->CPUOn();
     cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground_.data(),
                          cv::Mat::AUTO_STEP);
     video_writer_ << output_frame;
+    cpu_gpu_logger_->CPUOff();
   }
 
   delete[] frame;
@@ -160,9 +164,7 @@ void BeHcBenchmark::NormalRun() {
 
   // Initialize background
   video_.open(input_file_);
-  timer_->Start();
   uint8_t *frame = nextFrame();
-  timer_->End({"Decoding"});
   for (int i = 0; i < num_pixels; i++) {
     background_[i] = static_cast<float>(frame[i]);
   }
@@ -179,20 +181,18 @@ void BeHcBenchmark::NormalRun() {
       break;
     }
 
-    timer_->Start();
     delete[] frame;
     frame = nextFrame();
-    timer_->End({"Decoding"});
     if (!frame) {
       break;
     }
 
     frame_count++;
 
-    timer_->Start();
     hc::array_view<uint8_t, 1> av_foreground(num_pixels, foreground_);
     hc::array_view<uint8_t, 1> av_frame(num_pixels, frame);
     av_foreground.discard_data();
+    cpu_gpu_logger_->GPUOn();
     hc::parallel_for_each(
         acc_view, hc::extent<1>(num_pixels), [=](hc::index<1> j)[[hc]] {
           uint8_t diff = 0;
@@ -210,14 +210,14 @@ void BeHcBenchmark::NormalRun() {
           background[j] = background[j] * (1 - alpha) + av_frame[j] * alpha;
         });
     av_foreground.synchronize();
-    timer_->End({"Kernel"});
+    cpu_gpu_logger_->GPUOff();
 
     if (generate_output_) {
-      timer_->Start();
+      cpu_gpu_logger_->CPUOn();
       cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3,
                            foreground_.data(), cv::Mat::AUTO_STEP);
       video_writer_ << output_frame;
-      timer_->End({"Encoding"});
+      cpu_gpu_logger_->CPUOff();
     }
   }
 }

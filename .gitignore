@@ -84,3 +84,7 @@ compile_log.txt
 
 # Temp python files
 *.pyc
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.eps

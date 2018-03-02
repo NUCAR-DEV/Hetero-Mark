@@ -48,7 +48,7 @@ class HistCl12Benchmark : public HistBenchmark, public ClBenchmark {
   void InitializeBuffers();
 
  public:
-  HistCl12Benchmark() {}
+  HistCl12Benchmark() : HistBenchmark() {}
   ~HistCl12Benchmark() {}
 
   void Initialize() override;

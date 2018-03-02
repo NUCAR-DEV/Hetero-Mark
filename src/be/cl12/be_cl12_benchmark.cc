@@ -94,6 +94,8 @@ void BeCl12Benchmark::Run() {
   } else {
     NormalRun();
   }
+
+  cpu_gpu_logger_->Summarize();
 }
 
 void BeCl12Benchmark::NormalRun() {
@@ -179,10 +181,12 @@ void BeCl12Benchmark::NormalRun() {
     size_t localThreads[1] = {64};
     size_t globalThreads[1] = {num_pixels * channel_};
 
+    cpu_gpu_logger_->GPUOn();
     ret = clEnqueueNDRangeKernel(cmd_queue_, be_kernel_, CL_TRUE, NULL,
                                  globalThreads, localThreads, 0, NULL, NULL);
     checkOpenCLErrors(ret, "Enqueue ND Range.\n");
     clFinish(cmd_queue_);
+    cpu_gpu_logger_->GPUOff();
 
     // Get data back
     ret = clEnqueueReadBuffer(cmd_queue_, d_fg_, CL_TRUE, 0,
@@ -264,13 +268,14 @@ void BeCl12Benchmark::ExtractAndEncode(uint8_t *frame) {
   checkOpenCLErrors(ret, "Copy frame\n");
 
   size_t localThreads[1] = {64};
-  size_t globalThreads[1] = {(num_pixels * channel_ + localThreads[1] - 1) /
-                             localThreads[1]};
+  size_t globalThreads[1] = {num_pixels * channel_};
 
+  cpu_gpu_logger_->GPUOn();
   ret = clEnqueueNDRangeKernel(cmd_queue_, be_kernel_, CL_TRUE, NULL,
                                globalThreads, localThreads, 0, NULL, NULL);
   checkOpenCLErrors(ret, "Enqueue ND Range.\n");
   clFinish(cmd_queue_);
+  cpu_gpu_logger_->GPUOff();
 
   // Get data back
   ret = clEnqueueReadBuffer(cmd_queue_, d_fg_, CL_TRUE, 0,
@@ -281,9 +286,11 @@ void BeCl12Benchmark::ExtractAndEncode(uint8_t *frame) {
 
   delete[] frame;
   if (generate_output_) {
+    cpu_gpu_logger_->CPUOn();
     cv::Mat output_frame(cv::Size(width_, height_), CV_8UC3, foreground_.data(),
                          cv::Mat::AUTO_STEP);
     video_writer_ << output_frame;
+    cpu_gpu_logger_->CPUOff();
   }
 }
 

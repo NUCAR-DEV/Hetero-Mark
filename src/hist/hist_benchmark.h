@@ -52,6 +52,7 @@ class HistBenchmark : public Benchmark {
   uint32_t *histogram_;
 
  public:
+  HistBenchmark() : Benchmark() {}
   void Initialize() override;
   void Run() override {}
   void Verify() override;

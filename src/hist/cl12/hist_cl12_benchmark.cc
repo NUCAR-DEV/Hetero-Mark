@@ -107,16 +107,20 @@ void HistCl12Benchmark::Run() {
 
   size_t global_dimensions[] = {1024};
   size_t local_dimensions[] = {64};
+
+  cpu_gpu_logger_->GPUOn();
   err = clEnqueueNDRangeKernel(cmd_queue_, hist_kernel_, CL_TRUE, NULL,
                                global_dimensions, local_dimensions, 0, 0, NULL);
   checkOpenCLErrors(err, "Failed to launch kernel");
   clFinish(cmd_queue_);
+  cpu_gpu_logger_->GPUOff();
 
   err = clEnqueueReadBuffer(cmd_queue_, dev_histogram_, CL_TRUE, 0,
                             num_color_ * sizeof(uint32_t), histogram_, 0, NULL,
                             NULL);
   checkOpenCLErrors(err, "Failed to copy histogram back");
   clFinish(cmd_queue_);
+  cpu_gpu_logger_->Summarize();
 }
 
 void HistCl12Benchmark::Cleanup() {

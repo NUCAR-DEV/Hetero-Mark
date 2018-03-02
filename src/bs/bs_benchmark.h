@@ -90,6 +90,7 @@ class BsBenchmark : public Benchmark {
                        uint32_t index, uint32_t extent);
 
  public:
+  BsBenchmark() : Benchmark() {}
   void Initialize() override;
   void Run() override {};
   void Verify() override;

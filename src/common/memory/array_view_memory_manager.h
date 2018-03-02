@@ -21,8 +21,6 @@ class ArrayViewMemory : public Memory<T> {
     return d_buf_.accelerator_pointer();
   }
 
-  hc::array_view<T, N> GetNative() { return d_buf_; };
-
   void HostToDevice() override { d_buf_.refresh(); }
 
   void DeviceToHost() override {

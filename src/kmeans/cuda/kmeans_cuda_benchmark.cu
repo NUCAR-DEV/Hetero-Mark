@@ -133,8 +133,11 @@ void KmeansCudaBenchmark::TransposeFeatures() {
   dim3 block_size(64);
   dim3 grid_size((num_points_ + block_size.x - 1) / block_size.x);
 
+  cpu_gpu_logger_->GPUOn();
   kmeans_swap_cuda<<<grid_size, block_size>>>(
       device_features_, device_features_swap_, num_points_, num_features_);
+  cudaDeviceSynchronize();
+  cpu_gpu_logger_->GPUOff();
 }
 
 void KmeansCudaBenchmark::KmeansClustering(unsigned num_clusters) {
@@ -172,13 +175,16 @@ void KmeansCudaBenchmark::UpdateMembership(unsigned num_clusters) {
   int size = 0;
   int offset = 0;
 
+  cpu_gpu_logger_->GPUOn();
   kmeans_compute_cuda<<<grid_size, block_size>>>(
       device_features_swap_, device_clusters_, device_membership_, num_points_,
       num_clusters_, num_features_, offset, size);
 
   cudaMemcpy(new_membership, device_membership_, num_points_ * sizeof(int),
              cudaMemcpyDeviceToHost);
+  cpu_gpu_logger_->GPUOff();
 
+  cpu_gpu_logger_->CPUOn();
   delta_ = 0.0f;
   for (unsigned int i = 0; i < num_points_; i++) {
     /* printf("number %d, merbership %d\n", i, new_membership[i]); */
@@ -187,9 +193,13 @@ void KmeansCudaBenchmark::UpdateMembership(unsigned num_clusters) {
       membership_[i] = new_membership[i];
     }
   }
+  cpu_gpu_logger_->CPUOff();
 }
 
-void KmeansCudaBenchmark::Run() { Clustering(); }
+void KmeansCudaBenchmark::Run() { 
+  Clustering(); 
+  cpu_gpu_logger_->Summarize();
+}
 
 void KmeansCudaBenchmark::Cleanup() {
   cudaFree(device_membership_);

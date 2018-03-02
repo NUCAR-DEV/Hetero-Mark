@@ -108,10 +108,12 @@ void EpBenchmark::Reproduce() {
 }
 
 void EpBenchmark::ReproduceInIsland(std::vector<Creature> *island) {
+  cpu_gpu_logger_->CPUOn();
   while (island->size() < population_ / 2) {
     Creature creature = CreateRandomCreature();
     island->push_back(creature);
   }
+  cpu_gpu_logger_->CPUOff();
 }
 
 Creature EpBenchmark::CreateRandomCreature() {
@@ -126,6 +128,7 @@ Creature EpBenchmark::CreateRandomCreature() {
 }
 
 void EpBenchmark::Evaluate() {
+  cpu_gpu_logger_->CPUOn();
   for (auto &creature : islands_1_) {
     ApplyFitnessFunction(&creature);
   }
@@ -133,6 +136,7 @@ void EpBenchmark::Evaluate() {
   for (auto &creature : islands_2_) {
     ApplyFitnessFunction(&creature);
   }
+  cpu_gpu_logger_->CPUOff();
 }
 
 void EpBenchmark::ApplyFitnessFunction(Creature *creature) {
@@ -149,6 +153,7 @@ void EpBenchmark::Select() {
 }
 
 void EpBenchmark::SelectInIsland(std::vector<Creature> *island) {
+  cpu_gpu_logger_->CPUOn();
   auto comparator = [](const Creature &a, const Creature &b) {
     return b.fitness < a.fitness;
   };
@@ -157,6 +162,7 @@ void EpBenchmark::SelectInIsland(std::vector<Creature> *island) {
   for (int i = 0; i < kNumEliminate / 2; i++) {
     island->pop_back();
   }
+  cpu_gpu_logger_->CPUOff();
 }
 
 void EpBenchmark::Crossover() {
@@ -165,6 +171,7 @@ void EpBenchmark::Crossover() {
 }
 
 void EpBenchmark::CrossoverInIsland(std::vector<Creature> *island) {
+  cpu_gpu_logger_->CPUOn();
   std::vector<Creature> new_creatures;
   for (auto &creature : *island) {
     Creature best_creature = (*island)[rand_r(&seed_) % 10];
@@ -179,9 +186,11 @@ void EpBenchmark::CrossoverInIsland(std::vector<Creature> *island) {
     new_creatures.push_back(offspring);
   }
   *island = new_creatures;
+  cpu_gpu_logger_->CPUOff();
 }
 
 void EpBenchmark::Mutate() {
+  cpu_gpu_logger_->CPUOn();
   for (uint32_t i = 0; i < islands_1_.size(); i++) {
     if (i % 7 != 0) continue;
     islands_1_[i].parameters[i % kNumVariables] *= 0.5;
@@ -191,6 +200,7 @@ void EpBenchmark::Mutate() {
     if (i % 7 != 0) continue;
     islands_2_[i].parameters[i % kNumVariables] *= 0.5;
   }
+  cpu_gpu_logger_->CPUOff();
 }
 
 void EpBenchmark::Summarize() {}

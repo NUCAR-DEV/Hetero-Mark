@@ -102,6 +102,7 @@ void BsBenchmark::Initialize() {
 void BsBenchmark::BlackScholesCPU(float *rand_array, float *call_price,
                                   float *put_price, uint32_t index,
                                   uint32_t extent) {
+  cpu_gpu_logger_->CPUOn();
   for (uint32_t local_index = 0; local_index < extent; ++local_index) {
     // set the y to be the golobal index
     uint32_t y = index + local_index;
@@ -131,6 +132,7 @@ void BsBenchmark::BlackScholesCPU(float *rand_array, float *call_price,
     call_price[y] = s * Phi(d1) - k_exp_minus_rt_ * Phi(d2);
     put_price[y] = k_exp_minus_rt_ * Phi(-d2) - s * Phi(-d1);
   }
+  cpu_gpu_logger_->CPUOff();
 }
 
 void BsBenchmark::Verify() {

@@ -55,6 +55,7 @@ void GaHcBenchmark::Run() {
   } else {
     NonCollaborativeRun();
   }
+  cpu_gpu_logger_->Summarize();
 }
 
 void GaHcBenchmark::CollaborativeRun() {
@@ -83,6 +84,7 @@ void GaHcBenchmark::CollaborativeRun() {
     int query_sequence_length = query_sequence_.size();
 
     // av_batch_result.discard_data();
+    cpu_gpu_logger_->GPUOn();
     hc::parallel_for_each(hc::extent<1>(length), [=](hc::index<1> index)[[hc]] {
       bool match = false;
       int max_length = query_sequence_length - coarse_match_length;
@@ -105,7 +107,8 @@ void GaHcBenchmark::CollaborativeRun() {
       }
     });
 
-    // av_batch_result.synchronize();
+    av_batch_result.synchronize();
+    cpu_gpu_logger_->GPUOff();
     // memcpy(coarse_match_result_ + current_position, batch_result, length);
 
     for (int i = 0; i < length; i++) {
@@ -150,7 +153,8 @@ void GaHcBenchmark::NonCollaborativeRun() {
     int coarse_match_length = coarse_match_length_;
     int coarse_match_threshold = coarse_match_threshold_;
     int query_sequence_length = query_sequence_.size();
-
+  
+    cpu_gpu_logger_->GPUOn();
     hc::parallel_for_each(hc::extent<1>(length), [=](hc::index<1> index)[[hc]] {
       bool match = false;
       int max_length = query_sequence_length - coarse_match_length;
@@ -174,6 +178,8 @@ void GaHcBenchmark::NonCollaborativeRun() {
     });
 
     av_batch_result.synchronize();
+    cpu_gpu_logger_->GPUOff();
+
     memcpy(coarse_match_result_ + current_position, batch_result, length);
 
     current_position = end_position;

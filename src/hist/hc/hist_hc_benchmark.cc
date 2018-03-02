@@ -55,7 +55,8 @@ void HistHcBenchmark::Run() {
   int num_pixel = num_pixel_;
   int num_color = num_color_;
   int num_wi = 8192;
-
+  
+  cpu_gpu_logger_->GPUOn();
   parallel_for_each(hc::extent<1>(num_wi), [=](hc::index<1> id)[[hc]] {
     uint32_t i = id[0];
     uint32_t local_hist[256] = {0};
@@ -72,6 +73,8 @@ void HistHcBenchmark::Run() {
       }
     }
   });
+  cpu_gpu_logger_->GPUOff();
+  cpu_gpu_logger_->Summarize();
 }
 
 void HistHcBenchmark::Cleanup() { HistBenchmark::Cleanup(); }

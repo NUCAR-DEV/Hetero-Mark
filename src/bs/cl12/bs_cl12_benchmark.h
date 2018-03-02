@@ -62,7 +62,7 @@ class BsCl12Benchmark : public BsBenchmark, public ClBenchmark {
   
  public:
 
-  BsCl12Benchmark() {}
+  BsCl12Benchmark() : BsBenchmark() {}
   ~BsCl12Benchmark() {}
   
   void Initialize() override;

@@ -131,11 +131,13 @@ void FirCl12Benchmark::Run() {
                                NULL);
     checkOpenCLErrors(ret, "Copy data to buffer\n");
 
+    cpu_gpu_logger_->GPUOn();
     // Execute the OpenCL kernel on the list
     ret = clEnqueueNDRangeKernel(cmd_queue_, fir_kernel_, CL_TRUE, NULL,
                                  globalThreads, localThreads, 0, NULL, NULL);
     checkOpenCLErrors(ret, "Enqueue ND Range.\n");
     clFinish(cmd_queue_);
+    cpu_gpu_logger_->GPUOff();
 
     // Get the output buffer
     ret = clEnqueueReadBuffer(cmd_queue_, output_buffer_, CL_TRUE, 0,
@@ -150,6 +152,7 @@ void FirCl12Benchmark::Run() {
 
   ret = clFlush(cmd_queue_);
   ret = clFinish(cmd_queue_);
+  cpu_gpu_logger_->Summarize();
 }
 
 void FirCl12Benchmark::Cleanup() {

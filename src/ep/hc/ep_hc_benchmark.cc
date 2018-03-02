@@ -51,20 +51,18 @@ void EpHcBenchmark::Run() {
   } else {
     NormalRun();
   }
+  cpu_gpu_logger_->Summarize();
 }
 
 void EpHcBenchmark::PipelinedRun() {
   seed_ = kSeedInitValue;
   ReproduceInIsland(&islands_1_);
   for (int i = 0; i < max_generation_; i++) {
-    timer_->Start();
     std::thread t1(&EpHcBenchmark::ReproduceInIsland, this, &islands_2_);
     std::thread t2(&EpHcBenchmark::EvaluateGpu, this, &islands_1_);
     t1.join();
     t2.join();
-    timer_->End({"Stage 1"});
 
-    timer_->Start();
     std::thread t3(&EpHcBenchmark::EvaluateGpu, this, &islands_2_);
     std::thread t4(&EpHcBenchmark::SelectInIsland, this, &islands_1_);
     t4.join();
@@ -72,9 +70,7 @@ void EpHcBenchmark::PipelinedRun() {
     std::thread t5(&EpHcBenchmark::CrossoverInIsland, this, &islands_1_);
     t5.join();
     t3.join();
-    timer_->End({"Stage 2"});
 
-    timer_->Start();
     std::thread t6(&EpHcBenchmark::SelectInIsland, this, &islands_2_);
     std::thread t7(&EpHcBenchmark::MutateGpu, this, &islands_1_);
     t6.join();
@@ -82,16 +78,11 @@ void EpHcBenchmark::PipelinedRun() {
     std::thread t8(&EpHcBenchmark::CrossoverInIsland, this, &islands_2_);
     t7.join();
     t8.join();
-    timer_->End({"Stage 3"});
 
-    timer_->Start();
     std::thread t9(&EpHcBenchmark::MutateGpu, this, &islands_2_);
     std::thread t10(&EpHcBenchmark::ReproduceInIsland, this, &islands_1_);
     t9.join();
     t10.join();
-    timer_->End({"Stage 4"});
-
-    timer_->Summarize();
   }
 }
 
@@ -115,6 +106,7 @@ void EpHcBenchmark::NormalRun() {
 void EpHcBenchmark::EvaluateGpu(std::vector<Creature> *island) {
   hc::array_view<Creature, 1> av_island(island->size(), *island);
   hc::array_view<double, 1> av_fitness_func(kNumVariables, fitness_function_);
+  cpu_gpu_logger_->GPUOn();
   hc::parallel_for_each(hc::extent<1>(island->size()),
                         [=](hc::index<1> i)[[hc]] {
                           double fitness = 0;
@@ -129,16 +121,19 @@ void EpHcBenchmark::EvaluateGpu(std::vector<Creature> *island) {
                           creature.fitness = fitness;
                         });
   av_island.synchronize();
+  cpu_gpu_logger_->GPUOff();
 }
 
 void EpHcBenchmark::MutateGpu(std::vector<Creature> *island) {
   hc::array_view<Creature, 1> av_island(island->size(), *island);
+  cpu_gpu_logger_->GPUOn();
   hc::parallel_for_each(hc::extent<1>(island->size()),
                         [=](hc::index<1> i)[[hc]] {
                           if (i[0] % 7 != 0) return;
                           av_island[i].parameters[i[0] % kNumVariables] *= 0.5;
                         });
   av_island.synchronize();
+  cpu_gpu_logger_->GPUOff();
 }
 
 void EpHcBenchmark::Cleanup() { EpBenchmark::Cleanup(); }

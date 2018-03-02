@@ -49,6 +49,7 @@ class HistCudaBenchmark : public HistBenchmark {
   uint32_t *d_histogram_;
 
  public:
+  HistCudaBenchmark() : HistBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

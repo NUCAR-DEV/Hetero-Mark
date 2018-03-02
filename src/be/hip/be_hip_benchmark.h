@@ -56,6 +56,7 @@ class BeHipBenchmark : public BeBenchmark {
 
   float *d_bg_;
   uint8_t *d_fg_;
+  uint8_t *d_frame_;
 
   std::mutex queue_mutex_;
   std::condition_variable queue_condition_variable_;
@@ -65,6 +66,7 @@ class BeHipBenchmark : public BeBenchmark {
   void ExtractAndEncode(uint8_t *frame);
 
  public:
+  BeHipBenchmark() : BeBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Summarize() override;

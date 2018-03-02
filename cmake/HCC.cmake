@@ -5,10 +5,16 @@ other benchmarks \
 ")
 
 	set(COMPILE_HCC On)
-  add_definitions(-DCOMPILE_HCC=1)
+  add_definitions(-DCOMPILE_HCC=1 -DCOMPILE_HSA=1)
 
 	include_directories("/opt/rocm/include/hcc")
 	include_directories("/opt/rocm/include/")
+
+  find_library (HSA_LIBRARY 
+    NAMES hsa-runtime64
+    HINTS /opt/rocm/lib/
+  )
+  message(${HSA_LIBRARY})
 
 	# Thank for HCC-Example-Application for the following solution
 	execute_process(COMMAND hcc-config  --cxxflags

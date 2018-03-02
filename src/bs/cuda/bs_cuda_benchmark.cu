@@ -153,6 +153,7 @@ void BsCudaBenchmark::Run() {
       dim3 block_size(64);
       dim3 grid_size((section_tiles * tile_size_) / 64.00);
 
+      cpu_gpu_logger_->GPUOn();
       bs_cuda<<<grid_size, block_size, 0, stream_>>>(d_rand_array_ + offset,
                                                      d_call_price_ + offset,
                                                      d_put_price_ + offset);
@@ -167,16 +168,21 @@ void BsCudaBenchmark::Run() {
   }
 
   cudaDeviceSynchronize();
+  cpu_gpu_logger_->GPUOff();
 
   cudaMemcpy(call_price_, d_call_price_,
              done_tiles_ * tile_size_ * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(put_price_, d_put_price_, done_tiles_ * tile_size_ * sizeof(float),
              cudaMemcpyDeviceToHost);
+  cpu_gpu_logger_->Summarize();
 }
 
 bool BsCudaBenchmark::IsGpuCompleted() {
   cudaError_t ret = cudaStreamQuery(stream_);
-  if (ret == cudaSuccess) return true;
+  if (ret == cudaSuccess) {
+    cpu_gpu_logger_->GPUOff();
+    return true;
+  }
   return false;
 }
 

@@ -105,6 +105,9 @@ void BsHcBenchmark::Run() {
   while (done_tiles_ < last_tile_) {
     // First check to make sure that we are launching the first set
     if (first_launch_ || fut.is_ready()) {
+      if (!first_launch_) {
+        cpu_gpu_logger_->GPUOff();
+      }
       // No longer the first lunch after this point so
       // turn it off
       first_launch_ = false;
@@ -128,8 +131,6 @@ void BsHcBenchmark::Run() {
           done_tiles_ * tile_size_, section_tiles * tile_size_);
 
       // GPU is running the following tiles
-      fprintf(stderr, "GPU tiles: %d to %d\n", done_tiles_,
-              done_tiles_ + section_tiles);
       done_tiles_ += section_tiles;
 
       // Convert member var to local var to use in the kenrel
@@ -145,6 +146,7 @@ void BsHcBenchmark::Run() {
       float sigmaUpperLimit = kSigmaUpperLimit;
 
       // Run the application
+      cpu_gpu_logger_->GPUOn();
       fut = hc::parallel_for_each(hc::extent<1>(section_tiles * tile_size_), [=
       ](hc::index<1> index)[[hc]] {
         // the variable representing the value in the array[i]
@@ -177,13 +179,14 @@ void BsHcBenchmark::Run() {
       // GPU becomes ready
       if (active_cpu_) {
         last_tile_--;
-        fprintf(stderr, "CPU tile: %d \n", last_tile_);
         BlackScholesCPU(rand_array_, call_price_, put_price_,
                         last_tile_ * tile_size_, tile_size_);
       }
     }
   }
   fut.wait();
+  cpu_gpu_logger_->GPUOff();
+
   if (active_cpu_) {
     hc::array_view<float, 1> call_partial_ =
         av_call_price.section(0, done_tiles_ * tile_size_);
@@ -193,6 +196,8 @@ void BsHcBenchmark::Run() {
     hc::copy(call_partial_, call_price_);
     hc::copy(put_partial_, put_price_);
   }
+
+  cpu_gpu_logger_->Summarize();
 }
 
 void BsHcBenchmark::Cleanup() { BsBenchmark::Cleanup(); }

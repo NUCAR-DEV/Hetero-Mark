@@ -55,6 +55,7 @@ class GaCudaBenchmark : public GaBenchmark {
   void NonCollaborativeRun();
 
  public:
+  GaCudaBenchmark() : GaBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

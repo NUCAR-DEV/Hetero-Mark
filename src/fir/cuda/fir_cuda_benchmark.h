@@ -56,6 +56,7 @@ class FirCudaBenchmark : public FirBenchmark {
   void InitializeBuffers();
 
  public:
+  FirCudaBenchmark() : FirBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

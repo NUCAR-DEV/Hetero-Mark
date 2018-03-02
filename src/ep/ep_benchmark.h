@@ -86,6 +86,7 @@ class EpBenchmark : public Benchmark {
   void Mutate();
 
  public:
+  EpBenchmark() : Benchmark() {}
   void Initialize() override;
   void Run() override{};
   void Verify() override;

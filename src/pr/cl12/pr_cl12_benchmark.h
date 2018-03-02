@@ -54,7 +54,7 @@ class PrCl12Benchmark : public PrBenchmark, public ClBenchmark {
   void CopyDataBackFromDevice(cl_mem *buffer);
 
  public:
-  PrCl12Benchmark() {}
+  PrCl12Benchmark() : PrBenchmark() {}
   ~PrCl12Benchmark() {}
 
   void Initialize() override;

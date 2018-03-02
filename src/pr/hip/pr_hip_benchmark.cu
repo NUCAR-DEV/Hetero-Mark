@@ -89,7 +89,8 @@ void PrHipBenchmark::Run() {
   hipMemcpy(device_mtx_1, temp_mtx, num_nodes_ * sizeof(float),
             hipMemcpyHostToDevice);
   free(temp_mtx);
-
+  
+  cpu_gpu_logger_->GPUOn();
   for (i = 0; i < max_iteration_; i++) {
     if (i % 2 == 0) {
       hipLaunchKernel(HIP_KERNEL_NAME(pr_hip), dim3(grid_size),
@@ -111,6 +112,8 @@ void PrHipBenchmark::Run() {
     hipMemcpy(page_rank_, device_mtx_2, num_nodes_ * sizeof(float),
               hipMemcpyDeviceToHost);
   }
+  cpu_gpu_logger_->GPUOff();
+  cpu_gpu_logger_->Summarize();
 }
 
 void PrHipBenchmark::Cleanup() {

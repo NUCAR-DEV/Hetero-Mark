@@ -68,6 +68,7 @@ class PrBenchmark : public Benchmark {
   void CpuPageRankUpdate(float *input, float *output);
 
  public:
+  PrBenchmark() : Benchmark() {}
   void Initialize() override;
   void Run() override {}
   void Verify() override;
