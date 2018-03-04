@@ -1,6 +1,9 @@
 #ifndef SRC_COMMON_MEMORY_MANAGER_
 #define SRC_COMMON_MEMORY_MANAGER_
 
+#include <cstdlib>
+#include <memory>
+
 class Memory {
  protected:
   void *h_buf_;
