@@ -56,6 +56,8 @@ class ArgumentValue {
    */
   ArgumentValue() : value_() {}
 
+  virtual ~ArgumentValue() {}
+
   /**
    * Set the value in string format
    */

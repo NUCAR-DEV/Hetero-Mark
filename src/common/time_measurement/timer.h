@@ -50,6 +50,8 @@ class Timer {
    * Return current time in second
    */
   virtual double GetTimeInSec() = 0;
+
+  virtual ~Timer() {}
 };
 
 #endif  // SRC_COMMON_TIME_MEASUREMENT_TIMER_H_

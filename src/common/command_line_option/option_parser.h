@@ -49,6 +49,8 @@
  */
 class OptionParser {
  public:
+  virtual ~OptionParser() {}
+
   /**
    * Parse the result
    */

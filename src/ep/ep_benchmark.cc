@@ -43,8 +43,8 @@
 #include <cstdio>
 #include <cstdlib>
 
-const uint32_t EpBenchmark::kNumVariables;
-const uint32_t EpBenchmark::kNumEliminate;
+const int32_t EpBenchmark::kNumVariables;
+const int32_t EpBenchmark::kNumEliminate;
 const int EpBenchmark::kSeedInitValue;
 
 void Creature::Dump() {

@@ -72,6 +72,8 @@ class Benchmark {
     cpu_gpu_logger_.reset(new CPUGPUActivityLogger());
   }
 
+  virtual ~Benchmark() {}
+
   /**
    * Initialize environment, parameter, buffers
    */

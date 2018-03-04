@@ -56,8 +56,8 @@ class Creature {
 
 class EpBenchmark : public Benchmark {
  protected:
-  static const uint32_t kNumVariables = NUM_VARIABLES;
-  static const uint32_t kNumEliminate = 0;
+  static const int32_t kNumVariables = NUM_VARIABLES;
+  static const int32_t kNumEliminate = 0;
   static const int kSeedInitValue = 1;
 
   unsigned int seed_ = 1;

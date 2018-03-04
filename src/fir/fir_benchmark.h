@@ -57,6 +57,7 @@ class FirBenchmark : public Benchmark {
 
  public:
   FirBenchmark() : Benchmark() {}
+  virtual ~FirBenchmark() {}
   void Initialize() override;
   void Run() override{};
   void Verify() override;

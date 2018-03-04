@@ -75,6 +75,8 @@ class Argument {
    */
   explicit Argument(const char *name) : name_(name) {}
 
+  virtual ~Argument() {}
+
   /**
    * Get the name of the argument
    */

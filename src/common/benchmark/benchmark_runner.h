@@ -52,6 +52,8 @@ class BenchmarkRunner {
   BenchmarkRunner(Benchmark *benchmark, TimeMeasurement *time_measurement)
       : benchmark_(benchmark), time_measurement_(time_measurement) {}
 
+  virtual ~BenchmarkRunner() {}
+
   /**
    * Run the benchmark
    */

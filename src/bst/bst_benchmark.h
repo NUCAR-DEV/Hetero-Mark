@@ -81,7 +81,7 @@ class BstBenchmark : public Benchmark {
   void UmMutexUnlock(um_mutex *lock);
 
  public:
-  BstBenchmark() : Bebchmark() {}
+  BstBenchmark() : Benchmark() {}
   void Initialize() override;
   void Run() override{};
   void Verify() override;

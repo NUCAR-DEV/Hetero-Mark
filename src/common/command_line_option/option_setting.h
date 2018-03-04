@@ -56,6 +56,7 @@ class OptionSetting {
    */
   class Iterator {
    public:
+    virtual ~Iterator() {}
     virtual bool HasNext() = 0;
     virtual Argument *Next() = 0;
   };

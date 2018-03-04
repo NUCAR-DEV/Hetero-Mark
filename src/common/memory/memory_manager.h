@@ -45,6 +45,7 @@ class Memory {
 
 class MemoryManager{
  public:
+   virtual ~MemoryManager() {}
    virtual std::unique_ptr<Memory> Shadow(void *buf, size_t byte_size) = 0;
 };
 
