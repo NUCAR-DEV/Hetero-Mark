@@ -39,8 +39,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--skip-build", action="store_true",
                         help="""
-            By default, the script performs an incremental build. 
-            Setting this argument will skip the compilation process. This is 
+            By default, the script performs an incremental build.
+            Setting this argument will skip the compilation process. This is
             useful if you have the compiled with this script before.
             """)
     parser.add_argument("--fresh-build", action="store_true",
@@ -49,16 +49,16 @@ def parse_args():
             """)
     parser.add_argument("--cmake-flag",
                         help="""
-            Use this option to set the flags to pass to cmake. 
+            Use this option to set the flags to pass to cmake.
             Set "-DCOMPILE_CUDA=On" to enable CUDA compilation.
             """)
     parser.add_argument("--cxx", default="g++",
                         help="""
-            The compiler to be used to compile the benchmark. 
+            The compiler to be used to compile the benchmark.
             """)
     parser.add_argument("-i", "--ignore-error", action="store_true",
                             help="""
-            Use this option to ignore errors in the compilation and 
+            Use this option to ignore errors in the compilation and
             verification process.
             """)
 
@@ -69,12 +69,12 @@ def parse_args():
             """)
     parser.add_argument("--full-verification", action="store_true",
                         help="""
-            Perform a full verification on different input values. 
+            Perform a full verification on different input values.
             """)
     parser.add_argument("-b", "--benchmark",
                         help="""
-            Benchmark to run. By default, this script will run all the 
-            benchmarks. Which this argument, you can specify a certain 
+            Benchmark to run. By default, this script will run all the
+            benchmarks. Which this argument, you can specify a certain
             benchmark to run.
             """)
     parser.add_argument("-r", "--repeat-time", default=5, type=int,
