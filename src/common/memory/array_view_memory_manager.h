@@ -17,9 +17,7 @@ class ArrayViewMemory : public Memory<T> {
     d_buf_.synchronize_to(hc::accelerator().get_default_view());
   };
 
-  T *GetDevicePtr() override {
-    return d_buf_.accelerator_pointer();
-  }
+  T *GetDevicePtr() override { return d_buf_.accelerator_pointer(); }
 
   void HostToDevice() override { d_buf_.refresh(); }
 

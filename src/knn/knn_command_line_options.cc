@@ -48,18 +48,22 @@ void KnnCommandLineOptions::RegisterOptions() {
 
   // The description of the benchmark
   command_line_option_.SetDescription(
-      "This benchmark runs k nearest neighbours application on input -lat latitiude_value -lng longitude_value");
+      "This benchmark runs k nearest neighbours application on input -lat "
+      "latitiude_value -lng longitude_value");
 
   // Registering the command line options
 
-  command_line_option_.AddArgument("InputFile", "string","", "-i", "--input",
-                                   "The filename that lists the data input files");
-  command_line_option_.AddArgument("Latitude", "float", "0", "-lat","-latitude",
+  command_line_option_.AddArgument(
+      "InputFile", "string", "", "-i", "--input",
+      "The filename that lists the data input files");
+  command_line_option_.AddArgument("Latitude", "float", "0", "-lat",
+                                   "-latitude",
                                    "The latitude for the nearest neighbours");
-  command_line_option_.AddArgument("Longitude", "float", "0", "-lng","-longitude",
+  command_line_option_.AddArgument("Longitude", "float", "0", "-lng",
+                                   "-longitude",
                                    "The longitude for the nearest neighbours");
-  command_line_option_.AddArgument("kValue", "int", "10","-k", "-numK",
-		  		    "The number of nearest neighbours you want");
+  command_line_option_.AddArgument("kValue", "int", "10", "-k", "-numK",
+                                   "The number of nearest neighbours you want");
 }
 
 void KnnCommandLineOptions::Parse(int argc, const char *argv[]) {
@@ -67,17 +71,13 @@ void KnnCommandLineOptions::Parse(int argc, const char *argv[]) {
   BenchmarkCommandLineOptions::Parse(argc, argv);
 
   // Parse the input arguments for number of elements for KNN
-  filename_ =
-      command_line_option_.GetArgumentValue("InputFile")->AsString();
+  filename_ = command_line_option_.GetArgumentValue("InputFile")->AsString();
 
-  latitude_ =
-      command_line_option_.GetArgumentValue("Latitude")->AsDouble();
+  latitude_ = command_line_option_.GetArgumentValue("Latitude")->AsDouble();
 
-  longitude_ =
-      command_line_option_.GetArgumentValue("Longitude")->AsDouble();
+  longitude_ = command_line_option_.GetArgumentValue("Longitude")->AsDouble();
 
-  k_value_=
-      command_line_option_.GetArgumentValue("kValue")->AsInt32();
+  k_value_ = command_line_option_.GetArgumentValue("kValue")->AsInt32();
 }
 
 void KnnCommandLineOptions::ConfigureKnnBenchmark(KnnBenchmark *benchmark) {

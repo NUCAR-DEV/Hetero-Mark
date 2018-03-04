@@ -45,9 +45,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-void BstHcBenchmark::Initialize() {
-
-}
+void BstHcBenchmark::Initialize() {}
 
 void BstHcBenchmark::Run() {
   hc::extent<1> kernel_ext(device_nodes_);
@@ -63,9 +61,6 @@ void BstHcBenchmark::Run() {
 
   printf("Number of actual nodes are %d \n", actual_nodes);
   printf("Number of total nodes are %d \n", total_nodes_);
-
 }
 
-void BstHcBenchmark::Cleanup() {
-  BstBenchmark::Cleanup();
-}
+void BstHcBenchmark::Cleanup() { BstBenchmark::Cleanup(); }

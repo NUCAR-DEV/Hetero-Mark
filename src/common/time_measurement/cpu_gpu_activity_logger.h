@@ -41,8 +41,8 @@
 #ifndef SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_
 #define SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_
 
-#include <memory>
 #include <iostream>
+#include <memory>
 #include <mutex>
 
 #include "timer.h"
@@ -82,9 +82,7 @@ class CPUGPUActivityLogger {
   }
 
  public:
-  CPUGPUActivityLogger() {
-    timer_.reset(new TimerImpl());
-  }
+  CPUGPUActivityLogger() { timer_.reset(new TimerImpl()); }
 
   ~CPUGPUActivityLogger() {
     if (cpu_instance_ > 0) {
@@ -104,10 +102,9 @@ class CPUGPUActivityLogger {
   void CPUOff() {
     std::lock_guard<std::mutex> lock(mutex);
     AddTime();
-    if (cpu_instance_ > 0)
-      cpu_instance_--;
+    if (cpu_instance_ > 0) cpu_instance_--;
   }
-  
+
   void GPUOn() {
     std::lock_guard<std::mutex> lock(mutex);
     AddTime();
@@ -117,18 +114,14 @@ class CPUGPUActivityLogger {
   void GPUOff() {
     std::lock_guard<std::mutex> lock(mutex);
     AddTime();
-    if (gpu_instance_ > 0)
-      gpu_instance_--;
+    if (gpu_instance_ > 0) gpu_instance_--;
   }
 
   void Summarize() {
     std::lock_guard<std::mutex> lock(mutex);
-    std::cerr << "CPU: " << cpu_ 
-              << ", GPU: " << gpu_ 
-              << ", both: " << both_
+    std::cerr << "CPU: " << cpu_ << ", GPU: " << gpu_ << ", both: " << both_
               << "\n";
   }
 };
 
 #endif  // SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_
-

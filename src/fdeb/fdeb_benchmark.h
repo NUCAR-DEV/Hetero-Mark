@@ -41,19 +41,18 @@
 #ifndef SRC_FDEB_FDEB_BENCHMARK_H_
 #define SRC_FDEB_FDEB_BENCHMARK_H_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
 class FdebBenchmark : public Benchmark {
  protected:
-
   bool collaborative_;
-  int gpu_batch_;      // If collaborative mode, the number of points that the
-                       // GPU process in one kernel
-  bool use_atomic_;    // If set, the GPU implement will use atomic operations.
+  int gpu_batch_;    // If collaborative mode, the number of points that the
+                     // GPU process in one kernel
+  bool use_atomic_;  // If set, the GPU implement will use atomic operations.
 
   std::string input_file_;
 
@@ -61,10 +60,10 @@ class FdebBenchmark : public Benchmark {
   int init_iter_count_;
   float init_step_size_;
   float kp_;
- 
+
   int edge_count_;
   int num_subpoint_;
-  int col_;            // Number of all points on an edge.
+  int col_;  // Number of all points on an edge.
   float step_size_;
 
   std::vector<float> edge_src_x_;
@@ -106,29 +105,17 @@ class FdebBenchmark : public Benchmark {
   void Summarize() override;
   void Cleanup() override;
 
-  void SetInputFile(const std::string &input_file) {
-    input_file_ = input_file;
-  }
+  void SetInputFile(const std::string &input_file) { input_file_ = input_file; }
 
-  void SetNumCycle(int cycle) {
-    num_cycles_ = cycle  ;
-  }
+  void SetNumCycle(int cycle) { num_cycles_ = cycle; }
 
-  void SetInitStepSize(float step_size) {
-    init_step_size_ = step_size;
-  }
+  void SetInitStepSize(float step_size) { init_step_size_ = step_size; }
 
-  void SetKp(float kp) {
-    kp_ = kp;
-  }
+  void SetKp(float kp) { kp_ = kp; }
 
-  void SetInitIter(float init_iter) {
-    init_iter_count_ = init_iter; 
-  }
+  void SetInitIter(float init_iter) { init_iter_count_ = init_iter; }
 
-  void SetCollaborative(bool collaborative) {
-    collaborative_ = collaborative;
-  }
+  void SetCollaborative(bool collaborative) { collaborative_ = collaborative; }
 
   void SetGpuBatch(int gpu_batch) { gpu_batch_ = gpu_batch; }
 

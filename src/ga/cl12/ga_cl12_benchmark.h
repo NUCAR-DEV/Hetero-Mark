@@ -52,7 +52,7 @@ class GaCl12Benchmark : public GaBenchmark, public ClBenchmark {
   cl_mem d_query_ = nullptr;
   cl_mem d_batch_result_ = nullptr;
   cl_kernel ga_kernel_;
-  
+
   void InitializeKernels();
   void InitializeBuffers();
   void CollaborativeRun();

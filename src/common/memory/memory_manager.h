@@ -10,7 +10,7 @@ class Memory {
   Memory(void *h_buf, size_t byte_size)
       : h_buf_(h_buf), byte_size_(byte_size){};
 
-  virtual ~Memory() {};
+  virtual ~Memory(){};
 
   /**
    * GetByteSize returns the number of bytes occupied by the memory
@@ -43,11 +43,10 @@ class Memory {
   virtual void Free() = 0;
 };
 
-class MemoryManager{
+class MemoryManager {
  public:
-   virtual ~MemoryManager() {}
-   virtual std::unique_ptr<Memory> Shadow(void *buf, size_t byte_size) = 0;
+  virtual ~MemoryManager() {}
+  virtual std::unique_ptr<Memory> Shadow(void *buf, size_t byte_size) = 0;
 };
-
 
 #endif  // SRC_COMMON_MEMORY_MANAGER_

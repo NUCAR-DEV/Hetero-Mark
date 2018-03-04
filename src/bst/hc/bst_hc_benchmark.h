@@ -41,13 +41,12 @@
 #ifndef SRC_BST_HC_BST_HC_BENCHMARK_H_
 #define SRC_BST_HC_BST_HC_BENCHMARK_H_
 
-#include "src/common/time_measurement/time_measurement.h"
 #include "src/bst/bst_benchmark.h"
 #include "src/common/memory/memory_manager.h"
+#include "src/common/time_measurement/time_measurement.h"
 
 class BstHcBenchmark : public BstBenchmark {
  private:
-
  public:
   BstHcBenchmark() : BstBenchmark() {}
   void Initialize() override;

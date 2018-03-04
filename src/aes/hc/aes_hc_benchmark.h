@@ -45,7 +45,6 @@
 
 class AesHcBenchmark : public AesBenchmark {
  private:
-
   void AesArray();
   void AesArrayView();
 

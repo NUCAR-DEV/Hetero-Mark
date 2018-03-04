@@ -46,7 +46,7 @@
 #include "src/common/time_measurement/time_measurement.h"
 
 class BstCudaBenchmark : public BstBenchmark {
-public:
+ public:
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

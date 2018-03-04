@@ -200,7 +200,6 @@ void BeCl12Benchmark::NormalRun() {
                            foreground_.data(), cv::Mat::AUTO_STEP);
       video_writer_ << output_frame;
     }
-
   }
   ret = clReleaseMemObject(d_frame);
 }

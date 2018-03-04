@@ -37,11 +37,11 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/knn/knn_command_line_options.h"
-#include "src/knn/cuda/knn_cuda_benchmark.h"
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/time_measurement_impl.h"
+#include "src/knn/cuda/knn_cuda_benchmark.h"
+#include "src/knn/knn_command_line_options.h"
 
 int main(int argc, const char **argv) {
   std::unique_ptr<KnnCudaBenchmark> benchmark(new KnnCudaBenchmark());

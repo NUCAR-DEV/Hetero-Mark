@@ -144,8 +144,8 @@ void KmeansHcBenchmark::Clustering() {
   delete[] membership_;
 }
 
-void KmeansHcBenchmark::Run() { 
-  Clustering(); 
+void KmeansHcBenchmark::Run() {
+  Clustering();
   cpu_gpu_logger_->Summarize();
 }
 

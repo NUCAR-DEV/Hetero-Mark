@@ -100,9 +100,8 @@ void GaCl12Benchmark::InitializeBuffers() {
                      target_sequence_.size() * sizeof(char), NULL, &err);
   checkOpenCLErrors(err, "Failed to allocate target buffer");
 
-  d_query_ =
-      clCreateBuffer(context_, CL_MEM_READ_WRITE,
-                     query_sequence_.size() * sizeof(char), NULL, &err);
+  d_query_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
+                            query_sequence_.size() * sizeof(char), NULL, &err);
   checkOpenCLErrors(err, "Failed to allocate query buffer");
 
   d_batch_result_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
@@ -200,8 +199,8 @@ void GaCl12Benchmark::CollaborativeRun() {
     cpu_gpu_logger_->GPUOff();
 
     err = clEnqueueReadBuffer(cmd_queue_, d_batch_result_, CL_TRUE, 0,
-                              kBatchSize * sizeof(char), batch_result, 0,
-                              NULL, NULL);
+                              kBatchSize * sizeof(char), batch_result, 0, NULL,
+                              NULL);
     checkOpenCLErrors(err, "Copy data back\n");
 
     for (uint32_t i = 0; i < length; i++) {
@@ -281,7 +280,7 @@ void GaCl12Benchmark::NonCollaborativeRun() {
 
     // std::cout << "localThreads: " << localThreads[1] << std::endl;
     // std::cout << "globalThreads: " << globalThreads[1] << std::endl;
-    
+
     cpu_gpu_logger_->GPUOn();
     // Execute the OpenCL kernel on the list
     err = clEnqueueNDRangeKernel(cmd_queue_, ga_kernel_, CL_TRUE, NULL,

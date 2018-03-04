@@ -55,10 +55,9 @@ void BstCommandLineOptions::RegisterOptions() {
                                    "--init-num-nodes",
                                    "Number of initial nodes");
 
- 
-  command_line_option_.AddArgument("HostPercentage", "integer", "30", "-p",
- 				   "--host-percentage",
-				   "Percentage of nodes to be processed by the host");
+  command_line_option_.AddArgument(
+      "HostPercentage", "integer", "30", "-p", "--host-percentage",
+      "Percentage of nodes to be processed by the host");
 }
 
 void BstCommandLineOptions::Parse(int argc, const char *argv[]) {
@@ -69,12 +68,13 @@ void BstCommandLineOptions::Parse(int argc, const char *argv[]) {
     exit(-1);
   }
 
-  num_insert_ =
-      command_line_option_.GetArgumentValue("NumNodes")->AsUInt32();
+  num_insert_ = command_line_option_.GetArgumentValue("NumNodes")->AsUInt32();
 
-  init_tree_insert_ = command_line_option_.GetArgumentValue("InitialPosition")->AsUInt32();
+  init_tree_insert_ =
+      command_line_option_.GetArgumentValue("InitialPosition")->AsUInt32();
 
-  host_percentage_ = command_line_option_.GetArgumentValue("HostPercentage")->AsUInt32();
+  host_percentage_ =
+      command_line_option_.GetArgumentValue("HostPercentage")->AsUInt32();
 }
 
 void BstCommandLineOptions::ConfigureBstBenchmark(BstBenchmark *benchmark) {

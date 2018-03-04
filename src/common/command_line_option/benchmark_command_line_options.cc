@@ -61,8 +61,8 @@ void BenchmarkCommandLineOptions::RegisterOptions() {
       "WarmUp", "integer", "1", "-w", "--warm-up",
       "Run the benchmarks for a certain times before measuring time.");
 
-  command_line_option_.AddArgument("MemType", "string", "array", "-m", "--mem", 
-      "The memory manager to use.");
+  command_line_option_.AddArgument("MemType", "string", "array", "-m", "--mem",
+                                   "The memory manager to use.");
 }
 
 void BenchmarkCommandLineOptions::Parse(int argc, const char *argv[]) {

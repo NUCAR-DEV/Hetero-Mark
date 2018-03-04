@@ -44,25 +44,24 @@
 #include <mutex>
 #include <queue>
 #include <thread>
+#include "src/be/be_benchmark.h"
 #include "src/common/cl_util/cl_benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
-#include "src/be/be_benchmark.h"
 
-  
 class BeCl12Benchmark : public BeBenchmark, public ClBenchmark {
  private:
   void NormalRun();
   void CollaborativeRun();
 
   cl_kernel be_kernel_;
-  
+
   cl_mem d_bg_;
   cl_mem d_fg_;
   cl_mem d_frame_;
-  
+
   void InitializeKernels();
   void InitializeBuffers();
-  
+
   std::mutex queue_mutex_;
   std::condition_variable queue_condition_variable_;
   std::queue<uint8_t *> frame_queue_;

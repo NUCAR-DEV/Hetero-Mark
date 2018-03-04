@@ -252,8 +252,8 @@ void KmeansCl12Benchmark::UpdateMembership(unsigned num_clusters) {
 
 void KmeansCl12Benchmark::InitializeData() {}
 
-void KmeansCl12Benchmark::Run() { 
-  Clustering(); 
+void KmeansCl12Benchmark::Run() {
+  Clustering();
   cpu_gpu_logger_->Summarize();
 }
 

@@ -64,7 +64,6 @@ class BenchmarkCommandLineOptions {
   uint32_t warm_up_times_;
   std::string mem_type_;
 
-
  private:
   void DumpHelpOnRequest();
 };

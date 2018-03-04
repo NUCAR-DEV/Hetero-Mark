@@ -95,7 +95,6 @@ void FirCudaBenchmark::Run() {
   cudaMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
              cudaMemcpyHostToDevice);
 
-
   dim3 grid_size(num_data_per_block_ / 64);
   dim3 block_size(64);
 
@@ -119,7 +118,7 @@ void FirCudaBenchmark::Run() {
 
     count++;
   }
-  
+
   cpu_gpu_logger_->Summarize();
 }
 

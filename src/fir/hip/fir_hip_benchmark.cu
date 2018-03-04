@@ -81,16 +81,16 @@ void FirHipBenchmark::InitializeBuffers() {
     hipMalloc(&output_buffer_, sizeof(float) * num_data_per_block_);
     hipMalloc(&coeff_buffer_, sizeof(float) * num_tap_);
     hipMalloc(&history_buffer_, sizeof(float) * num_tap_);
-  } 
+  }
 }
 
 void FirHipBenchmark::InitializeData() {
   if (mem_type_ != "hsa") {
     hipMemcpy(coeff_buffer_, coeff_, num_tap_ * sizeof(float),
-            hipMemcpyHostToDevice);
+              hipMemcpyHostToDevice);
 
     hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
-            hipMemcpyHostToDevice);
+              hipMemcpyHostToDevice);
   }
 }
 
@@ -119,12 +119,11 @@ void FirHipBenchmark::RunMemManager() {
   dim3 block_size(64);
 
   while (count < num_block_) {
-    auto dmem_input = mem_manager_->Shadow(
-        input_ + count * num_data_per_block_, 
-        num_data_per_block_ * sizeof(float));
-    auto dmem_output = mem_manager_->Shadow(
-        output_ + count * num_data_per_block_,
-        num_data_per_block_ * sizeof(float));
+    auto dmem_input = mem_manager_->Shadow(input_ + count * num_data_per_block_,
+                                           num_data_per_block_ * sizeof(float));
+    auto dmem_output =
+        mem_manager_->Shadow(output_ + count * num_data_per_block_,
+                             num_data_per_block_ * sizeof(float));
 
     input_buffer_ = static_cast<float *>(dmem_input->GetDevicePtr());
     output_buffer_ = static_cast<float *>(dmem_input->GetDevicePtr());
@@ -160,7 +159,6 @@ void FirHipBenchmark::HipRun() {
     history_[i] = 0.0;
   }
 
-
   dim3 grid_size(num_data_per_block_ / 64);
   dim3 block_size(64);
 
@@ -185,7 +183,6 @@ void FirHipBenchmark::HipRun() {
     count++;
   }
   cpu_gpu_logger_->Summarize();
-
 }
 
 void FirHipBenchmark::Cleanup() {

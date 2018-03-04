@@ -171,7 +171,6 @@ void KmeansCl20Benchmark::KmeansClustering(unsigned num_clusters) {
     clusters_[i] = svm_clusters_[i];
   }
 
-
   std::cout << "# of iterations: " << num_iteration << std::endl;
 }
 
