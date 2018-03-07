@@ -61,32 +61,35 @@ void FirCl12Benchmark::InitializeKernels() {
 }
 
 void FirCl12Benchmark::InitializeBuffers() {
-  int num_temp_output = num_data_per_block_ + num_tap_ - 1;
-
-  temp_output_ =
-      reinterpret_cast<cl_float *>(malloc(num_temp_output * sizeof(cl_float)));
-
   // Create memory buffers on the device for each vector
   cl_int err;
   output_buffer_ =
-      clCreateBuffer(context_, CL_MEM_READ_WRITE,
+      clCreateBuffer(context_, CL_MEM_READ_ONLY,
                      sizeof(cl_float) * num_data_per_block_, NULL, &err);
   checkOpenCLErrors(err, "Failed to allocate output buffer");
 
-  coeff_buffer_ = clCreateBuffer(context_, CL_MEM_READ_WRITE,
+  coeff_buffer_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
                                  sizeof(cl_float) * num_tap_, NULL, &err);
   checkOpenCLErrors(err, "Failed to allocate coeff buffer");
 
-  temp_output_buffer_ =
+  input_buffer_ =
       clCreateBuffer(context_, CL_MEM_READ_WRITE,
-                     sizeof(cl_float) * num_temp_output, NULL, &err);
-  checkOpenCLErrors(err, "Failed to allocate temp_output buffer");
+                     sizeof(cl_float) * num_data_per_block_, NULL, &err);
+  checkOpenCLErrors(err, "Failed to allocate input buffer");
+
+  history_buffer_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
+                                   sizeof(cl_float) * num_tap_, NULL, &err);
+  checkOpenCLErrors(err, "Failed to allocated history buffer");
 }
 
 void FirCl12Benchmark::InitializeData() {
-  for (unsigned i = 0; i < (num_data_per_block_ + num_tap_ - 1); i++) {
-    temp_output_[i] = 0.0;
-  }
+  cl_int err;
+  float init_value = 0;
+  err = clEnqueueFillBuffer(cmd_queue_, history_buffer_, 
+                            static_cast<void *>(&init_value), 
+                            sizeof(float), 0, num_tap_ * sizeof(float), 
+                            0, NULL, NULL);
+  checkOpenCLErrors(err, "Failed to fill in initial history buffer");
 }
 
 void FirCl12Benchmark::Run() {
@@ -95,27 +98,41 @@ void FirCl12Benchmark::Run() {
 
   // Set the arguments of the kernel
   ret = clSetKernelArg(fir_kernel_, 0, sizeof(cl_mem),
-                       reinterpret_cast<void *>(&output_buffer_));
+                       static_cast<void *>(&output_buffer_));
   checkOpenCLErrors(ret, "Set kernel argument 0\n");
   ret = clSetKernelArg(fir_kernel_, 1, sizeof(cl_mem),
-                       reinterpret_cast<void *>(&coeff_buffer_));
+                       static_cast<void *>(&coeff_buffer_));
   checkOpenCLErrors(ret, "Set kernel argument 1\n");
   ret = clSetKernelArg(fir_kernel_, 2, sizeof(cl_mem),
-                       reinterpret_cast<void *>(&temp_output_buffer_));
+                       static_cast<void *>(&input_buffer_));
   checkOpenCLErrors(ret, "Set kernel argument 2\n");
-  ret = clSetKernelArg(fir_kernel_, 3, sizeof(cl_uint),
-                       reinterpret_cast<void *>(&num_tap_));
+  ret = clSetKernelArg(fir_kernel_, 3, sizeof(cl_mem),
+                       static_cast<void *>(&history_buffer_));
   checkOpenCLErrors(ret, "Set kernel argument 3\n");
+  ret = clSetKernelArg(fir_kernel_, 4, sizeof(cl_uint),
+                       static_cast<void *>(&num_tap_));
+  checkOpenCLErrors(ret, "Set kernel argument 4\n");
 
   // Initialize Memory Buffer
   ret = clEnqueueWriteBuffer(cmd_queue_, coeff_buffer_, CL_TRUE, 0,
                              num_tap_ * sizeof(float), coeff_, 0, NULL, NULL);
   checkOpenCLErrors(ret, "Copy coeff to buffer\n");
 
-  ret = clEnqueueWriteBuffer(cmd_queue_, temp_output_buffer_, CL_TRUE, 0,
-                             num_tap_ * sizeof(float), temp_output_, 0, NULL,
-                             NULL);
-  checkOpenCLErrors(ret, "Copy input to buffer\n");
+  float init_value = 0;
+  ret = clEnqueueFillBuffer(cmd_queue_, history_buffer_, 
+                            static_cast<void *>(&init_value), 
+                            sizeof(float), 0, num_tap_ * sizeof(float), 
+                            0, NULL, NULL);
+  checkOpenCLErrors(ret, "Set history buffer\n");
+
+  ret = clEnqueueFillBuffer(cmd_queue_, input_buffer_, 
+                            static_cast<void *>(&init_value), 
+                            sizeof(float), 0, 
+                            num_data_per_block_ * sizeof(float), 
+                            0, NULL, NULL);
+  checkOpenCLErrors(ret, "Set input buffer\n");
+
+
 
   // Decide the local group formation
   size_t globalThreads[1] = {num_data_per_block_};
@@ -123,12 +140,20 @@ void FirCl12Benchmark::Run() {
   count = 0;
 
   while (count < num_block_) {
-    // fill in the temp_input buffer object
-    ret = clEnqueueWriteBuffer(cmd_queue_, temp_output_buffer_, CL_TRUE,
-                               (num_tap_ - 1) * sizeof(cl_float),
-                               num_data_per_block_ * sizeof(cl_float),
-                               input_ + (count * num_data_per_block_), 0, 0,
-                               NULL);
+    // Fill in the history buffer
+    if (count > 0) {
+       ret = clEnqueueWriteBuffer(cmd_queue_, history_buffer_, CL_TRUE,
+                                  0, num_tap_ * sizeof(cl_float),
+                                  input_ + (count * num_data_per_block_) - num_tap_, 
+                                  0, 0, NULL);
+      checkOpenCLErrors(ret, "Copy history to buffer\n");
+    }
+
+    // Fill in the input buffer object
+    ret = clEnqueueWriteBuffer(cmd_queue_, input_buffer_, CL_TRUE,
+                               0, num_data_per_block_ * sizeof(cl_float),
+                               input_ + (count * num_data_per_block_), 
+                               0, 0, NULL);
     checkOpenCLErrors(ret, "Copy data to buffer\n");
 
     cpu_gpu_logger_->GPUOn();
@@ -140,10 +165,10 @@ void FirCl12Benchmark::Run() {
     cpu_gpu_logger_->GPUOff();
 
     // Get the output buffer
-    ret = clEnqueueReadBuffer(cmd_queue_, output_buffer_, CL_TRUE, 0,
-                              num_data_per_block_ * sizeof(cl_float),
-                              output_ + count * num_data_per_block_, 0, NULL,
-                              NULL);
+    ret = clEnqueueReadBuffer(cmd_queue_, output_buffer_, CL_TRUE, 
+                              0, num_data_per_block_ * sizeof(cl_float),
+                              output_ + count * num_data_per_block_, 
+                              0, NULL, NULL);
     checkOpenCLErrors(ret, "Copy data back\n");
     clFinish(cmd_queue_);
 
@@ -160,11 +185,10 @@ void FirCl12Benchmark::Cleanup() {
 
   cl_int ret;
   ret = clReleaseKernel(fir_kernel_);
-  ret = clReleaseProgram(program_);
-  ret = clReleaseMemObject(output_buffer_);
-  ret = clReleaseMemObject(coeff_buffer_);
-  ret = clReleaseMemObject(temp_output_buffer_);
+  ret |= clReleaseProgram(program_);
+  ret |= clReleaseMemObject(output_buffer_);
+  ret |= clReleaseMemObject(coeff_buffer_);
+  ret |= clReleaseMemObject(input_buffer_);
+  ret |= clReleaseMemObject(history_buffer_);
   checkOpenCLErrors(ret, "Release objects.\n");
-
-  free(temp_output_);
 }
