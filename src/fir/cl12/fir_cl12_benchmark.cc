@@ -80,7 +80,7 @@ void FirCl12Benchmark::InitializeBuffers() {
   temp_output_buffer_ =
       clCreateBuffer(context_, CL_MEM_READ_WRITE,
                      sizeof(cl_float) * num_temp_output, NULL, &err);
-  checkOpenCLErrors(err, "Failed to allocate coeff buffer");
+  checkOpenCLErrors(err, "Failed to allocate temp_output buffer");
 }
 
 void FirCl12Benchmark::InitializeData() {

@@ -88,3 +88,8 @@ compile_log.txt
 # Jupyter Notebook
 .ipynb_checkpoints
 *.eps
+
+*.bc
+*.s
+*.asm
+*.hsaco
