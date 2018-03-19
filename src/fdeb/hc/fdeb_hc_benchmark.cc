@@ -118,7 +118,6 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
   int col = col_;
   int edge_count = edge_count_;
   float kp = kp_;
-  // int group_size = 64;
   hc::extent<1> ext(edge_count_ * col_);
 
   std::atomic_int *signals = new std::atomic_int[edge_count * col];
@@ -155,29 +154,17 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
 
   float *a_force_x = force_x_.data();
   float *a_force_y = force_y_.data();
-  // float *d_point_x = point_x_.data();
-  // float *d_point_y = point_y_.data();
-  // hc::array_view<float, 1> a_force_x(edge_count * col);
-  // hc::array_view<float, 1> a_force_y(edge_count * col);
 
   std::thread cpu_thread([&] {
     while (true) {
       bool finished = true;
-      // printf("edge_count %d, col %d\n", edge_count, col);
       for (int i = 0; i < edge_count * col; i++) {
-        // printf("signals[%d] = %d.\n", i,
-        // signals[i].load(std::memory_order_relaxed));
         if (signals[i] == 1) {
-          // float force_x = a_force_x[i].load(std::memory_order_seq_cst);
-          // float force_y = a_force_y[i].load(std::memory_order_seq_cst);
           float force_x = force_x_[i];
           float force_y = force_y_[i];
           point_x_[i] += step_size_ * force_x;
           point_y_[i] += step_size_ * force_y;
-          // signals[i] = 2;
           signals[i].fetch_add(1, std::memory_order_seq_cst);
-          // printf("Moving point %d %f, %f, %f, %f\n", i,
-          //     force_x, force_y, point_x_[i], point_y_[i]);
         } else if (signals[i] == 0) {
           finished = false;
         }
@@ -185,8 +172,6 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
       if (finished) {
         return;
       }
-
-      // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
   });
 
@@ -239,10 +224,6 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
       force_y /= mag;
     }
 
-    // a_force_x[i * col + k].store(force_x, std::memory_order_relaxed);
-    // a_force_y[i * col + k].store(force_y, std::memory_order_relaxed);
-    // a_force_x[point_id] = force_x;
-    // a_force_y[point_id] = force_y;
     a_force_x[point_id] = force_x;
     a_force_y[point_id] = force_y;
 
@@ -257,8 +238,6 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
   // MovePointsCpu();
 
   delete[] signals;
-  // delete[] a_force_x;
-  // delete[] a_force_y;
 }
 
 void FdebHcBenchmark::UpdateForceGpu() {
