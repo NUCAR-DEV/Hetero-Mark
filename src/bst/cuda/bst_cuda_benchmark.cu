@@ -54,7 +54,6 @@ __global__ void bst_cuda(void *tree_root, void *dev_start_node,
   long key;
 
   uint tid = blockIdx.x * blockDim.x + threadIdx.x;
-  // printf("Tid is %d \n", tid);
   if (tid >= gpu_nodes) return;
 
   flag = 0;
