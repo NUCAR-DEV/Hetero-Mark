@@ -327,7 +327,6 @@ void BeCl12Benchmark::CollaborativeRun() {
     }
     frame_count++;
 
-    // printf("Frame started %d\n", frame_count);
     std::lock_guard<std::mutex> lk(queue_mutex_);
     frame_queue_.push(frame);
     queue_condition_variable_.notify_all();
@@ -335,13 +334,11 @@ void BeCl12Benchmark::CollaborativeRun() {
 
   {
     std::lock_guard<std::mutex> lk(queue_mutex_);
-    // printf("Finished.\n");
     finished_ = true;
   }
   queue_condition_variable_.notify_all();
 
   gpuThread.join();
-  // cudaStreamSynchronize(stream_);
 }
 
 void BeCl12Benchmark::GPUThread() {
