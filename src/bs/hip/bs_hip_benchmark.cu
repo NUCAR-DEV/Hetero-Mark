@@ -134,10 +134,7 @@ void BsHipBenchmark::Run() {
   while (done_tiles_ < last_tile_) {
     // First check to make sure that we are launching the first set
     if (IsGpuCompleted()) {
-      // No longer the first lunch after this point so
-      // turn it off
-      // printf("Completion set to 1. GPU running \n");
-
+    
       // Set the size of the section based on the number of tiles
       // and the number of compute units
       uint32_t section_tiles = (gpu_chunk_ < last_tile_ - done_tiles_)
@@ -145,11 +142,7 @@ void BsHipBenchmark::Run() {
                                    : last_tile_ - done_tiles_;
 
       unsigned int offset = done_tiles_ * tile_size_;
-      //               printf("Section tile is %d \n", section_tiles);
 
-      // GPU is running the following tiles
-      // fprintf(stderr, "GPU tiles: %d to %d\n", done_tiles_,
-      //       done_tiles_ + section_tiles);
       done_tiles_ += section_tiles;
 
       dim3 block_size(64);
@@ -162,7 +155,6 @@ void BsHipBenchmark::Run() {
     } else {
       if (active_cpu_) {
         last_tile_--;
-        // fprintf(stderr, "CPU tile: %d \n", last_tile_);
         BlackScholesCPU(rand_array_, call_price_, put_price_,
                         last_tile_ * tile_size_, tile_size_);
       }
