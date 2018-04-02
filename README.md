@@ -227,32 +227,32 @@ root directory.
 
 * To generate custom data in `data` folder
 
-  * AES - Generates the input file and keys for AES. For keys, only 16-byte is
-    allowed. Usage:
+    * AES - Generates the input file and keys for AES. For keys, only 16-byte is
+      allowed.
 
         ``` bash
 	      ./datagen <num_bytes> > file.data
 	      ```
 
-  * Gene-alignment - Generates the input file for Gene Alignment. The target
-    sequence length should be much shorter than the query sequence length.
+    * Gene-alignment - Generates the input file for Gene Alignment. The target
+      sequence length should be much shorter than the query sequence length.
 
         ``` bash
 	      python data_gen.py <target_sequence_len> <query_sequence_len>
 	      ```
 
-  * KMeans - It generates the input file for KMeans. Usage:
+    * KMeans - It generates the input file for KMeans. Usage:
 
-      ``` bash
-      g++ datagen.cpp -o datagen
-	    ./datagen <numObjects> [ <numFeatures> ] [-f]
-	    ```
+        ``` bash
+        g++ datagen.cpp -o datagen
+	      ./datagen <numObjects> [ <numFeatures> ] [-f]
+	      ```
 
-  * PageRank - It generates the input matrix for PageRank. Usage:
+    * PageRank - It generates the input matrix for PageRank. Usage:
 
-      ``` bash
-      python datagen.py
-	    ```
+        ``` bash
+        python datagen.py
+	      ```
 
 ## Known Issue
 
