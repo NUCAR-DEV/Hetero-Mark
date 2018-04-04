@@ -76,10 +76,8 @@ void AesCl12Benchmark::InitializeDeviceMemory() {
                             kExpandedKeyLengthInBytes, NULL, &err);
   checkOpenCLErrors(err, "Failed to create buffer for expanded key");
 
-  dev_s_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
-                            256, NULL, &err);
+  dev_s_ = clCreateBuffer(context_, CL_MEM_READ_ONLY, 256, NULL, &err);
   checkOpenCLErrors(err, "Failed to create buffer for s array");
-
 }
 
 void AesCl12Benchmark::Cleanup() {
@@ -121,11 +119,9 @@ void AesCl12Benchmark::CopyDataToDevice() {
                              NULL);
   checkOpenCLErrors(ret, "Failed to copy key to device");
 
-  ret = clEnqueueWriteBuffer(cmd_queue_, dev_s_, CL_TRUE, 0,
-                             256, s, 0, NULL,
+  ret = clEnqueueWriteBuffer(cmd_queue_, dev_s_, CL_TRUE, 0, 256, s, 0, NULL,
                              NULL);
   checkOpenCLErrors(ret, "Failed to copy s array to device");
-
 }
 
 void AesCl12Benchmark::RunKernel() {

@@ -42,6 +42,7 @@
 #define SRC_COMMON_BENCHMARK_BENCHMARK_H_
 
 #include <memory>
+#include <string>
 
 #include "src/common/time_measurement/cpu_gpu_activity_logger.h"
 #include "src/common/time_measurement/time_measurement.h"

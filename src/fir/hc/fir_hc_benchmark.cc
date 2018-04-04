@@ -42,6 +42,7 @@
 
 #include <hc.hpp>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 

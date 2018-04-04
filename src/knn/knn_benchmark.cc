@@ -38,11 +38,14 @@
  */
 
 #include "src/knn/knn_benchmark.h"
+
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <string>
+
 #include "src/knn/cuda_ws/knn_cpu_partitioner.h"
 
 int KnnBenchmark::loadData(std::string file, std::vector<Record> &records,
@@ -146,9 +149,9 @@ void KnnBenchmark::KnnCPU(LatLong *latLong, float *d_distances, int num_records,
   CpuPartitioner p = cpu_partitioner_create(num_records, cpu_worklist);
 
   for (int tid = cpu_initializer(&p); cpu_more(&p); tid = cpu_increment(&p)) {
-    d_distances[tid] =
-        (float)sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
-                    (lng - latLong[tid].lng) * (lng - latLong[tid].lng));
+    d_distances[tid] = static_cast<float>(
+        sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
+             (lng - latLong[tid].lng) * (lng - latLong[tid].lng)));
   }
 
   CpuPartitioner thieves =
@@ -156,9 +159,9 @@ void KnnBenchmark::KnnCPU(LatLong *latLong, float *d_distances, int num_records,
 
   for (int tid = cpu_initializer(&thieves); cpu_more(&thieves);
        tid = cpu_increment(&thieves)) {
-    d_distances[tid] =
-        (float)sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
-                    (lng - latLong[tid].lng) * (lng - latLong[tid].lng));
+    d_distances[tid] = static_cast<float>(
+        sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
+             (lng - latLong[tid].lng) * (lng - latLong[tid].lng)));
   }
 }
 
@@ -167,10 +170,11 @@ void KnnBenchmark::Verify() {
   float *cpu_output = new float[num_records_];
 
   for (int i = 0; i < num_records_; i++) {
-    cpu_output[i] = (float)sqrt((latitude_ - locations_.at(i).lat) *
+    cpu_output[i] =
+        static_cast<float>(sqrt((latitude_ - locations_.at(i).lat) *
                                     (latitude_ - locations_.at(i).lat) +
                                 (longitude_ - locations_.at(i).lng) *
-                                    (longitude_ - locations_.at(i).lng));
+                                    (longitude_ - locations_.at(i).lng)));
     if (std::abs(cpu_output[i] - h_distances_[i]) > 1e-2) {
       has_error = true;
       printf("At position %d , expected %f but is %f \n", i, cpu_output[i],

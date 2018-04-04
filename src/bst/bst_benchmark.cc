@@ -67,8 +67,8 @@ void BstBenchmark::InsertNode(Node *tmpData, Node *root) {
   Node *nextData;
 
   nextData = tmpData;
-  long key = nextData->value;
-  long flag = 0;
+  int64_t key = nextData->value;
+  int64_t flag = 0;
   int done = 0;
 
   while (nextNode) {
@@ -107,13 +107,12 @@ void BstBenchmark::InsertNode(Node *tmpData, Node *root) {
       done = 1;
     }
     UmMutexUnlock(parent_mutex);
-
   } while (!done);
 }
 
 void BstBenchmark::InitializeNodes(Node *data, uint32_t num_nodes, int seed) {
   Node *tmp_node;
-  long val;
+  int64_t val;
 
   srand(seed);
   for (size_t i = 0; i < num_nodes; i++) {
@@ -140,7 +139,7 @@ Node *BstBenchmark::MakeBinaryTree(uint32_t num_nodes, Node *inroot) {
 
   if (NULL != inroot) {
     /* allocate first node to root */
-    data = (Node *)inroot;
+    data = reinterpret_cast<Node *>(inroot);
     nextData = data;
     root = nextData;
 
@@ -168,7 +167,7 @@ uint32_t BstBenchmark::CountNodes(Node *root) {
 
 void BstBenchmark::Initialize() {
   host_nodes_ =
-      (uint32_t)((double)num_insert_ * ((float)host_percentage_ / 100));
+      static_cast<int>(1.0 * num_insert_ * (1.0 * host_percentage_ / 100));
   device_nodes_ = num_insert_ - host_nodes_;
   total_nodes_ = num_insert_ + init_tree_insert_;
   printf("Host nodes are %d \n", host_nodes_);

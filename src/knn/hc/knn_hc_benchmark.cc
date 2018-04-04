@@ -43,6 +43,7 @@
 #include <hc.hpp>
 #include <hc_math.hpp>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 
@@ -84,9 +85,9 @@ void KnnHcBenchmark::Run() {
       if (tid >= num_gpu_records) {
         break;
       }
-      av_distance[tid] =
-          (float)sqrt((lat - av_loc[tid].lat) * (lat - av_loc[tid].lat) +
-                      (lng - av_loc[tid].lng) * (lng - av_loc[tid].lng));
+      av_distance[tid] = static_cast<float>(
+          sqrt((lat - av_loc[tid].lat) * (lat - av_loc[tid].lat) +
+               (lng - av_loc[tid].lng) * (lng - av_loc[tid].lng)));
 
       tid = gpu_worklist.fetch_add(1, std::memory_order_seq_cst);
     }
@@ -96,13 +97,12 @@ void KnnHcBenchmark::Run() {
       if (tid >= num_gpu_records) {
         break;
       }
-      av_distance[tid] =
-          (float)sqrt((lat - av_loc[tid].lat) * (lat - av_loc[tid].lat) +
-                      (lng - av_loc[tid].lng) * (lng - av_loc[tid].lng));
+      av_distance[tid] = static_cast<float>(
+          sqrt((lat - av_loc[tid].lat) * (lat - av_loc[tid].lat) +
+               (lng - av_loc[tid].lng) * (lng - av_loc[tid].lng)));
 
       tid = cpu_worklist.fetch_add(1, std::memory_order_seq_cst);
     }
-
   });
   KnnCPU(h_locations_, h_distances_, num_records_, num_gpu_records, latitude_,
          longitude_, &cpu_worklist, &gpu_worklist);

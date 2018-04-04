@@ -225,13 +225,13 @@ bool BsCl12Benchmark::IsGpuCompleted() {
   cl_int info;
 
   err = clGetEventInfo(event_, CL_EVENT_COMMAND_EXECUTION_STATUS,
-                       sizeof(cl_int), (void *)&info, NULL);
+                       sizeof(cl_int), reinterpret_cast<void *>(&info), NULL);
   checkOpenCLErrors(err, "Event info\n");
 
   if (info == CL_COMPLETE) {
     cpu_gpu_logger_->GPUOff();
     return true;
-  };
+  }
   return false;
 }
 

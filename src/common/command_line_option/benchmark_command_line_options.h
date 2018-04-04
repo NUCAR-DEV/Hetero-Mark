@@ -42,6 +42,8 @@
 #define SRC_COMMON_COMMAND_LINE_OPTION_BENCHMARK_COMMAND_LINE_OPTIONS_H_
 
 #include <memory>
+#include <string>
+
 #include "src/common/benchmark/benchmark_runner.h"
 #include "src/common/command_line_option/command_line_option.h"
 

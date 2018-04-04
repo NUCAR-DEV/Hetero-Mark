@@ -51,14 +51,13 @@
 typedef struct { std::atomic<int> count; } um_mutex;
 
 typedef struct BinTree {
-  long value;              // Value at a node
+  int64_t value;           // Value at a node
   struct BinTree *left;    // Pointer to the left node
   struct BinTree *right;   // Pointer to the right node
   struct BinTree *parent;  // Pointer to the parent node
   um_mutex mutex_node;
   int childDevType;  // Indicates which device inserted its child nodes
   int visited;       // Indicates whether the node is inserted to binary tree
-
 } Node;
 
 class BstBenchmark : public Benchmark {
@@ -98,7 +97,7 @@ class BstBenchmark : public Benchmark {
   }
   // Getters
   uint32_t GetTotalNodes() { return total_nodes_; }
-  Node *GetTreeBuff() { return tree_buffer_; };
+  Node *GetTreeBuff() { return tree_buffer_; }
 };
 
 #endif  // SRC_BST_BST_BENCHMARK_H_

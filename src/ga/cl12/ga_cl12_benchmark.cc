@@ -38,7 +38,6 @@
  */
 
 #include "src/ga/cl12/ga_cl12_benchmark.h"
-//#include "common/cl_util/cl_runtime.h"
 
 #include <cstdio>
 #include <cstdlib>

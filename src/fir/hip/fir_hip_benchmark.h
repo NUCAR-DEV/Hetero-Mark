@@ -41,6 +41,8 @@
 #ifndef SRC_FIR_HIP_FIR_HIP_BENCHMARK_H_
 #define SRC_FIR_HIP_FIR_HIP_BENCHMARK_H_
 
+#include <memory>
+
 #include "src/common/memory/memory_manager.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/fir/fir_benchmark.h"

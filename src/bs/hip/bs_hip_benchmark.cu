@@ -134,7 +134,6 @@ void BsHipBenchmark::Run() {
   while (done_tiles_ < last_tile_) {
     // First check to make sure that we are launching the first set
     if (IsGpuCompleted()) {
-    
       // Set the size of the section based on the number of tiles
       // and the number of compute units
       uint32_t section_tiles = (gpu_chunk_ < last_tile_ - done_tiles_)
@@ -176,7 +175,7 @@ bool BsHipBenchmark::IsGpuCompleted() {
   if (ret == hipSuccess) {
     cpu_gpu_logger_->GPUOff();
     return true;
-  };
+  }
   return false;
 }
 

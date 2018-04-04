@@ -38,15 +38,15 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#ifndef SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_
-#define SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_
+#ifndef SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_H_
+#define SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_H_
 
 #include <iostream>
 #include <memory>
 #include <mutex>
 
-#include "timer.h"
-#include "timer_impl.h"
+#include "src/common/time_measurement/timer.h"
+#include "src/common/time_measurement/timer_impl.h"
 
 class CPUGPUActivityLogger {
   std::unique_ptr<Timer> timer_;
@@ -124,4 +124,4 @@ class CPUGPUActivityLogger {
   }
 };
 
-#endif  // SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_
+#endif  // SRC_COMMON_TIME_MEASUREMENT_CPU_GPU_ACTIVITY_LOGGER_H_

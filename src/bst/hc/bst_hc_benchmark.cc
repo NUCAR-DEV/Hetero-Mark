@@ -53,7 +53,7 @@ void BstHcBenchmark::Run() {
   uint32_t device_start_node = init_tree_insert_ + host_nodes_;
   printf("Device start node is %d \n", device_start_node);
 
-  for (long k = 0; k < host_nodes_; k++) {
+  for (int64_t k = 0; k < host_nodes_; k++) {
     InsertNode(&(tree_buffer_[init_tree_insert_ + offset + k]), root_);
   }
 

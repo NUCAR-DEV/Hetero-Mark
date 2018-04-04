@@ -55,7 +55,7 @@ class TimeKeeper {
    */
   class Iterator {
    public:
-    virtual ~Iterator(){};
+    virtual ~Iterator() {}
     virtual bool HasNext() = 0;
     virtual std::pair<std::string, double> Next() = 0;
   };

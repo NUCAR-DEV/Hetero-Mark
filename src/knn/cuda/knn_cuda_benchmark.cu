@@ -48,9 +48,9 @@ __global__ void knn_cuda(LatLong *latLong, float *d_distances, int num_records,
                          float lat, float lng) {
   uint tid = blockIdx.x * blockDim.x + threadIdx.x;
   if (tid < num_records) {
-    d_distances[tid] =
-        (float)sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
-                    (lng - latLong[tid].lng) * (lng - latLong[tid].lng));
+    d_distances[tid] = static_cast<float>(
+        sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
+             (lng - latLong[tid].lng) * (lng - latLong[tid].lng)));
   }
 }
 

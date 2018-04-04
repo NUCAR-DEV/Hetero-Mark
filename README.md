@@ -8,13 +8,18 @@ A Benchmark Suite for collaborative CPU-GPU computing.
 
 * [OpenCL](http://support.amd.com/en-us/kb-articles/Pages/AMD-Radeon-GPU-PRO-Linux-Beta-Driver%E2%80%93Release-Notes.aspx) - The OpenCL driver
 
-We use to use the FGLRX driver on Ubuntu 14.04, which supports OpenCL 2.0. Since AMD stopped the support for the FGLRX driver on ubuntu 16.04, we switched to the AMDGPU-pro driver. Currently, OpenCL 2.0 benchmarks are not supported on this platform.
+We use to use the FGLRX driver on Ubuntu 14.04, which supports OpenCL 2.0.
+Since AMD stopped the support for the FGLRX driver on ubuntu 16.04, we
+switched to the AMDGPU-pro driver. Currently, OpenCL 2.0 benchmarks are
+not supported on this platform.
 
 ### HSA Environment
 
 * [ROCm](https://github.com/RadeonOpenCompute/ROCm) - Radeon Open Compute
 
-Although ROCm 1.6 platform does not fully support OpenCL 2.0, all the features we have been using in the benchmark suite is supported by ROCm 1.6.
+Although ROCm 1.6 platform does not fully support OpenCL 2.0, all the
+features we have been using in the benchmark suite is supported by ROCm
+1.6.
 
 ### OpenCV Library
 
@@ -217,11 +222,8 @@ and what parameter is needed.
 ### Download standard input data
 
 ```bash
-./download_data.sh
-```
-
-After executing the bash script, you will have a `data` folder in the project
-root directory.
+You can download the standard data from the following url
+https://drive.google.com/file/d/1IItjFFUIfANgrUUI7jebNS9rfSEe32lZ/view?usp=sharing".
 
 ### Generate your own input data
 

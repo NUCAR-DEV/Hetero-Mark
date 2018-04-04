@@ -35,6 +35,7 @@
 
 #include <hcc/hc.hpp>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 
