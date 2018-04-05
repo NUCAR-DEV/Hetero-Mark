@@ -37,22 +37,37 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/knn/knn_command_line_options.h"
-#include "src/knn/cuda/knn_cuda_benchmark.h"
-#include "src/common/benchmark/benchmark_runner.h"
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/common/time_measurement/time_measurement_impl.h"
+#ifndef SRC_KNN_CUDA_KNN_GPU_PARTITIONER_H_
+#define SRC_KNN_CUDA_KNN_GPU_PARTITIONER_H_
 
-int main(int argc, const char **argv) {
-  std::unique_ptr<KnnCudaBenchmark> benchmark(new KnnCudaBenchmark());
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
+#include <atomic>
 
-  KnnCommandLineOptions options;
-  options.RegisterOptions();
-  options.Parse(argc, argv);
-  options.ConfigureKnnBenchmark(benchmark.get());
-  options.ConfigureBenchmarkRunner(&runner);
+typedef struct CpuPartitioner {
+  int n_data;
+  int current;
+  std::atomic_int *worklist;
+} CpuPartitioner;
 
-  runner.Run();
+inline CpuPartitioner cpu_partitioner_create(int n_data,
+                                             std::atomic_int *worklist) {
+  CpuPartitioner p;
+  p.n_data = n_data;
+  p.worklist = worklist;
+  return p;
 }
+
+inline int cpu_initializer(CpuPartitioner *p) {
+  p->current = p->worklist->fetch_add(1);
+  return p->current;
+}
+
+inline bool cpu_more(const CpuPartitioner *p) {
+  return (p->current < p->n_data);
+}
+
+inline int cpu_increment(CpuPartitioner *p) {
+  p->current = p->worklist->fetch_add(1);
+  return p->current;
+}
+
+#endif  // SRC_KNN_CUDA_KNN_GPU_PARTITIONER_H_

@@ -41,7 +41,9 @@
 #define SRC_KNN_KNN_BENCHMARK_H_
 
 #include <atomic>
+#include <string>
 #include <vector>
+
 #include "src/common/benchmark/benchmark.h"
 #include "src/common/time_measurement/time_measurement.h"
 
@@ -78,9 +80,9 @@ class KnnBenchmark : public Benchmark {
   void KnnCPU(LatLong *h_locations, float *h_distances, int num_records,
               int num_gpu_records, float lat, float lng,
               std::atomic_int *cpu_worklist, std::atomic_int *gpu_worklist);
-  int loadData(std::string filename, std::vector<Record> &records,
-               std::vector<LatLong> &locations);
-  void findLowest(std::vector<Record> &records, float *distances,
+  int loadData(std::string filename, std::vector<Record> *records,
+               std::vector<LatLong> *locations);
+  void findLowest(std::vector<Record> *records, float *distances,
                   int numRecords, int topN);
   float *output_distances_ = nullptr;
 

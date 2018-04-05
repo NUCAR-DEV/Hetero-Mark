@@ -228,7 +228,6 @@ void KmeansBenchmark::InitializeMembership() {
 }
 
 float KmeansBenchmark::CalculateRMSE() {
-
   cpu_gpu_logger_->CPUOn();
   float mean_square_error = 0;
   for (unsigned i = 0; i < num_points_; i++) {

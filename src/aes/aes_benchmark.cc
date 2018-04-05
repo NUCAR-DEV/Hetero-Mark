@@ -242,7 +242,7 @@ void AesBenchmark::ExpandKey() {
     }
     expanded_key_[i] = expanded_key_[i - kKeyLengthInWords] ^ temp;
   }
-  
+
   cpu_gpu_logger_->CPUOff();
 }
 

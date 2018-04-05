@@ -41,8 +41,8 @@
 #define SRC_KNN_KNN_COMMAND_LINE_OPTIONS_H_
 
 #include <string>
-#include "src/knn/knn_benchmark.h"
 #include "src/common/command_line_option/benchmark_command_line_options.h"
+#include "src/knn/knn_benchmark.h"
 
 class KnnCommandLineOptions : public BenchmarkCommandLineOptions {
  public:
@@ -53,7 +53,7 @@ class KnnCommandLineOptions : public BenchmarkCommandLineOptions {
  private:
   std::string filename_;
   double latitude_;
-  double longitude_; 
+  double longitude_;
   uint32_t k_value_;
 };
 

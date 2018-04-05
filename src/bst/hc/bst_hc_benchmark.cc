@@ -45,9 +45,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-void BstHcBenchmark::Initialize() {
-
-}
+void BstHcBenchmark::Initialize() {}
 
 void BstHcBenchmark::Run() {
   hc::extent<1> kernel_ext(device_nodes_);
@@ -55,7 +53,7 @@ void BstHcBenchmark::Run() {
   uint32_t device_start_node = init_tree_insert_ + host_nodes_;
   printf("Device start node is %d \n", device_start_node);
 
-  for (long k = 0; k < host_nodes_; k++) {
+  for (int64_t k = 0; k < host_nodes_; k++) {
     InsertNode(&(tree_buffer_[init_tree_insert_ + offset + k]), root_);
   }
 
@@ -63,9 +61,6 @@ void BstHcBenchmark::Run() {
 
   printf("Number of actual nodes are %d \n", actual_nodes);
   printf("Number of total nodes are %d \n", total_nodes_);
-
 }
 
-void BstHcBenchmark::Cleanup() {
-  BstBenchmark::Cleanup();
-}
+void BstHcBenchmark::Cleanup() { BstBenchmark::Cleanup(); }

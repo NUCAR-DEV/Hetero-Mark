@@ -41,9 +41,9 @@
 #ifndef SRC_KNN_HC_KNN_HC_BENCHMARK_H_
 #define SRC_KNN_HC_KNN_HC_BENCHMARK_H_
 
+#include "src/common/memory/memory_manager.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/knn/knn_benchmark.h"
-#include "src/common/memory/memory_manager.h"
 
 class KnnHcBenchmark : public KnnBenchmark {
  private:

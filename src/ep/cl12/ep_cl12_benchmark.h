@@ -41,8 +41,8 @@
 #define SRC_EP_CL12_EP_CL12_BENCHMARK_H_
 
 #include <vector>
-#include "src/common/time_measurement/time_measurement.h"
 #include "src/common/cl_util/cl_benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
 #include "src/ep/ep_benchmark.h"
 
 class EpCl12Benchmark : public EpBenchmark, public ClBenchmark {
@@ -57,14 +57,14 @@ class EpCl12Benchmark : public EpBenchmark, public ClBenchmark {
 
   void InitializeKernels();
   void InitializeBuffers();
-  
+
   cl_mem d_island_;
   cl_mem d_fitness_func_;
 
  public:
-  EpCl12Benchmark() :EpBenchmark() {}
+  EpCl12Benchmark() : EpBenchmark() {}
   ~EpCl12Benchmark() {}
-  
+
  public:
   void Initialize() override;
   void Run() override;

@@ -42,9 +42,10 @@
 #define SRC_COMMON_BENCHMARK_BENCHMARK_H_
 
 #include <memory>
+#include <string>
 
-#include "src/common/time_measurement/time_measurement.h"
 #include "src/common/time_measurement/cpu_gpu_activity_logger.h"
+#include "src/common/time_measurement/time_measurement.h"
 
 /**
  * A benchmark is a program that test platform performance. It follows the
@@ -55,7 +56,7 @@ class Benchmark {
   TimeMeasurement *timer_;
 
   std::unique_ptr<CPUGPUActivityLogger> cpu_gpu_logger_;
-  
+
   bool quiet_mode_ = false;
 
   // WorkGroup Size
@@ -68,9 +69,7 @@ class Benchmark {
   std::string mem_type_;
 
  public:
-  Benchmark() {
-    cpu_gpu_logger_.reset(new CPUGPUActivityLogger());
-  }
+  Benchmark() { cpu_gpu_logger_.reset(new CPUGPUActivityLogger()); }
 
   virtual ~Benchmark() {}
 

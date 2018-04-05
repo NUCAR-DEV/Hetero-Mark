@@ -42,6 +42,7 @@
 
 #include <hc.hpp>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 
@@ -60,7 +61,7 @@ void FirHcBenchmark::Initialize() {
     mem_manager_.reset(new HsaMemoryManager());
   } else if (mem_type_ == "array") {
   } else if (mem_type_ == "array_view") {
-  }else {
+  } else {
     std::cerr << "Memory type " << mem_type_ << " is not supported.\n";
     exit(-1);
   }
@@ -81,7 +82,7 @@ void FirHcBenchmark::FirMemoryManager() {
   uint32_t num_tap = num_tap_;
   auto dmem_history = mem_manager_->Shadow(history_, num_tap_);
   auto dmem_coeff = mem_manager_->Shadow(coeff_, num_tap_);
-  
+
   float *dptr_history = static_cast<float *>(dmem_history->GetDevicePtr());
   float *dptr_coeff = static_cast<float *>(dmem_coeff->GetDevicePtr());
 
@@ -90,12 +91,12 @@ void FirHcBenchmark::FirMemoryManager() {
   }
 
   for (unsigned int i = 0; i < num_block_; i++) {
-    auto dmem_input = mem_manager_->Shadow(
-        input_ + i * num_data_per_block_, num_data_per_block_);
-    auto dmem_output = mem_manager_->Shadow(
-        output_ + i * num_data_per_block_, num_data_per_block_);
+    auto dmem_input = mem_manager_->Shadow(input_ + i * num_data_per_block_,
+                                           num_data_per_block_);
+    auto dmem_output = mem_manager_->Shadow(output_ + i * num_data_per_block_,
+                                            num_data_per_block_);
 
-    float *dptr_input= static_cast<float *>(dmem_input->GetDevicePtr());
+    float *dptr_input = static_cast<float *>(dmem_input->GetDevicePtr());
     float *dptr_output = static_cast<float *>(dmem_output->GetDevicePtr());
 
     dmem_input->HostToDevice();
@@ -122,7 +123,6 @@ void FirHcBenchmark::FirMemoryManager() {
     for (uint32_t j = 0; j < num_tap_; j++) {
       history_[j] = input_[(i + 1) * num_data_per_block_ - num_tap_ + j];
     }
-
 
     dmem_input->Free();
     dmem_output->Free();
@@ -187,17 +187,18 @@ void FirHcBenchmark::FirArray() {
 
     hc::extent<1> ex(num_data_per_block_);
     cpu_gpu_logger_->GPUOn();
-    auto future = hc::parallel_for_each(ex, [&, num_tap](hc::index<1> j)[[hc]] {
-      float sum = 0;
-      for (uint32_t k = 0; k < num_tap; k++) {
-        if (j[0] >= k) {
-          sum = sum + array_coeff[k] * array_input[j[0] - k];
-        } else {
-          sum = sum + array_coeff[k] * array_history[num_tap - (k - j[0])];
-        }
-      }
-      array_output[j[0]] = sum;
-    });
+    auto future =
+        hc::parallel_for_each(ex, [&, num_tap ](hc::index<1> j)[[hc]] {
+          float sum = 0;
+          for (uint32_t k = 0; k < num_tap; k++) {
+            if (j[0] >= k) {
+              sum = sum + array_coeff[k] * array_input[j[0] - k];
+            } else {
+              sum = sum + array_coeff[k] * array_history[num_tap - (k - j[0])];
+            }
+          }
+          array_output[j[0]] = sum;
+        });
     future.wait();
     cpu_gpu_logger_->GPUOff();
     hc::copy(array_output, output_ + i * num_data_per_block_);

@@ -52,8 +52,8 @@ void BeCommandLineOptions::RegisterOptions() {
                                    "--input-video",
                                    "The video to be processed by the "
                                    "background extractor.");
-  command_line_option_.AddArgument("MaxFrames", "integer", "0", "-m", 
-                                   "--max-frames", 
+  command_line_option_.AddArgument("MaxFrames", "integer", "0", "-m",
+                                   "--max-frames",
                                    "Max number of frames to process. 0 means "
                                    "no limitation.");
   command_line_option_.AddArgument("Collaborative", "bool", "false", "-c",
@@ -66,7 +66,6 @@ void BeCommandLineOptions::RegisterOptions() {
                                    "When enabled, the CPU execution result "
                                    "and the GPU result will be stored in "
                                    "output videos.");
-
 }
 
 void BeCommandLineOptions::Parse(int argc, const char *argv[]) {

@@ -39,12 +39,12 @@
 
 class FirCl12Benchmark : public FirBenchmark, public ClBenchmark {
  private:
-  cl_float *temp_output_;
-
   cl_kernel fir_kernel_;
+
+  cl_mem input_buffer_;
+  cl_mem history_buffer_;
   cl_mem output_buffer_;
   cl_mem coeff_buffer_;
-  cl_mem temp_output_buffer_;
 
   void InitializeData();
   void InitializeKernels();

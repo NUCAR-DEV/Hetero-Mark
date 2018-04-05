@@ -92,7 +92,7 @@ class BsBenchmark : public Benchmark {
  public:
   BsBenchmark() : Benchmark() {}
   void Initialize() override;
-  void Run() override {};
+  void Run() override{};
   void Verify() override;
   void Summarize() override;
   void Cleanup() override;

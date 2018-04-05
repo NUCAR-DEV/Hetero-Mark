@@ -153,7 +153,7 @@ void GaHcBenchmark::NonCollaborativeRun() {
     int coarse_match_length = coarse_match_length_;
     int coarse_match_threshold = coarse_match_threshold_;
     int query_sequence_length = query_sequence_.size();
-  
+
     cpu_gpu_logger_->GPUOn();
     hc::parallel_for_each(hc::extent<1>(length), [=](hc::index<1> index)[[hc]] {
       bool match = false;

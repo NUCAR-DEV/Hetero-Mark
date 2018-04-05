@@ -37,22 +37,35 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/knn/knn_command_line_options.h"
-#include "src/knn/cuda/knn_cuda_benchmark.h"
-#include "src/common/benchmark/benchmark_runner.h"
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/common/time_measurement/time_measurement_impl.h"
+#ifndef SRC_KNN_CUDA_KNN_GPU_PARTITIONER_H_
+#define SRC_KNN_CUDA_KNN_GPU_PARTITIONER_H_
 
-int main(int argc, const char **argv) {
-  std::unique_ptr<KnnCudaBenchmark> benchmark(new KnnCudaBenchmark());
-  std::unique_ptr<TimeMeasurement> timer(new TimeMeasurementImpl());
-  BenchmarkRunner runner(benchmark.get(), timer.get());
+typedef struct GpuPartitioner {
+  int n_data;
+  int current;
+  int *worklist;
+} GpuPartitioner;
 
-  KnnCommandLineOptions options;
-  options.RegisterOptions();
-  options.Parse(argc, argv);
-  options.ConfigureKnnBenchmark(benchmark.get());
-  options.ConfigureBenchmarkRunner(&runner);
-
-  runner.Run();
+__device__ inline GpuPartitioner gpu_partitioner_create(int n_data,
+                                                        int *worklist) {
+  GpuPartitioner p;
+  p.n_data = n_data;
+  p.worklist = worklist;
+  return p;
 }
+
+__device__ inline int gpu_initialize(GpuPartitioner *p) {
+  p->current = atomicAdd_system(p->worklist, 1);
+  return p->current;
+}
+
+__device__ inline bool gpu_more(const GpuPartitioner *p) {
+  return (p->current < p->n_data);
+}
+
+__device__ inline int gpu_increment(GpuPartitioner *p) {
+  p->current = atomicAdd_system(p->worklist, 1);
+  return p->current;
+}
+
+#endif  // SRC_KNN_CUDA_KNN_GPU_PARTITIONER_H_

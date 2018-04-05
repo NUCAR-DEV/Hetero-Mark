@@ -58,7 +58,7 @@ class BsCudaBenchmark : public BsBenchmark {
   bool IsGpuCompleted();
 
  public:
-  BsCudaBenchmark() : BsBenchmark() {};
+  BsCudaBenchmark() : BsBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

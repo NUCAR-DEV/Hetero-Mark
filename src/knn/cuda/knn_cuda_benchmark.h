@@ -48,9 +48,11 @@
 
 class KnnCudaBenchmark : public KnnBenchmark {
  private:
-  float   *d_distances_;
+  float *d_distances_;
   LatLong *d_locations_;
+
  public:
+  KnnCudaBenchmark() : KnnBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

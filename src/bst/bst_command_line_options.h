@@ -41,8 +41,8 @@
 #ifndef SRC_BST_BST_COMMAND_LINE_OPTIONS_H_
 #define SRC_BST_BST_COMMAND_LINE_OPTIONS_H_
 
-#include "src/common/command_line_option/benchmark_command_line_options.h"
 #include "src/bst/bst_benchmark.h"
+#include "src/common/command_line_option/benchmark_command_line_options.h"
 
 class BstCommandLineOptions : public BenchmarkCommandLineOptions {
  public:

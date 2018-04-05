@@ -35,6 +35,7 @@
 
 #include <hcc/hc.hpp>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 
@@ -166,6 +167,7 @@ void AesHcBenchmark::AesArray() {
   hc::extent<1> ex(num_blocks);
   hc::tiled_extent<1> tiled_ex = ex.tile(64);
   cpu_gpu_logger_->GPUOn();
+
   parallel_for_each(tiled_ex, [&](hc::index<1> index)[[hc]] {
     uint8_t state[16];
 

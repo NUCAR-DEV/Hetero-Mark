@@ -40,10 +40,9 @@
 #ifndef SRC_BS_CL12_BS_CL12_BENCHMARK_H_
 #define SRC_BS_CL12_BS_CL12_BENCHMARK_H_
 
-#include "src/common/time_measurement/time_measurement.h"
-#include "src/common/cl_util/cl_benchmark.h"
 #include "src/bs/bs_benchmark.h"
-
+#include "src/common/cl_util/cl_benchmark.h"
+#include "src/common/time_measurement/time_measurement.h"
 
 class BsCl12Benchmark : public BsBenchmark, public ClBenchmark {
  private:
@@ -52,19 +51,18 @@ class BsCl12Benchmark : public BsBenchmark, public ClBenchmark {
   cl_mem d_call_price_ = nullptr;
   cl_mem d_put_price_ = nullptr;
 
-  cl_event event_;  
+  cl_event event_;
   bool IsGpuCompleted();
 
   cl_kernel bs_kernel_;
 
   void InitializeKernels();
   void InitializeBuffers();
-  
- public:
 
+ public:
   BsCl12Benchmark() : BsBenchmark() {}
   ~BsCl12Benchmark() {}
-  
+
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

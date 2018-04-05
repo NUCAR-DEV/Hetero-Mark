@@ -41,15 +41,15 @@
 #ifndef SRC_FDEB_HC_FDEB_HC_BENCHMARK_H_
 #define SRC_FDEB_HC_FDEB_HC_BENCHMARK_H_
 
+#include "src/common/memory/memory_manager.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/fdeb/fdeb_benchmark.h"
-#include "src/common/memory/memory_manager.h"
 
 class FdebHcBenchmark : public FdebBenchmark {
  private:
-  void NormalRun(); 
+  void NormalRun();
   void CollaborativeRun();
-  
+
   void BundlingIterGpu();
   void BundlingIterGpuCollaborative();
   void UpdateForceGpu();

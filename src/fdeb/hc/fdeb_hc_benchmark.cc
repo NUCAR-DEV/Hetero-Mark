@@ -39,17 +39,15 @@
  */
 #include "src/fdeb/hc/fdeb_hc_benchmark.h"
 
+#include <hsa/hsa.h>
 #include <hc.hpp>
 #include <hc_math.hpp>
-#include <hsa/hsa.h>
 
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 
-void FdebHcBenchmark::Initialize() {
-  FdebBenchmark::Initialize();
-}
+void FdebHcBenchmark::Initialize() { FdebBenchmark::Initialize(); }
 
 void FdebHcBenchmark::Run() {
   if (collaborative_) {
@@ -83,7 +81,6 @@ void FdebHcBenchmark::CollaborativeRun() {
   }
 
   SaveSubdevisedEdges("out_gpu.data");
-
 }
 
 void FdebHcBenchmark::NormalRun() {
@@ -121,7 +118,6 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
   int col = col_;
   int edge_count = edge_count_;
   float kp = kp_;
-  // int group_size = 64;
   hc::extent<1> ext(edge_count_ * col_);
 
   std::atomic_int *signals = new std::atomic_int[edge_count * col];
@@ -158,42 +154,28 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
 
   float *a_force_x = force_x_.data();
   float *a_force_y = force_y_.data();
-  // float *d_point_x = point_x_.data();
-  // float *d_point_y = point_y_.data();
-  // hc::array_view<float, 1> a_force_x(edge_count * col);
-  // hc::array_view<float, 1> a_force_y(edge_count * col);
 
   std::thread cpu_thread([&] {
     while (true) {
       bool finished = true;
-      // printf("edge_count %d, col %d\n", edge_count, col);
       for (int i = 0; i < edge_count * col; i++) {
-        // printf("signals[%d] = %d.\n", i, signals[i].load(std::memory_order_relaxed));
         if (signals[i] == 1) {
-          // float force_x = a_force_x[i].load(std::memory_order_seq_cst);
-          // float force_y = a_force_y[i].load(std::memory_order_seq_cst);
           float force_x = force_x_[i];
           float force_y = force_y_[i];
           point_x_[i] += step_size_ * force_x;
           point_y_[i] += step_size_ * force_y;
-          // signals[i] = 2;
           signals[i].fetch_add(1, std::memory_order_seq_cst);
-          // printf("Moving point %d %f, %f, %f, %f\n", i,
-          //     force_x, force_y, point_x_[i], point_y_[i]);
         } else if (signals[i] == 0) {
           finished = false;
         }
-
       }
       if (finished) {
-          return;
+        return;
       }
-
-      // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
   });
 
-  auto fut = hc::parallel_for_each(ext, [&](hc::index<1> idx) [[hc]] {
+  auto fut = hc::parallel_for_each(ext, [&](hc::index<1> idx)[[hc]] {
     int point_id = idx[0];
     int i = point_id / col;
     int k = point_id % col;
@@ -242,37 +224,27 @@ void FdebHcBenchmark::BundlingIterGpuCollaborative() {
       force_y /= mag;
     }
 
-    // a_force_x[i * col + k].store(force_x, std::memory_order_relaxed);
-    // a_force_y[i * col + k].store(force_y, std::memory_order_relaxed);
-    // a_force_x[point_id] = force_x;
-    // a_force_y[point_id] = force_y;
     a_force_x[point_id] = force_x;
     a_force_y[point_id] = force_y;
 
     // Signal
-    signals[i*col + k].fetch_add(1, std::memory_order_seq_cst);
+    signals[i * col + k].fetch_add(1, std::memory_order_seq_cst);
   });
-
-  
 
   fut.wait();
 
-  
   cpu_thread.join();
-  
+
   // MovePointsCpu();
 
   delete[] signals;
-  // delete[] a_force_x;
-  // delete[] a_force_y;
-
 }
 
 void FdebHcBenchmark::UpdateForceGpu() {
-  hc::extent<1> ext(edge_count_ * col_); // Extra wi for end point
+  hc::extent<1> ext(edge_count_ * col_);  // Extra wi for end point
 
-  hc::array_view<float, 1> av_comp(hc::extent<1>(edge_count_*edge_count_),
-      compatibility_);
+  hc::array_view<float, 1> av_comp(hc::extent<1>(edge_count_ * edge_count_),
+                                   compatibility_);
   hc::array_view<float, 1> av_point_x(ext, point_x_);
   hc::array_view<float, 1> av_point_y(ext, point_y_);
   hc::array_view<float, 1> av_force_x(ext, force_x_);
@@ -284,60 +256,58 @@ void FdebHcBenchmark::UpdateForceGpu() {
   int edge_count = edge_count_;
   int col = col_;
   float kp = kp_;
-  hc::extent<2> kernel_ext(edge_count_, col_); // Extra wi for end point
-  hc::parallel_for_each(kernel_ext, [=](hc::index<2> idx) [[hc]] {
-      int i = idx[0];
-      int k = idx[1];
+  hc::extent<2> kernel_ext(edge_count_, col_);  // Extra wi for end point
+  hc::parallel_for_each(kernel_ext, [=](hc::index<2> idx)[[hc]] {
+    int i = idx[0];
+    int k = idx[1];
 
-      if (k == 0 || k == col - 1) return;
+    if (k == 0 || k == col - 1) return;
 
-      float force_x = 0;
-      float force_y = 0;
+    float force_x = 0;
+    float force_y = 0;
 
-      for (int j = 0; j < edge_count; j++) {
-        if (j == i) continue;
-        float x1 = av_point_x[i * col + k];
-        float y1 = av_point_y[i * col + k];
-        float x2 = av_point_x[j * col + k];
-        float y2 = av_point_y[j * col + k];
-        float compatibility = av_comp[i * edge_count + j];
-        float dist = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+    for (int j = 0; j < edge_count; j++) {
+      if (j == i) continue;
+      float x1 = av_point_x[i * col + k];
+      float y1 = av_point_y[i * col + k];
+      float x2 = av_point_x[j * col + k];
+      float y2 = av_point_y[j * col + k];
+      float compatibility = av_comp[i * edge_count + j];
+      float dist = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
 
-        if (dist > 0) {
-          float x = x2 - x1;
-          float y = y2 - y1;
+      if (dist > 0) {
+        float x = x2 - x1;
+        float y = y2 - y1;
 
-          force_x += x / dist * compatibility;
-          force_y += y / dist * compatibility;
-        }
+        force_x += x / dist * compatibility;
+        force_y += y / dist * compatibility;
       }
+    }
 
-      // Self force
-      float x = av_point_x[i * col + k];
-      float y = av_point_y[i * col + k];
-      float x_p = av_point_x[i * col + k - 1];
-      float y_p = av_point_y[i * col + k - 1];
-      float x_n = av_point_x[i * col + k + 1];
-      float y_n = av_point_y[i * col + k + 1];
+    // Self force
+    float x = av_point_x[i * col + k];
+    float y = av_point_y[i * col + k];
+    float x_p = av_point_x[i * col + k - 1];
+    float y_p = av_point_y[i * col + k - 1];
+    float x_n = av_point_x[i * col + k + 1];
+    float y_n = av_point_y[i * col + k + 1];
 
-      force_x += kp * (x_p - x);
-      force_y += kp * (y_p - y);
-      force_x += kp * (x_n - x);
-      force_y += kp * (y_n - y);
+    force_x += kp * (x_p - x);
+    force_y += kp * (y_p - y);
+    force_x += kp * (x_n - x);
+    force_y += kp * (y_n - y);
 
-      // Normalize
-      float mag = sqrt(force_x * force_x + force_y * force_y);
-      force_x /= mag;
-      force_y /= mag;
+    // Normalize
+    float mag = sqrt(force_x * force_x + force_y * force_y);
+    force_x /= mag;
+    force_y /= mag;
 
-      av_force_x[i * col + k] = force_x;
-      av_force_y[i * col + k] = force_y;
+    av_force_x[i * col + k] = force_x;
+    av_force_y[i * col + k] = force_y;
   });
 
   av_force_x.synchronize();
   av_force_y.synchronize();
 }
 
-void FdebHcBenchmark::Cleanup() {
-  FdebBenchmark::Cleanup();
-}
+void FdebHcBenchmark::Cleanup() { FdebBenchmark::Cleanup(); }

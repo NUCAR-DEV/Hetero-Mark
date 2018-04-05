@@ -43,6 +43,7 @@
 #include <hc.hpp>
 #include <hc_math.hpp>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 
@@ -55,7 +56,6 @@ void KnnHcBenchmark::Initialize() {
     h_locations_[i].lat = locations_.at(i).lat;
     h_locations_[i].lng = locations_.at(i).lng;
   }
-
 }
 
 void KnnHcBenchmark::Run() {
@@ -77,33 +77,32 @@ void KnnHcBenchmark::Run() {
   float lat = latitude_;
   float lng = longitude_;
 
-  hc::extent<1> kernel_ext(256); 
-  auto fut = parallel_for_each(kernel_ext, [&](hc::index<1> i) [[hc]] {
+  hc::extent<1> kernel_ext(256);
+  auto fut = parallel_for_each(kernel_ext, [&](hc::index<1> i)[[hc]] {
     int tid;
     tid = gpu_worklist.fetch_add(1, std::memory_order_seq_cst);
-    while(true) {
+    while (true) {
       if (tid >= num_gpu_records) {
         break;
       }
-      av_distance[tid] = 
-        (float)sqrt((lat - av_loc[tid].lat) * (lat - av_loc[tid].lat) +
-                    (lng - av_loc[tid].lng) * (lng - av_loc[tid].lng));
+      av_distance[tid] = static_cast<float>(
+          sqrt((lat - av_loc[tid].lat) * (lat - av_loc[tid].lat) +
+               (lng - av_loc[tid].lng) * (lng - av_loc[tid].lng)));
 
       tid = gpu_worklist.fetch_add(1, std::memory_order_seq_cst);
     }
 
     tid = cpu_worklist.fetch_add(1, std::memory_order_seq_cst);
-    while(true) {
+    while (true) {
       if (tid >= num_gpu_records) {
         break;
       }
-      av_distance[tid] = 
-        (float)sqrt((lat - av_loc[tid].lat) * (lat - av_loc[tid].lat) +
-                    (lng - av_loc[tid].lng) * (lng - av_loc[tid].lng));
+      av_distance[tid] = static_cast<float>(
+          sqrt((lat - av_loc[tid].lat) * (lat - av_loc[tid].lat) +
+               (lng - av_loc[tid].lng) * (lng - av_loc[tid].lng)));
 
       tid = cpu_worklist.fetch_add(1, std::memory_order_seq_cst);
     }
-
   });
   KnnCPU(h_locations_, h_distances_, num_records_, num_gpu_records, latitude_,
          longitude_, &cpu_worklist, &gpu_worklist);
@@ -111,14 +110,11 @@ void KnnHcBenchmark::Run() {
   printf("%d\n", gpu_worklist.load(std::memory_order_seq_cst));
 
   // find the results Count least distances
-  findLowest(records_, h_distances_, num_records_, k_value_);
+  findLowest(&records_, h_distances_, num_records_, k_value_);
 
   for (int i = 0; i < k_value_; i++) {
     printf("%s --> Distance=%f\n", records_[i].recString, records_[i].distance);
   }
-
 }
 
-void KnnHcBenchmark::Cleanup() {
-  KnnBenchmark::Cleanup();
-}
+void KnnHcBenchmark::Cleanup() { KnnBenchmark::Cleanup(); }

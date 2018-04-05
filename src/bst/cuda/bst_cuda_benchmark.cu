@@ -47,14 +47,13 @@ __global__ void bst_cuda(void *tree_root, void *dev_start_node,
   volatile um_mutex *tmp_mutex;
   Node *tmp_node, *tmp_parent, *new_node;
 
-  Node *root = (Node *)tree_root;
-  Node *data = (Node *)dev_start_node;
+  Node *root = reinterpret_cast<Node *>(tree_root);
+  Node *data = reinterpret_cast<Node *>(dev_start_node);
 
-  long flag;
-  long key;
+  int64_t flag;
+  int64_t key;
 
   uint tid = blockIdx.x * blockDim.x + threadIdx.x;
-  // printf("Tid is %d \n", tid);
   if (tid >= gpu_nodes) return;
 
   flag = 0;
@@ -82,7 +81,8 @@ __global__ void bst_cuda(void *tree_root, void *dev_start_node,
     tmp_mutex = &tmp_parent->mutex_node;
     expected = UM_MUTEX_UNLOCK;
 
-    exFlag = atomicCAS_system((int *)&tmp_mutex->count, expected, 1);
+    exFlag = atomicCAS_system(reinterpret_cast<int *>(&tmp_mutex->count),
+                              expected, 1);
 
     // If Parent node lock is successful
     if (exFlag == UM_MUTEX_UNLOCK) {
@@ -110,11 +110,10 @@ __global__ void bst_cuda(void *tree_root, void *dev_start_node,
 
       expected = UM_MUTEX_LOCK;
 
-      atomicCAS_system((int *)&tmp_mutex->count, expected, 0);
+      atomicCAS_system(reinterpret_cast<int *>(&tmp_mutex->count), expected, 0);
     }
 
     __threadfence_system();
-
   } while (!done);
 }
 
@@ -134,12 +133,13 @@ void BstCudaBenchmark::Run() {
 
   printf("Device start node is %d \n", device_start_node);
   bst_cuda<<<grid_size, block_size>>>(
-      (void *)tree_buffer_, (void *)(tree_buffer_ + device_start_node),
+      reinterpret_cast<void *>(tree_buffer_),
+      reinterpret_cast<void *>(tree_buffer_ + device_start_node),
       device_nodes_);
 
   uint32_t offset = 0;
   printf("Offset is %d \n", offset);
-  for (long k = 0; k < host_nodes_; k++) {
+  for (int64_t k = 0; k < host_nodes_; k++) {
     InsertNode(&(tree_buffer_[init_tree_insert_ + offset + k]), root_);
   }
 

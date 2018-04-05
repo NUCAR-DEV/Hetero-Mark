@@ -46,7 +46,7 @@
 class HistHcBenchmark : public HistBenchmark {
  private:
  public:
-  HistHcBenchmark() : HistBenchmark() {};
+  HistHcBenchmark() : HistBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;

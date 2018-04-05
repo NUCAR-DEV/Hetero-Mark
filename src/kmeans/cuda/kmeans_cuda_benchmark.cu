@@ -196,8 +196,8 @@ void KmeansCudaBenchmark::UpdateMembership(unsigned num_clusters) {
   cpu_gpu_logger_->CPUOff();
 }
 
-void KmeansCudaBenchmark::Run() { 
-  Clustering(); 
+void KmeansCudaBenchmark::Run() {
+  Clustering();
   cpu_gpu_logger_->Summarize();
 }
 

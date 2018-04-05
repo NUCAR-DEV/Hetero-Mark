@@ -75,6 +75,9 @@ void AesCl12Benchmark::InitializeDeviceMemory() {
   dev_key_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
                             kExpandedKeyLengthInBytes, NULL, &err);
   checkOpenCLErrors(err, "Failed to create buffer for expanded key");
+
+  dev_s_ = clCreateBuffer(context_, CL_MEM_READ_ONLY, 256, NULL, &err);
+  checkOpenCLErrors(err, "Failed to create buffer for s array");
 }
 
 void AesCl12Benchmark::Cleanup() {
@@ -115,6 +118,10 @@ void AesCl12Benchmark::CopyDataToDevice() {
                              kExpandedKeyLengthInBytes, expanded_key_, 0, NULL,
                              NULL);
   checkOpenCLErrors(ret, "Failed to copy key to device");
+
+  ret = clEnqueueWriteBuffer(cmd_queue_, dev_s_, CL_TRUE, 0, 256, s, 0, NULL,
+                             NULL);
+  checkOpenCLErrors(ret, "Failed to copy s array to device");
 }
 
 void AesCl12Benchmark::RunKernel() {
@@ -129,6 +136,9 @@ void AesCl12Benchmark::RunKernel() {
 
   ret = clSetKernelArg(kernel_, 1, sizeof(cl_mem), &dev_key_);
   checkOpenCLErrors(ret, "Set key as kernel argument");
+
+  ret = clSetKernelArg(kernel_, 2, sizeof(cl_mem), &dev_s_);
+  checkOpenCLErrors(ret, "Set s array as kernel argument");
 
   cpu_gpu_logger_->GPUOn();
   ret = clEnqueueNDRangeKernel(cmd_queue_, kernel_, 1, NULL, global_dimensions,

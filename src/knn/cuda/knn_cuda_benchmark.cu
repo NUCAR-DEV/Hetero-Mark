@@ -38,51 +38,75 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/knn/cuda/knn_cuda_benchmark.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include "src/knn/cuda_ws_v2/knn_cpu_partitioner.h"
+#include "src/knn/cuda_ws_v2/knn_cuda_benchmark.h"
+#include "src/knn/cuda_ws_v2/knn_gpu_partitioner.h"
 
-__global__ void knn_cuda(LatLong *latLong,float *d_distances,int num_records,float lat,float lng) {
-  uint tid = blockIdx.x * blockDim.x + threadIdx.x;
-  if (tid < num_records) {
-	  d_distances[tid] = (float)sqrt((lat - latLong[tid].lat)*(lat-latLong[tid].lat)+(lng-latLong[tid].lng)*(lng-latLong[tid].lng));
-   }
+__global__ void knn_cuda(LatLong *latLong, float *d_distances,
+                         int num_gpu_records, int num_records, float lat,
+                         float lng, int *gpu_worklist, int *cpu_worklist) {
+  GpuPartitioner p = gpu_partitioner_create(num_gpu_records, gpu_worklist);
+
+  for (int tid = gpu_initialize(&p); gpu_more(&p); tid = gpu_increment(&p)) {
+    d_distances[tid] = static_cast<flaot>(
+        sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
+             (lng - latLong[tid].lng) * (lng - latLong[tid].lng)));
+  }
+
+  GpuPartitioner thieves = gpu_partitioner_create(num_records, cpu_worklist);
+
+  for (int tid = gpu_initialize(&thieves); gpu_more(&thieves);
+       tid = gpu_increment(&thieves)) {
+    d_distances[tid] = static_cast<float>(
+        sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
+             (lng - latLong[tid].lng) * (lng - latLong[tid].lng)));
+  }
 }
 
 void KnnCudaBenchmark::Initialize() {
- KnnBenchmark::Initialize();
- printf("Block size is %d \n", num_records_);
- h_distances_ = new float[num_records_];
- cudaMalloc((void **)&d_distances_,sizeof(float) * num_records_);
- cudaMalloc((void **)&d_locations_,sizeof(LatLong) * num_records_);
- cudaMemcpy(d_locations_,&locations_[0],sizeof(LatLong)*num_records_,cudaMemcpyHostToDevice);
+  KnnBenchmark::Initialize();
+  cudaMallocManaged(&h_locations_, sizeof(LatLong) * num_records_);
+  cudaMallocManaged(&h_distances_, sizeof(float) * num_records_);
+  cudaMallocManaged(&cpu_worklist_, sizeof(std::atomic_uint));
+  cudaMallocManaged(&gpu_worklist_, sizeof(std::atomic_uint));
+  for (int i = 0; i < num_records_; i++) {
+    h_locations_[i].lat = locations_.at(i).lat;
+    h_locations_[i].lng = locations_.at(i).lng;
+  }
+
+  gpu_worklist_[0].store(0);
+  cpu_worklist_[0].store(partitioning_ * num_records_);
 }
 
 void KnnCudaBenchmark::Run() {
- dim3 block_size(64);
- dim3 grid_size((num_records_ + 64 - 1) / 64 );
- printf("Grid size is %d \n", grid_size.x);
- knn_cuda<<<grid_size, block_size>>>(d_locations_,d_distances_,num_records_,latitude_,longitude_);
- cudaDeviceSynchronize();
- 
- cudaMemcpy(h_distances_, d_distances_, sizeof(float) * num_records_, cudaMemcpyDeviceToHost);
+  dim3 block_size(256);
+  dim3 grid_size(1);
+  int num_gpu_records = partitioning_ * num_records_;
+  int num_cpu_records = (1 - partitioning_) * num_records_;
+  printf("Num gpu records is %d \n", num_gpu_records);
+  printf("Num cpu records is %d \n", num_cpu_records);
 
- for(int i = 0; i < 10; i++)
-        printf("Distances are %f \n", h_distances_[i]);
-  
- // find the resultsCount least distances
- findLowest(records_,h_distances_,num_records_,k_value_);
+  knn_cuda<<<grid_size, block_size>>>(
+      h_locations_, h_distances_, num_gpu_records, num_records_, latitude_,
+      longitude_, reinterpret_cast<int *> gpu_worklist_,
+      reinterpret_cast<int *> cpu_worklist_);
+  KnnCPU(h_locations_, h_distances_, num_records_, num_gpu_records, latitude_,
+         longitude_, cpu_worklist_, gpu_worklist_);
+  cudaDeviceSynchronize();
 
- for(int i = 0;i < k_value_;i++) {
-      printf("%s --> Distance=%f\n",records_[i].recString,records_[i].distance);
-    }
+  for (int i = 0; i < 10; i++) {
+    printf("Distances are %f \n", h_distances_[i]);
+  }
+
+  // find the resultsCount least distances
+  findLowest(records_, h_distances_, num_records_, k_value_);
+
+  for (int i = 0; i < k_value_; i++) {
+    printf("%s --> Distance=%f\n", records_[i].recString, records_[i].distance);
+  }
 }
 
-void KnnCudaBenchmark::Cleanup() {
-  cudaFree(d_distances_);
-  cudaFree(d_locations_);
-  free(output_distances_);
-  KnnBenchmark::Cleanup();
-}
+void KnnCudaBenchmark::Cleanup() { KnnBenchmark::Cleanup(); }

@@ -89,7 +89,7 @@ void PrHipBenchmark::Run() {
   hipMemcpy(device_mtx_1, temp_mtx, num_nodes_ * sizeof(float),
             hipMemcpyHostToDevice);
   free(temp_mtx);
-  
+
   cpu_gpu_logger_->GPUOn();
   for (i = 0; i < max_iteration_; i++) {
     if (i % 2 == 0) {

@@ -41,16 +41,17 @@
 #ifndef SRC_FIR_HC_FIR_HC_BENCHMARK_H_
 #define SRC_FIR_HC_FIR_HC_BENCHMARK_H_
 
+#include <memory>
+
+#include "src/common/memory/memory_manager.h"
 #include "src/common/time_measurement/time_measurement.h"
 #include "src/fir/fir_benchmark.h"
-#include "src/common/memory/memory_manager.h"
 
 class FirHcBenchmark : public FirBenchmark {
  private:
-
   std::unique_ptr<MemoryManager> mem_manager_;
   float *history_ = nullptr;
-  
+
   void FirArrayView();
   void FirArray();
   void FirMemoryManager();
