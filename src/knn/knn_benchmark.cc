@@ -48,8 +48,8 @@
 
 #include "src/knn/knn_cpu_partitioner.h"
 
-int KnnBenchmark::loadData(std::string file, std::vector<Record> &records,
-                           std::vector<LatLong> &locations) {
+int KnnBenchmark::loadData(std::string file, std::vector<Record> *records,
+                           std::vector<LatLong> *locations) {
   FILE *flist, *fp;
   int i = 0;
   char dbname[64];
@@ -93,8 +93,8 @@ int KnnBenchmark::loadData(std::string file, std::vector<Record> &records,
       substr[5] = '\0';
       latLong.lng = atof(substr);
 
-      locations.push_back(latLong);
-      records.push_back(record);
+      locations->push_back(latLong);
+      records->push_back(record);
       recNum++;
     }
     fclose(fp);
@@ -103,7 +103,7 @@ int KnnBenchmark::loadData(std::string file, std::vector<Record> &records,
   return recNum;
 }
 
-void KnnBenchmark::findLowest(std::vector<Record> &records, float *distances,
+void KnnBenchmark::findLowest(std::vector<Record> *records, float *distances,
                               int numRecords, int topN) {
   int i, j;
   float val;
@@ -122,21 +122,21 @@ void KnnBenchmark::findLowest(std::vector<Record> &records, float *distances,
       if (val < temp_distances[minLoc]) minLoc = j;
     }
     // swap locations and distances
-    tempRec = &records[i];
-    records[i] = records[minLoc];
-    records[minLoc] = *tempRec;
+    tempRec = &(*records)[i];
+    (*records)[i] = (*records)[minLoc];
+    (*records)[minLoc] = *tempRec;
 
     tempDist = temp_distances[i];
     temp_distances[i] = temp_distances[minLoc];
     temp_distances[minLoc] = tempDist;
 
     // add distance to the min we just found
-    records[i].distance = temp_distances[i];
+    (*records)[i].distance = temp_distances[i];
   }
 }
 
 void KnnBenchmark::Initialize() {
-  num_records_ = loadData(filename_, records_, locations_);
+  num_records_ = loadData(filename_, &records_, &locations_);
   if (k_value_ > num_records_) {
     k_value_ = num_records_;
   }

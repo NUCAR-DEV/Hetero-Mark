@@ -110,7 +110,7 @@ void KnnHcBenchmark::Run() {
   printf("%d\n", gpu_worklist.load(std::memory_order_seq_cst));
 
   // find the results Count least distances
-  findLowest(records_, h_distances_, num_records_, k_value_);
+  findLowest(&records_, h_distances_, num_records_, k_value_);
 
   for (int i = 0; i < k_value_; i++) {
     printf("%s --> Distance=%f\n", records_[i].recString, records_[i].distance);

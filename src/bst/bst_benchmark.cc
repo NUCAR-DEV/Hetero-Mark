@@ -114,12 +114,14 @@ void BstBenchmark::InitializeNodes(Node *data, uint32_t num_nodes, int seed) {
   Node *tmp_node;
   int64_t val;
 
-  srand(seed);
+  // srand(seed);
   for (size_t i = 0; i < num_nodes; i++) {
     tmp_node = &(data[i]);
 
-    val = (((rand() & 255) << 8 | (rand() & 255)) << 8 | (rand() & 255)) << 7 |
-          (rand() & 127);
+    val = (((rand_r(&seed) & 255) << 8 | (rand_r(&seed) & 255)) << 8 |
+           (rand_r(&seed) & 255))
+              << 7 |
+          (rand_r(&seed) & 127);
 
     tmp_node->value = val;
     tmp_node->left = NULL;

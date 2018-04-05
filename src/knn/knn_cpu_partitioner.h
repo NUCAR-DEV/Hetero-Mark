@@ -37,6 +37,9 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#ifndef SRC_KNN_CUDA_KNN_GPU_PARTITIONER_H_
+#define SRC_KNN_CUDA_KNN_GPU_PARTITIONER_H_
+
 #include <atomic>
 
 typedef struct CpuPartitioner {
@@ -66,3 +69,5 @@ inline int cpu_increment(CpuPartitioner *p) {
   p->current = p->worklist->fetch_add(1);
   return p->current;
 }
+
+#endif  // SRC_KNN_CUDA_KNN_GPU_PARTITIONER_H_

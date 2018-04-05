@@ -37,6 +37,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS WITH THE SOFTWARE.
  */
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -50,18 +51,18 @@ __global__ void knn_cuda(LatLong *latLong, float *d_distances,
   GpuPartitioner p = gpu_partitioner_create(num_gpu_records, gpu_worklist);
 
   for (int tid = gpu_initialize(&p); gpu_more(&p); tid = gpu_increment(&p)) {
-    d_distances[tid] =
-        (float)sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
-                    (lng - latLong[tid].lng) * (lng - latLong[tid].lng));
+    d_distances[tid] = static_cast<flaot>(
+        sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
+             (lng - latLong[tid].lng) * (lng - latLong[tid].lng)));
   }
 
   GpuPartitioner thieves = gpu_partitioner_create(num_records, cpu_worklist);
 
   for (int tid = gpu_initialize(&thieves); gpu_more(&thieves);
        tid = gpu_increment(&thieves)) {
-    d_distances[tid] =
-        (float)sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
-                    (lng - latLong[tid].lng) * (lng - latLong[tid].lng));
+    d_distances[tid] = static_cast<float>(
+        sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
+             (lng - latLong[tid].lng) * (lng - latLong[tid].lng)));
   }
 }
 
@@ -90,7 +91,8 @@ void KnnCudaBenchmark::Run() {
 
   knn_cuda<<<grid_size, block_size>>>(
       h_locations_, h_distances_, num_gpu_records, num_records_, latitude_,
-      longitude_, (int *)gpu_worklist_, (int *)cpu_worklist_);
+      longitude_, reinterpret_cast<int *> gpu_worklist_,
+      reinterpret_cast<int *> cpu_worklist_);
   KnnCPU(h_locations_, h_distances_, num_records_, num_gpu_records, latitude_,
          longitude_, cpu_worklist_, gpu_worklist_);
   cudaDeviceSynchronize();

@@ -43,8 +43,9 @@
 
 #if COMPILE_HCC
 
-#include <algorithm>
 #include <hcc/hc.hpp>
+
+#include <algorithm>
 
 #include "src/common/memory/memory_manager.h"
 
