@@ -148,12 +148,14 @@ are representatives of graph based applications.
 
 ## Compiling the code
 
-Use the following commands to compile the benchmarks.
+### OpenCL
+
+Use the following commands to compile the OpenCL benchmarks.
 
 ```bash
 mkdir build
 cd build
-cmake ../
+cmake -DCOMPILE_OPENCL12 ../
 make
 ```
 

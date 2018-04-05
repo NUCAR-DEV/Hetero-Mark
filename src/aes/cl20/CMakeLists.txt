@@ -1,11 +1,11 @@
-set( BENCHMARK_NAME aes_cl20 )
-set( SOURCE_FILES aes_cl20_benchmark.cc main.cc )
-set( HEADER_FILES aes_cl20_benchmark.h )
-set( EXTRA_FILES kernels.cl )
+set(BENCHMARK_NAME aes_cl20)
+set(SOURCE_FILES aes_cl20_benchmark.cc main.cc)
+set(HEADER_FILES aes_cl20_benchmark.h)
+set(EXTRA_FILES kernels.cl)
 
 ############################################################################
 
-if( OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
+if(COMPILE_OPENCL20 AND OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES)
   add_executable( ${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES})
 
   target_link_libraries( ${BENCHMARK_NAME} 

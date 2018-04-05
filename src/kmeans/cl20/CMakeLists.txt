@@ -1,22 +1,16 @@
-set( BENCHMARK_NAME kmeans_cl20 )
-set( SOURCE_FILES kmeans_cl20_benchmark.cc main.cc )
-set( HEADER_FILES kmeans_cl20_benchmark.h )
-set( EXTRA_FILES kernels.cl )
+set(BENCHMARK_NAME kmeans_cl20)
+set(SOURCE_FILES kmeans_cl20_benchmark.cc main.cc)
+set(HEADER_FILES kmeans_cl20_benchmark.h)
+set(EXTRA_FILES kernels.cl)
 
-############################################################################
-
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
-project( ${BENCHMARK_NAME} )
-
-if ( OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
+if (COMPILE_OPENCL20 AND OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES) 
   add_executable( ${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES})
 
   target_link_libraries( ${BENCHMARK_NAME} 
       kmeans cl_util time_measurement command_line_option benchmark 
       ${OPENCL_LIBRARIES})
 
-# Copy extra files to binary directory
+  # Copy extra files to binary directory
   foreach( extra_file ${EXTRA_FILES} )
     add_custom_command(
         TARGET ${BENCHMARK_NAME} POST_BUILD

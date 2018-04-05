@@ -6,4 +6,4 @@ build-job:
   script:
   - mkdir build && cd build
   - cmake ..
-  - make
+  - make check

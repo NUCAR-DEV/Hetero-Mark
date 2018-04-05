@@ -1,3 +1,5 @@
+if (COMPILE_OPENCL12 OR COMPILE_OPENCL20)
+
 # Auto-select bitness based on platform
 if( NOT BITNESS )
   if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -7,7 +9,8 @@ if( NOT BITNESS )
   endif()
 endif()
 
-# Unset OPENCL_LIBRARIES, so that corresponding arch specific libs are found when bitness is changed
+# Unset OPENCL_LIBRARIES, so that corresponding arch specific libs are found 
+# when bitness is changed
 unset(OPENCL_LIBRARIES CACHE)
 unset(OPENCL_INCLUDE_DIRS CACHE)
 
@@ -22,19 +25,21 @@ endif()
 ############################################################################
 
 # Find OpenCL include and libs
-find_path( OPENCL_INCLUDE_DIRS
+find_path(OPENCL_INCLUDE_DIRS
   NAMES OpenCL/cl.h CL/cl.h
   HINTS $ENV{AMDAPPSDKROOT}/include
 )
 
-find_library( OPENCL_LIBRARIES
+find_library(OPENCL_LIBRARIES
   NAMES OpenCL
   HINTS $ENV{AMDAPPSDKROOT}/lib
   PATH_SUFFIXES ${PLATFORM}${BITNESS} ${BITNESS_SUFFIX}
 )
 
-if( OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
+if(OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
   include_directories( ${OPENCL_INCLUDE_DIRS} )
 else( OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
-  message("OpenCL include file and libraries not found. OpenCL benchmarks will be skipped.")
+  message("OpenCL not found. OpenCL benchmarks will be skipped.")
+endif()
+
 endif()

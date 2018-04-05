@@ -3,7 +3,7 @@ set(SOURCE_FILES fir_cl12_benchmark.cc main.cc)
 set(HEADER_FILES fir_cl12_benchmark.h)
 set(EXTRA_FILES kernels.cl)
 
-if(OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
+if(COMPILE_OPENCL12 AND OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
   add_executable(${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES})
 
   target_link_libraries(${BENCHMARK_NAME} 
