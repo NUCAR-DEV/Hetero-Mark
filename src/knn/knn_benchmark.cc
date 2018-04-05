@@ -46,7 +46,7 @@
 #include <iostream>
 #include <string>
 
-#include "src/knn/cuda_ws/knn_cpu_partitioner.h"
+#include "src/knn/knn_cpu_partitioner.h"
 
 int KnnBenchmark::loadData(std::string file, std::vector<Record> &records,
                            std::vector<LatLong> &locations) {

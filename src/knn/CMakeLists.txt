@@ -1,7 +1,6 @@
 set( FOLDER_NAME knn )
 set( SUBDIRECTORIES 
   cuda
-  cuda_ws_v2
   hc
   )
 set( SRC_FILES

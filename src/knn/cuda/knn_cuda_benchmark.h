@@ -52,6 +52,7 @@ class KnnCudaBenchmark : public KnnBenchmark {
   LatLong *d_locations_;
 
  public:
+  KnnCudaBenchmark() : KnnBenchmark() {}
   void Initialize() override;
   void Run() override;
   void Cleanup() override;
