@@ -249,28 +249,28 @@ https://drive.google.com/file/d/1IItjFFUIfANgrUUI7jebNS9rfSEe32lZ/view?usp=shari
       allowed.
 
         ``` bash
-	      ./datagen <num_bytes> > file.data
-	      ```
+        ./datagen <num_bytes> > file.data
+        ```
 
     * Gene-alignment - Generates the input file for Gene Alignment. The target
       sequence length should be much shorter than the query sequence length.
 
         ``` bash
-	      python data_gen.py <target_sequence_len> <query_sequence_len>
-	      ```
+        python data_gen.py <target_sequence_len> <query_sequence_len>
+        ```
 
     * KMeans - It generates the input file for KMeans. Usage:
 
         ``` bash
         g++ datagen.cpp -o datagen
-	      ./datagen <numObjects> [ <numFeatures> ] [-f]
-	      ```
+        ./datagen <numObjects> [ <numFeatures> ] [-f]
+        ```
 
     * PageRank - It generates the input matrix for PageRank. Usage:
 
         ``` bash
         python datagen.py
-	      ```
+        ```
 
 ## Known Issue
 
