@@ -72,7 +72,7 @@ class BstBenchmark : public Benchmark {
   uint32_t num_insert_ = 200;
   uint32_t init_tree_insert_ = 10;
   uint32_t CountNodes(Node *root);
-  void InitializeNodes(Node *data, uint32_t num_nodes, int seed);
+  void InitializeNodes(Node *data, uint32_t num_nodes, uint32_t seed);
   void InsertNode(Node *nextData, Node *root);
   Node *MakeBinaryTree(uint32_t num_nodes, Node *inroot);
   void UmMutexInit(um_mutex *lock, int value);

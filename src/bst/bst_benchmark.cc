@@ -110,7 +110,8 @@ void BstBenchmark::InsertNode(Node *tmpData, Node *root) {
   } while (!done);
 }
 
-void BstBenchmark::InitializeNodes(Node *data, uint32_t num_nodes, int seed) {
+void BstBenchmark::InitializeNodes(Node *data, uint32_t num_nodes,
+                                   uint32_t seed) {
   Node *tmp_node;
   int64_t val;
 

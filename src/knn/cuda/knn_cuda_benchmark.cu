@@ -41,9 +41,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "src/knn/cuda_ws_v2/knn_cpu_partitioner.h"
-#include "src/knn/cuda_ws_v2/knn_cuda_benchmark.h"
-#include "src/knn/cuda_ws_v2/knn_gpu_partitioner.h"
+#include "src/knn/cuda/knn_cpu_partitioner.h"
+#include "src/knn/cuda/knn_cuda_benchmark.h"
+#include "src/knn/cuda/knn_gpu_partitioner.h"
 
 __global__ void knn_cuda(LatLong *latLong, float *d_distances,
                          int num_gpu_records, int num_records, float lat,
@@ -51,7 +51,7 @@ __global__ void knn_cuda(LatLong *latLong, float *d_distances,
   GpuPartitioner p = gpu_partitioner_create(num_gpu_records, gpu_worklist);
 
   for (int tid = gpu_initialize(&p); gpu_more(&p); tid = gpu_increment(&p)) {
-    d_distances[tid] = static_cast<flaot>(
+    d_distances[tid] = static_cast<float>(
         sqrt((lat - latLong[tid].lat) * (lat - latLong[tid].lat) +
              (lng - latLong[tid].lng) * (lng - latLong[tid].lng)));
   }

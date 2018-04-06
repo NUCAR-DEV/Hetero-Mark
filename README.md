@@ -188,6 +188,21 @@ cmake -DCOMPILE_CUDA=On ../
 make
 ```
 
+You need to modify the file `cmake/CUDA.cmake` to adjust your GPU's 
+capability.
+
+If you want to compile the system-level atomic benchmarks, you need
+to make sure to use compute capacity greater than 60. And you need
+the following commands to include those benchmarks into the 
+compilation list:
+
+```bash
+mkdir build
+cd build
+cmake -DCOMPILE_CUDA=On -DCOMPILE_SYSTEM_ATOMIC_CUDA=On ../
+make
+```
+
 ### HIP Compilation
 
 Use the following commands to compile HIP benchmarks.
