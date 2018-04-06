@@ -238,7 +238,6 @@ and what parameter is needed.
 
 ### Download standard input data
 
-```bash
 You can download the standard data from the following url
 https://drive.google.com/file/d/1IItjFFUIfANgrUUI7jebNS9rfSEe32lZ/view?usp=sharing".
 
