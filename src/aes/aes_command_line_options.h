@@ -54,6 +54,7 @@ class AesCommandLineOptions : public BenchmarkCommandLineOptions {
  private:
   std::string input_file_;
   std::string key_file_;
+  uint64_t input_length_;
 };
 
 #endif  // SRC_AES_AES_COMMAND_LINE_OPTIONS_H_

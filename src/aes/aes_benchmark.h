@@ -66,7 +66,9 @@ class AesBenchmark : public Benchmark {
   uint32_t expanded_key_[kExpandedKeyLengthInWords];
 
   void LoadPlaintext();
+  void RandomizePlaintext();
   void LoadKey();
+  void RandomizeKey();
 
   void InitiateCiphertext(uint8_t **ciphertext);
 
@@ -137,7 +139,9 @@ class AesBenchmark : public Benchmark {
       0x74, 0xe8, 0xcb, 0x8d};
 
  public:
-  AesBenchmark() : Benchmark() {}
+  AesBenchmark() : Benchmark() {
+    text_length_ = 0;
+  }
   virtual ~AesBenchmark() {}
 
   void Initialize() override;
@@ -152,6 +156,10 @@ class AesBenchmark : public Benchmark {
 
   void SetKeyFileName(const std::string &file_name) {
     key_file_name_ = file_name;
+  }
+
+  void SetInputLength(uint64_t length) {
+    text_length_ = length;
   }
 };
 

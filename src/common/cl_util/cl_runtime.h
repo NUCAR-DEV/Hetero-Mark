@@ -89,6 +89,8 @@ class clRuntime {
 
   cl_context getContext() const { return context; }
 
+  void releaseContext(cl_context context) { clReleaseContext(context); }
+
   // Get a command queue by index, create it if doesn't exist
   cl_command_queue getCmdQueue(unsigned index,
                                cl_command_queue_properties properties = 0);

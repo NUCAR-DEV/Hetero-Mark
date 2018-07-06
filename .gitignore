@@ -95,3 +95,4 @@ compile_log.txt
 *.s
 *.asm
 *.hsaco
+*.disasm

@@ -100,6 +100,8 @@ class KmeansBenchmark : public Benchmark {
     min_num_clusters_ = min_num_clusters;
   }
   void setNumLoops(unsigned num_loops) { num_loops_ = num_loops; }
+  void setNumPoints(unsigned num_points) { num_points_ = num_points; }
+  void setNumFeatures(unsigned num_features) { num_features_ = num_features; }
 };
 
 #endif  // SRC_KMEANS_KMEANS_BENCHMARK_H_

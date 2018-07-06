@@ -55,6 +55,14 @@ void KmeansCommandLineOptions::RegisterOptions() {
                                    "--threshold", "Threshold value");
   command_line_option_.AddArgument("NumLoops", "int", "1", "-l", "--loops",
                                    "Iteration for each number of clusters");
+  command_line_option_.AddArgument("NumPoints", "int", "0", "-x", "--points",
+                                   "Number of points to cluster. Setting this "
+                                   "field will disable loading input data from "
+                                   "file.");
+  command_line_option_.AddArgument(
+      "NumFeatures", "int", "0", "-y", "--features",
+      "Number of features for a point. It has to be used together with the "
+      "NumPoints argument.");
 }
 
 void KmeansCommandLineOptions::Parse(int argc, const char *argv[]) {
@@ -67,6 +75,8 @@ void KmeansCommandLineOptions::Parse(int argc, const char *argv[]) {
   min_num_clusters_ =
       command_line_option_.GetArgumentValue("MinNumClusters")->AsInt32();
   num_loops_ = command_line_option_.GetArgumentValue("NumLoops")->AsInt32();
+  num_points_ = command_line_option_.GetArgumentValue("NumPoints")->AsInt32();
+  num_features_ = command_line_option_.GetArgumentValue("NumFeatures")->AsInt32();
 }
 
 void KmeansCommandLineOptions::ConfigureKmeansBenchmark(
@@ -77,4 +87,6 @@ void KmeansCommandLineOptions::ConfigureKmeansBenchmark(
   benchmark->setMaxNumClusters(max_num_clusters_);
   benchmark->setMinNumClusters(min_num_clusters_);
   benchmark->setNumLoops(num_loops_);
+  benchmark->setNumPoints(num_points_);
+  benchmark->setNumFeatures(num_features_);
 }

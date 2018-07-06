@@ -55,14 +55,19 @@ void AesCommandLineOptions::RegisterOptions() {
   command_line_option_.AddArgument("KeyFile", "string", "", "-k", "--key-file",
                                    "Path to the file that contains the "
                                    "key to be used to encrypt plaintext");
+
+  command_line_option_.AddArgument(
+      "InputLength", "integer", "0", "-x", "--length",
+      "The input plain text length in bytes. Setting this field will disable "
+      "loading the key and the input from files.");
 }
 
 void AesCommandLineOptions::Parse(int argc, const char *argv[]) {
   BenchmarkCommandLineOptions::Parse(argc, argv);
 
   input_file_ = command_line_option_.GetArgumentValue("InputFile")->AsString();
-
   key_file_ = command_line_option_.GetArgumentValue("KeyFile")->AsString();
+  input_length_ = command_line_option_.GetArgumentValue("InputLength")->AsUInt64();
 }
 
 void AesCommandLineOptions::ConfigureAesBenchmark(AesBenchmark *benchmark) {
@@ -70,4 +75,5 @@ void AesCommandLineOptions::ConfigureAesBenchmark(AesBenchmark *benchmark) {
 
   benchmark->SetInputFileName(input_file_);
   benchmark->SetKeyFileName(key_file_);
+  benchmark->SetInputLength(input_length_);
 }

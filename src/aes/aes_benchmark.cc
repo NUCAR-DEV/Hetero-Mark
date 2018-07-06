@@ -35,11 +35,16 @@
 #include <inttypes.h>
 #include <cstdio>
 #include <cstring>
+#include <cstdlib>
 
 void AesBenchmark::Initialize() {
-  LoadPlaintext();
-
-  LoadKey();
+  if (text_length_ == 0) {
+    LoadPlaintext();
+    LoadKey();
+  } else {
+    RandomizePlaintext();
+    RandomizeKey();
+  }
 
   InitiateCiphertext(&ciphertext_);
 }
@@ -70,6 +75,13 @@ void AesBenchmark::LoadPlaintext() {
   fclose(input_file);
 }
 
+void AesBenchmark::RandomizePlaintext() {
+  plaintext_ = static_cast<uint8_t *>(malloc(text_length_));
+  for (uint32_t i = 0; i < text_length_; i++) {
+    plaintext_[i] = static_cast<uint8_t>(rand());
+  }
+}
+
 void AesBenchmark::LoadKey() {
   FILE *key_file = fopen(key_file_name_.c_str(), "r");
   if (!key_file) {
@@ -88,6 +100,14 @@ void AesBenchmark::LoadKey() {
 
   fclose(key_file);
 }
+
+void AesBenchmark::RandomizeKey() {
+  for (uint32_t i = 0; i < kKeyLengthInBytes; i++) {
+    key_[i] = static_cast<uint8_t>(rand());
+  }
+}
+
+
 
 void AesBenchmark::InitiateCiphertext(uint8_t **ciphertext) {
   *ciphertext = reinterpret_cast<uint8_t *>(malloc(text_length_));

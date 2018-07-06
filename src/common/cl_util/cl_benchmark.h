@@ -38,6 +38,11 @@
 class ClBenchmark {
  protected:
   void InitializeCl();
+  void ReleaseCl();
+  
+  virtual ~ClBenchmark() {
+    ReleaseCl();
+  }
 
   clHelper::clRuntime *runtime_;
   clHelper::clFile *file_;

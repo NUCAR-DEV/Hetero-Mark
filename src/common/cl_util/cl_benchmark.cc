@@ -47,3 +47,7 @@ void ClBenchmark::InitializeCl() {
 
   file_ = clHelper::clFile::getInstance();
 }
+
+void ClBenchmark::ReleaseCl() {
+  runtime_->releaseContext(context_);
+}
