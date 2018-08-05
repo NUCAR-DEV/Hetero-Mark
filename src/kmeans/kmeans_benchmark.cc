@@ -145,7 +145,7 @@ void KmeansBenchmark::DumpClusterCentroids(unsigned num_clusters) {
 }
 
 void KmeansBenchmark::KmeansClusteringCpu(uint32_t num_clusters) {
-  uint32_t num_iteration = 0;
+  int num_iteration = 0;
   InitializeClusters(num_clusters);
   InitializeMembership();
 
@@ -153,7 +153,7 @@ void KmeansBenchmark::KmeansClusteringCpu(uint32_t num_clusters) {
     UpdateMembershipCpu(num_clusters);
     UpdateClusterCentroids(num_clusters);
     num_iteration++;
-  } while ((delta_ > 0) && (num_iteration < 500));
+  } while ((delta_ > 0) && (num_iteration < num_loops_));
 
   printf("cpu iterated %d times\n", num_iteration);
 }

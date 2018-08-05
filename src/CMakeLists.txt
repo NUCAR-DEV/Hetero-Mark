@@ -10,6 +10,7 @@ set(SUBDIRECTORIES
   fdeb
   fir
   ga
+  gd
   hist
   kmeans
   pr

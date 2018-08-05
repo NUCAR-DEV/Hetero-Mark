@@ -184,7 +184,7 @@ void KmeansCl12Benchmark::KmeansClustering(unsigned num_clusters) {
     std::cout << "Done updating membership" << std::endl;
     UpdateClusterCentroids(num_clusters);
     num_iteration++;
-  } while ((delta_ > 0) && (num_iteration < 500));
+  } while ((delta_ > 0) && (num_iteration < num_loops_));
 
   std::cout << "# of iterations: " << num_iteration << std::endl;
 }
