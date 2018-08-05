@@ -45,22 +45,20 @@
 
 void GdBenchmark::Initialize() {
   model_ = new float[num_param_];
-  gradient_ = new float*[num_copy_];
-  for (uint32_t i = 0; i < num_copy_; i++) {
-    gradient_[i] = new float[num_param_];
-  }
+  gradient0_ = new float[num_param_];
+  gradient1_ = new float[num_param_];
+  gradient2_ = new float[num_param_];
+  gradient3_ = new float[num_param_];
 }
 
-void GdBenchmark::Verify() {
-}
+void GdBenchmark::Verify() {}
 
-void GdBenchmark::Summarize() {
-}
+void GdBenchmark::Summarize() {}
 
 void GdBenchmark::Cleanup() {
-  for (uint32_t i = 0; i < num_copy_; i++) {
-    delete gradient_[i];
-  }
-  delete gradient_;
+  delete gradient0_;
+  delete gradient1_;
+  delete gradient2_;
+  delete gradient3_;
   delete model_;
 }

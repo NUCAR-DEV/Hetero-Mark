@@ -50,10 +50,6 @@ void GdCommandLineOptions::RegisterOptions() {
   command_line_option_.AddArgument("NumParam", "integer", "1024", "-x",
                                    "--num-param",
                                    "Number of parameters");
-
-  command_line_option_.AddArgument("NumCopy", "integer", "4", "-y",
-                                   "--num-copy",
-                                   "Number of copies of the gradient.");
 }
 
 void GdCommandLineOptions::Parse(int argc, const char *argv[]) {
@@ -66,12 +62,9 @@ void GdCommandLineOptions::Parse(int argc, const char *argv[]) {
 
   num_param_ = 
     command_line_option_.GetArgumentValue("NumParam")->AsUInt32();
-
-  num_copy_ = command_line_option_.GetArgumentValue("NumCopy")->AsUInt32();
 }
 
 void GdCommandLineOptions::ConfigureGdBenchmark(GdBenchmark *benchmark) {
   BenchmarkCommandLineOptions::ConfigureBenchmark(benchmark);
   benchmark->SetNumParam(num_param_);
-  benchmark->SetNumCopy(num_copy_);
 }

@@ -67,20 +67,24 @@ void GdCl12Benchmark::InitializeBuffers() {
                             sizeof(cl_float) * num_param_, NULL, &err);
   checkOpenCLErrors(err, "Failed to allocate model buffer");
 
-  d_gradient_ = new cl_mem[num_copy_];
-  for (uint32_t i = 0; i < num_copy_; i++) {
-    d_gradient_[i] = clCreateBuffer(context_, CL_MEM_READ_ONLY,
-                                    sizeof(cl_float) * num_param_, NULL, &err);
-    checkOpenCLErrors(err, "Failed to allocate gradient buffer");
-  }
+  d_gradient0_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
+                                sizeof(cl_float) * num_param_, NULL, &err);
+  checkOpenCLErrors(err, "Failed to allocate gradient buffer");
 
-  d_gradient_array_ =
-      clCreateBuffer(context_, CL_MEM_READ_ONLY, sizeof(cl_float*), NULL, &err);
-  checkOpenCLErrors(err, "Failed to allocate gradient array buffer");
+  d_gradient1_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
+                                sizeof(cl_float) * num_param_, NULL, &err);
+  checkOpenCLErrors(err, "Failed to allocate gradient buffer");
+
+  d_gradient2_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
+                                sizeof(cl_float) * num_param_, NULL, &err);
+  checkOpenCLErrors(err, "Failed to allocate gradient buffer");
+
+  d_gradient3_ = clCreateBuffer(context_, CL_MEM_READ_ONLY,
+                                sizeof(cl_float) * num_param_, NULL, &err);
+  checkOpenCLErrors(err, "Failed to allocate gradient buffer");
 }
 
-void GdCl12Benchmark::InitializeData() {
-}
+void GdCl12Benchmark::InitializeData() {}
 
 void GdCl12Benchmark::Run() {
   cl_int ret;
@@ -88,23 +92,28 @@ void GdCl12Benchmark::Run() {
   // Set the arguments of the kernel
   ret = clSetKernelArg(gd_kernel_, 0, sizeof(cl_mem),
                        static_cast<void *>(&d_model_));
-  checkOpenCLErrors(ret, "Set kernel argument 0\n");
-  ret = clSetKernelArg(gd_kernel_, 1, sizeof(cl_mem),
-                       static_cast<void *>(&d_gradient_array_));
-  checkOpenCLErrors(ret, "Set kernel argument 1\n");
-  ret = clSetKernelArg(gd_kernel_, 2, sizeof(cl_uint),
+  ret |= clSetKernelArg(gd_kernel_, 1, sizeof(cl_mem),
+                       static_cast<void *>(&d_gradient0_));
+  ret |= clSetKernelArg(gd_kernel_, 2, sizeof(cl_mem),
+                       static_cast<void *>(&d_gradient1_));
+  ret |= clSetKernelArg(gd_kernel_, 3, sizeof(cl_mem),
+                       static_cast<void *>(&d_gradient2_));
+  ret |= clSetKernelArg(gd_kernel_, 4, sizeof(cl_mem),
+                       static_cast<void *>(&d_gradient3_));
+  ret |= clSetKernelArg(gd_kernel_, 5, sizeof(cl_uint),
                        static_cast<void *>(&num_copy_));
+  checkOpenCLErrors(ret, "Set kernel arguments\n");
 
   // Decide the local group formation
   size_t globalThreads[1] = {num_param_};
   size_t localThreads[1] = {64};
 
   // Fill in the input buffer object
-  //ret = clEnqueueWriteBuffer(cmd_queue_, input_buffer_, CL_TRUE, 0,
-                             //num_data_per_block_ * sizeof(cl_float),
-                             //input_ + (count * num_data_per_block_), 0, 0,
-                             //NULL);
-  //checkOpenCLErrors(ret, "Copy data to buffer\n");
+  // ret = clEnqueueWriteBuffer(cmd_queue_, input_buffer_, CL_TRUE, 0,
+  // num_data_per_block_ * sizeof(cl_float),
+  // input_ + (count * num_data_per_block_), 0, 0,
+  // NULL);
+  // checkOpenCLErrors(ret, "Copy data to buffer\n");
 
   cpu_gpu_logger_->GPUOn();
   // Execute the OpenCL kernel on the list
@@ -125,9 +134,9 @@ void GdCl12Benchmark::Cleanup() {
   cl_int ret;
   ret = clReleaseKernel(gd_kernel_);
   ret |= clReleaseProgram(program_);
-  //ret |= clReleaseMemObject(output_buffer_);
-  //ret |= clReleaseMemObject(coeff_buffer_);
-  //ret |= clReleaseMemObject(input_buffer_);
-  //ret |= clReleaseMemObject(history_buffer_);
+  // ret |= clReleaseMemObject(output_buffer_);
+  // ret |= clReleaseMemObject(coeff_buffer_);
+  // ret |= clReleaseMemObject(input_buffer_);
+  // ret |= clReleaseMemObject(history_buffer_);
   checkOpenCLErrors(ret, "Release objects.\n");
 }

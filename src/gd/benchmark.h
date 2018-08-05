@@ -47,10 +47,13 @@
 class GdBenchmark : public Benchmark {
  protected:
   uint32_t num_param_ = 0;
-  uint32_t num_copy_ = 0;
+  uint32_t num_copy_ = 4;
 
   float *model_ = nullptr;
-  float **gradient_ = nullptr;
+  float *gradient0_ = nullptr;
+  float *gradient1_ = nullptr;
+  float *gradient2_ = nullptr;
+  float *gradient3_ = nullptr;
 
  public:
   GdBenchmark() : Benchmark() {}
@@ -62,7 +65,6 @@ class GdBenchmark : public Benchmark {
   void Cleanup() override;
 
   void SetNumParam(uint32_t num_param) { num_param_ = num_param; }
-  void SetNumCopy(uint32_t num_copy) { num_copy_ = num_copy; }
 };
 
 #endif  // SRC_GD_BENCHMARK_H_

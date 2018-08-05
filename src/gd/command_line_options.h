@@ -52,7 +52,6 @@ class GdCommandLineOptions : public BenchmarkCommandLineOptions {
 
  private:
   uint32_t num_param_;
-  uint32_t num_copy_;
 };
 
 #endif  // SRC_GD_COMMAND_LINE_OPTIONS_H_

@@ -42,8 +42,10 @@ class GdCl12Benchmark : public GdBenchmark, public ClBenchmark {
   cl_kernel gd_kernel_;
 
   cl_mem d_model_;
-  cl_mem *d_gradient_;
-  cl_mem d_gradient_array_;
+  cl_mem d_gradient0_;
+  cl_mem d_gradient1_;
+  cl_mem d_gradient2_;
+  cl_mem d_gradient3_;
 
   void InitializeData();
   void InitializeKernels();

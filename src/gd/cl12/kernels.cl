@@ -30,16 +30,20 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-__kernel void GD(__global float* model, __global ulong* gradient,
+__kernel void GD(__global float* model, 
+                 __global float* gradient0,
+                 __global float* gradient1,
+                 __global float* gradient2,
+                 __global float* gradient3,
                  uint num_copies) {
   float gamma = 0.01;
   uint tid = get_global_id(0);
 
   float sum = 0;
-  for (int i = 0; i < num_copies; i++) {
-    float* copy = (float*)gradient[i];
-    sum += copy[tid];
-  }
+  sum += gradient0[tid];
+  sum += gradient1[tid];
+  sum += gradient2[tid];
+  sum += gradient3[tid];
   sum /= num_copies;
 
   model[tid] += gamma * sum;
