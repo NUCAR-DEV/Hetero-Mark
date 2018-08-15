@@ -299,7 +299,7 @@ the `clang-format` tool and `cpplint` tool.
 
 * Yifan Sun, Saoni Mukherjee, Trinayan Baruah, Shi Dong, Julian Gutierrez,
 Prannoy Mohan and David Kaeli, "[Evaluating Performance Tradeoffs on the
-Radeon Open Compute Platform]()" 2018 IEEE International Symposium on
+Radeon Open Compute Platform](https://www.researchgate.net/profile/Yifan_Sun12/publication/323745962_Evaluating_Performance_Tradeoffs_on_the_Radeon_Open_Compute_Platform/links/5aa88420a6fdcc1b59c641a5/Evaluating-Performance-Tradeoffs-on-the-Radeon-Open-Compute-Platform.pdf?_sg%5B0%5D=JiNGcyAtMdE6rimQLCK_BH9RGAh5IZ2U-hoOYP40dbFgpAT2G9KJ79dVHrUZpHfzUDu4QPwjD_G2aLMxZ2NLMA.wyBUaBJGL4QFCR2MGHy2zZ9vMa_gVWSg81x6exXRnHaVRijy6Lzkg0VAHoftXH_w4fQVs3ohXm2CsXgSwMUauA&_sg%5B1%5D=RzLX4qvHvjutcqb_3L00nyo3JBXcfTswsWmKs02OXDARIdXYPqteuehGlsyewOrR0D8fdEym962BxVBqCo1yBmWX7MA8n9dBIKsLU9Rehp4e.wyBUaBJGL4QFCR2MGHy2zZ9vMa_gVWSg81x6exXRnHaVRijy6Lzkg0VAHoftXH_w4fQVs3ohXm2CsXgSwMUauA&_iepl=)" 2018 IEEE International Symposium on
 Performance Analysis of Systems and Software (ISPASS), Belfast, 2018. 
 
 * Yifan Sun, Xiang Gong, Amir Kavyan Ziabari, Leiming Yu, Xiangyu Li,
