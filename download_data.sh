@@ -4,4 +4,4 @@
 # rm data.tar.gz
 
 echo "Sorry, our sever is down. Please use this link to download the standard data file.
-hqttps://drive.google.com/file/d/1IItjFFUIfANgrUUI7jebNS9rfSEe32lZ/view?usp=sharing"
+https://drive.google.com/file/d/1IItjFFUIfANgrUUI7jebNS9rfSEe32lZ/view?usp=sharing"
