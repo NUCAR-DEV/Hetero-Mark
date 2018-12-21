@@ -14,8 +14,13 @@ include(OpenCL)
 
 set(FOLDER_NAME Hetero-Mark)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-unused-command-line-argument -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pthread")
 add_definitions(-std=c++11)
+
+# For Clang
+if (CMAKE_CXX_COMPILER_ID MATCHES "[cC][lL][aA][nN][gG]")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-command-line-argument")
+endif ()
 
 # Include from path root
 include_directories(${CMAKE_SOURCE_DIR})
