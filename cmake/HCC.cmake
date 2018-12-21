@@ -6,6 +6,7 @@ other benchmarks \
 
 	set(COMPILE_HCC On)
   add_definitions(-DCOMPILE_HCC=1 -DCOMPILE_HSA=1)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-command-line-argument")
 
 	include_directories("/opt/rocm/include/hcc")
 	include_directories("/opt/rocm/include/")
