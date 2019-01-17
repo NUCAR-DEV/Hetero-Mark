@@ -155,7 +155,7 @@ Use the following commands to compile the OpenCL benchmarks.
 ```bash
 mkdir build
 cd build
-cmake -DCOMPILE_OPENCL12 ../
+cmake -DCOMPILE_OPENCL12=On ../
 make
 ```
 
