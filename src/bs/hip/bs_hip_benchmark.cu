@@ -68,7 +68,7 @@ __device__ float Phi(float X) {
   return (X < 0) ? (1.0f - y) : y;
 }
 
-__global__ void bs_hip(hipLaunchParm lp, float *rand_array,
+__global__ void bs_hip(float *rand_array,
                        float *d_call_price_, float *d_put_price_) {
   uint tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -148,7 +148,7 @@ void BsHipBenchmark::Run() {
       dim3 grid_size((section_tiles * tile_size_) / 64.00);
 
       cpu_gpu_logger_->GPUOn();
-      hipLaunchKernel(HIP_KERNEL_NAME(bs_hip), dim3(grid_size),
+      hipLaunchKernelGGL(HIP_KERNEL_NAME(bs_hip), dim3(grid_size),
                       dim3(block_size), 0, stream_, d_rand_array_ + offset,
                       d_call_price_ + offset, d_put_price_ + offset);
     } else {

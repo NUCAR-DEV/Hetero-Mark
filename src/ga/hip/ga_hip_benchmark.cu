@@ -47,7 +47,7 @@
 #include <thread>
 #include <vector>
 
-__global__ void ga_hip(hipLaunchParm lp, char *device_target,
+__global__ void ga_hip(char *device_target,
                        char *device_query, char *device_batch_result,
                        uint32_t length, int query_sequence_length,
                        int coarse_match_length, int coarse_match_threshold,
@@ -119,7 +119,7 @@ void GaHipBenchmark::CollaborativeRun() {
     dim3 grid_size((length + block_size.x - 1) / block_size.x);
 
     cpu_gpu_logger_->GPUOn();
-    hipLaunchKernel(HIP_KERNEL_NAME(ga_hip), dim3(grid_size), dim3(block_size),
+    hipLaunchKernelGGL(HIP_KERNEL_NAME(ga_hip), dim3(grid_size), dim3(block_size),
                     0, 0, d_target_, d_query_, d_batch_result_, length,
                     query_sequence_.size(), coarse_match_length_,
                     coarse_match_threshold_, current_position);
@@ -163,7 +163,7 @@ void GaHipBenchmark::NonCollaborativeRun() {
     hipMemset(d_batch_result_, 0, kBatchSize);
 
     cpu_gpu_logger_->GPUOn();
-    hipLaunchKernel(HIP_KERNEL_NAME(ga_hip), dim3(grid_size), dim3(block_size),
+    hipLaunchKernelGGL(HIP_KERNEL_NAME(ga_hip), dim3(grid_size), dim3(block_size),
                     0, 0, d_target_, d_query_, d_batch_result_, length,
                     query_sequence_.size(), coarse_match_length_,
                     coarse_match_threshold_, current_position);

@@ -44,8 +44,9 @@
 #include "hip/hip_runtime.h"
 #include "src/kmeans/hip/kmeans_hip_benchmark.h"
 
-__global__ void kmeans_swap_hip(hipLaunchParm lp, float *feature,
-                                float *feature_swap, int npoints,
+__global__ void kmeans_swap_hip(float *feature,
+                                float *feature_swap,
+                                int npoints,
                                 int nfeatures) {
   uint tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
   if (tid >= npoints) return;
@@ -54,7 +55,7 @@ __global__ void kmeans_swap_hip(hipLaunchParm lp, float *feature,
     feature_swap[i * npoints + tid] = feature[tid * nfeatures + i];
 }
 
-__global__ void kmeans_compute_hip(hipLaunchParm lp, float *feature,
+__global__ void kmeans_compute_hip(float *feature,
                                    float *clusters, int *membership,
                                    int npoints, int nclusters, int nfeatures,
                                    int offset, int size) {
@@ -136,7 +137,7 @@ void KmeansHipBenchmark::TransposeFeatures() {
   dim3 grid_size((num_points_ + block_size.x - 1) / block_size.x);
 
   cpu_gpu_logger_->GPUOn();
-  hipLaunchKernel(HIP_KERNEL_NAME(kmeans_swap_hip), dim3(grid_size),
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(kmeans_swap_hip), dim3(grid_size),
                   dim3(block_size), 0, 0, device_features_,
                   device_features_swap_, num_points_, num_features_);
   hipDeviceSynchronize();
@@ -179,7 +180,7 @@ void KmeansHipBenchmark::UpdateMembership(unsigned num_clusters) {
   int offset = 0;
 
   cpu_gpu_logger_->GPUOn();
-  hipLaunchKernel(HIP_KERNEL_NAME(kmeans_compute_hip), dim3(grid_size),
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(kmeans_compute_hip), dim3(grid_size),
                   dim3(block_size), 0, 0, device_features_swap_,
                   device_clusters_, device_membership_, num_points_,
                   num_clusters_, num_features_, offset, size);

@@ -54,7 +54,7 @@ void PrHipBenchmark::Initialize() {
   hipMalloc(&device_mtx_2, (num_nodes_) * sizeof(float));
 }
 
-__global__ void pr_hip(hipLaunchParm lp, uint32_t *device_row_offsets,
+__global__ void pr_hip(uint32_t *device_row_offsets,
                        uint32_t *device_column_numbers, float *device_values,
                        float *device_mtx_1, float *device_mtx_2) {
   uint tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -93,12 +93,12 @@ void PrHipBenchmark::Run() {
   cpu_gpu_logger_->GPUOn();
   for (i = 0; i < max_iteration_; i++) {
     if (i % 2 == 0) {
-      hipLaunchKernel(HIP_KERNEL_NAME(pr_hip), dim3(grid_size),
+      hipLaunchKernelGGL(HIP_KERNEL_NAME(pr_hip), dim3(grid_size),
                       dim3(block_size), 0, 0, device_row_offsets,
                       device_column_numbers, device_values, device_mtx_1,
                       device_mtx_2);
     } else {
-      hipLaunchKernel(HIP_KERNEL_NAME(pr_hip), dim3(grid_size),
+      hipLaunchKernelGGL(HIP_KERNEL_NAME(pr_hip), dim3(grid_size),
                       dim3(block_size), 0, 0, device_row_offsets,
                       device_column_numbers, device_values, device_mtx_2,
                       device_mtx_1);

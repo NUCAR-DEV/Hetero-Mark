@@ -65,7 +65,7 @@ void BeHipBenchmark::Run() {
   cpu_gpu_logger_->Summarize();
 }
 
-__global__ void BackgroundExtraction(hipLaunchParm lp, uint8_t *frame,
+__global__ void BackgroundExtraction(uint8_t *frame,
                                      float *bg, uint8_t *fg, uint32_t width,
                                      uint32_t height, uint32_t channel,
                                      uint8_t threshold, float alpha) {
@@ -155,7 +155,7 @@ void BeHipBenchmark::ExtractAndEncode(uint8_t *frame) {
   dim3 grid_size((num_pixels * channel_ + block_size.x - 1) / block_size.x);
 
   cpu_gpu_logger_->GPUOn();
-  hipLaunchKernel(HIP_KERNEL_NAME(BackgroundExtraction), dim3(grid_size),
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(BackgroundExtraction), dim3(grid_size),
                   dim3(block_size), 0, 0, d_frame_, d_bg_, d_fg_, width_,
                   height_, channel_, threshold_, alpha_);
 
@@ -208,7 +208,7 @@ void BeHipBenchmark::NormalRun() {
               hipMemcpyHostToDevice);
 
     cpu_gpu_logger_->GPUOn();
-    hipLaunchKernel(HIP_KERNEL_NAME(BackgroundExtraction), dim3(grid_size),
+    hipLaunchKernelGGL(HIP_KERNEL_NAME(BackgroundExtraction), dim3(grid_size),
                     dim3(block_size), 0, 0, d_frame, d_bg_, d_fg_, width_,
                     height_, channel_, threshold_, alpha_);
 
