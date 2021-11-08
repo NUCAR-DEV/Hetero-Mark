@@ -112,7 +112,7 @@ void EpHipBenchmark::NormalRun() {
   }
 }
 
-__global__ void Evaluate_Kernel(hipLaunchParm lp, Creature *creatures,
+__global__ void Evaluate_Kernel(Creature *creatures,
                                 double *fitness_function, uint32_t count,
                                 uint32_t num_vars) {
   uint32_t i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -136,7 +136,7 @@ void EpHipBenchmark::EvaluateGpu(std::vector<Creature> *island) {
   dim3 block_size(64);
   dim3 grid_size((population_ / 2 * +block_size.x - 1) / block_size.x);
   cpu_gpu_logger_->GPUOn();
-  hipLaunchKernel(HIP_KERNEL_NAME(Evaluate_Kernel), dim3(grid_size),
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(Evaluate_Kernel), dim3(grid_size),
                   dim3(block_size), 0, 0, d_island_, d_fitness_func_,
                   population_ / 2, kNumVariables);
   hipMemcpy(island->data(), d_island_, population_ / 2 * sizeof(Creature),
@@ -159,7 +159,7 @@ void EpHipBenchmark::MutateGpu(std::vector<Creature> *island) {
   dim3 block_size(64);
   dim3 grid_size((population_ / 2 * +block_size.x - 1) / block_size.x);
   cpu_gpu_logger_->GPUOn();
-  hipLaunchKernel(HIP_KERNEL_NAME(Mutate_Kernel), dim3(grid_size),
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(Mutate_Kernel), dim3(grid_size),
                   dim3(block_size), 0, 0, d_island_, population_ / 2,
                   kNumVariables);
   hipMemcpy(island->data(), d_island_, population_ / 2 * sizeof(Creature),

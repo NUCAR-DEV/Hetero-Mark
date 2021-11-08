@@ -48,7 +48,7 @@
 
 #include "src/common/memory/hsa_svm_memory_manager.h"
 
-__global__ void fir_hip(hipLaunchParm lp, float *input, float *output,
+__global__ void fir_hip(float *input, float *output,
                         float *coeff, float *history, uint32_t num_tap,
                         uint32_t num_data) {
   uint32_t tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -132,7 +132,7 @@ void FirHipBenchmark::RunMemManager() {
     dmem_history->HostToDevice();
 
     cpu_gpu_logger_->GPUOn();
-    hipLaunchKernel(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
+    hipLaunchKernelGGL(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
                     0, 0, input_buffer_, output_buffer_, coeff_buffer_,
                     history_buffer_, num_tap_, num_data_per_block_);
     dmem_output->DeviceToHost();
@@ -168,7 +168,7 @@ void FirHipBenchmark::HipRun() {
     hipMemcpy(history_buffer_, history_, num_tap_ * sizeof(float),
               hipMemcpyHostToDevice);
     cpu_gpu_logger_->GPUOn();
-    hipLaunchKernel(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
+    hipLaunchKernelGGL(HIP_KERNEL_NAME(fir_hip), dim3(grid_size), dim3(block_size),
                     0, 0, input_buffer_, output_buffer_, coeff_buffer_,
                     history_buffer_, num_tap_, num_data_per_block_);
     hipMemcpy(output_ + count * num_data_per_block_, output_buffer_,
