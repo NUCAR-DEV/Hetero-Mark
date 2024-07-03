@@ -1,22 +1,13 @@
-cmake_minimum_required(VERSION 3.2)
-
-set(FOLDER_NAME src)
-set(SUBDIRECTORIES
-  common
-  aes
-  be
-  bs
-  ep
-  fdeb
-  fir
-  ga
-  hist
-  kmeans
-  pr
-  knn
-  bst
-)
-
-foreach(subdir ${SUBDIRECTORIES})
-    add_subdirectory(${subdir})
-endforeach(subdir)
+add_subdirectory(common)
+add_subdirectory(aes)
+add_subdirectory(be)
+add_subdirectory(bs)
+add_subdirectory(ep)
+add_subdirectory(fdeb)
+add_subdirectory(fir)
+add_subdirectory(ga)
+add_subdirectory(hist)
+add_subdirectory(kmeans)
+add_subdirectory(pr)
+add_subdirectory(knn)
+add_subdirectory(bst)

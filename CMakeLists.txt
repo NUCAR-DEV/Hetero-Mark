@@ -1,13 +1,26 @@
+cmake_minimum_required(VERSION 3.21)
+project(Hetero-Mark LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 11)
+
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-cmake_minimum_required(VERSION 3.2)
-project(Hetero-Mark)
+option(HMARK_BUILD_HIP "Build all Hetero-mark benchmarks for HIP" OFF)
+option(HMARK_BUILD_CUDA "Build all Hetero-mark benchmarks for CUDA" OFF)
+
+if (${HMARK_BUILD_HIP})
+  enable_language(HIP)
+endif ()
+
+if (${HMARK_BUILD_CUDA})
+  enable_language(CUDA)
+endif ()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 include(ExternalProject)
 include(HCC)
-include(HIP)
+find_package(HIP)
 include(CUDA)
 include(StyleCheck)
 include(OpenCL)
@@ -15,7 +28,6 @@ include(OpenCL)
 set(FOLDER_NAME Hetero-Mark)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pthread")
-add_definitions(-std=c++11)
 
 # For Clang
 if (CMAKE_CXX_COMPILER_ID MATCHES "[cC][lL][aA][nN][gG]")
@@ -25,7 +37,6 @@ endif ()
 # Include from path root
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
-
 # Test
 option(ENABLE_TEST "Compile all Hetero-Mark unit tests" OFF)
 if (ENABLE_TEST)
@@ -48,10 +59,5 @@ if (ENABLE_TEST)
   include_directories(${source_dir}/include)
 endif (ENABLE_TEST)
 
-# set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
-
-set(SUBDIRECTORIES src)
-foreach(subdir ${SUBDIRECTORIES})
-  add_subdirectory(${subdir})
-endforeach(subdir)
+add_subdirectory(src)
 

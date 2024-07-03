@@ -31,13 +31,12 @@
  *   DEALINGS WITH THE SOFTWARE.
  */
 
-#include "src/aes/hip/aes_hip_benchmark.h"
+#include "aes_hip_benchmark.h"
 
 #include <hip/hip_runtime.h>
 
 #include <cstring>
 #include <memory>
-#include <string>
 
 void AesHipBenchmark::Initialize() {
   AesBenchmark::Initialize();
@@ -129,12 +128,12 @@ __device__ void MixColumnsGpu(uint8_t *state) {
     uint8_t a[4];
     uint8_t b[4];
     uint8_t high_bit;
-    for (int i = 0; i < 4; i++) {
-      a[i] = word[i];
-      high_bit = word[i] & 0x80;
-      b[i] = word[i] << 1;
+    for (int j = 0; j < 4; j++) {
+      a[j] = word[j];
+      high_bit = word[j] & 0x80;
+      b[j] = word[j] << 1;
       if (high_bit == 0x80) {
-        b[i] ^= 0x1b;
+        b[j] ^= 0x1b;
       }
     }
     word[0] = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1];
@@ -180,13 +179,13 @@ void AesHipBenchmark::Run() {
             hipMemcpyHostToDevice);
   hipMemcpy(d_s_, s, 256 * sizeof(uint8_t), hipMemcpyHostToDevice);
 
-  int num_blocks = text_length_ / 16;
+  auto num_blocks = text_length_ / 16;
 
   dim3 grid_size(static_cast<size_t>(num_blocks / 64.00));
   dim3 block_size(64);
 
   cpu_gpu_logger_->GPUOn();
-  hipLaunchKernelGGL(HIP_KERNEL_NAME(aes_hip), dim3(grid_size), dim3(block_size),
+  hipLaunchKernelGGL(aes_hip, dim3(grid_size), dim3(block_size),
                   0, 0, d_ciphertext_, d_key_, d_s_);
   hipMemcpy(ciphertext_, d_ciphertext_, text_length_, hipMemcpyDeviceToHost);
 

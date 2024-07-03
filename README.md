@@ -4,6 +4,8 @@ A Benchmark Suite for collaborative CPU-GPU computing.
 
 ## Prerequisite
 
+### AMD ROCm
+
 ### OpenCL Environment
 
 * [OpenCL](http://support.amd.com/en-us/kb-articles/Pages/AMD-Radeon-GPU-PRO-Linux-Beta-Driver%E2%80%93Release-Notes.aspx) - The OpenCL driver
