@@ -1,16 +1,16 @@
-set(BENCHMARK_NAME aes_cl12 )
-set(SOURCE_FILES aes_cl12_benchmark.cc main.cc )
-set(HEADER_FILES aes_cl12_benchmark.h )
-set(EXTRA_FILES kernels.cl )
+set(BENCHMARK_NAME aes_cl12)
+set(SOURCE_FILES aes_cl12_benchmark.cc main.cc)
+set(HEADER_FILES aes_cl12_benchmark.h)
+set(EXTRA_FILES kernels.cl)
 
 ############################################################################
 
-if(COMPILE_OPENCL12 AND OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES )
-  add_executable(${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES})
-
-  target_link_libraries(${BENCHMARK_NAME} 
-      aes cl_util time_measurement command_line_option benchmark 
-      ${OPENCL_LIBRARIES})
+if(${HMARK_BUILD_OPENCL12})
+  add_executable( ${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES})
+  target_include_directories(${BENCHMARK_NAME} PUBLIC ${OpenCL_INCLUDE_DIRS})
+  target_compile_definitions(${BENCHMARK_NAME} PUBLIC -DCL_TARGET_OPENCL_VERSION=120)
+  target_link_libraries( ${BENCHMARK_NAME}
+          aes cl_util time_measurement command_line_option benchmark ${OpenCL_LIBRARIES} )
 
   # Copy extra files to binary directory
   foreach(extra_file ${EXTRA_FILES})
