@@ -47,19 +47,19 @@ void BeBenchmark::Initialize() {
     exit(1);
   }
 
-  width_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_WIDTH));
-  height_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_HEIGHT));
+  width_ = static_cast<uint32_t>(video_.get(cv::CAP_PROP_FRAME_WIDTH));
+  height_ = static_cast<uint32_t>(video_.get(cv::CAP_PROP_FRAME_HEIGHT));
   channel_ = 3;
-  num_frames_ = static_cast<uint32_t>(video_.get(CV_CAP_PROP_FRAME_COUNT));
+  num_frames_ = static_cast<uint32_t>(video_.get(cv::CAP_PROP_FRAME_COUNT));
   if (max_frames_ != 0 && max_frames_ < num_frames_) {
     num_frames_ = max_frames_;
   }
 
   if (generate_output_) {
-    int codec = CV_FOURCC('M', 'J', 'P', 'G');
-    video_writer_.open("gpu_output.avi", codec, video_.get(CV_CAP_PROP_FPS),
+    int codec = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
+    video_writer_.open("gpu_output.avi", codec, video_.get(cv::CAP_PROP_FPS),
                        cv::Size(width_, height_), true);
-    cpu_video_writer_.open("cpu_output.avi", codec, video_.get(CV_CAP_PROP_FPS),
+    cpu_video_writer_.open("cpu_output.avi", codec, video_.get(cv::CAP_PROP_FPS),
                            cv::Size(width_, height_), true);
   }
 

@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.2)
 set(FOLDER_NAME be)
 set(SUBDIRECTORIES 
   cl12
-  hc
   cuda
   hip
 )
@@ -18,22 +17,16 @@ set(HEADER_FILES
 
 find_package(OpenCV)
 
-if (OpenCV_FOUND)
-
-  include_directories("/usr/include/x86_64-linux-gnu")
+if (${OpenCV_FOUND})
+  include_directories(${OpenCV_INCLUDE_DIRS})
   add_library(${FOLDER_NAME} ${SRC_FILES} ${HEADER_FILES})
-  if (COMPILE_HCC)
-    set_target_properties(${FOLDER_NAME} PROPERTIES
-        COMPILE_FLAGS ${COMPILER_FLAGS}
-        LINK_FLAGS ${LINKER_FLAGS})
-  endif (COMPILE_HCC)
 
   foreach(subdir ${SUBDIRECTORIES})
       add_subdirectory(${subdir})
   endforeach(subdir)
 
-else (OpenCV_FOUND)
+else ()
   message("OpenCV is not found, skipping the BE benchmark")
-endif(OpenCV_FOUND)
+endif()
 
 
