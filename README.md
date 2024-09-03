@@ -6,22 +6,8 @@ A Benchmark Suite for collaborative CPU-GPU computing.
 
 ### AMD ROCm
 
-### OpenCL Environment
-
-* [OpenCL](http://support.amd.com/en-us/kb-articles/Pages/AMD-Radeon-GPU-PRO-Linux-Beta-Driver%E2%80%93Release-Notes.aspx) - The OpenCL driver
-
-We use to use the FGLRX driver on Ubuntu 14.04, which supports OpenCL 2.0.
-Since AMD stopped the support for the FGLRX driver on ubuntu 16.04, we
-switched to the AMDGPU-pro driver. Currently, OpenCL 2.0 benchmarks are
-not supported on this platform.
-
-### HSA Environment
-
-* [ROCm](https://github.com/RadeonOpenCompute/ROCm) - Radeon Open Compute
-
-Although ROCm 1.6 platform does not fully support OpenCL 2.0, all the
-features we have been using in the benchmark suite is supported by ROCm
-1.6.
+See [ROCm](https://rocm.docs.amd.com/en/latest/index.html) on how to install 
+the latest version of ROCm.
 
 ### OpenCV Library
 
@@ -66,8 +52,8 @@ evaluation.
 * Advanced Encryption Standard (AES) - The program takes plaintext as
 input and encrypts it using a given encryption key. Our implementation
 uses a key size of 256 bits. The AES algorithm is comprised of many
-rounds, that ultimately turnplaintext into cipher-text. Each round has
-multiple processing stepsthat include AddRoundKey, SubBytes, ShiftRows
+rounds, that ultimately turn plaintext into cipher-text. Each round has
+multiple processing steps that include AddRoundKey, SubBytes, ShiftRows
 and MixColumns. Key bits must be expanded using a precise key expansion
 
 * Background Extraction (BE) - An useful algorithm in video and image
@@ -157,23 +143,13 @@ Use the following commands to compile the OpenCL benchmarks.
 ```bash
 mkdir build
 cd build
-cmake -DCOMPILE_OPENCL12=On ../
+cmake -DHMARK_BUILD_OPENCL12=On -DHMARK_BUILD_OPENCL20=On ../
 make
 ```
 
 If OpenCL is properly configured in your system, the command above will
 use the system default compiler to compile OpenCL benchmarks.
 
-### HCC Compilation
-
-Use the following commands to compile the HCC benchmarks
-
-```bash
-mkdir build
-cd build
-CXX=hcc cmake ../
-make
-```
 
 This command will also use the HCC compiler to compile the OpenCL
 benchmarks.
@@ -186,22 +162,7 @@ system has NVCC compiler installed.
 ```bash
 mkdir build
 cd build
-cmake -DCOMPILE_CUDA=On ../
-make
-```
-
-You need to modify the file `cmake/CUDA.cmake` to adjust your GPU's 
-capability.
-
-If you want to compile the system-level atomic benchmarks, you need
-to make sure to use compute capacity greater than 60. And you need
-the following commands to include those benchmarks into the 
-compilation list:
-
-```bash
-mkdir build
-cd build
-cmake -DCOMPILE_CUDA=On -DCOMPILE_SYSTEM_ATOMIC_CUDA=On ../
+cmake -DHMARK_BUILD_CUDA=On ../
 make
 ```
 
@@ -212,7 +173,7 @@ Use the following commands to compile HIP benchmarks.
 ```bash
 mkdir build
 cd build
-cmake -DCOMPILE_HIP=On ../
+cmake -DHMARK_BUILD_HIP=On ../
 make
 ```
 
@@ -274,14 +235,6 @@ https://drive.google.com/file/d/1IItjFFUIfANgrUUI7jebNS9rfSEe32lZ/view?usp=shari
         python datagen.py
         ```
 
-## Known Issue
-
-* The HIP version of Background Extraction (BE) benchmark cannot compile
-on CUDA platform currently. This is due to that fact that the HIP cmake
-configuration uses NVCC as program linker which NVCC cannot handle the
-linking to OpenCV properly. We have been actively resolving the problem
-with ROCm developers. See
-[#120](https://github.com/ROCm-Developer-Tools/HIP/issues/120). 
 
 ## Development guide
 
