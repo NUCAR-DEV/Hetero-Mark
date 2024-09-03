@@ -1,7 +1,6 @@
 set( FOLDER_NAME knn )
 set( SUBDIRECTORIES 
   cuda
-  hc
   )
 set( SRC_FILES
   knn_benchmark.cc

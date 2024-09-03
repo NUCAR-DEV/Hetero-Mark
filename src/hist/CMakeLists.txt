@@ -1,8 +1,6 @@
 set( FOLDER_NAME hist )
-set( SUBDIRECTORIES 
-  cl12
+set( SUBDIRECTORIES
   cl20
-  hc
   cuda
   hip
 )

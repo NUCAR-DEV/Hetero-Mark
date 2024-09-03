@@ -1,9 +1,7 @@
-cmake_minimum_required(VERSION 3.2)
 set(FOLDER_NAME pr)
 set(SUBDIRECTORIES 
   cl12
   cl20
-  hc
   cuda
   hip
 )

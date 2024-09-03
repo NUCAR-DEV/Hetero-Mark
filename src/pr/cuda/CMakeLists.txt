@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.2)
-
 set(FOLDER_NAME pr_cuda)
 set(SUBDIRECTORIES)
 set(SRC_FILES 
@@ -12,10 +10,9 @@ set(HEADER_FILES
 set(TEST_FILES)
 set(EXTRA_FILES)
 
-if (NOT COMPILE_HCC)
-if (CUDA_FOUND)
-  cuda_add_executable(${FOLDER_NAME} ${HEADER_FILES} ${SRC_FILES})
+
+if (${HMARK_BUILD_CUDA})
+  add_executable(${FOLDER_NAME} ${HEADER_FILES} ${SRC_FILES})
   target_link_libraries(${FOLDER_NAME}
       pr time_measurement command_line_option benchmark)
-endif (CUDA_FOUND)
-endif (NOT COMPILE_HCC)
+endif ()

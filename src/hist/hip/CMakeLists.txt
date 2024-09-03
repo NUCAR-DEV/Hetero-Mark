@@ -13,7 +13,8 @@ set(TEST_FILES)
 set(EXTRA_FILES)
 
 if (COMPILE_HIP)
-  hip_add_executable(${FOLDER_NAME} ${HEADER_FILES} ${SRC_FILES})
+  add_executable(${FOLDER_NAME} ${HEADER_FILES} ${SRC_FILES})
+  set_source_files_properties(hist_hip_benchmark.cu PROPERTIES LANGUAGE HIP)
   target_link_libraries(${FOLDER_NAME}
       hist time_measurement command_line_option benchmark)
 endif (COMPILE_HIP)

@@ -20,11 +20,12 @@ set( SRC_FILE
 ###############################################################
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
+cmake_minimum_required( VERSION 3.21 )
 project( ${FOLDER_NAME} )
 
 
-if(OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES)
-  include_directories( ${OPENCL_INCLUDE_DIRS} ${CLUTIL_INCLUDE_DIRS} )
+if(${HMARK_BUILD_OPENCL20} OR ${HMARK_BUILD_OPENCL12})
   add_library(${FOLDER_NAME} ${HEADER_FILE} ${SRC_FILE})
+  target_include_directories(${FOLDER_NAME} PUBLIC ${OpenCL_INCLUDE_DIRS})
+  target_link_libraries(${FOLDER_NAME} PUBLIC ${OpenCL_LIBRARIES})
 endif()
