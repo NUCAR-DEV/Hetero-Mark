@@ -3,7 +3,7 @@ set(SOURCE_FILES fir_cl20_benchmark.cc main.cc)
 set(HEADER_FILES fir_cl20_benchmark.h)
 set(EXTRA_FILES kernels.cl)
 
-if(${HMAKR_BUILD_OPENCL20})
+if(${HMARK_BUILD_OPENCL20})
   add_executable( ${BENCHMARK_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${EXTRA_FILES})
   target_include_directories(${BENCHMARK_NAME} PUBLIC ${OpenCL_INCLUDE_DIRS})
   target_compile_definitions(${BENCHMARK_NAME} PUBLIC -DCL_TARGET_OPENCL_VERSION=200)
