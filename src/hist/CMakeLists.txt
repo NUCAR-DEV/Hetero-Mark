@@ -1,5 +1,6 @@
 set( FOLDER_NAME hist )
 set( SUBDIRECTORIES
+  cl12
   cl20
   cuda
   hip
@@ -14,7 +15,6 @@ set( HEADER_FILES
 )
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
-cmake_minimum_required( VERSION 2.6.0 )
 project( ${FOLDER_NAME} )
 
 ###############################################################

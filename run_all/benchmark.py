@@ -49,11 +49,10 @@ class Benchmark(object):
         self.avg_times = []
         self.std_devs = []
 
-    def _define_current_executing(self, platform):
+    def _define_current_executing(self, platform: str):
         self.executable = self.benchmark_name + "_" + platform
-        self.cwd = self.options.build_folder + 'src/' + \
-            self.benchmark_name + '/' + platform + '/'
-        self.executable_full_path = self.cwd + self.executable
+        self.cwd = os.path.join(self.options.build_dir, 'src', self.benchmark_name, platform)
+        self.executable_full_path = os.path.join(os.getcwd(), self.cwd, self.executable)
 
     def _is_executable_found(self, platform):
         if not os.path.isfile(self.executable_full_path):
@@ -62,9 +61,10 @@ class Benchmark(object):
         return True
 
     def _verify(self, args):
-        print("Verifying", self.executable, *args, sep=' ', end=' ')
+        print("Verifying", self.executable, *args, sep=' ')
         sys.stdout.flush()
         command = " ".join([self.executable_full_path, '-q', '-v'] + args)
+        print(command)
         proc = subprocess.Popen(command,
                                 cwd=self.cwd, shell=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -102,7 +102,7 @@ class Benchmark(object):
                                     cwd=self.cwd, shell=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             for line in proc.stderr:
-                res = runtime_regex.search(line)
+                res = runtime_regex.search(str(line))
                 if res:
                     perf.append(float(res.group(1)))
             print(".", end='')
@@ -306,7 +306,7 @@ class EPBenchmark(Benchmark):
     def __init__(self, options):
         super(EPBenchmark, self).__init__(options)
         self.benchmark_name = 'ep'
-        self.benchmark_platforms = ['hc', 'cuda', 'hip']
+        self.benchmark_platforms = ['hc', 'cuda', 'hip', 'cl12']
         self.verify_run = []
         self.benchmark_runs = [
             ['-x', '1024', '-m', '20'],

@@ -1,12 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-"""This file automatically runs all the benchmarks of Heter-Mark
+"""This file automatically runs all the benchmarks of Hetero-Mark
 """
 from __future__ import print_function
 
 import os
-import re
-import sys
 import subprocess
 import argparse
 from bcolors import bcolors
@@ -20,13 +18,12 @@ from benchmark import EPBenchmark
 from benchmark import BEBenchmark
 from benchmark import GABenchmark
 
-build_folder = os.getcwd() + '/build-auto-run/'
 
 def main():
     """main function"""
     args = parse_args()
     if not args.skip_build:
-        compile(args)
+        compile_benchmark(args)
 
     benchmarks = []
     setup_benchmarks(benchmarks, args)
@@ -35,8 +32,10 @@ def main():
 
 def parse_args():
     """parse user input arguments"""
-
     parser = argparse.ArgumentParser()
+    parser.add_argument("--build-dir", type=str, default="./build", help="""
+            Directory in which to build Hetero-Mark in.
+    """)
     parser.add_argument("--skip-build", action="store_true",
                         help="""
             By default, the script performs an incremental build.
@@ -50,18 +49,17 @@ def parse_args():
     parser.add_argument("--cmake-flag",
                         help="""
             Use this option to set the flags to pass to cmake.
-            Set "-DCOMPILE_CUDA=On" to enable CUDA compilation.
+            Set "-DHMARK_BUILD_CUDA=On" to enable CUDA compilation.
             """)
     parser.add_argument("--cxx", default="g++",
                         help="""
             The compiler to be used to compile the benchmark.
             """)
     parser.add_argument("-i", "--ignore-error", action="store_true",
-                            help="""
+                        help="""
             Use this option to ignore errors in the compilation and
             verification process.
             """)
-
 
     parser.add_argument("--skip-verification", action="store_true",
                         help="""
@@ -83,20 +81,21 @@ def parse_args():
             """)
 
     args = parser.parse_args()
-    args.build_folder = build_folder
 
     return args
 
 
-def compile(args):
+def compile_benchmark(args):
     compile_log_filename = "compile_log.txt"
     compile_log = open(compile_log_filename, "w")
 
-    print("Compiling benchmark into", build_folder)
+    print("Compiling benchmark into", args.build_dir)
+    if not os.path.exists(args.build_dir):
+        os.makedirs(args.build_dir)
 
     if args.fresh_build:
-        subprocess.call(['rm', '-rf', build_folder])
-        subprocess.call(['mkdir', build_folder])
+        subprocess.call(['rm', '-rf', args.build_dir])
+        subprocess.call(['mkdir', args.build_dir])
 
         env = os.environ.copy()
         env['CXX'] = args.cxx
@@ -104,7 +103,7 @@ def compile(args):
         if args.cmake_flag:
             cmake_command += str(args.cmake_flag)
         p = subprocess.Popen(cmake_command + ' ' + os.getcwd(),
-                             cwd=build_folder, env=env, shell=True,
+                             cwd=args.build_dir, env=env, shell=True,
                              stdout=compile_log, stderr=compile_log)
         p.wait()
         if p.returncode != 0:
@@ -113,7 +112,7 @@ def compile(args):
             exit(-1)
 
     p = subprocess.Popen('make -j VERBOSE=1',
-                         cwd=build_folder, shell=True,
+                         cwd=args.build_dir, shell=True,
                          stdout=compile_log, stderr=compile_log)
     p.wait()
     if p.returncode != 0:
@@ -142,7 +141,7 @@ def run(benchmarks, args):
     """ Run all benchmarks """
     for benchmark in benchmarks:
 
-        if args.benchmark != None and args.benchmark != benchmark.benchmark_name:
+        if args.benchmark is not None and args.benchmark != benchmark.benchmark_name:
             continue
 
         benchmark.run()

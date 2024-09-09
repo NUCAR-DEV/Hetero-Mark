@@ -13,7 +13,6 @@ set(HEADER_FILES
         ep_command_line_options.h
 )
 
-cmake_minimum_required(VERSION 2.6.0)
 project(${FOLDER_NAME})
 find_package(OpenCV)
 
