@@ -24,25 +24,25 @@ sudo apt install libopencv-dev
 
 ## Applications
 
-Hetero-Mark is designed to model the workloads that is similar to real
-world applications, where the major part of the application is written in
-general purpose programming languages, while only a small, performance
-critical portion is written using GPU-accelerated libraries. So for each
-benchmark, we provide a base class that provides platform independent
-functionalities, such as input data loading, result verification. For each
-GPU programming method (such as CUDA, HC, HIP), we extend the base class
-with a sub-class and impletment the "Run" method.
+Hetero-Mark is designed to model workloads that are similar to real-world 
+applications, where the major part of the application is written in
+general-purpose programming languages, while only a small, 
+performance-critical portion is written using GPU-accelerated libraries. 
+So for each benchmark, we provide a base class that provides 
+platform-independent functionalities, such as input data loading and result 
+verification. For each GPU programming method (such as CUDA, HC, HIP), 
+we extend the base class with a sub-class and implement the "Run" method.
 
-Since the base classes are platform independent, we use plain pointers for
-input and output data. Each benchmark will have to read from plain
+Since the base classes are platform-independent, we use plain pointers for
+input and output data. Each benchmark must read from plain
 pointers and finally write the result into other plain pointers. We
-believe this behavior is closer to real world senario, since most
-programmers do not carry a platform specific memory management system to
-the whole application and usually will only use GPU program as a library.
+believe this behavior is closer to real-world scenarios since most
+programmers do not carry a platform-specific memory management system to
+the whole application and usually only use GPU programs as a library.
 This also suggests that the benchmarking time considers the data copy time
 between the CPU and the GPU memory.
 
-All the benchmarks has a verification process where the GPU result is
+All the benchmarks have a verification process where the GPU result is
 compared with the CPU result. Although we report the execution time of the
 verification process, the time is not meant to compare the CPU performance
 to GPU performance. The verification process can be very useful if the
@@ -52,11 +52,11 @@ evaluation.
 * Advanced Encryption Standard (AES) - The program takes plaintext as
 input and encrypts it using a given encryption key. Our implementation
 uses a key size of 256 bits. The AES algorithm is comprised of many
-rounds, that ultimately turn plaintext into cipher-text. Each round has
+rounds that ultimately turn plaintext into ciphertext. Each round has
 multiple processing steps that include AddRoundKey, SubBytes, ShiftRows
-and MixColumns. Key bits must be expanded using a precise key expansion
+, and MixColumns. Key bits must be expanded using a precise key expansion
 
-* Background Extraction (BE) - An useful algorithm in video and image
+* Background Extraction (BE) - A useful algorithm in video and image
 processing, background extraction algorithms usually create a background
 model based on static components of the frame. Our implementation uses
 a Running Gaussian Average, and takes an input video file and extracts
@@ -71,16 +71,16 @@ European-style options.
 * Binary Search Tree Insertion (BSTI) - Binary Search Tree is a useful
 data structure for its balanced insertion and in-order accessing
 performance, but rearranging an array into a binary search tree is
-usually time consuming. The GPU can help with inserting the nodes of
+usually time-consuming. The GPU can help with inserting the nodes of
 a binary search tree in parallel, using one thread to insert one node.
-However, as the output is a irregular tree structure, we need to let the
+However, as the output is an irregular tree structure, we need to let the
 CPU and the GPU collaborate under the Co-Contributing pattern.
 
-* Color Histogramming (CH) - Color Histogramming is a popular method in
-image processing to divide the color space into groups, and counts the
-number of pixels in a picture that fall into each group. The
+* Color Histogramming (CH) - Color histogramming is a popular method in
+image processing that divides the color space into groups and counts the
+number of pixels in a picture that falls into each group. The
 implementation of Color Histogramming is divided into two phases. In the
-first phase the GPU kernel scans the whole image and each GPU thread
+first phase, the GPU kernel scans the whole image and each GPU thread
 covers a small portion of the image. Each thread stores the histogram
 information of the pixels it has scanned in a region of the private
 memory that is dedicated to that thread. In the second phase, each GPU
@@ -90,8 +90,8 @@ output histogram using atomic operations.
 * Force Directed Edge Bundling (FDEB) - Force Directed Edge Bundling is
 a graph-based data visualization algorithm that helps readers identify
 patterns in a complex graph. The algorithm models a spring between each
-pair of the edges and calculates the forces applied to points on each
-edge. Then each point moves a certain distance towards the direction of
+pair of edges and calculates the forces applied to points on each
+edge. Then, each point moves a certain distance towards the direction of
 the combined force. 
 
 * Evolutionary Programming (EP) - Evolutionary Programming solves
@@ -100,9 +100,9 @@ selection process. In our benchmark implementation, we use Evolutionary
 Programming to solve a non-convex optimization problem.
 
 * Finite Impulse Response (FIR) - FIR filter produces an impulse response
-of finite duration. The impulse response is the response to any finite
-length input. The FIR filtering program is designed to have the host
-send array data to the FIR kernel on the OpenCL device. Then the FIR
+of finite duration. The impulse response is the response to any
+finite-length input. The FIR filtering program is designed to have the host
+send array data to the FIR kernel on the OpenCL device. Then, the FIR
 filter is calculated on the device, and the result is transferred back
 to the host.
 
@@ -113,14 +113,14 @@ the Basic Local Alignment Search Tool (BLAST).
 
 * K-Nearest Neighbors (KNN) - Given a large number of labeled training
 samples in a multi-dimensional feature space, the K- Nearest Neighbors
-(KNN) algorithm takes a query point and searches for the K training
+(KNN) the algorithm takes a query point and searches for the K training
 samples that are close to that point. Using a majority vote approach,
 the KNN algorithm can categorize the query point with the label that
 appears the most number of times in the selected K training samples. 
 
-* KMeans (KM) - k-means clustering is a method of vector quantization,
+* KMeans (KM) - K-means clustering is a method of vector quantization,
 originally from signal processing, that is popular for cluster analysis
-in data mining. k-means clustering aims to partition n observations into
+in data mining. K-means clustering aims to partition n observations into
 k clusters in which each observation belongs to the cluster with the
 nearest mean, serving as a prototype of the cluster. In this
 implementation, we have varied the number of objects of 34 features and
@@ -129,10 +129,10 @@ attributes.
 
 * Page Rank (PR) - PageRank is an algorithm used by Google Search to rank
 websites in their search engine results. It is a link analysis algorithm
-and it assigns a numerical weighting to each element of a hyperlinked
+, and it assigns a numerical weighting to each element of a hyperlinked
 set of documents, such as the World Wide Web, with the purpose of
-"measuring" its relative importance within the set. So the computations
-are representatives of graph based applications.
+"measuring" its relative importance within the set. So, the computations
+are representatives of graph-based applications.
 
 ## Compiling the code
 
@@ -193,7 +193,7 @@ The executables support the following arguments:
 * `-v` is for cpu verification 
 * `-q` is for suppressing the output
 
-All benchmark executables has a `-h` option.
+All benchmark executables have a `-h` option.
 The help documentation of each benchmark explains how to use the benchmark
 and what parameter is needed.
 
@@ -201,8 +201,8 @@ and what parameter is needed.
 
 ### Download standard input data
 
-You can download the standard data from the following url
-https://drive.google.com/file/d/1IItjFFUIfANgrUUI7jebNS9rfSEe32lZ/view?usp=sharing".
+You can download the standard data from the following URL
+https://heteromark.s3.us-east-2.amazonaws.com/hmark-data.zip.
 
 ### Generate your own input data
 
@@ -236,14 +236,14 @@ https://drive.google.com/file/d/1IItjFFUIfANgrUUI7jebNS9rfSEe32lZ/view?usp=shari
         ```
 
 
-## Development guide
+## Development Guide
 
-Please raise issues on the Github page if you have any questions or
+Please raise issues on the GitHub page if you have any questions or
 problems using the benchmark suite.
 
-We accept pull requests on github if you want to contribute to the
-benchmark suite. If you have any question or problem with HeteroMark,
-please file an issue in our github repo.
+We accept pull requests on GitHub if you want to contribute to the
+benchmark suite. If you have any questions or problems with HeteroMark,
+please file an issue in our GitHub repo.
 
 Hetero-mark follows [google c++ coding
 style](https://google.github.io/styleguide/cppguide.html) in header files
