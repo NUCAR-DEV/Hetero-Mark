@@ -1,6 +1,5 @@
 set(FOLDER_NAME ga)
 set(SUBDIRECTORIES 
-  hc
   cuda
   hip
   cl12
