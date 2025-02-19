@@ -103,10 +103,10 @@ void PrCudaBenchmark::Run() {
   }
 
   if (i % 2 != 0) {
-    cudaMemcpy(page_rank_, device_mtx_1, num_nodes_ * sizeof(float),
+    cudaMemcpy(page_rank_, device_mtx_2, num_nodes_ * sizeof(float),
                cudaMemcpyDeviceToHost);
   } else {
-    cudaMemcpy(page_rank_, device_mtx_2, num_nodes_ * sizeof(float),
+    cudaMemcpy(page_rank_, device_mtx_1, num_nodes_ * sizeof(float),
                cudaMemcpyDeviceToHost);
   }
   cpu_gpu_logger_->GPUOff();
