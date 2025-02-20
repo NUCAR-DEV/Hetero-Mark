@@ -106,10 +106,10 @@ void PrHipBenchmark::Run() {
   }
 
   if (i % 2 != 0) {
-    hipMemcpy(page_rank_, device_mtx_1, num_nodes_ * sizeof(float),
+    hipMemcpy(page_rank_, device_mtx_2, num_nodes_ * sizeof(float),
               hipMemcpyDeviceToHost);
   } else {
-    hipMemcpy(page_rank_, device_mtx_2, num_nodes_ * sizeof(float),
+    hipMemcpy(page_rank_, device_mtx_1, num_nodes_ * sizeof(float),
               hipMemcpyDeviceToHost);
   }
   cpu_gpu_logger_->GPUOff();

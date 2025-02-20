@@ -144,7 +144,7 @@ void EpHipBenchmark::EvaluateGpu(std::vector<Creature> *island) {
   cpu_gpu_logger_->GPUOff();
 }
 
-__global__ void Mutate_Kernel(hipLaunchParm lp, Creature *creatures,
+__global__ void Mutate_Kernel(Creature *creatures,
                               uint32_t count, uint32_t num_vars) {
   uint32_t i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
   if (i >= count) return;
